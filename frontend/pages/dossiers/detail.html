@@ -374,24 +374,29 @@ let _selectedPiece = null;
 function $id(id) { return document.getElementById(id); }
 
 function loadAll() {
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get('id');
-  if (!id) { renderError('Aucun identifiant de dossier fourni dans l\'URL.'); return; }
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (!id) { renderError('Aucun identifiant de dossier fourni dans l\'URL.'); return; }
 
-  let dossiers = [];
-  try { dossiers = JSON.parse(localStorage.getItem(STORAGE_DOSSIERS) || '[]'); }
-  catch (_) {}
-  _dossier = dossiers.find((d) => d.id === id);
-  if (!_dossier) { renderError(`Dossier <strong>${id}</strong> introuvable dans le stockage local.`); return; }
+    let dossiers = [];
+    try { dossiers = JSON.parse(localStorage.getItem(STORAGE_DOSSIERS) || '[]'); }
+    catch (_) {}
+    _dossier = dossiers.find((d) => d.id === id);
+    if (!_dossier) { renderError(`Dossier <strong>${id}</strong> introuvable dans le stockage local. <a href="index.html">Retour à la liste</a>`); return; }
 
-  try { _piecesData = JSON.parse(localStorage.getItem(STORAGE_PIECES) || '{}'); }
-  catch (_) { _piecesData = {}; }
-  if (!_piecesData[id]) _piecesData[id] = { pieces: {}, histo: [] };
+    try { _piecesData = JSON.parse(localStorage.getItem(STORAGE_PIECES) || '{}'); }
+    catch (_) { _piecesData = {}; }
+    if (!_piecesData[id]) _piecesData[id] = { pieces: {}, histo: [] };
 
-  autoGeneratePieces();
+    autoGeneratePieces();
 
-  $id('bcRef').textContent = _dossier.id;
-  render();
+    $id('bcRef').textContent = _dossier.id;
+    render();
+  } catch (err) {
+    console.error('Erreur loadAll:', err);
+    renderError(`Erreur lors du chargement : <code>${err.message}</code><br><small>${(err.stack || '').split('\n').slice(0, 3).join('<br>')}</small>`);
+  }
 }
 
 function autoGeneratePieces() {
@@ -739,14 +744,9 @@ function logHisto(action, color, motif) {
 function readFields() {
   const piece = PIECES_BY_TYPE[_dossier.type].find((p) => p.code === _selectedPiece);
   const data = {};
-  piece.fields.forEach((f) => {
-    const el = document.querySelector(`#pieceForm [type], #pieceForm textarea`);
-    const inputs = document.querySelectorAll('#pieceForm .pp-fld');
-    inputs.forEach((wrap, i) => {
-      const fld = piece.fields[i];
-      const input = wrap.querySelector('input, textarea');
-      if (input) data[fld] = input.value;
-    });
+  document.querySelectorAll('#pieceForm .pp-fld').forEach((wrap, i) => {
+    const input = wrap.querySelector('input, textarea');
+    if (input && piece.fields[i]) data[piece.fields[i]] = input.value;
   });
   return data;
 }
@@ -811,7 +811,11 @@ function syncDossierEtape() {
   else                   _dossier.etape = 'paiement';
 }
 
-document.addEventListener('DOMContentLoaded', loadAll);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadAll);
+} else {
+  loadAll();
+}
 </script>
 </body>
 </html>
