@@ -1,0 +1,940 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SIGFIC-PSLSH | Utilisateurs</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    /* ── Badges rôles ───────────────────────────────────────────────────────── */
+    .role-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: 20px;
+      font-size: .68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .3px;
+      white-space: nowrap;
+    }
+    .role-administrateur  { background: #0d1b2a; color: #fff; }
+    .role-coordination    { background: #1b4fa8; color: #fff; }
+    .role-comite_pilotage { background: #4b0082; color: #fff; }
+    .role-chef_service    { background: #b45309; color: #fff; }
+    .role-agent           { background: #64748b; color: #fff; }
+
+    /* ── Badges statut compte ───────────────────────────────────────────────── */
+    .statut-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: .7rem; font-weight: 700;
+      letter-spacing: .2px;
+    }
+    .statut-badge::before {
+      content: ''; width: 6px; height: 6px;
+      border-radius: 50%; background: currentColor; flex-shrink: 0;
+    }
+    .statut-actif       { background: #dcfce7; color: #15803d; }
+    .statut-desactive   { background: #f1f5f9; color: #64748b; }
+    .statut-verrouille  { background: #fee2e2; color: #b91c1c; }
+
+    /* ── Avatar utilisateur ─────────────────────────────────────────────────── */
+    .user-cell-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .72rem; font-weight: 700;
+      color: #fff; flex-shrink: 0;
+    }
+
+    /* ── Barre de filtres ───────────────────────────────────────────────────── */
+    .filter-bar {
+      background: var(--c-white);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-lg);
+      padding: 14px 18px;
+      display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px;
+      margin-bottom: 18px;
+      box-shadow: var(--sh-xs);
+    }
+    .filter-bar .form-label { font-size: .73rem; font-weight: 600; color: var(--c-muted); margin-bottom: 4px; }
+
+    /* ── Stat cards ─────────────────────────────────────────────────────────── */
+    .stat-card {
+      background: var(--c-white);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-lg);
+      padding: 16px 18px;
+      box-shadow: var(--sh-xs);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .stat-icon {
+      width: 42px; height: 42px;
+      border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1; color: var(--c-slate); }
+    .stat-label { font-size: .73rem; color: var(--c-muted); font-weight: 500; margin-top: 2px; }
+
+    /* ── Actions dropdown ───────────────────────────────────────────────────── */
+    .actions-dropdown .dropdown-item { font-size: .8rem; padding: .38rem .9rem; }
+    .actions-dropdown .dropdown-item i { width: 16px; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../admin/index.html">Administration</a></li>
+            <li class="breadcrumb-item active">Utilisateurs</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong>2026</strong>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" title="Notifications"><i class="fas fa-bell"></i></button>
+        <div class="dropdown">
+          <div class="user-pill dropdown-toggle" data-bs-toggle="dropdown" style="cursor:pointer">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div>
+              <div class="user-name" id="userName">—</div>
+              <div class="user-role" id="userRole">—</div>
+            </div>
+            <i class="fas fa-chevron-down ms-1" style="font-size:.6rem;color:rgba(255,255,255,.4)"></i>
+          </div>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- En-tête -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title"><i class="fas fa-users-cog me-2" style="color:var(--c-primary)"></i>Utilisateurs</h1>
+          <p class="page-subtitle">Comptes, rôles, statuts et accès</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreateUser" onclick="openCreateUser()">
+            <i class="fas fa-user-plus me-1"></i>Nouvel utilisateur
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 stat cards -->
+      <div class="row g-3 mb-3">
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--c-primary-pale);color:var(--c-primary)"><i class="fas fa-users"></i></div>
+            <div>
+              <div class="stat-value" id="statTotal">44</div>
+              <div class="stat-label">Total comptes</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#dcfce7;color:#15803d"><i class="fas fa-user-check"></i></div>
+            <div>
+              <div class="stat-value" id="statActifs">38</div>
+              <div class="stat-label">Actifs</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#f1f5f9;color:#64748b"><i class="fas fa-user-slash"></i></div>
+            <div>
+              <div class="stat-value" id="statDesactives">6</div>
+              <div class="stat-label">Désactivés</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fee2e2;color:#b91c1c"><i class="fas fa-lock"></i></div>
+            <div>
+              <div class="stat-value" id="statVerrouilles">2</div>
+              <div class="stat-label">Verrouillés</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barre de filtres -->
+      <div class="filter-bar">
+        <div style="flex:1;min-width:200px">
+          <label class="form-label">Recherche</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" class="form-control" id="filterSearch" placeholder="Nom, prénom, email, identifiant..." oninput="filterUsers()">
+          </div>
+        </div>
+        <div style="min-width:160px">
+          <label class="form-label">Rôle</label>
+          <select class="form-select form-select-sm" id="filterRole" onchange="filterUsers()">
+            <option value="">Tous les rôles</option>
+            <option value="administrateur">Administrateur</option>
+            <option value="coordination">Coordination</option>
+            <option value="comite_pilotage">Comité de pilotage</option>
+            <option value="chef_service">Chef de service</option>
+            <option value="agent">Agent</option>
+          </select>
+        </div>
+        <div style="min-width:200px">
+          <label class="form-label">Service</label>
+          <select class="form-select form-select-sm" id="filterService" onchange="filterUsers()">
+            <option value="">Tous les services</option>
+          </select>
+        </div>
+        <div style="min-width:140px">
+          <label class="form-label">Statut</label>
+          <select class="form-select form-select-sm" id="filterStatut" onchange="filterUsers()">
+            <option value="">Tous les statuts</option>
+            <option value="actif">Actif</option>
+            <option value="désactivé">Désactivé</option>
+            <option value="verrouillé">Verrouillé</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">&nbsp;</label>
+          <button class="btn btn-sm btn-outline-secondary d-block" onclick="resetFilters()">
+            <i class="fas fa-times me-1"></i>Réinitialiser
+          </button>
+        </div>
+      </div>
+
+      <!-- Tableau des utilisateurs -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="fas fa-users"></i></div>
+          Liste des comptes utilisateurs
+          <div class="card-header-actions">
+            <span class="badge bg-light text-muted" id="tableCount" style="font-size:.72rem">10 comptes</span>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0" id="usersTable">
+            <thead class="table-light">
+              <tr>
+                <th>Nom &amp; Prénom</th>
+                <th>Identifiant / Email</th>
+                <th>Fonction</th>
+                <th>Service / Unité</th>
+                <th>Rôle</th>
+                <th>Statut</th>
+                <th>Dernière connexion</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <!-- Rempli par JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer d-flex align-items-center justify-content-between">
+          <span style="font-size:.78rem" id="tableFooterInfo">Affichage de 10 comptes sur 44 au total</span>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="exportCSV()"><i class="fas fa-file-csv me-1"></i>Exporter</button>
+            <button class="btn btn-sm" style="background:#15803d;color:#fff;border:none" onclick="sauvegarder()" title="Sauvegarder comme référence"><i class="fas fa-save me-1"></i>Sauvegarder</button>
+            <button class="btn btn-sm" style="border:1px solid #fca5a5;color:#b91c1c;background:#fff" onclick="reinitialiserDonnees()" title="Réinitialiser"><i class="fas fa-undo me-1"></i>Réinitialiser</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- /page-content -->
+
+    <footer class="page-footer">
+      &copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp; Programme Sectoriel de Lutte contre le Sida &nbsp;&middot;&nbsp; République du Tchad &nbsp;&middot;&nbsp; Version 1
+    </footer>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     MODAL : Créer / Modifier un utilisateur
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalCreateUser" tabindex="-1" aria-labelledby="modalCreateUserLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background:var(--c-primary);color:#fff">
+        <h5 class="modal-title" id="modalCreateUserLabel"><i class="fas fa-user-plus me-2"></i>Nouvel utilisateur</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editUserId">
+
+        <!-- Section 1 : Informations personnelles -->
+        <div class="mb-3 pb-2 border-bottom">
+          <div class="fw-bold text-muted mb-2" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.8px">
+            <i class="fas fa-user me-1"></i>Informations personnelles
+          </div>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Nom <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="fNom" placeholder="Nom de famille">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Prénom <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="fPrenom" placeholder="Prénom(s)">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Téléphone</label>
+              <input type="text" class="form-control" id="fTel" placeholder="+235 XX XX XX XX">
+            </div>
+            <div class="col-md-12">
+              <label class="form-label fw-semibold">Fonction / Titre <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="fFonction" placeholder="Ex. : Chef SAF, Agent financier, Coordinateur...">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2 : Identifiants -->
+        <div class="mb-3 pb-2 border-bottom">
+          <div class="fw-bold text-muted mb-2" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.8px">
+            <i class="fas fa-id-badge me-1"></i>Identifiants de connexion
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Email / Identifiant <span class="text-danger">*</span></label>
+              <input type="email" class="form-control" id="fEmail" placeholder="prenom.nom@pslsh.org">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Mot de passe provisoire <span class="text-danger" id="pwdStarCreate">*</span></label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="pwdField" placeholder="Générez ou saisissez" autocomplete="new-password">
+                <button type="button" class="btn btn-outline-secondary" onclick="generatePassword('pwdField')" title="Générer un mot de passe sécurisé">
+                  <i class="fas fa-dice me-1"></i>Générer
+                </button>
+              </div>
+              <div class="form-text text-muted">Min. 12 caractères — lettres, chiffres, symboles.</div>
+            </div>
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="fForceChange" checked>
+                <label class="form-check-label" for="fForceChange">
+                  Forcer le changement de mot de passe à la prochaine connexion
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3 : Affectation -->
+        <div class="mb-3 pb-2 border-bottom">
+          <div class="fw-bold text-muted mb-2" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.8px">
+            <i class="fas fa-sitemap me-1"></i>Affectation
+          </div>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Service <span class="text-danger">*</span></label>
+              <select class="form-select" id="fService" onchange="onServiceChange()">
+                <option value="">— Sélectionner —</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Unité</label>
+              <select class="form-select" id="fUnite">
+                <option value="">— Sélectionner un service d'abord —</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Rôle <span class="text-danger">*</span></label>
+              <select class="form-select" id="fRole">
+                <option value="">— Sélectionner —</option>
+                <option value="administrateur">Administrateur</option>
+                <option value="coordination">Coordination</option>
+                <option value="comite_pilotage">Comité de pilotage</option>
+                <option value="chef_service">Chef de service</option>
+                <option value="agent">Agent</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4 : Sécurité du compte -->
+        <div>
+          <div class="fw-bold text-muted mb-2" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.8px">
+            <i class="fas fa-lock me-1"></i>Sécurité du compte
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Statut du compte</label>
+              <select class="form-select" id="fStatut">
+                <option value="actif">Actif</option>
+                <option value="désactivé">Désactivé</option>
+              </select>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="fVerrouille">
+                <label class="form-check-label" for="fVerrouille">
+                  <span class="text-danger fw-semibold">Compte verrouillé</span>
+                  <span class="text-muted" style="font-size:.78rem"> (bloquer toute connexion)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Annuler</button>
+        <button type="button" class="btn btn-primary" onclick="saveUser()"><i class="fas fa-save me-1"></i><span id="modalSaveBtnLabel">Créer le compte</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     MODAL : Réinitialiser le mot de passe
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalResetPwd" tabindex="-1" aria-labelledby="modalResetPwdLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#fef3c7;border-bottom:1px solid #fde68a">
+        <h5 class="modal-title" id="modalResetPwdLabel" style="color:#92400e">
+          <i class="fas fa-key me-2"></i>Réinitialiser le mot de passe
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="resetUserId">
+        <div class="alert alert-warning py-2" style="font-size:.82rem">
+          <i class="fas fa-user me-1"></i>Compte : <strong id="resetUserName">—</strong>
+        </div>
+        <label class="form-label fw-semibold">Nouveau mot de passe</label>
+        <div class="input-group mb-2">
+          <input type="text" class="form-control" id="resetPwdField" placeholder="Nouveau mot de passe sécurisé" autocomplete="new-password">
+          <button type="button" class="btn btn-outline-secondary" onclick="generatePassword('resetPwdField')" title="Générer">
+            <i class="fas fa-dice me-1"></i>Générer
+          </button>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="resetForceChange" checked>
+          <label class="form-check-label" for="resetForceChange" style="font-size:.82rem">
+            Forcer le changement à la prochaine connexion
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-warning" onclick="saveResetPwd()"><i class="fas fa-key me-1"></i>Réinitialiser</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container" style="position:fixed;bottom:20px;right:20px;z-index:9999;min-width:260px"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+'use strict';
+/* ══════════════════════════════════════════════════════════════════════════════
+   SIGFIC-PSLSH — Gestion des utilisateurs (connecté au vrai backend)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── État global ─────────────────────────────────────────────────────────── */
+let USERS        = [];   // utilisateurs chargés depuis l'API
+let ROLES_LIST   = [];   // rôles chargés depuis l'API
+let _editingUserId = null;
+
+/* ── Labels rôle backend ────────────────────────────────────────────────── */
+function roleLabel(code) {
+  const map = {
+    admin:        'Administrateur',
+    coordinateur: 'Coordinateur',
+    gestionnaire: 'Gestionnaire',
+    comptable:    'Comptable',
+    auditeur:     'Auditeur',
+    archiviste:   'Archiviste',
+    lecture:      'Lecture seule',
+  };
+  return map[code] || code;
+}
+
+function roleCssCode(code) {
+  const map = {
+    admin:        'administrateur',
+    coordinateur: 'coordination',
+    gestionnaire: 'chef_service',
+    comptable:    'coordination',
+    auditeur:     'agent',
+    archiviste:   'agent',
+    lecture:      'agent',
+  };
+  return map[code] || 'agent';
+}
+
+/* ── Badges ─────────────────────────────────────────────────────────────── */
+function roleBadge(roles) {
+  if (!roles || !roles.length) return '<span class="role-badge role-agent">—</span>';
+  const r = roles[0];
+  const css = roleCssCode(r.code);
+  return `<span class="role-badge role-${css}">${roleLabel(r.code)}</span>`;
+}
+
+function statutBadgeUser(isActive) {
+  if (isActive) return '<span class="statut-badge statut-actif">Actif</span>';
+  return '<span class="statut-badge statut-desactive">Désactivé</span>';
+}
+
+/* ── Services & Unités ──────────────────────────────────────────────────── */
+function getServiceLabel(code) {
+  const s = (window.SIGFIC?.SERVICES || []).find(x => x.code === code);
+  return s ? s.label : (code || '—');
+}
+
+function serviceColor(code) {
+  const s = (window.SIGFIC?.SERVICES || []).find(x => x.code === code);
+  return s ? s.color : '#1b3a6b';
+}
+
+function initials(nom, prenom) {
+  return ((prenom?.[0] || '') + (nom?.[0] || '')).toUpperCase() || '??';
+}
+
+/* ── Génération de mot de passe ─────────────────────────────────────────── */
+function generatePassword(fieldId) {
+  const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ', lowers = 'abcdefghjkmnpqrstuvwxyz';
+  const digits = '23456789', specials = '@#$%&!?+*';
+  const pick = (s, n) => Array.from({length: n}, () => s[Math.floor(Math.random() * s.length)]).join('');
+  const raw = pick(uppers,3)+pick(lowers,3)+pick(digits,3)+pick(specials,3);
+  const pwd = raw.split('').sort(() => Math.random() - .5).join('');
+  const el = document.getElementById(fieldId);
+  if (el) { el.value = pwd; el.type = 'text'; }
+}
+
+/* ── Toast ──────────────────────────────────────────────────────────────── */
+function showToast(msg, type) {
+  if (typeof toast === 'function') { toast(msg, type); return; }
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  const bg = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-warning';
+  const tc = type === 'warning' ? 'text-dark' : 'text-white';
+  t.className = `toast show align-items-center ${tc} ${bg} border-0 mb-2`;
+  t.innerHTML = `<div class="d-flex"><div class="toast-body">${msg}</div><button type="button" class="btn-close ${type==='warning'?'':'btn-close-white'} me-2 m-auto" onclick="this.closest('.toast').remove()"></button></div>`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Chargement des données depuis l'API
+   ════════════════════════════════════════════════════════════════════════════ */
+async function loadUsers() {
+  try {
+    const res = await api.users.list();
+    USERS = res.data || [];
+    updateStats();
+    filterUsers();
+  } catch (err) {
+    showToast('Impossible de charger les utilisateurs : ' + err.message, 'error');
+  }
+}
+
+async function loadRoles() {
+  try {
+    const res = await api.roles.list();
+    ROLES_LIST = res.data || [];
+    populateRoleDropdowns();
+  } catch (err) {
+    // Roles non chargés — on garde les options statiques
+  }
+}
+
+function populateRoleDropdowns() {
+  /* Rôle dans le modal création/édition */
+  const fRole = document.getElementById('fRole');
+  fRole.innerHTML = '<option value="">— Sélectionner —</option>';
+  ROLES_LIST.forEach(r => {
+    const o = document.createElement('option');
+    o.value = r.code;
+    o.textContent = `${roleLabel(r.code)} (${r.code})`;
+    fRole.appendChild(o);
+  });
+
+  /* Filtre par rôle */
+  const filterRole = document.getElementById('filterRole');
+  filterRole.innerHTML = '<option value="">Tous les rôles</option>';
+  ROLES_LIST.forEach(r => {
+    const o = document.createElement('option');
+    o.value = r.code;
+    o.textContent = roleLabel(r.code);
+    filterRole.appendChild(o);
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Statistiques
+   ════════════════════════════════════════════════════════════════════════════ */
+function updateStats() {
+  const total   = USERS.length;
+  const actifs  = USERS.filter(u => u.is_active).length;
+  const desact  = USERS.filter(u => !u.is_active).length;
+  document.getElementById('statTotal').textContent     = total;
+  document.getElementById('statActifs').textContent    = actifs;
+  document.getElementById('statDesactives').textContent = desact;
+  document.getElementById('statVerrouilles').textContent = 0;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Tableau
+   ════════════════════════════════════════════════════════════════════════════ */
+function renderTable(data) {
+  const tbody  = document.getElementById('usersTableBody');
+  const count  = document.getElementById('tableCount');
+  const footer = document.getElementById('tableFooterInfo');
+
+  count.textContent  = `${data.length} compte${data.length > 1 ? 's' : ''}`;
+  footer.textContent = `Affichage de ${data.length} compte${data.length > 1 ? 's' : ''} sur ${USERS.length} au total`;
+
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted"><i class="fas fa-search me-2"></i>Aucun utilisateur ne correspond aux filtres</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(u => {
+    const svcCode  = u.service_code || '';
+    const color    = serviceColor(svcCode);
+    const av       = initials(u.nom, u.prenom);
+    const svcLabel = svcCode ? `${svcCode}${u.unite_code ? ' — ' + u.unite_code : ''}` : '—';
+    const lastLogin = u.last_login ? new Date(u.last_login).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+
+    return `<tr data-id="${u.id}">
+      <td>
+        <div class="d-flex align-items-center gap-2">
+          <div class="user-cell-avatar" style="background:${color}">${av}</div>
+          <div>
+            <div class="fw-semibold" style="font-size:.83rem">${u.prenom} ${u.nom}</div>
+            <div class="text-muted" style="font-size:.72rem">${u.telephone || '—'}</div>
+          </div>
+        </div>
+      </td>
+      <td style="font-size:.8rem">${u.email}</td>
+      <td style="font-size:.8rem">${u.fonction || '—'}</td>
+      <td>
+        ${svcCode ? `<span class="badge me-1" style="background:${color};color:#fff;font-size:.65rem">${svcCode}</span>` : ''}
+        <span class="text-muted" style="font-size:.75rem">${u.unite_code || ''}</span>
+      </td>
+      <td>${roleBadge(u.roles)}</td>
+      <td>${statutBadgeUser(u.is_active)}</td>
+      <td class="cell-muted" style="font-size:.78rem">${lastLogin}</td>
+      <td class="text-end">
+        <div class="dropdown actions-dropdown">
+          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+            <li><a class="dropdown-item" href="#" onclick="editUser(${u.id})"><i class="fas fa-edit text-primary"></i> Modifier</a></li>
+            <li><a class="dropdown-item" href="#" onclick="resetPwd(${u.id}, '${u.prenom} ${u.nom}')"><i class="fas fa-key text-warning"></i> Réinitialiser MDP</a></li>
+            <li><hr class="dropdown-divider"></li>
+            ${u.is_active
+              ? `<li><a class="dropdown-item text-secondary" href="#" onclick="toggleStatus(${u.id}, true)"><i class="fas fa-user-slash"></i> Désactiver</a></li>`
+              : `<li><a class="dropdown-item text-success" href="#" onclick="toggleStatus(${u.id}, false)"><i class="fas fa-user-check"></i> Activer</a></li>`}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" onclick="deleteUser(${u.id}, '${u.prenom} ${u.nom}')"><i class="fas fa-trash-alt"></i> Supprimer</a></li>
+          </ul>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Filtrage
+   ════════════════════════════════════════════════════════════════════════════ */
+function filterUsers() {
+  const q       = (document.getElementById('filterSearch').value || '').toLowerCase().trim();
+  const roleF   = document.getElementById('filterRole').value;
+  const serviceF= document.getElementById('filterService').value;
+  const statutF = document.getElementById('filterStatut').value;
+
+  const filtered = USERS.filter(u => {
+    const matchQ = !q || [u.nom, u.prenom, u.email, u.fonction].some(f => (f||'').toLowerCase().includes(q));
+    const matchRole    = !roleF    || (u.roles && u.roles.some(r => r.code === roleF));
+    const matchService = !serviceF || u.service_code === serviceF;
+    const matchStatut  = !statutF  || (statutF === 'actif' ? u.is_active : !u.is_active);
+    return matchQ && matchRole && matchService && matchStatut;
+  });
+
+  renderTable(filtered);
+}
+
+function resetFilters() {
+  document.getElementById('filterSearch').value  = '';
+  document.getElementById('filterRole').value    = '';
+  document.getElementById('filterService').value = '';
+  document.getElementById('filterStatut').value  = '';
+  filterUsers();
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Modal création / édition
+   ════════════════════════════════════════════════════════════════════════════ */
+function openCreateUser() {
+  _editingUserId = null;
+  document.getElementById('editUserId').value = '';
+  document.getElementById('modalCreateUserLabel').innerHTML = '<i class="fas fa-user-plus me-2"></i>Nouvel utilisateur';
+  document.getElementById('modalSaveBtnLabel').textContent  = 'Créer le compte';
+  document.getElementById('pwdStarCreate').style.display    = '';
+  ['fNom','fPrenom','fTel','fFonction','fEmail','pwdField'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('fRole').value   = '';
+  document.getElementById('fService').value = '';
+  document.getElementById('fUnite').value  = '';
+  document.getElementById('fStatut').value = 'actif';
+  document.getElementById('fVerrouille').checked  = false;
+  document.getElementById('fForceChange').checked = true;
+  onServiceChange();
+}
+
+function editUser(userId) {
+  const u = USERS.find(x => x.id === userId);
+  if (!u) return;
+  _editingUserId = userId;
+
+  document.getElementById('editUserId').value = u.id;
+  document.getElementById('modalCreateUserLabel').innerHTML = `<i class="fas fa-user-edit me-2"></i>Modifier — ${u.prenom} ${u.nom}`;
+  document.getElementById('modalSaveBtnLabel').textContent  = 'Enregistrer les modifications';
+  document.getElementById('pwdStarCreate').style.display    = 'none';
+
+  document.getElementById('fNom').value      = u.nom     || '';
+  document.getElementById('fPrenom').value   = u.prenom  || '';
+  document.getElementById('fTel').value      = u.telephone || '';
+  document.getElementById('fFonction').value = u.fonction || '';
+  document.getElementById('fEmail').value    = u.email   || '';
+  document.getElementById('pwdField').value  = '';
+  document.getElementById('fStatut').value   = u.is_active ? 'actif' : 'désactivé';
+
+  /* Rôle — prendre le premier rôle si multi-rôle */
+  const firstRole = u.roles && u.roles.length ? u.roles[0].code : '';
+  document.getElementById('fRole').value = firstRole;
+
+  /* Service + Unité */
+  document.getElementById('fService').value = u.service_code || '';
+  onServiceChange();
+  setTimeout(() => { document.getElementById('fUnite').value = u.unite_code || ''; }, 0);
+
+  const modal = new bootstrap.Modal(document.getElementById('modalCreateUser'));
+  modal.show();
+}
+
+/* ── Sauvegarde (création ou édition) ───────────────────────────────────── */
+async function saveUser() {
+  const nom      = document.getElementById('fNom').value.trim();
+  const prenom   = document.getElementById('fPrenom').value.trim();
+  const email    = document.getElementById('fEmail').value.trim();
+  const role_code= document.getElementById('fRole').value;
+  const service  = document.getElementById('fService').value;
+  const editId   = document.getElementById('editUserId').value;
+  const pwd      = document.getElementById('pwdField').value.trim();
+
+  if (!nom || !prenom || !email) { showToast('Nom, prénom et email sont obligatoires.', 'warning'); return; }
+  if (!editId && !pwd)            { showToast('Le mot de passe est obligatoire pour un nouveau compte.', 'warning'); return; }
+  if (!role_code)                 { showToast('Veuillez sélectionner un rôle.', 'warning'); return; }
+
+  const payload = {
+    nom, prenom, email,
+    telephone:    document.getElementById('fTel').value.trim() || undefined,
+    fonction:     document.getElementById('fFonction').value.trim() || undefined,
+    service_code: service || undefined,
+    unite_code:   document.getElementById('fUnite').value || undefined,
+    is_active:    document.getElementById('fStatut').value === 'actif',
+    role_code,
+  };
+  if (pwd) payload.password = pwd;
+
+  const btn = document.querySelector('[onclick="saveUser()"]');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>En cours…'; }
+
+  try {
+    if (editId) {
+      await api.users.update(editId, payload);
+      showToast(`Compte de ${prenom} ${nom} mis à jour avec succès.`, 'success');
+    } else {
+      await api.users.create(payload);
+      showToast(`Compte de ${prenom} ${nom} créé. Connexion possible avec les identifiants fournis.`, 'success');
+    }
+    bootstrap.Modal.getInstance(document.getElementById('modalCreateUser'))?.hide();
+    await loadUsers();
+  } catch (err) {
+    showToast('Erreur : ' + err.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save me-1"></i><span id="modalSaveBtnLabel">' + (editId ? 'Enregistrer les modifications' : 'Créer le compte') + '</span>'; }
+  }
+}
+
+/* ── Activer / désactiver ───────────────────────────────────────────────── */
+async function toggleStatus(userId, isCurrentlyActive) {
+  const u = USERS.find(x => x.id === userId);
+  if (!u) return;
+  try {
+    await api.users.update(userId, { is_active: !isCurrentlyActive });
+    const action = isCurrentlyActive ? 'désactivé' : 'activé';
+    showToast(`Compte de ${u.prenom} ${u.nom} ${action}.`, isCurrentlyActive ? 'warning' : 'success');
+    await loadUsers();
+  } catch (err) {
+    showToast('Erreur : ' + err.message, 'error');
+  }
+}
+
+/* ── Supprimer ──────────────────────────────────────────────────────────── */
+async function deleteUser(userId, userName) {
+  if (!confirm(`Supprimer définitivement le compte de ${userName} ?\n\nCette action est irréversible.`)) return;
+  try {
+    await api.users.delete(userId);
+    showToast(`Compte de ${userName} supprimé.`, 'error');
+    await loadUsers();
+  } catch (err) {
+    showToast('Erreur : ' + err.message, 'error');
+  }
+}
+
+/* ── Réinitialiser le mot de passe ──────────────────────────────────────── */
+function resetPwd(userId, userName) {
+  document.getElementById('resetUserId').value     = userId;
+  document.getElementById('resetUserName').textContent = userName;
+  document.getElementById('resetPwdField').value   = '';
+  document.getElementById('resetForceChange').checked = true;
+  new bootstrap.Modal(document.getElementById('modalResetPwd')).show();
+}
+
+async function saveResetPwd() {
+  const id   = document.getElementById('resetUserId').value;
+  const name = document.getElementById('resetUserName').textContent;
+  const pwd  = document.getElementById('resetPwdField').value.trim();
+  if (!pwd || pwd.length < 6) { showToast('Le mot de passe doit comporter au moins 6 caractères.', 'warning'); return; }
+
+  const btn = document.querySelector('[onclick="saveResetPwd()"]');
+  if (btn) btn.disabled = true;
+  try {
+    await api.users.resetPassword(id, { new_password: pwd });
+    showToast(`Mot de passe de ${name} réinitialisé avec succès.`, 'success');
+    bootstrap.Modal.getInstance(document.getElementById('modalResetPwd'))?.hide();
+  } catch (err) {
+    showToast('Erreur : ' + err.message, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+/* ── Export CSV ─────────────────────────────────────────────────────────── */
+function exportCSV() {
+  const headers = ['Nom', 'Prénom', 'Email', 'Fonction', 'Service', 'Unité', 'Rôle', 'Statut', 'Dernière connexion'];
+  const rows = USERS.map(u => {
+    const role = u.roles && u.roles.length ? roleLabel(u.roles[0].code) : '—';
+    return [u.nom, u.prenom, u.email, u.fonction, u.service_code, u.unite_code, role, u.is_active ? 'Actif' : 'Désactivé', u.last_login || '']
+      .map(v => `"${(v||'').replace(/"/g,'""')}"`).join(',');
+  });
+  const csv  = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'utilisateurs-sigfic-pslsh.csv'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Export CSV généré.', 'success');
+}
+
+/* Stub pour compatibilité HTML */
+function sauvegarder() { showToast('Les données sont directement enregistrées en base de données.', 'success'); }
+function reinitialiserDonnees() { if(confirm('Recharger les utilisateurs depuis le serveur ?')) loadUsers(); }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Services & Unités
+   ════════════════════════════════════════════════════════════════════════════ */
+function populateServiceSelects() {
+  const services = window.SIGFIC?.SERVICES || [];
+
+  const filterSvc = document.getElementById('filterService');
+  filterSvc.innerHTML = '<option value="">Tous les services</option>';
+  services.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code; o.textContent = `${s.code} — ${s.label}`;
+    filterSvc.appendChild(o);
+  });
+
+  const modalSvc = document.getElementById('fService');
+  modalSvc.innerHTML = '<option value="">— Sélectionner —</option>';
+  services.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code; o.textContent = `${s.code} — ${s.label}`;
+    modalSvc.appendChild(o);
+  });
+}
+
+function onServiceChange() {
+  const serviceId = document.getElementById('fService').value;
+  const uniteSelect = document.getElementById('fUnite');
+  const unites = (window.SIGFIC?.UNITES || {})[serviceId] || [];
+  if (!unites.length) {
+    uniteSelect.innerHTML = '<option value="">— Aucune unité —</option>';
+    return;
+  }
+  uniteSelect.innerHTML = '<option value="">— Sélectionner une unité —</option>';
+  unites.forEach(u => {
+    const o = document.createElement('option');
+    o.value = u.id; o.textContent = `${u.id} — ${u.label}`;
+    uniteSelect.appendChild(o);
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   User pill topbar
+   ════════════════════════════════════════════════════════════════════════════ */
+function populateUserPill() {
+  const u = window.SIGFIC?.getUser?.() || (typeof getUser === 'function' ? getUser() : null);
+  if (!u) return;
+  const nom  = ((u.prenom || '') + ' ' + (u.nom || '')).trim() || u.email || 'Utilisateur';
+  const init = ((u.prenom?.[0] || '') + (u.nom?.[0] || '')).toUpperCase() || 'U';
+  const roles = Array.isArray(u.roles) ? u.roles : (u.role ? [u.role] : []);
+  const rLabel = roles.length ? roleLabel(roles[0]) : '—';
+  document.getElementById('userName').textContent  = nom;
+  document.getElementById('userRole').textContent  = rLabel;
+  document.getElementById('userAvatar').textContent = init;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Initialisation
+   ════════════════════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', async function () {
+  requireAuth();
+  populateUserPill();
+  populateServiceSelects();
+  await Promise.all([loadUsers(), loadRoles()]);
+});
+</script>
+</body>
+</html>
+</body>

@@ -1,0 +1,973 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Dossiers</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    /* ── Page wrapper ── */
+    .dos-page { padding: 24px 28px 40px; }
+
+    /* ── KPI bar ── */
+    .dos-kpi-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .dos-kpi {
+      flex: 1; min-width: 180px; border-radius: 12px; padding: 14px 20px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .dk-blue   { background: linear-gradient(135deg, #1b3a6b, #2563eb); color: #fff; }
+    .dk-orange { background: linear-gradient(135deg, #b45309, #f59e0b); color: #fff; }
+    .dk-green  { background: linear-gradient(135deg, #15803d, #22c55e); color: #fff; }
+    .dk-icon { width: 40px; height: 40px; border-radius: 10px;
+               background: rgba(255,255,255,.18); display: flex;
+               align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .dk-body  { flex: 1; }
+    .dk-label { font-size: .6rem; font-weight: 700; opacity: .8; text-transform: uppercase; letter-spacing: .06em; }
+    .dk-value { font-size: 1.35rem; font-weight: 800; font-family: monospace; margin: 2px 0 1px; }
+    .dk-sub   { font-size: .6rem; opacity: .72; }
+
+    /* ── Toolbar ── */
+    .dos-toolbar {
+      display: flex; align-items: center; gap: 10px;
+      background: #fff; border: 1px solid #e2e8f0;
+      border-radius: 10px; padding: 10px 16px;
+      margin-bottom: 18px; flex-wrap: wrap;
+    }
+    .dos-toolbar .toolbar-left  { display: flex; gap: 8px; align-items: center; flex: 1; flex-wrap: wrap; }
+    .dos-toolbar .toolbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    /* ── Table ── */
+    .dos-table-wrap {
+      background: #fff; border: 1px solid #e2e8f0;
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+    }
+    .dos-tbl { width: 100%; border-collapse: collapse; font-size: .8rem; }
+    .dos-tbl thead th {
+      background: #f8fafc; color: #64748b;
+      font-size: .63rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .05em;
+      padding: 10px 12px; border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .dos-tbl tbody td {
+      padding: 10px 12px; border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+    .dos-tbl tbody tr:last-child td { border-bottom: none; }
+    .dos-tbl tbody tr:hover td     { background: #f8fafc; }
+
+    /* ── Référence ── */
+    .ref-code {
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: .75rem; font-weight: 700; color: #1b3a6b;
+    }
+
+    /* ── Statut badges ── */
+    .st-badge {
+      display: inline-block; font-size: .65rem; font-weight: 700;
+      padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+    }
+    .st-brouillon   { background: #f1f5f9; color: #64748b; }
+    .st-soumis      { background: #dbeafe; color: #1d4ed8; }
+    .st-valide      { background: #cffafe; color: #0e7490; }
+    .st-en_cotation { background: #f3e8ff; color: #7e22ce; }
+    .st-commande    { background: #e0e7ff; color: #4338ca; }
+    .st-receptionne { background: #ffedd5; color: #c2410c; }
+    .st-paye        { background: #dcfce7; color: #15803d; }
+    .st-archive     { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; }
+
+    /* ── Pièces progress ── */
+    .pieces-bar {
+      display: flex; align-items: center; gap: 6px;
+      font-size: .72rem; font-family: monospace;
+    }
+    .pieces-track {
+      flex: 1; height: 5px; background: #e2e8f0;
+      border-radius: 3px; overflow: hidden; min-width: 50px;
+    }
+    .pieces-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+    .pf-low  { background: #f87171; }
+    .pf-mid  { background: #fb923c; }
+    .pf-hi   { background: #22c55e; }
+
+    /* ── Bouton Ouvrir ── */
+    .btn-ouvrir {
+      background: none; border: 1px solid #bfdbfe;
+      color: #3b82f6; cursor: pointer;
+      padding: 4px 12px; border-radius: 6px;
+      font-size: .73rem; font-weight: 600;
+      transition: background .15s, color .15s;
+      white-space: nowrap;
+    }
+    .btn-ouvrir:hover { background: #dbeafe; color: #1d4ed8; }
+
+    /* ── Empty state ── */
+    .dos-empty {
+      text-align: center; padding: 56px 24px; color: #94a3b8;
+    }
+    .dos-empty i { font-size: 2.5rem; margin-bottom: 12px; display: block; }
+    .dos-empty p { font-size: .85rem; margin: 0; }
+
+    /* ── Footer table ── */
+    .dos-table-footer {
+      background: #f8fafc; border-top: 1px solid #e2e8f0;
+      padding: 8px 14px; font-size: .72rem; color: #64748b;
+    }
+
+    /* ── Modal ── */
+    .modal-header-dos {
+      background: linear-gradient(135deg, #0f2944, #1b3a6b);
+      color: #fff; border-bottom: none;
+    }
+    .modal-header-dos .btn-close { filter: invert(1); }
+
+    /* ── Toast ── */
+    #dosToast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #1e3a5f; color: #fff;
+      padding: 10px 18px; border-radius: 8px;
+      font-size: .85rem; z-index: 9999;
+      opacity: 0; transition: opacity .3s; pointer-events: none;
+    }
+
+
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo"
+           onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/dossiers/index.html">Opérations</a></li>
+            <li class="breadcrumb-item active">Dossiers comptables</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Page ── -->
+    <div class="page-content dos-page">
+
+      <!-- En-tête -->
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <h4 class="mb-0">
+            <i class="fas fa-folder-open text-primary me-2"></i>Dossiers d'opération
+          </h4>
+          <small class="text-muted">Dossiers d'opération — Exercice 2026</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-secondary" onclick="exportCSV()">
+            <i class="fas fa-file-export me-1"></i>Exporter
+          </button>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════
+           Dossiers comptables
+      ══════════════════════════════════════════ -->
+      <div id="tabDos">
+
+        <!-- KPI Dossiers -->
+        <div class="dos-kpi-bar">
+          <div class="dos-kpi dk-blue">
+            <div class="dk-icon"><i class="fas fa-layer-group"></i></div>
+            <div class="dk-body">
+              <div class="dk-label">Total dossiers</div>
+              <div class="dk-value" id="kpiTotal">—</div>
+              <div class="dk-sub">Exercice 2026</div>
+            </div>
+          </div>
+          <div class="dos-kpi dk-orange">
+            <div class="dk-icon"><i class="fas fa-spinner"></i></div>
+            <div class="dk-body">
+              <div class="dk-label">En cours</div>
+              <div class="dk-value" id="kpiEnCours">—</div>
+              <div class="dk-sub">Non archivés / non payés</div>
+            </div>
+          </div>
+          <div class="dos-kpi dk-green">
+            <div class="dk-icon"><i class="fas fa-check-double"></i></div>
+            <div class="dk-body">
+              <div class="dk-label">Archivés / Payés</div>
+              <div class="dk-value" id="kpiClos">—</div>
+              <div class="dk-sub">Dossiers clôturés</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toolbar Dossiers -->
+        <div class="dos-toolbar">
+          <div class="toolbar-left">
+            <select class="form-select form-select-sm" style="width:180px;" id="filtreStatut" onchange="filtrerTable()">
+              <option value="">Tous les statuts</option>
+              <option value="brouillon">Brouillon</option>
+              <option value="soumis">Soumis</option>
+              <option value="valide">Validé</option>
+              <option value="en_cotation">En cotation</option>
+              <option value="commande">Commandé</option>
+              <option value="receptionne">Réceptionné</option>
+              <option value="paye">Payé</option>
+              <option value="archive">Archivé</option>
+            </select>
+            <div class="input-group input-group-sm" style="width:240px;">
+              <span class="input-group-text bg-white"><i class="fas fa-search text-muted" style="font-size:.75rem;"></i></span>
+              <input type="text" class="form-control" id="searchInput"
+                     placeholder="Rechercher référence, objet…" oninput="filtrerTable()">
+            </div>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-sm btn-outline-secondary text-muted" style="font-size:.72rem;"
+                    data-bs-toggle="modal" data-bs-target="#modalNew" title="Créer un dossier directement (SAF/Admin uniquement)">
+              <i class="fas fa-folder-plus me-1"></i>Dossier direct
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Dossiers -->
+        <div class="dos-table-wrap">
+          <table class="dos-tbl" id="dosTable">
+            <thead>
+              <tr>
+                <th style="min-width:120px;">Référence</th>
+                <th style="min-width:260px;">Objet</th>
+                <th style="min-width:120px;">Statut</th>
+                <th style="min-width:110px;">Date création</th>
+                <th style="min-width:120px;" class="text-center">Pièces</th>
+                <th style="width:90px;" class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dosTableBody"><!-- Rempli par JS --></tbody>
+          </table>
+          <div class="dos-table-footer d-flex justify-content-between align-items-center">
+            <span id="tableCount">—</span>
+            <span class="text-muted" style="font-size:.67rem;">Cliquer "Ouvrir" pour accéder au dossier complet</span>
+          </div>
+        </div>
+
+      </div><!-- /tabDos -->
+
+    </div><!-- /dos-page -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ═══════════════════════════════════════════════
+     MODAL — Nouveau dossier
+════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalNew" tabindex="-1" aria-labelledby="modalNewLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header modal-header-dos">
+        <h5 class="modal-title" id="modalNewLabel">
+          <i class="fas fa-folder-plus me-2"></i>Créer un nouveau dossier d'opération
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="formNewDossier" novalidate>
+
+          <div class="row g-3">
+
+            <!-- Type de dossier -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                Type de dossier <span class="text-danger">*</span>
+              </label>
+              <select class="form-select" id="fTypeDossier" required onchange="onTypeChange()">
+                <option value="">— Sélectionner le type d'opération —</option>
+                <option value="achat">🛒 Achat / Fournitures / Équipements / Services simples</option>
+                <option value="mission">📋 Mission / Prestation intellectuelle</option>
+                <option value="formation">🎓 Formation</option>
+                <option value="atelier">🏛️ Atelier / Événement</option>
+              </select>
+              <div class="form-text" id="fTypeDossierHelp" style="color:#1b3a6b;font-weight:600;"></div>
+            </div>
+
+            <!-- Objet -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                Objet du dossier <span class="text-danger">*</span>
+              </label>
+              <input type="text" class="form-control" id="fObjet"
+                     placeholder="Ex : Achat de fournitures de bureau — Trimestre 1"
+                     required>
+              <div class="form-text">Description claire de l'opération</div>
+            </div>
+
+            <!-- Activité -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Activité rattachée</label>
+              <input type="text" class="form-control" id="fActivite"
+                     placeholder="Ex : ACT-2026-012">
+            </div>
+
+            <!-- Ligne budgétaire -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Ligne budgétaire</label>
+              <input type="text" class="form-control" id="fLigneBudgetaire"
+                     placeholder="Ex : 604.01 — Fournitures de bureau">
+            </div>
+
+            <!-- Source de financement -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Source de financement</label>
+              <select class="form-select" id="fSource">
+                <option value="">— Choisir une source —</option>
+                <option value="S1">S1 — Budget État (Fonctionnement)</option>
+                <option value="S2">S2 — Budget État (Contrepartie)</option>
+                <option value="S3">S3 — Fonds Mondial / PTF</option>
+                <option value="S4">S4 — Ressources propres / autres</option>
+              </select>
+            </div>
+
+            <!-- Montant estimé -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Montant estimé (FCFA)</label>
+              <input type="number" class="form-control" id="fMontantEstime"
+                     placeholder="0" min="0" step="1">
+            </div>
+
+            <!-- Bénéficiaire -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">Bénéficiaire / Fournisseur pressenti</label>
+              <input type="text" class="form-control" id="fBeneficiaire"
+                     placeholder="Nom du fournisseur ou bénéficiaire (facultatif à ce stade)">
+            </div>
+
+            <!-- Note -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">Note / Observations</label>
+              <textarea class="form-control" id="fNote" rows="3"
+                        placeholder="Informations complémentaires, contexte, remarques…"></textarea>
+            </div>
+
+          </div><!-- /row -->
+
+          <!-- Avertissement conformité -->
+          <div class="alert alert-warning d-flex align-items-start gap-2 mt-3 mb-0 p-2" style="font-size:.78rem;">
+            <i class="fas fa-triangle-exclamation mt-1"></i>
+            <div>
+              Tout dossier créé doit être rattaché à une ligne budgétaire et une source de financement
+              avant d'être soumis pour validation. Aucune dépense ne peut être engagée sans dossier conforme.
+            </div>
+          </div>
+
+        </form>
+      </div><!-- /modal-body -->
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>Annuler
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="creerDossier()">
+          <i class="fas fa-folder-plus me-1"></i>Créer le dossier
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div id="dosToast"></div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   CONSTANTES ET DONNÉES
+══════════════════════════════════════════════════════ */
+const LS_KEY = 'pslsh_dossiers_v1';
+
+/* ── Labels des types de dossier ── */
+const TYPE_DOSSIER_LABELS = {
+  achat:     'Achat / Fournitures / Services',
+  mission:   'Mission / Prestation intellectuelle',
+  formation: 'Formation',
+  atelier:   'Atelier / Événement',
+};
+
+/* ── Info affichée sous le select ── */
+const TYPE_DOSSIER_INFO = {
+  achat:     `Pièces générées : EB → DC → Proforma → TC → BC → Pièces admin. → Facture → PVR → ASF → OP`,
+  mission:   `Pièces générées : TDR → CTR → Pièces admin. → OM → ASF → Rapport → Facture → PV validation → OP`,
+  formation: `Pièces générées : Note conceptuelle → Agenda → Contrat → Pièces admin. → Liste participants → Attestations → Rapport → Factures → PV → OP`,
+  atelier:   `Pièces générées : Note conceptuelle → Budget → Invitations → Liste présence → Rapport → Factures → PV validation → OP`,
+};
+
+/* ── Configuration des pièces par type ── */
+const PIECES_CONFIG = {
+  achat: [
+    { typeId:'EB',  label:'Expression de besoin',               type:'interne' },
+    { typeId:'DC',  label:'Demande de cotation',                type:'interne' },
+    { typeId:'FP',  label:'Facture proforma',                   type:'externe' },
+    { typeId:'TC',  label:'Tableau comparatif des offres',      type:'interne' },
+    { typeId:'BC',  label:'Bon de commande',                    type:'interne' },
+    { typeId:'PA',  label:'Pièces admin. fournisseur',          type:'externe' },
+    { typeId:'FAC', label:'Facture définitive',                 type:'externe' },
+    { typeId:'PVR', label:'PV de réception',                    type:'interne' },
+    { typeId:'ASF', label:'Attestation de service fait',        type:'interne' },
+    { typeId:'OP',  label:'Ordre de paiement',                  type:'interne' },
+    { typeId:'OV',  label:'Ordre de virement immédiat',         type:'interne' },
+  ],
+  mission: [
+    { typeId:'TDR', label:'Termes de référence',                type:'interne' },
+    { typeId:'CTR', label:'Contrat / Marché',                   type:'interne' },
+    { typeId:'PA',  label:'Pièces admin. prestataire',          type:'externe' },
+    { typeId:'OM',  label:'Ordre de mission',                   type:'interne' },
+    { typeId:'ASF', label:'Attestation de service fait',        type:'interne' },
+    { typeId:'RM',  label:'Rapport de mission',                 type:'externe' },
+    { typeId:'FAC', label:'Facture / Note d\'honoraires',       type:'externe' },
+    { typeId:'PVV', label:'PV de validation',                   type:'interne' },
+    { typeId:'OP',  label:'Ordre de paiement',                  type:'interne' },
+    { typeId:'OV',  label:'Ordre de virement immédiat',         type:'interne' },
+  ],
+  formation: [
+    { typeId:'NC',  label:'Note conceptuelle',                  type:'interne' },
+    { typeId:'AGE', label:'Agenda / Programme',                 type:'interne' },
+    { typeId:'CTR', label:'Contrat formateur',                  type:'interne' },
+    { typeId:'PA',  label:'Pièces admin. formateur',            type:'externe' },
+    { typeId:'LP',  label:'Liste des participants',             type:'interne' },
+    { typeId:'ATT', label:'Attestations de participation',      type:'interne' },
+    { typeId:'RF',  label:'Rapport de formation',               type:'externe' },
+    { typeId:'FAC', label:'Factures (logistique, per diem)',    type:'externe' },
+    { typeId:'PVV', label:'PV de validation',                   type:'interne' },
+    { typeId:'OP',  label:'Ordre de paiement',                  type:'interne' },
+    { typeId:'OV',  label:'Ordre de virement immédiat',         type:'interne' },
+  ],
+  atelier: [
+    { typeId:'NC',  label:'Note conceptuelle',              type:'interne' },
+    { typeId:'BD',  label:'Budget détaillé',                type:'interne' },
+    { typeId:'INV', label:'Invitations',                    type:'interne' },
+    { typeId:'LP',  label:'Liste de présence',              type:'interne' },
+    { typeId:'RA',  label:'Rapport d\'atelier',             type:'externe' },
+    { typeId:'FAC', label:'Factures',                       type:'externe' },
+    { typeId:'PVV', label:'PV de validation',               type:'interne' },
+    { typeId:'OP',  label:'Ordre de paiement',              type:'interne' },
+    { typeId:'OV',  label:'Ordre de virement immédiat',     type:'interne' },
+  ],
+};
+
+/* ── Génération des pièces selon le type ── */
+function piecesVierges(type) {
+  const config = PIECES_CONFIG[type] || PIECES_CONFIG['achat'];
+  return config.map(p => ({ ...p, statut: 'en_attente', date: null, data: {} }));
+}
+
+/* ── Callback changement de type ── */
+function onTypeChange() {
+  const val = document.getElementById('fTypeDossier').value;
+  const help = document.getElementById('fTypeDossierHelp');
+  help.textContent = val ? TYPE_DOSSIER_INFO[val] : '';
+}
+
+
+/* Données de démo — version 4 (ajout OV — Ordre de virement immédiat) */
+const DEMO_VERSION = 4;
+const DEMO_DATA = {
+  _ok: true,
+  _version: 4,
+  nid: 4,
+  data: [
+    /* ── DOS-001 : Achat fournitures — réceptionné ── */
+    {
+      id: 'DOS-001', reference: 'DOS-2026-001',
+      objet: 'Achat de fournitures de bureau — Trimestre 1',
+      typeDossier: 'achat',
+      statut: 'receptionne',
+      activite: 'ACT-2026-003',
+      ligneBudgetaire: '604.01 — Fournitures de bureau',
+      source: 'S1', montantEstime: 850000,
+      beneficiaire: 'Papeterie Centrale Cotonou',
+      dateCreation: '2026-01-15', createdBy: 'Admin',
+      pieces: [
+        { typeId:'EB',  label:'Expression de besoin',          type:'interne', statut:'valide',  date:'2026-01-15', data:{} },
+        { typeId:'DC',  label:'Demande de cotation',           type:'interne', statut:'valide',  date:'2026-01-17', data:{} },
+        { typeId:'FP',  label:'Facture proforma',              type:'externe', statut:'ajoute',  date:'2026-01-19', data:{ ref:'PRO-2026-001', emetteur:'Papeterie Centrale Cotonou', fp_ht:750000, fp_tva:18, fp_ttc:885000, fp_validite:'2026-02-19', montant:885000 } },
+        { typeId:'TC',  label:'Tableau comparatif des offres', type:'interne', statut:'valide',  date:'2026-01-22', data:{} },
+        { typeId:'BC',  label:'Bon de commande',               type:'interne', statut:'valide',  date:'2026-01-25', data:{} },
+        { typeId:'PA',  label:'Pièces admin. fournisseur',     type:'externe', statut:'ajoute',  date:'2026-01-26', data:{ ref:'RCM · Patente · Fisc.DGI', emetteur:'Papeterie Centrale Cotonou', pa_rcm:true, pa_patente:true, pa_fiscale:true, pa_cnps:false, pa_ci:false, pa_expiration:'2027-06-30' } },
+        { typeId:'FAC', label:'Facture définitive',            type:'externe', statut:'ajoute',  date:'2026-02-12', data:{ ref:'FACT-2026-042', emetteur:'Papeterie Centrale Cotonou', montant:850000 } },
+        { typeId:'PVR', label:'PV de réception',               type:'interne', statut:'valide',  date:'2026-02-10', data:{} },
+        { typeId:'ASF', label:'Attestation de service fait',   type:'interne', statut:'valide',  date:'2026-02-10', data:{} },
+        { typeId:'OP',  label:'Ordre de paiement',             type:'interne', statut:'en_attente', date:null,      data:{} },
+        { typeId:'OV',  label:'Ordre de virement immédiat',   type:'interne', statut:'en_attente', date:null,      data:{} },
+      ],
+      historique: [
+        { date:'2026-01-15', action:'Création du dossier',              user:'Admin'      },
+        { date:'2026-01-17', action:'Soumission pour validation',       user:'Admin'      },
+        { date:'2026-01-20', action:'Validation administrative',        user:'DAF'        },
+        { date:'2026-02-10', action:'Réception des biens confirmée',   user:'Magasinier' },
+      ],
+      note: 'Dossier prioritaire — besoins Q1 2026'
+    },
+
+    /* ── DOS-002 : Mission de supervision — payé ── */
+    {
+      id: 'DOS-002', reference: 'DOS-2026-002',
+      objet: 'Mission de supervision dans les zones sanitaires — Mono/Couffo',
+      typeDossier: 'mission',
+      statut: 'paye',
+      activite: 'ACT-2026-007',
+      ligneBudgetaire: '625.01 — Frais de mission intérieure',
+      source: 'S3', montantEstime: 3200000,
+      beneficiaire: 'Divers agents PSLSH',
+      dateCreation: '2026-02-03', createdBy: 'Admin',
+      pieces: [
+        { typeId:'TDR', label:'Termes de référence',           type:'interne', statut:'valide', date:'2026-02-03', data:{} },
+        { typeId:'CTR', label:'Contrat / Marché',              type:'interne', statut:'valide', date:'2026-02-05', data:{} },
+        { typeId:'PA',  label:'Pièces admin. prestataire',     type:'externe', statut:'ajoute', date:'2026-02-06', data:{ ref:'RCM · Patente', emetteur:'Consultants Associés Tchad', pa_rcm:true, pa_patente:true, pa_fiscale:false, pa_cnps:false, pa_ci:true, pa_expiration:'2027-03-31' } },
+        { typeId:'OM',  label:'Ordre de mission',              type:'interne', statut:'valide', date:'2026-02-07', data:{} },
+        { typeId:'ASF', label:'Attestation de service fait',   type:'interne', statut:'valide', date:'2026-02-20', data:{} },
+        { typeId:'RM',  label:'Rapport de mission',            type:'externe', statut:'ajoute', date:'2026-02-21', data:{ ref:'RM-2026-007', emetteur:'Équipe terrain PSLSH', montant:0 } },
+        { typeId:'FAC', label:'Facture / Note d\'honoraires',  type:'externe', statut:'ajoute', date:'2026-02-21', data:{ ref:'FAC-2026-021', emetteur:'Consultants Associés Tchad', montant:3200000 } },
+        { typeId:'PVV', label:'PV de validation',              type:'interne', statut:'valide', date:'2026-02-22', data:{} },
+        { typeId:'OP',  label:'Ordre de paiement',             type:'interne', statut:'valide',     date:'2026-02-22', data:{} },
+        { typeId:'OV',  label:'Ordre de virement immédiat',   type:'interne', statut:'valide',     date:'2026-02-22', data:{} },
+      ],
+      historique: [
+        { date:'2026-02-03', action:'Création du dossier',               user:'Admin'      },
+        { date:'2026-02-05', action:'Validation et ordonnancement',      user:'DAF'        },
+        { date:'2026-02-22', action:'Paiement effectué — virement',      user:'Comptable'  },
+      ],
+      note: 'Mission terrain supervision IST — financement Fonds Mondial'
+    },
+
+    /* ── DOS-003 : Acquisition réactifs — en cotation ── */
+    {
+      id: 'DOS-003', reference: 'DOS-2026-003',
+      objet: 'Acquisition de réactifs pour tests de dépistage VIH',
+      typeDossier: 'achat',
+      statut: 'en_cotation',
+      activite: 'ACT-2026-011',
+      ligneBudgetaire: '606.03 — Réactifs et consommables médicaux',
+      source: 'S3', montantEstime: 12500000,
+      beneficiaire: '',
+      dateCreation: '2026-03-10', createdBy: 'Admin',
+      pieces: [
+        { typeId:'EB',  label:'Expression de besoin',          type:'interne', statut:'valide',     date:'2026-03-10', data:{} },
+        { typeId:'DC',  label:'Demande de cotation',           type:'interne', statut:'valide',     date:'2026-03-14', data:{} },
+        { typeId:'FP',  label:'Facture proforma',              type:'externe', statut:'en_attente', date:null,         data:{} },
+        { typeId:'TC',  label:'Tableau comparatif des offres', type:'interne', statut:'en_attente', date:null,         data:{} },
+        { typeId:'BC',  label:'Bon de commande',               type:'interne', statut:'en_attente', date:null,         data:{} },
+        { typeId:'PA',  label:'Pièces admin. fournisseur',     type:'externe', statut:'en_attente', date:null,         data:{} },
+        { typeId:'FAC', label:'Facture définitive',            type:'externe', statut:'en_attente', date:null,         data:{} },
+        { typeId:'PVR', label:'PV de réception',               type:'interne', statut:'en_attente', date:null,         data:{} },
+        { typeId:'ASF', label:'Attestation de service fait',   type:'interne', statut:'en_attente', date:null,         data:{} },
+        { typeId:'OP',  label:'Ordre de paiement',             type:'interne', statut:'en_attente', date:null,         data:{} },
+        { typeId:'OV',  label:'Ordre de virement immédiat',   type:'interne', statut:'en_attente', date:null,         data:{} },
+      ],
+      historique: [
+        { date:'2026-03-10', action:'Création du dossier',               user:'Admin' },
+        { date:'2026-03-12', action:'Validation et envoi en cotation',   user:'DAF'   },
+      ],
+      note: 'Urgence médicale — délai cotation 7 jours'
+    }
+  ]
+};
+
+/* ══════════════════════════════════════════════════════
+   GESTION DU STORE LOCALSTORAGE
+══════════════════════════════════════════════════════ */
+function chargerStore() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      /* Réinitialiser si la version de démo a changé */
+      if (parsed && parsed._ok && Array.isArray(parsed.data)) {
+        if ((parsed._version || 0) >= DEMO_VERSION) return parsed;
+      }
+    }
+  } catch(e) { /* ignore */ }
+  /* Première ouverture ou version obsolète : réinitialiser */
+  localStorage.setItem(LS_KEY, JSON.stringify(DEMO_DATA));
+  return DEMO_DATA;
+}
+
+function sauvegarderStore(store) {
+  localStorage.setItem(LS_KEY, JSON.stringify(store));
+}
+
+/* ══════════════════════════════════════════════════════
+   COMPTAGE DES PIÈCES
+══════════════════════════════════════════════════════ */
+function countPieces(d) {
+  if (!Array.isArray(d.pieces)) return { done: 0, total: 0 };
+  const done  = d.pieces.filter(p => p.statut === 'valide' || p.statut === 'ajoute').length;
+  const total = d.pieces.length;
+  return { done, total };
+}
+
+/* ══════════════════════════════════════════════════════
+   BADGE STATUT
+══════════════════════════════════════════════════════ */
+const STATUT_META = {
+  brouillon:   { cls: 'st-brouillon',   label: 'Brouillon',    icon: 'fa-file' },
+  soumis:      { cls: 'st-soumis',      label: 'Soumis',       icon: 'fa-paper-plane' },
+  valide:      { cls: 'st-valide',      label: 'Validé',       icon: 'fa-check-circle' },
+  en_cotation: { cls: 'st-en_cotation', label: 'En cotation',  icon: 'fa-tags' },
+  commande:    { cls: 'st-commande',    label: 'Commandé',     icon: 'fa-shopping-cart' },
+  receptionne: { cls: 'st-receptionne', label: 'Réceptionné',  icon: 'fa-box-open' },
+  paye:        { cls: 'st-paye',        label: 'Payé',         icon: 'fa-check-double' },
+  archive:     { cls: 'st-archive',     label: 'Archivé',      icon: 'fa-archive' },
+};
+
+function badgeStatut(statut) {
+  const m = STATUT_META[statut] || { cls: 'st-brouillon', label: statut, icon: 'fa-circle' };
+  return `<span class="st-badge ${m.cls}"><i class="fas ${m.icon} me-1"></i>${m.label}</span>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   BARRE PIÈCES
+══════════════════════════════════════════════════════ */
+function barPieces(done, total) {
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  let cls = 'pf-low';
+  if (pct >= 80) cls = 'pf-hi';
+  else if (pct >= 40) cls = 'pf-mid';
+  return `
+    <div class="pieces-bar">
+      <span style="font-weight:700;color:#1b3a6b;min-width:36px;">${done}/${total}</span>
+      <div class="pieces-track">
+        <div class="pieces-fill ${cls}" style="width:${pct}%;"></div>
+      </div>
+      <span style="color:#94a3b8;font-size:.67rem;">${pct}%</span>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   KPI
+══════════════════════════════════════════════════════ */
+function majKPI(dossiers) {
+  const total    = dossiers.length;
+  const clos     = dossiers.filter(d => d.statut === 'paye' || d.statut === 'archive').length;
+  const enCours  = total - clos;
+
+  document.getElementById('kpiTotal').textContent  = total;
+  document.getElementById('kpiEnCours').textContent = enCours;
+  document.getElementById('kpiClos').textContent    = clos;
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDU DU TABLEAU
+══════════════════════════════════════════════════════ */
+function formatDate(s) {
+  if (!s) return '<span class="text-muted">—</span>';
+  try {
+    const [y, m, d] = s.split('-');
+    return `${d}/${m}/${y}`;
+  } catch(e) { return s; }
+}
+
+function renderTable(dossiers) {
+  const tbody = document.getElementById('dosTableBody');
+
+  if (!dossiers || dossiers.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6">
+          <div class="dos-empty">
+            <i class="fas fa-folder-open"></i>
+            <p>Aucun dossier trouvé.<br>
+               Créez un premier dossier en cliquant sur <strong>Nouveau dossier</strong>.</p>
+          </div>
+        </td>
+      </tr>`;
+    document.getElementById('tableCount').textContent = '0 dossier';
+    return;
+  }
+
+  const rows = dossiers.map(d => {
+    const { done, total } = countPieces(d);
+    return `
+      <tr>
+        <td>
+          <span class="ref-code">${escHtml(d.reference)}</span>
+        </td>
+        <td>
+          <div style="font-weight:600;color:#1e293b;font-size:.8rem;">${escHtml(d.objet)}</div>
+          ${d.beneficiaire
+            ? `<div style="font-size:.67rem;color:#64748b;margin-top:2px;">
+                 <i class="fas fa-user-tie me-1"></i>${escHtml(d.beneficiaire)}
+               </div>`
+            : ''}
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;">
+            ${d.typeDossier
+              ? `<span style="font-size:.6rem;background:#f0fdf4;color:#15803d;padding:1px 6px;border-radius:4px;font-weight:700;">${escHtml(TYPE_DOSSIER_LABELS[d.typeDossier]||d.typeDossier)}</span>`
+              : ''}
+            ${d.source
+              ? `<span style="font-size:.6rem;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;">${escHtml(d.source)}</span>`
+              : ''}
+          </div>
+        </td>
+        <td>${badgeStatut(d.statut)}</td>
+        <td>
+          <span style="font-size:.77rem;color:#475569;">
+            <i class="fas fa-calendar-alt me-1 text-muted"></i>${formatDate(d.dateCreation)}
+          </span>
+        </td>
+        <td class="text-center">${barPieces(done, total)}</td>
+        <td class="text-center">
+          <button class="btn-ouvrir" onclick="ouvrirDossier('${escHtml(d.id)}')">
+            <i class="fas fa-folder-open me-1"></i>Ouvrir
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+
+  tbody.innerHTML = rows;
+  const n = dossiers.length;
+  document.getElementById('tableCount').textContent =
+    n === 1 ? '1 dossier affiché' : `${n} dossiers affichés`;
+}
+
+/* ══════════════════════════════════════════════════════
+   FILTRAGE / RECHERCHE
+══════════════════════════════════════════════════════ */
+function filtrerTable() {
+  const store    = chargerStore();
+  const statut   = document.getElementById('filtreStatut').value.trim();
+  const query    = document.getElementById('searchInput').value.trim().toLowerCase();
+
+  let liste = store.data || [];
+
+  if (statut) {
+    liste = liste.filter(d => d.statut === statut);
+  }
+
+  if (query) {
+    liste = liste.filter(d =>
+      (d.reference  || '').toLowerCase().includes(query) ||
+      (d.objet      || '').toLowerCase().includes(query) ||
+      (d.beneficiaire || '').toLowerCase().includes(query) ||
+      (d.activite   || '').toLowerCase().includes(query)
+    );
+  }
+
+  renderTable(liste);
+}
+
+/* ══════════════════════════════════════════════════════
+   CRÉATION D'UN DOSSIER
+══════════════════════════════════════════════════════ */
+function creerDossier() {
+  const typeDossier = document.getElementById('fTypeDossier').value;
+  if (!typeDossier) {
+    document.getElementById('fTypeDossier').classList.add('is-invalid');
+    document.getElementById('fTypeDossier').focus();
+    showToast('Veuillez sélectionner le type de dossier.');
+    return;
+  }
+  document.getElementById('fTypeDossier').classList.remove('is-invalid');
+
+  const objet = document.getElementById('fObjet').value.trim();
+  if (!objet) {
+    document.getElementById('fObjet').classList.add('is-invalid');
+    document.getElementById('fObjet').focus();
+    showToast('L\'objet du dossier est obligatoire.');
+    return;
+  }
+  document.getElementById('fObjet').classList.remove('is-invalid');
+
+  const store = chargerStore();
+  const nid   = (store.nid || store.data.length) + 1;
+  const id    = `DOS-${String(nid).padStart(3, '0')}`;
+  const ref   = `DOS-2026-${String(nid).padStart(3, '0')}`;
+  const today = new Date().toISOString().slice(0, 10);
+
+  const currentUser = (() => {
+    try {
+      const u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+      return u.name || u.prenom || 'Admin';
+    } catch(e) { return 'Admin'; }
+  })();
+
+  const nouveau = {
+    id,
+    reference: ref,
+    objet,
+    typeDossier,
+    statut: 'brouillon',
+    activite:        document.getElementById('fActivite').value.trim(),
+    ligneBudgetaire: document.getElementById('fLigneBudgetaire').value.trim(),
+    source:          document.getElementById('fSource').value,
+    montantEstime:   parseFloat(document.getElementById('fMontantEstime').value) || 0,
+    beneficiaire:    document.getElementById('fBeneficiaire').value.trim(),
+    dateCreation:    today,
+    createdBy:       currentUser,
+    pieces:          piecesVierges(typeDossier),
+    historique: [
+      { date: today, action: 'Création du dossier', user: currentUser }
+    ],
+    note: document.getElementById('fNote').value.trim()
+  };
+
+  store.data.unshift(nouveau);
+  store.nid = nid;
+  sauvegarderStore(store);
+
+  /* Fermer le modal */
+  const modalEl = document.getElementById('modalNew');
+  const modalInst = bootstrap.Modal.getInstance(modalEl);
+  if (modalInst) modalInst.hide();
+
+  /* Reset du formulaire */
+  document.getElementById('formNewDossier').reset();
+
+  /* Rafraîchir l'interface */
+  majKPI(store.data);
+  filtrerTable();
+  showToast(`Dossier ${ref} créé avec succès.`);
+}
+
+/* ══════════════════════════════════════════════════════
+   OUVERTURE D'UN DOSSIER
+══════════════════════════════════════════════════════ */
+function ouvrirDossier(id) {
+  location.href = 'detail.html?id=' + encodeURIComponent(id);
+}
+
+/* ══════════════════════════════════════════════════════
+   EXPORT CSV (simplifié)
+══════════════════════════════════════════════════════ */
+function exportCSV() {
+  const store = chargerStore();
+  const lignes = [
+    ['Référence', 'Objet', 'Statut', 'Date création', 'Source', 'Montant estimé', 'Bénéficiaire']
+  ];
+  (store.data || []).forEach(d => {
+    lignes.push([
+      d.reference,
+      d.objet,
+      d.statut,
+      d.dateCreation,
+      d.source,
+      d.montantEstime,
+      d.beneficiaire
+    ]);
+  });
+  const csv = lignes.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), {
+    href: url, download: 'dossiers-pslsh-2026.csv'
+  });
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Export CSV généré.');
+}
+
+/* ══════════════════════════════════════════════════════
+   UTILITAIRES
+══════════════════════════════════════════════════════ */
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+let _toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('dosToast');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.style.opacity = '0'; }, 3500);
+}
+
+/* ══════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+
+  /* Auth + sidebar */
+  if (typeof requireAuth === 'function')       requireAuth();
+  if (typeof renderSidebarNav === 'function')  renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+
+  /* Nom utilisateur topbar */
+  try {
+    const u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+    const el = document.getElementById('userName');
+    if (el && u.name) el.textContent = u.name;
+  } catch(e) { /* ignore */ }
+
+  /* Chargement et affichage */
+  const store = chargerStore();
+  majKPI(store.data || []);
+  renderTable(store.data || []);
+
+  /* Réinitialisation validation formulaire à chaque ouverture du modal */
+  document.getElementById('modalNew').addEventListener('show.bs.modal', () => {
+    document.getElementById('formNewDossier').reset();
+    document.getElementById('fObjet').classList.remove('is-invalid');
+    document.getElementById('fTypeDossier').classList.remove('is-invalid');
+    document.getElementById('fTypeDossierHelp').textContent = '';
+  });
+
+  /* Raccourci Entrée sur le champ Objet pour créer */
+  document.getElementById('fObjet').addEventListener('keydown', e => {
+    if (e.key === 'Enter') creerDossier();
+  });
+});
+
+/* Logout exposé globalement */
+function logout() {
+  localStorage.removeItem('pslsh_user');
+  location.href = '../auth/login.html';
+}
+</script>
+
+</body>
+</html>

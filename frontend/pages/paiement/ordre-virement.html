@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Ordre de virement</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+  <style>
+    /* ══════════ ÉCRAN ══════════ */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #d5dbe4; font-family: 'Times New Roman', Times, serif; font-size: 11pt; }
+
+    .toolbar {
+      background: #1b3a6b; color: #fff;
+      padding: 7px 18px; display: flex; align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 200;
+      font-family: Arial, sans-serif;
+    }
+    .toolbar-title { font-size: .8rem; font-weight: 700; }
+    .toolbar .btn  { font-size: .75rem; }
+
+    .doc-frame {
+      max-width: 794px; /* A4 width at 96dpi */
+      margin: 20px auto 50px;
+      background: #fff;
+      box-shadow: 0 6px 28px rgba(0,0,0,.25);
+      position: relative;
+    }
+
+    /* ══════════ FILIGRANE TEXTE ══════════ */
+    .doc-frame::before {
+      content: 'PSLSH/IST';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-40deg);
+      font-size: 6rem; font-weight: 900;
+      color: rgba(27, 58, 107, 0.055);
+      white-space: nowrap; pointer-events: none;
+      font-family: Arial, sans-serif; letter-spacing: .15em;
+      z-index: 0;
+    }
+
+    /* ══════════ FILIGRANE GUILLOCHE ══════════ */
+    .guilloche-bg {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none; z-index: 0; overflow: hidden;
+      opacity: 0.045;
+    }
+    .guilloche-band {
+      width: 100%; line-height: 0;
+      pointer-events: none; display: block;
+      overflow: hidden;
+    }
+    .guilloche-band svg { display: block; width: 100%; }
+    .gb-top { margin-bottom: 8px; }
+    .gb-bottom { margin-top: 10px; margin-bottom: 6px; }
+
+    /* ══════════ CORPS DU DOCUMENT ══════════ */
+    .ov {
+      position: relative; z-index: 1;
+      padding: 14px 26px 16px;
+    }
+
+    /* ── Bandeau pays ── */
+    .country-bar {
+      text-align: center; font-family: Arial, sans-serif;
+      font-size: 7pt; font-weight: 700; color: #1b3a6b;
+      text-transform: uppercase; letter-spacing: .08em;
+      border-bottom: 1px solid #1b3a6b; padding-bottom: 4px; margin-bottom: 8px;
+    }
+
+    /* ── En-tête ── */
+    .ov-header {
+      display: grid; grid-template-columns: 72px 1fr 130px;
+      gap: 10px; align-items: center;
+      border-bottom: 2.5px double #1b3a6b;
+      padding-bottom: 8px; margin-bottom: 8px;
+    }
+    .ov-logo { width: 68px; height: 68px; object-fit: contain; }
+    .ov-header-left { text-align: center; }
+    .ov-ministry { font-family: Arial, sans-serif; font-size: 7pt; color: #475569; text-transform: uppercase; letter-spacing: .05em; }
+    .ov-program  { font-family: Arial, sans-serif; font-size: 7pt; font-weight: 700; color: #334155; margin: 2px 0; text-transform: uppercase; letter-spacing: .03em; }
+    .ov-title    {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 20pt; font-weight: 900; color: #1b3a6b;
+      text-transform: uppercase; letter-spacing: .1em;
+      text-decoration: none;
+      line-height: 1.15; margin: 6px 0 3px;
+    }
+    .ov-bank { font-family: Arial, sans-serif; font-size: 7pt; color: #64748b; }
+
+    /* Panneau REF */
+    .ref-panel {
+      border: 1.5px solid #1b3a6b; border-radius: 3px;
+      padding: 5px 8px; font-family: Arial, sans-serif;
+      background: #f0f4fa;
+    }
+    .ref-panel .rl { font-size: 6.5pt; color: #64748b; text-transform: uppercase; letter-spacing: .07em; margin-top: 4px; }
+    .ref-panel .rl:first-child { margin-top: 0; }
+    .ref-panel .rv {
+      font-size: 8pt; font-weight: 800; color: #1b3a6b;
+      border: none; border-bottom: 1.5px solid #1b3a6b; display: block;
+      width: 100%; min-height: 16px; padding: 0 2px;
+      background: transparent; outline: none;
+      font-family: Arial, sans-serif;
+    }
+    .ref-panel input.rv::placeholder { color: #94a3b8; font-weight: 400; font-size: 7pt; }
+
+    /* ── Section titre ── */
+    .sect {
+      background: #1b3a6b; color: #fff;
+      font-family: Arial, sans-serif; font-size: 7pt; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .09em;
+      padding: 3px 8px; margin: 8px 0 5px;
+    }
+
+    /* ── Lignes de champs ── */
+    .fl { display: flex; align-items: flex-end; gap: 4px; margin-bottom: 5px; }
+    .fl-lbl {
+      white-space: nowrap; font-family: Arial, sans-serif;
+      font-size: 8pt; font-weight: 600; color: #334155;
+      flex-shrink: 0;
+    }
+    .fl-val {
+      flex: 1; border: none; border-bottom: 1px solid #64748b;
+      font-family: 'Times New Roman', Times, serif; font-size: 9pt;
+      color: #0f172a; background: transparent; outline: none;
+      padding: 0 3px; min-width: 40px;
+    }
+    .fl-val:focus { border-bottom-color: #1b3a6b; }
+
+    /* Ligne double (deux champs côte à côte) */
+    .fl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 5px; }
+
+    /* ── Bloc montant ── */
+    .amount-box {
+      border: 2px solid #1b3a6b; border-radius: 3px;
+      padding: 7px 10px; margin: 6px 0; background: #f8fafc;
+    }
+    .amount-box .fl-val { font-size: 10pt; font-weight: 700; color: #1b3a6b; border-bottom-color: #1b3a6b; }
+    .fcfa { font-family: Arial, sans-serif; font-size: 8pt; font-weight: 700; color: #334155; white-space: nowrap; padding-bottom: 1px; }
+
+    /* ── N° de compte segmenté ── */
+    .compte-row { display: flex; align-items: flex-end; gap: 0; margin: 5px 0; }
+    .compte-row .fl-lbl { padding-right: 6px; }
+    .cseg {
+      border: 1.5px solid #334155; height: 22px; text-align: center;
+      font-family: 'Courier New', monospace; font-size: 8pt; color: #0f172a;
+      outline: none; background: transparent;
+    }
+    .csep { font-size: 9pt; color: #334155; padding: 0 2px; line-height: 22px; }
+    .compte-hint { font-size: 6pt; color: #94a3b8; font-family: Arial, sans-serif; padding-bottom: 3px; padding-left: 4px; }
+
+    /* ── Lieu/Date ── */
+    .date-line {
+      text-align: right; font-size: 8pt; font-family: Arial, sans-serif;
+      color: #334155; margin-top: 8px;
+      display: flex; justify-content: flex-end; align-items: flex-end; gap: 4px;
+    }
+    .date-line input {
+      border: none; border-bottom: 1px solid #334155;
+      font-family: inherit; font-size: 8pt; color: #0f172a;
+      background: transparent; outline: none;
+      width: 110px; text-align: center; padding: 0 2px;
+    }
+
+    /* ── Signatures ── */
+    .sig-wrap { margin-top: 14px; border-top: 2px solid #1b3a6b; padding-top: 10px; }
+    .sig-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+    .sig-cell { text-align: center; padding: 0 8px; border-right: 1px dashed #cbd5e1; }
+    .sig-cell:last-child { border-right: none; }
+    .sig-role {
+      font-family: Arial, sans-serif; font-size: 7pt; font-weight: 800;
+      color: #1b3a6b; text-transform: uppercase; letter-spacing: .04em;
+      line-height: 1.3; margin-bottom: 2px;
+    }
+    .sig-name { font-size: 7pt; color: #475569; font-style: italic; border-bottom: 1px dotted #94a3b8; min-height: 14px; }
+    .sig-space { height: 44px; }
+    .sig-line { border-bottom: 1px solid #334155; margin: 0 6px 2px; }
+    .sig-label { font-size: 6.5pt; color: #94a3b8; font-family: Arial, sans-serif; }
+
+    /* ── Pied ── */
+    .doc-footer {
+      display: grid; grid-template-columns: 64px 1fr 64px;
+      align-items: center; gap: 8px;
+      margin-top: 10px; padding-top: 8px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .stamp-circle {
+      width: 62px; height: 62px; border: 1.5px dashed #94a3b8; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 6pt; color: #94a3b8; text-align: center; line-height: 1.4;
+      font-family: Arial, sans-serif;
+    }
+    .footer-text {
+      text-align: center; font-family: Arial, sans-serif;
+      font-size: 6.5pt; color: #94a3b8; line-height: 1.6;
+    }
+    .footer-text strong { color: #475569; }
+    .footer-text .warn { color: #dc2626; font-weight: 700; }
+    #qrBox { display: flex; justify-content: flex-end; }
+    #qrBox canvas, #qrBox img { display: block; }
+
+    /* ══════════ IMPRESSION A4 ══════════ */
+    @media print {
+      body { background: #fff !important; font-size: 9pt; }
+      .toolbar { display: none !important; }
+      .doc-frame {
+        max-width: 100% !important; margin: 0 !important;
+        box-shadow: none !important;
+      }
+      .doc-frame::before {
+        color: rgba(27,58,107,0.05) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .guilloche-bg {
+        opacity: 0.06 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .guilloche-bg svg {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .ov { padding: 10px 18px 12px !important; }
+      .sect {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .ref-panel {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .fl-val { border-bottom-color: #000 !important; }
+      .cseg   { border-color: #000 !important; }
+      .amount-box { border-color: #000 !important; background: #fff !important; }
+      input   { color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @page   { size: A4 portrait; margin: 8mm 10mm 8mm; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ BARRE OUTILS ═══ -->
+<div class="toolbar">
+  <div class="d-flex align-items-center gap-3">
+    <a href="index.html" class="btn btn-sm btn-outline-light">
+      <i class="fas fa-arrow-left me-1"></i>Retour
+    </a>
+    <span class="toolbar-title">
+      <i class="fas fa-university me-2"></i>Ordre de Virement Immédiat, PSLSH/IST
+    </span>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-sm btn-outline-light" onclick="effacer()">
+      <i class="fas fa-eraser me-1"></i>Effacer
+    </button>
+    <button class="btn btn-sm btn-warning fw-bold" onclick="window.print()">
+      <i class="fas fa-print me-1"></i>Imprimer / PDF
+    </button>
+  </div>
+</div>
+
+<!-- ═══ DOCUMENT ═══ -->
+<div class="doc-frame">
+
+  <!-- ══ FILIGRANE GUILLOCHE EN FOND ══ -->
+  <div class="guilloche-bg" aria-hidden="true">
+    <!-- Bande guilloche HAUT -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 40" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:40px">
+      <defs>
+        <pattern id="g1" x="0" y="0" width="80" height="40" patternUnits="userSpaceOnUse">
+          <ellipse cx="40" cy="20" rx="36" ry="16" fill="none" stroke="#1b3a6b" stroke-width="0.5"/>
+          <ellipse cx="40" cy="20" rx="28" ry="11" fill="none" stroke="#1b3a6b" stroke-width="0.4"/>
+          <ellipse cx="40" cy="20" rx="20" ry="7" fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <ellipse cx="40" cy="20" rx="12" ry="4" fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <line x1="0" y1="4"  x2="80" y2="4"  stroke="#1b3a6b" stroke-width="0.4"/>
+          <line x1="0" y1="36" x2="80" y2="36" stroke="#1b3a6b" stroke-width="0.4"/>
+          <path d="M0,20 Q10,4 20,20 Q30,36 40,20 Q50,4 60,20 Q70,36 80,20" fill="none" stroke="#1b3a6b" stroke-width="0.35"/>
+          <path d="M0,20 Q10,36 20,20 Q30,4 40,20 Q50,36 60,20 Q70,4 80,20" fill="none" stroke="#1b3a6b" stroke-width="0.35"/>
+        </pattern>
+      </defs>
+      <rect width="800" height="40" fill="url(#g1)"/>
+    </svg>
+
+    <!-- Bande guilloche BAS -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 40" preserveAspectRatio="none" style="position:absolute;bottom:0;left:0;width:100%;height:40px">
+      <defs>
+        <pattern id="g2" x="0" y="0" width="60" height="40" patternUnits="userSpaceOnUse">
+          <circle cx="30" cy="20" r="16" fill="none" stroke="#1b3a6b" stroke-width="0.5"/>
+          <circle cx="30" cy="20" r="11" fill="none" stroke="#1b3a6b" stroke-width="0.4"/>
+          <circle cx="30" cy="20" r="6"  fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <line x1="0" y1="2"  x2="60" y2="2"  stroke="#1b3a6b" stroke-width="0.5"/>
+          <line x1="0" y1="38" x2="60" y2="38" stroke="#1b3a6b" stroke-width="0.5"/>
+          <path d="M0,20 Q15,5 30,20 Q45,35 60,20" fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <path d="M0,20 Q15,35 30,20 Q45,5 60,20" fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+        </pattern>
+      </defs>
+      <rect width="800" height="40" fill="url(#g2)"/>
+    </svg>
+
+    <!-- Motif central répété (très subtil) -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:40px;left:0;width:100%;height:calc(100% - 80px)" preserveAspectRatio="none">
+      <defs>
+        <pattern id="g3" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <circle cx="60" cy="60" r="38" fill="none" stroke="#1b3a6b" stroke-width="0.25"/>
+          <circle cx="60" cy="60" r="26" fill="none" stroke="#1b3a6b" stroke-width="0.2"/>
+          <path d="M10,60 Q35,10 60,60 Q85,110 110,60" fill="none" stroke="#1b3a6b" stroke-width="0.2"/>
+          <path d="M10,60 Q35,110 60,60 Q85,10 110,60" fill="none" stroke="#1b3a6b" stroke-width="0.2"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#g3)"/>
+    </svg>
+
+    <!-- Bordures latérales guilloche -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:18px;height:100%" preserveAspectRatio="none">
+      <defs>
+        <pattern id="gl" x="0" y="0" width="18" height="36" patternUnits="userSpaceOnUse">
+          <ellipse cx="9" cy="18" rx="7" ry="14" fill="none" stroke="#1b3a6b" stroke-width="0.5"/>
+          <ellipse cx="9" cy="18" rx="4" ry="9"  fill="none" stroke="#1b3a6b" stroke-width="0.35"/>
+          <line x1="2" y1="0" x2="2" y2="36" stroke="#1b3a6b" stroke-width="0.4"/>
+          <line x1="16" y1="0" x2="16" y2="36" stroke="#1b3a6b" stroke-width="0.4"/>
+        </pattern>
+      </defs>
+      <rect width="18" height="100%" fill="url(#gl)"/>
+    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;right:0;width:18px;height:100%" preserveAspectRatio="none">
+      <use href="#gl" xlink:href="#gl"/>
+      <defs>
+        <pattern id="gr" x="0" y="0" width="18" height="36" patternUnits="userSpaceOnUse">
+          <ellipse cx="9" cy="18" rx="7" ry="14" fill="none" stroke="#1b3a6b" stroke-width="0.5"/>
+          <ellipse cx="9" cy="18" rx="4" ry="9"  fill="none" stroke="#1b3a6b" stroke-width="0.35"/>
+          <line x1="2" y1="0" x2="2" y2="36" stroke="#1b3a6b" stroke-width="0.4"/>
+          <line x1="16" y1="0" x2="16" y2="36" stroke="#1b3a6b" stroke-width="0.4"/>
+        </pattern>
+      </defs>
+      <rect width="18" height="100%" fill="url(#gr)"/>
+    </svg>
+  </div>
+
+<div class="ov" id="ovDoc">
+
+  <!-- Bandeau pays -->
+  <div class="country-bar">
+    République du Tchad &nbsp;·&nbsp; Unité &nbsp;·&nbsp; Travail &nbsp;·&nbsp; Progrès
+  </div>
+
+  <!-- EN-TÊTE -->
+  <div class="ov-header">
+    <!-- Logo PSLSH -->
+    <div>
+      <img src="../../assets/logo/logo-pslsh.png" alt="PSLSH/IST" class="ov-logo"
+           onerror="this.style.display='none'">
+    </div>
+    <!-- Titre central -->
+    <div class="ov-header-left">
+      <div class="ov-ministry">Ministère de la Santé Publique</div>
+      <div class="ov-program">Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales<br>et les Infections Sexuellement Transmissibles (PSLSH/IST)</div>
+      <div class="ov-title">Ordre de Virement Immédiat</div>
+    </div>
+    <div class="ref-panel">
+      <div class="rl">N° Ordre</div>
+      <input class="rv" id="fNumOV" autocomplete="off" placeholder="___________">
+      <div class="rl">Date</div>
+      <input class="rv" id="fDate" autocomplete="off" placeholder="jj/mm/aaaa">
+      <div class="rl">Exercice</div>
+      <span class="rv" id="dispExercice">&nbsp;</span>
+    </div>
+  </div>
+
+  <!-- ══ I — IDENTIFICATION ══ -->
+  <div class="sect">Identification</div>
+  <div class="fl-row">
+    <div class="fl">
+      <span class="fl-lbl">Réf. dossier :</span>
+      <input class="fl-val" id="fRefDossier" autocomplete="off">
+    </div>
+    <div class="fl">
+      <span class="fl-lbl">N° Bon de commande :</span>
+      <input class="fl-val" id="fNumBC" autocomplete="off">
+    </div>
+  </div>
+  <div class="fl-row">
+    <div class="fl">
+      <span class="fl-lbl">N° Facture (FEN) :</span>
+      <input class="fl-val" id="fNumFAC" autocomplete="off">
+    </div>
+    <div class="fl">
+      <span class="fl-lbl">Date de l'opération :</span>
+      <input class="fl-val" id="fDateOp" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- ══ II — DONNEUR D'ORDRE ══ -->
+  <div class="sect">Donneur d'ordre</div>
+  <div class="fl">
+    <span class="fl-lbl">Nom / Raison sociale :</span>
+    <input class="fl-val" id="fDonneur" autocomplete="off">
+  </div>
+  <div class="fl-row">
+    <div class="fl">
+      <span class="fl-lbl">Banque domiciliataire :</span>
+      <input class="fl-val" id="fAdresseDonneur" autocomplete="off">
+    </div>
+    <div class="fl">
+      <span class="fl-lbl">N° Compte à débiter :</span>
+      <input class="fl-val" id="fCompteDeb" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- ══ III — MONTANT ══ -->
+  <div class="sect">Montant à virer</div>
+  <div style="font-family:'Times New Roman',Times,serif; font-size:9pt; color:#1e293b; margin-bottom:6px; font-style:italic;">
+    Par débit de notre compte ci-dessus dans vos livres, veuillez virer la somme :
+  </div>
+  <div class="amount-box">
+    <div class="fl">
+      <span class="fl-lbl">Montant en chiffres :</span>
+      <input class="fl-val" id="fMontantChiffres" autocomplete="off" oninput="autoLettres()">
+      <span class="fcfa">FCFA</span>
+    </div>
+    <div class="fl" style="margin-bottom:0">
+      <span class="fl-lbl">En lettres :</span>
+      <input class="fl-val" id="fMontantLettres" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- ══ IV — BÉNÉFICIAIRE ══ -->
+  <div class="sect">Bénéficiaire</div>
+  <div class="fl-row">
+    <div class="fl">
+      <span class="fl-lbl">Nom / Raison sociale :</span>
+      <input class="fl-val" id="fBeneficiaire" autocomplete="off">
+    </div>
+    <div class="fl">
+      <span class="fl-lbl">Banque :</span>
+      <input class="fl-val" id="fBanqueBenef" autocomplete="off">
+    </div>
+  </div>
+  <div class="fl">
+    <span class="fl-lbl">Adresse :</span>
+    <input class="fl-val" id="fAdresseBenef" autocomplete="off">
+  </div>
+
+  <!-- N° compte segmenté -->
+  <div class="compte-row">
+    <span class="fl-lbl">N° de compte :</span>
+    <input class="cseg" id="fc1" maxlength="5"  style="width:80px" title="Code banque">
+    <span class="csep">—</span>
+    <input class="cseg" id="fc2" maxlength="5"  style="width:80px" title="Code guichet">
+    <span class="csep">—</span>
+    <input class="cseg" id="fc3" maxlength="11" style="width:180px" title="N° compte">
+    <span class="csep">—</span>
+    <input class="cseg" id="fc4" maxlength="2"  style="width:50px"  title="Clé">
+    <span class="compte-hint">(Banque, Guichet, N° compte, Clé)</span>
+  </div>
+
+  <div class="fl-row" style="margin-top:5px">
+    <div class="fl">
+      <span class="fl-lbl">Code IBAN :</span>
+      <input class="fl-val" id="fIban" autocomplete="off">
+    </div>
+    <div class="fl">
+      <span class="fl-lbl">Code SWIFT / BIC :</span>
+      <input class="fl-val" id="fSwift" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- ══ V — MOTIF ══ -->
+  <div class="sect">Motif et imputation</div>
+  <div class="fl">
+    <span class="fl-lbl">Objet / Motif :</span>
+    <input class="fl-val" id="fMotif" autocomplete="off">
+  </div>
+  <div class="fl-row">
+    <div class="fl">
+      <span class="fl-lbl">Imputation budgétaire :</span>
+      <input class="fl-val" id="fImputation" autocomplete="off">
+    </div>
+    <div class="fl">
+      <span class="fl-lbl">Source de financement :</span>
+      <input class="fl-val" id="fSource" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- Fait à -->
+  <div class="date-line">
+    <span>Fait à N'Djamena, le</span>
+    <input id="fDateLieu" autocomplete="off">
+  </div>
+
+  <!-- ══ SIGNATURES ══ -->
+  <div class="sig-wrap">
+    <div class="sig-grid">
+      <div class="sig-cell">
+        <div class="sig-role">Le Coordinateur<br>du PSLSH/IST</div>
+        <div class="sig-name">&nbsp;</div>
+        <div class="sig-space"></div>
+        <div class="sig-line"></div>
+        <div class="sig-label">Signature &amp; Cachet</div>
+      </div>
+      <div class="sig-cell">
+        <div class="sig-role">Le Secrétaire Général<br>du Ministère de la Santé</div>
+        <div class="sig-name">&nbsp;</div>
+        <div class="sig-space"></div>
+        <div class="sig-line"></div>
+        <div class="sig-label">Signature &amp; Cachet</div>
+      </div>
+      <div class="sig-cell">
+        <div class="sig-role">L'Agent Comptable<br>du PSLSH/IST</div>
+        <div class="sig-name">&nbsp;</div>
+        <div class="sig-space"></div>
+        <div class="sig-line"></div>
+        <div class="sig-label">Signature &amp; Cachet</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PIED ══ -->
+  <div class="doc-footer">
+    <img src="../../assets/logo/cachet-pslsh.png"
+         alt="Cachet officiel PSLSH"
+         style="width:72px;height:72px;object-fit:contain;"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="stamp-circle" style="display:none">Cachet<br>officiel<br>PSLSH</div>
+    <div class="footer-text">
+      <strong>Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les IST (PSLSH/IST)</strong><br>
+      Ministère de la Santé Publique, République du Tchad, N'Djamena<br>
+      <span class="warn">Document officiel. Toute falsification est passible de poursuites judiciaires.</span><br>
+      <span id="footerRef" style="font-size:6pt"></span>
+    </div>
+    <div id="qrBox"></div>
+  </div>
+
+</div><!-- .ov -->
+</div><!-- .doc-frame -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+/* ── Montant en lettres ── */
+function nombreEnLettres(n) {
+  if (!n || isNaN(n)) return '';
+  n = Math.round(n);
+  const u  = ['','un','deux','trois','quatre','cinq','six','sept','huit','neuf',
+               'dix','onze','douze','treize','quatorze','quinze','seize',
+               'dix-sept','dix-huit','dix-neuf'];
+  const dz = ['','','vingt','trente','quarante','cinquante','soixante','soixante',
+               'quatre-vingt','quatre-vingt'];
+  function dix(n){
+    if(n<20)return u[n];
+    const x=Math.floor(n/10),r=n%10;
+    if(x===7)return dz[x]+(r===1?'-et-':'-')+u[10+r];
+    if(x===9)return dz[x]+(r>0?'-'+u[10+r]:'s');
+    return dz[x]+(r===1&&x!==8?'-et-':r>0?'-':(x===8?'s':''))+(r?u[r]:'');
+  }
+  function cent(n){
+    if(n===0)return'';
+    const c=Math.floor(n/100),r=n%100;
+    return(c>1?u[c]+'-cent'+(r?'':'s'):(c===1?'cent':''))+(r?(c>=1?' ':'')+dix(r):'');
+  }
+  if(n===0)return'Zéro';
+  let s='';
+  const G=Math.floor(n/1e9);n%=1e9;
+  const M=Math.floor(n/1e6);n%=1e6;
+  const K=Math.floor(n/1e3);n%=1e3;
+  if(G)s+=(G===1?'un milliard':cent(G)+' milliards')+' ';
+  if(M)s+=(M===1?'un million':cent(M)+' millions')+' ';
+  if(K)s+=(K===1?'mille':cent(K)+' mille')+' ';
+  if(n)s+=cent(n);
+  s=s.trim();
+  return s.charAt(0).toUpperCase()+s.slice(1);
+}
+
+function autoLettres(){
+  const raw=document.getElementById('fMontantChiffres').value.replace(/[^0-9]/g,'');
+  const n=parseInt(raw,10);
+  if(!isNaN(n)&&n>0)
+    document.getElementById('fMontantLettres').value=nombreEnLettres(n)+' francs CFA';
+}
+
+/* ── QR Code ── */
+function genererQR(){
+  const ref = document.getElementById('fNumOV').value;
+  const dos = document.getElementById('fRefDossier').value;
+  const dat = document.getElementById('fDate').value;
+  const el  = document.getElementById('qrBox');
+  el.innerHTML='';
+  const txt=['PSLSH-OV',ref,dos,dat].filter(Boolean).join(' | ');
+  try{
+    new QRCode(el,{text:txt||'PSLSH-OV',width:62,height:62,
+      colorDark:'#1b3a6b',colorLight:'#ffffff',
+      correctLevel:QRCode.CorrectLevel.M});
+  }catch(e){}
+}
+
+/* ── Charger depuis localStorage ── */
+function chargerDepuisLS(dossierId){
+  try{
+    const raw=localStorage.getItem('pslsh_dossiers_v1');
+    if(!raw)return;
+    const store=JSON.parse(raw);
+    const list=Array.isArray(store)?store:(store.data||[]);
+    const dos=list.find(d=>d.id===dossierId||d.reference===dossierId);
+    if(!dos)return;
+
+    /* Champs du dossier */
+    if(dos.reference||dos.id) document.getElementById('fRefDossier').value=dos.reference||dos.id;
+    if(dos.objet)              document.getElementById('fMotif').value='Paiement : '+dos.objet;
+    if(dos.ligneBudgetaire)    document.getElementById('fImputation').value=dos.ligneBudgetaire;
+    if(dos.source)             document.getElementById('fSource').value=dos.source;
+    if(dos.beneficiaire)       document.getElementById('fBeneficiaire').value=dos.beneficiaire;
+
+    /* Données OV déjà saisies */
+    const pOV=(dos.pieces||[]).find(p=>p.typeId==='OV');
+    if(pOV&&pOV.data){
+      const d=pOV.data;
+      const s=(id,v)=>{if(v&&document.getElementById(id))document.getElementById(id).value=v;};
+      s('fNumOV',d.numOV);  s('fNumOP',d.numOP);
+      s('fMontantChiffres',d.montantOV);
+      if(d.montantLettresOV) s('fMontantLettres',d.montantLettresOV); else autoLettres();
+      s('fBeneficiaire',d.benefOV);  s('fAdresseBenef',d.adresseOV);
+      s('fBanqueBenef',d.banqueOV);  s('fIban',d.ibanOV);
+      s('fSwift',d.swiftOV);         s('fCompteDeb',d.compteDebitOV);
+      s('fMotif',d.motifOV);
+      if(d.numCpteOV){
+        const p=d.numCpteOV.split(/[-\s]+/);
+        ['fc1','fc2','fc3','fc4'].forEach((id,i)=>{if(p[i])document.getElementById(id).value=p[i];});
+      }
+      if(d.numOV){
+        document.getElementById('fNumOV').value=d.numOV;
+        document.getElementById('footerRef').textContent='Réf. : '+d.numOV;
+      }
+    }
+  }catch(e){console.warn(e);}
+}
+
+function effacer(){
+  if(!confirm('Effacer tous les champs ?'))return;
+  document.querySelectorAll('#ovDoc input').forEach(el=>el.value='');
+  document.getElementById('dispExercice').textContent=new Date().getFullYear();
+  document.getElementById('footerRef').textContent='';
+  document.getElementById('qrBox').innerHTML='';
+}
+
+/* ── QR : regénérer quand N° OV ou Date change ── */
+document.getElementById('fNumOV').addEventListener('input',function(){
+  document.getElementById('footerRef').textContent=this.value?'Réf. : '+this.value:'';
+  genererQR();
+});
+document.getElementById('fDate').addEventListener('input', genererQR);
+
+/* ── INIT ── */
+(function(){
+  document.getElementById('dispExercice').textContent=new Date().getFullYear();
+  genererQR();
+})();
+</script>
+<script src="../../src/js/roles.js"></script>
+</body>
+</html>

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Gestion des Carburants</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    /* ── Excel full-height layout ── */
+    html, body { height:100%; overflow:hidden; }
+    .app-layout, .main-content { height:100vh; overflow:hidden; }
+    .page-content { flex:1; overflow:hidden; display:flex; flex-direction:column; padding:0; gap:0; }
+
+    /* ── Fixed top ── */
+    .cb-top { flex-shrink:0; padding:10px 24px 0; background:#fff; border-bottom:1px solid #e2e8f0; }
+    .cb-title-strip { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .cb-title-strip h5 { margin:0; font-size:.95rem; font-weight:800; color:#1b2f52; }
+    .cb-title-strip small { font-size:.7rem; color:#64748b; }
+
+    /* ── KPI bar ── */
+    .cb-kpi-bar { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:10px; }
+    .cb-kpi { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:11px 14px; position:relative; overflow:hidden; }
+    .cb-kpi::before { content:''; position:absolute; top:0;left:0;right:0;height:3px; }
+    .ck-blue::before   { background:#1b3a6b; }
+    .ck-green::before  { background:#15803d; }
+    .ck-orange::before { background:#b45309; }
+    .ck-red::before    { background:#b91c1c; }
+    .ck-purple::before { background:#6d28d9; }
+    .cb-kpi .ck-lbl { font-size:.67rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
+    .cb-kpi .ck-val { font-size:1.05rem; font-weight:800; color:#1b2f52; font-family:monospace; }
+    .cb-kpi .ck-sub { font-size:.67rem; color:#94a3b8; margin-top:1px; }
+
+    /* ── Tab bar ── */
+    .cb-tabs { flex-shrink:0; display:flex; align-items:flex-end; gap:2px; padding:0 24px;
+      border-bottom:2px solid #d1d5db; background:#f8fafc; }
+    .cb-tab { padding:8px 20px; font-size:.78rem; font-weight:600; color:#64748b;
+      border:1px solid transparent; border-bottom:none; border-radius:6px 6px 0 0;
+      background:transparent; cursor:pointer; position:relative; bottom:-2px; transition:all .15s; }
+    .cb-tab.active { color:#1b3a6b; background:#fff; border-color:#d1d5db; border-bottom-color:#fff; font-weight:700; }
+
+    /* ── Scrollable body ── */
+    .cb-body { flex:1; overflow-y:auto; padding:16px 24px 24px; background:#eef2f7; }
+    .cb-panel { display:none; }
+    .cb-panel.active { display:block; }
+
+    /* ── Cards section ── */
+    .cb-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; margin-bottom:16px; }
+    .cb-card-head { display:flex; align-items:center; gap:10px; padding:10px 18px; background:#1b2f52; }
+    .cb-card-head-icon { width:30px; height:30px; border-radius:7px; background:rgba(255,255,255,.15);
+      display:flex; align-items:center; justify-content:center; color:#fff; font-size:.85rem; flex-shrink:0; }
+    .cb-card-title { font-size:.82rem; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:.04em; flex:1; }
+    .btn-cb-add { font-size:.72rem; font-weight:700; background:rgba(255,255,255,.15); color:#fff;
+      border:1px solid rgba(255,255,255,.35); border-radius:7px; padding:4px 14px; cursor:pointer;
+      display:flex; align-items:center; gap:5px; transition:all .15s; }
+    .btn-cb-add:hover { background:rgba(255,255,255,.25); }
+
+    /* ── Table ── */
+    .cb-table-wrap { overflow-x:auto; }
+    .cb-table { width:100%; border-collapse:collapse; font-size:.77rem; }
+    .cb-table thead th { background:#f1f5f9; color:#1b2f52; font-size:.68rem; font-weight:700;
+      text-transform:uppercase; letter-spacing:.03em; padding:8px 10px;
+      border-bottom:2px solid #e2e8f0; white-space:nowrap; position:sticky; top:0; z-index:2; }
+    .cb-table tbody td { padding:7px 10px; border-bottom:1px solid #f1f5f9; color:#2d3748; vertical-align:middle; }
+    .cb-table tbody tr:hover td { background:#f8fafc; }
+    .cb-table tfoot td { padding:7px 10px; background:#f8fafc; font-weight:700; color:#1b2f52;
+      border-top:2px solid #e2e8f0; font-size:.75rem; }
+
+    /* ── Badges ── */
+    .badge-statut { display:inline-block; padding:2px 9px; border-radius:20px; font-size:.67rem; font-weight:700; }
+    .bs-ok   { background:#dcfce7; color:#15803d; }
+    .bs-warn { background:#fff7ed; color:#b45309; }
+    .bs-err  { background:#fee2e2; color:#b91c1c; }
+
+    /* ── Fiche véhicule ── */
+    .veh-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; padding:16px; }
+    .veh-card { border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; background:#f8fafc; }
+    .veh-card-head { padding:10px 14px; background:#1b2f52; color:#fff; font-size:.78rem; font-weight:700;
+      display:flex; align-items:center; gap:8px; }
+    .veh-card-body { padding:12px 14px; }
+    .veh-row { display:flex; justify-content:space-between; font-size:.75rem; padding:3px 0;
+      border-bottom:1px solid #f1f5f9; }
+    .veh-row:last-child { border-bottom:none; }
+    .veh-lbl { color:#64748b; }
+    .veh-val { font-weight:700; color:#1b2f52; }
+    .veh-bar-wrap { margin-top:8px; }
+    .veh-bar-lbl { display:flex; justify-content:space-between; font-size:.68rem; color:#64748b; margin-bottom:3px; }
+    .veh-bar-track { height:7px; background:#e2e8f0; border-radius:4px; overflow:hidden; }
+    .veh-bar-fill { height:100%; border-radius:4px; background:#1b3a6b; transition:width .3s; }
+
+    /* ── Formulaire modal ── */
+    .modal-header-custom { background:#1b2f52; color:#fff; border-radius:8px 8px 0 0; }
+    .modal-header-custom .btn-close { filter:invert(1); }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <div class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item text-muted">Opérations</li>
+            <li class="breadcrumb-item active fw-semibold">Gestion des Carburants</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-gas-pump me-1"></i>
+        Carburants — Exercice : <strong>2026</strong>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-notif" id="btnNotif" title="Alertes">
+          <i class="fas fa-bell"></i>
+          <span class="notif-dot"></span>
+        </div>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;" id="userAvatar">?</div>
+            <span id="userName" style="font-size:.82rem;font-weight:600;">…</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="../admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE CONTENT -->
+    <div class="page-content">
+
+      <!-- Fixed top -->
+      <div class="cb-top">
+        <div class="cb-title-strip">
+          <h5><i class="fas fa-gas-pump me-2" style="color:#b45309;"></i>Gestion des Carburants
+            <small class="ms-2">PSLSH/IST — exercice 2026</small>
+          </h5>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="exportCarburant()">
+              <i class="fas fa-file-excel me-1"></i>Exporter
+            </button>
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalApprovisionnement">
+              <i class="fas fa-plus me-1"></i>Approvisionnement
+            </button>
+          </div>
+        </div>
+        <div class="cb-kpi-bar">
+          <div class="cb-kpi ck-blue">
+            <div class="ck-lbl">Stock actuel</div>
+            <div class="ck-val" id="kpiStock">—</div>
+            <div class="ck-sub">litres disponibles</div>
+          </div>
+          <div class="cb-kpi ck-orange">
+            <div class="ck-lbl">Consommation mois</div>
+            <div class="ck-val" id="kpiConsoMois">—</div>
+            <div class="ck-sub">litres ce mois-ci</div>
+          </div>
+          <div class="cb-kpi ck-green">
+            <div class="ck-lbl">Total approv. 2026</div>
+            <div class="ck-val" id="kpiApprov">—</div>
+            <div class="ck-sub">litres réceptionnés</div>
+          </div>
+          <div class="cb-kpi ck-purple">
+            <div class="ck-lbl">Véhicules actifs</div>
+            <div class="ck-val" id="kpiVehicules">—</div>
+            <div class="ck-sub">immatriculations</div>
+          </div>
+          <div class="cb-kpi ck-red">
+            <div class="ck-lbl">Coût total 2026</div>
+            <div class="ck-val" id="kpiCout">—</div>
+            <div class="ck-sub">FCFA engagés</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="cb-tabs">
+        <div class="cb-tab active" id="cbtab-mouvements" onclick="cbSwitchTab('mouvements')">
+          <i class="fas fa-exchange-alt me-1"></i>Mouvements
+        </div>
+        <div class="cb-tab" id="cbtab-vehicules" onclick="cbSwitchTab('vehicules')">
+          <i class="fas fa-car me-1"></i>Véhicules
+        </div>
+        <div class="cb-tab" id="cbtab-approvisionnements" onclick="cbSwitchTab('approvisionnements')">
+          <i class="fas fa-truck me-1"></i>Approvisionnements
+        </div>
+        <div class="cb-tab" id="cbtab-rapports" onclick="cbSwitchTab('rapports')">
+          <i class="fas fa-chart-bar me-1"></i>Rapports
+        </div>
+      </div>
+
+      <!-- Scrollable body -->
+      <div class="cb-body">
+
+        <!-- Panel : Mouvements -->
+        <div class="cb-panel active" id="cbpanel-mouvements">
+          <div class="cb-card">
+            <div class="cb-card-head">
+              <div class="cb-card-head-icon"><i class="fas fa-exchange-alt"></i></div>
+              <span class="cb-card-title">Bons de carburant — Sorties du stock</span>
+              <button class="btn-cb-add" data-bs-toggle="modal" data-bs-target="#modalBonCarburant">
+                <i class="fas fa-plus me-1"></i> Nouveau bon
+              </button>
+            </div>
+            <div class="cb-table-wrap">
+              <table class="cb-table">
+                <thead>
+                  <tr>
+                    <th style="width:110px">N° Bon</th>
+                    <th style="width:90px">Date</th>
+                    <th style="min-width:160px">Véhicule</th>
+                    <th style="min-width:150px">Chauffeur / Bénéficiaire</th>
+                    <th style="min-width:160px">Motif / Mission</th>
+                    <th class="text-end" style="width:90px">Quantité (L)</th>
+                    <th class="text-end" style="width:110px">Coût (FCFA)</th>
+                    <th style="width:90px">Kilométrage</th>
+                    <th class="text-center" style="width:90px">Statut</th>
+                    <th class="text-center" style="width:80px">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="mouvTbody">
+                  <tr><td colspan="10" class="text-center text-muted py-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i>Chargement…
+                  </td></tr>
+                </tbody>
+                <tfoot id="mouvTfoot"></tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel : Véhicules -->
+        <div class="cb-panel" id="cbpanel-vehicules">
+          <div class="cb-card">
+            <div class="cb-card-head">
+              <div class="cb-card-head-icon"><i class="fas fa-car"></i></div>
+              <span class="cb-card-title">Parc automobile — Fiches véhicules</span>
+              <button class="btn-cb-add" data-bs-toggle="modal" data-bs-target="#modalVehicule">
+                <i class="fas fa-plus me-1"></i> Ajouter véhicule
+              </button>
+            </div>
+            <div class="veh-grid" id="vehGrid">
+              <div class="text-center text-muted py-4" style="grid-column:1/-1;">
+                <i class="fas fa-spinner fa-spin me-2"></i>Chargement…
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel : Approvisionnements -->
+        <div class="cb-panel" id="cbpanel-approvisionnements">
+          <div class="cb-card">
+            <div class="cb-card-head">
+              <div class="cb-card-head-icon"><i class="fas fa-truck"></i></div>
+              <span class="cb-card-title">Approvisionnements — Entrées en stock</span>
+              <button class="btn-cb-add" data-bs-toggle="modal" data-bs-target="#modalApprovisionnement">
+                <i class="fas fa-plus me-1"></i> Nouvel approvisionnement
+              </button>
+            </div>
+            <div class="cb-table-wrap">
+              <table class="cb-table">
+                <thead>
+                  <tr>
+                    <th style="width:110px">N° Bon</th>
+                    <th style="width:90px">Date</th>
+                    <th style="min-width:160px">Fournisseur</th>
+                    <th style="min-width:140px">Référence facture</th>
+                    <th class="text-end" style="width:100px">Quantité (L)</th>
+                    <th class="text-end" style="width:110px">Prix unitaire</th>
+                    <th class="text-end" style="width:120px">Montant total (FCFA)</th>
+                    <th style="width:100px">Dossier lié</th>
+                    <th class="text-center" style="width:90px">Statut</th>
+                    <th class="text-center" style="width:80px">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="approvTbody">
+                  <tr><td colspan="10" class="text-center text-muted py-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i>Chargement…
+                  </td></tr>
+                </tbody>
+                <tfoot id="approvTfoot"></tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel : Rapports -->
+        <div class="cb-panel" id="cbpanel-rapports">
+          <div class="cb-card">
+            <div class="cb-card-head">
+              <div class="cb-card-head-icon"><i class="fas fa-chart-bar"></i></div>
+              <span class="cb-card-title">Rapports de consommation carburant</span>
+            </div>
+            <div class="cb-table-wrap">
+              <table class="cb-table">
+                <thead>
+                  <tr>
+                    <th>Véhicule</th>
+                    <th class="text-center">Janv.</th>
+                    <th class="text-center">Févr.</th>
+                    <th class="text-center">Mars</th>
+                    <th class="text-center">Avr.</th>
+                    <th class="text-center">Mai</th>
+                    <th class="text-center">Juin</th>
+                    <th class="text-center">Juil.</th>
+                    <th class="text-center">Août</th>
+                    <th class="text-center">Sept.</th>
+                    <th class="text-center">Oct.</th>
+                    <th class="text-center">Nov.</th>
+                    <th class="text-center">Déc.</th>
+                    <th class="text-end">Total (L)</th>
+                    <th class="text-end">Coût (FCFA)</th>
+                  </tr>
+                </thead>
+                <tbody id="rapportTbody">
+                  <tr><td colspan="15" class="text-center text-muted py-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i>Chargement…
+                  </td></tr>
+                </tbody>
+                <tfoot id="rapportTfoot"></tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /cb-body -->
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ══ MODAL : BON DE CARBURANT ══ -->
+<div class="modal fade" id="modalBonCarburant" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="fas fa-gas-pump me-2"></i>Nouveau bon de carburant</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Date <span class="text-danger">*</span></label>
+            <input type="date" class="form-control form-control-sm" id="bonDate">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Véhicule <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="bonVehicule">
+              <option value="">— Sélectionner —</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Chauffeur / Bénéficiaire</label>
+            <input type="text" class="form-control form-control-sm" id="bonChauffeur" placeholder="Nom du chauffeur">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Motif / Mission <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="bonMotif" placeholder="Ex : Mission terrain région X">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Quantité (litres) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control form-control-sm" id="bonQuantite" min="1" placeholder="0">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Kilométrage départ</label>
+            <input type="number" class="form-control form-control-sm" id="bonKm" min="0" placeholder="0">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Observations</label>
+            <textarea class="form-control form-control-sm" id="bonObservations" rows="2" placeholder="Observations éventuelles…"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="saveBonCarburant()">
+          <i class="fas fa-save me-1"></i>Enregistrer le bon
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL : APPROVISIONNEMENT ══ -->
+<div class="modal fade" id="modalApprovisionnement" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="fas fa-truck me-2"></i>Enregistrer un approvisionnement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Date <span class="text-danger">*</span></label>
+            <input type="date" class="form-control form-control-sm" id="appDate">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Fournisseur <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="appFournisseur" placeholder="Nom du fournisseur">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Référence facture</label>
+            <input type="text" class="form-control form-control-sm" id="appFacture" placeholder="N° facture">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Quantité (litres) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control form-control-sm" id="appQuantite" min="1" placeholder="0">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Prix unitaire (FCFA/L)</label>
+            <input type="number" class="form-control form-control-sm" id="appPrixUnit" min="0" placeholder="0">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Montant total (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="appMontant" min="0" placeholder="Calculé auto">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Dossier d'opération lié</label>
+            <input type="text" class="form-control form-control-sm" id="appDossier" placeholder="N° dossier">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="saveApprovisionnement()">
+          <i class="fas fa-save me-1"></i>Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL : VÉHICULE ══ -->
+<div class="modal fade" id="modalVehicule" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="fas fa-car me-2"></i>Fiche véhicule</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Immatriculation <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="vehImmat" placeholder="Ex : TC-1234-A">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Marque / Modèle</label>
+            <input type="text" class="form-control form-control-sm" id="vehModele" placeholder="Ex : Toyota HiLux">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Affectation</label>
+            <input type="text" class="form-control form-control-sm" id="vehAffectation" placeholder="Service ou direction">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Chauffeur attitré</label>
+            <input type="text" class="form-control form-control-sm" id="vehChauffeur" placeholder="Nom du chauffeur">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Kilométrage actuel</label>
+            <input type="number" class="form-control form-control-sm" id="vehKm" min="0" placeholder="0">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Statut</label>
+            <select class="form-select form-select-sm" id="vehStatut">
+              <option value="actif">Actif</option>
+              <option value="maintenance">En maintenance</option>
+              <option value="inactif">Inactif</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="saveVehicule()">
+          <i class="fas fa-save me-1"></i>Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+
+  function cbSwitchTab(tab) {
+    document.querySelectorAll('.cb-tab').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.cb-panel').forEach(el => el.classList.remove('active'));
+    document.getElementById('cbtab-' + tab).classList.add('active');
+    document.getElementById('cbpanel-' + tab).classList.add('active');
+  }
+
+  /* ── Données de démonstration ── */
+  const VEHICULES = [
+    { immat:'TC-1234-A', modele:'Toyota HiLux', affectation:'Direction Générale', chauffeur:'Mahamat A.', km:48320, quota:200, conso:168, statut:'actif' },
+    { immat:'TC-5678-B', modele:'Land Cruiser 78', affectation:'SAF', chauffeur:'Ibrahim K.', km:92100, quota:250, conso:230, statut:'actif' },
+    { immat:'TC-9012-C', modele:'Hilux Double Cab', affectation:'SGAS', chauffeur:'Abakar D.', km:31200, quota:180, conso:45, statut:'maintenance' },
+  ];
+
+  const MOUVEMENTS = [
+    { bon:'CB-2026-001', date:'2026-01-08', vehicule:'TC-1234-A', chauffeur:'Mahamat A.', motif:'Mission N\'Djamena–Moundou', qte:80, cout:48000, km:48120, statut:'validé' },
+    { bon:'CB-2026-002', date:'2026-01-15', vehicule:'TC-5678-B', chauffeur:'Ibrahim K.', motif:'Supervision terrain SAF', qte:120, cout:72000, km:92000, statut:'validé' },
+    { bon:'CB-2026-003', date:'2026-02-03', vehicule:'TC-1234-A', chauffeur:'Mahamat A.', motif:'Réunion bailleur — USAID', qte:60, cout:36000, km:48260, statut:'validé' },
+    { bon:'CB-2026-004', date:'2026-02-18', vehicule:'TC-5678-B', chauffeur:'Ibrahim K.', motif:'Distribution intrants VIH', qte:110, cout:66000, km:92180, statut:'validé' },
+    { bon:'CB-2026-005', date:'2026-03-10', vehicule:'TC-1234-A', chauffeur:'Mahamat A.', motif:'Mission de contrôle terrain', qte:75, cout:45000, km:48320, statut:'en attente' },
+  ];
+
+  const APPROVISIONNEMENTS = [
+    { bon:'AP-2026-001', date:'2026-01-03', fournisseur:'SHT Niger Tchad', facture:'F-2026-0012', qte:500, prixUnit:600, montant:300000, dossier:'DOS-2026-001', statut:'réceptionné' },
+    { bon:'AP-2026-002', date:'2026-02-01', fournisseur:'SHT Niger Tchad', facture:'F-2026-0089', qte:400, prixUnit:600, montant:240000, dossier:'DOS-2026-015', statut:'réceptionné' },
+    { bon:'AP-2026-003', date:'2026-03-05', fournisseur:'Oryx Energie', facture:'F-2026-0211', qte:600, prixUnit:605, montant:363000, dossier:'DOS-2026-028', statut:'en cours' },
+  ];
+
+  function fmt(n) { return n.toLocaleString('fr-FR'); }
+
+  function loadKPIs() {
+    const totalEntrees = APPROVISIONNEMENTS.reduce((s,a) => s + a.qte, 0);
+    const totalSorties = MOUVEMENTS.reduce((s,m) => s + m.qte, 0);
+    const stock = totalEntrees - totalSorties;
+    const moiCourant = MOUVEMENTS.filter(m => m.date.startsWith('2026-03')).reduce((s,m) => s + m.qte, 0);
+    const coutTotal = APPROVISIONNEMENTS.reduce((s,a) => s + a.montant, 0);
+    document.getElementById('kpiStock').textContent = fmt(stock) + ' L';
+    document.getElementById('kpiConsoMois').textContent = fmt(moiCourant) + ' L';
+    document.getElementById('kpiApprov').textContent = fmt(totalEntrees) + ' L';
+    document.getElementById('kpiVehicules').textContent = VEHICULES.filter(v => v.statut === 'actif').length;
+    document.getElementById('kpiCout').textContent = fmt(coutTotal);
+  }
+
+  function loadMouvements() {
+    const tbody = document.getElementById('mouvTbody');
+    const tfoot = document.getElementById('mouvTfoot');
+    if (!MOUVEMENTS.length) { tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">Aucun mouvement enregistré.</td></tr>'; return; }
+    let totalQte = 0, totalCout = 0;
+    tbody.innerHTML = MOUVEMENTS.map(m => {
+      totalQte += m.qte; totalCout += m.cout;
+      const cls = m.statut === 'validé' ? 'bs-ok' : m.statut === 'en attente' ? 'bs-warn' : 'bs-err';
+      return `<tr>
+        <td><strong>${m.bon}</strong></td>
+        <td>${m.date}</td>
+        <td><i class="fas fa-car me-1" style="color:#1b2f52"></i>${m.vehicule}</td>
+        <td>${m.chauffeur}</td>
+        <td>${m.motif}</td>
+        <td class="text-end"><strong>${fmt(m.qte)}</strong></td>
+        <td class="text-end">${fmt(m.cout)}</td>
+        <td>${fmt(m.km)} km</td>
+        <td class="text-center"><span class="badge-statut ${cls}">${m.statut}</span></td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-outline-secondary py-0 px-2" title="Voir"><i class="fas fa-eye"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+    tfoot.innerHTML = `<tr>
+      <td colspan="5"><strong>TOTAL</strong></td>
+      <td class="text-end"><strong>${fmt(totalQte)} L</strong></td>
+      <td class="text-end"><strong>${fmt(totalCout)} FCFA</strong></td>
+      <td colspan="3"></td>
+    </tr>`;
+  }
+
+  function loadVehicules() {
+    const grid = document.getElementById('vehGrid');
+    grid.innerHTML = VEHICULES.map(v => {
+      const pct = Math.round((v.conso / v.quota) * 100);
+      const cls = v.statut === 'actif' ? 'bs-ok' : v.statut === 'maintenance' ? 'bs-warn' : 'bs-err';
+      return `<div class="veh-card">
+        <div class="veh-card-head">
+          <i class="fas fa-car"></i> ${v.immat}
+          <span class="badge-statut ${cls} ms-auto">${v.statut}</span>
+        </div>
+        <div class="veh-card-body">
+          <div class="veh-row"><span class="veh-lbl">Modèle</span><span class="veh-val">${v.modele}</span></div>
+          <div class="veh-row"><span class="veh-lbl">Affectation</span><span class="veh-val">${v.affectation}</span></div>
+          <div class="veh-row"><span class="veh-lbl">Chauffeur</span><span class="veh-val">${v.chauffeur}</span></div>
+          <div class="veh-row"><span class="veh-lbl">Kilométrage</span><span class="veh-val">${fmt(v.km)} km</span></div>
+          <div class="veh-bar-wrap">
+            <div class="veh-bar-lbl"><span>Conso. mois (${v.conso} L / quota ${v.quota} L)</span><span>${pct}%</span></div>
+            <div class="veh-bar-track"><div class="veh-bar-fill" style="width:${Math.min(pct,100)}%;background:${pct>100?'#b91c1c':pct>80?'#b45309':'#15803d'};"></div></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function loadApprovisionnements() {
+    const tbody = document.getElementById('approvTbody');
+    const tfoot = document.getElementById('approvTfoot');
+    let totalQte = 0, totalMt = 0;
+    tbody.innerHTML = APPROVISIONNEMENTS.map(a => {
+      totalQte += a.qte; totalMt += a.montant;
+      const cls = a.statut === 'réceptionné' ? 'bs-ok' : a.statut === 'en cours' ? 'bs-warn' : 'bs-err';
+      return `<tr>
+        <td><strong>${a.bon}</strong></td>
+        <td>${a.date}</td>
+        <td>${a.fournisseur}</td>
+        <td>${a.facture}</td>
+        <td class="text-end"><strong>${fmt(a.qte)}</strong></td>
+        <td class="text-end">${fmt(a.prixUnit)}</td>
+        <td class="text-end"><strong>${fmt(a.montant)}</strong></td>
+        <td><a href="../dossiers/index.html" style="font-size:.72rem;color:#1b3a6b;">${a.dossier}</a></td>
+        <td class="text-center"><span class="badge-statut ${cls}">${a.statut}</span></td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-outline-secondary py-0 px-2"><i class="fas fa-eye"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+    tfoot.innerHTML = `<tr>
+      <td colspan="4"><strong>TOTAL</strong></td>
+      <td class="text-end"><strong>${fmt(totalQte)} L</strong></td>
+      <td></td>
+      <td class="text-end"><strong>${fmt(totalMt)} FCFA</strong></td>
+      <td colspan="3"></td>
+    </tr>`;
+  }
+
+  function loadRapport() {
+    const tbody = document.getElementById('rapportTbody');
+    const tfoot = document.getElementById('rapportTfoot');
+    const mois = Array(12).fill(0);
+    let grandTotal = 0, grandCout = 0;
+    tbody.innerHTML = VEHICULES.map(v => {
+      // Données démo par véhicule et par mois
+      const data = [80,0,75,0,0,0,0,0,0,0,0,0];
+      if (v.immat === 'TC-5678-B') { data[0]=120; data[1]=0; data[2]=110; }
+      const total = data.reduce((s,x) => s+x, 0);
+      const cout = total * 600;
+      grandTotal += total; grandCout += cout;
+      return `<tr>
+        <td><strong>${v.immat}</strong><br><small class="text-muted">${v.modele}</small></td>
+        ${data.map(x => `<td class="text-center">${x || '—'}</td>`).join('')}
+        <td class="text-end"><strong>${fmt(total)}</strong></td>
+        <td class="text-end">${fmt(cout)}</td>
+      </tr>`;
+    }).join('');
+    tfoot.innerHTML = `<tr>
+      <td><strong>TOTAL</strong></td>
+      ${mois.map(() => '<td></td>').join('')}
+      <td class="text-end"><strong>${fmt(grandTotal)} L</strong></td>
+      <td class="text-end"><strong>${fmt(grandCout)} FCFA</strong></td>
+    </tr>`;
+  }
+
+  function saveBonCarburant() { bootstrap.Modal.getInstance(document.getElementById('modalBonCarburant'))?.hide(); }
+  function saveApprovisionnement() { bootstrap.Modal.getInstance(document.getElementById('modalApprovisionnement'))?.hide(); }
+  function saveVehicule() { bootstrap.Modal.getInstance(document.getElementById('modalVehicule'))?.hide(); }
+  function exportCarburant() { alert('Export en cours de développement.'); }
+
+  /* ── Init ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof updateUserUI === 'function') updateUserUI();
+    document.getElementById('btnLogout')?.addEventListener('click', e => { e.preventDefault(); if (typeof logout === 'function') logout(); });
+    loadKPIs();
+    loadMouvements();
+    loadVehicules();
+    loadApprovisionnements();
+    loadRapport();
+  });
+</script>
+</body>
+</html>

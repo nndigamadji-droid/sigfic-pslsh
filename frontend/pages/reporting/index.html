@@ -1,0 +1,408 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Reporting</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo"
+           onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+        <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item active"><a href="/pages/reporting/index.html">Reporting</a></li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong>2026</strong>
+      </div>
+
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-chart-pie text-primary me-2"></i>Reporting & États financiers</h4>
+          <small class="text-muted">Génération des rapports, tableaux de bord et exports pour les partenaires</small>
+        </div>
+        <div class="d-flex gap-2">
+          <select class="form-select form-select-sm" id="globalExercice" onchange="loadAll()" style="width:160px">
+            <option value="">Exercice...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Catalogue de rapports -->
+      <div class="row g-4 mb-4">
+        <!-- Rapport financier global -->
+        <div class="col-md-4">
+          <div class="card h-100 border-primary">
+            <div class="card-body">
+              <div class="d-flex align-items-start mb-3">
+                <div class="rounded p-2 bg-primary bg-opacity-10 me-3"><i class="fas fa-file-invoice-dollar fa-2x text-primary"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-1">Rapport financier global</h6>
+                  <small class="text-muted">Synthèse des recettes, dépenses et soldes par source de financement</small>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-primary flex-fill" onclick="genererRapport('financier')"><i class="fas fa-eye me-1"></i>Afficher</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="exportRapport('financier','pdf')"><i class="fas fa-file-pdf"></i></button>
+                <button class="btn btn-sm btn-outline-success" onclick="exportRapport('financier','excel')"><i class="fas fa-file-excel"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suivi budgétaire -->
+        <div class="col-md-4">
+          <div class="card h-100 border-warning">
+            <div class="card-body">
+              <div class="d-flex align-items-start mb-3">
+                <div class="rounded p-2 bg-warning bg-opacity-10 me-3"><i class="fas fa-chart-bar fa-2x text-warning"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-1">État d'exécution budgétaire</h6>
+                  <small class="text-muted">Taux d'engagement, liquidation et paiement par rubrique</small>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-warning flex-fill" onclick="genererRapport('budget')"><i class="fas fa-eye me-1"></i>Afficher</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="exportRapport('budget','pdf')"><i class="fas fa-file-pdf"></i></button>
+                <button class="btn btn-sm btn-outline-success" onclick="exportRapport('budget','excel')"><i class="fas fa-file-excel"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compte de gestion -->
+        <div class="col-md-4">
+          <div class="card h-100 border-success">
+            <div class="card-body">
+              <div class="d-flex align-items-start mb-3">
+                <div class="rounded p-2 bg-success bg-opacity-10 me-3"><i class="fas fa-balance-scale fa-2x text-success"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-1">Compte de gestion</h6>
+                  <small class="text-muted">État récapitulatif des opérations de recettes et de dépenses</small>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-success flex-fill" onclick="genererRapport('gestion')"><i class="fas fa-eye me-1"></i>Afficher</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="exportRapport('gestion','pdf')"><i class="fas fa-file-pdf"></i></button>
+                <button class="btn btn-sm btn-outline-success" onclick="exportRapport('gestion','excel')"><i class="fas fa-file-excel"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- État des paiements -->
+        <div class="col-md-4">
+          <div class="card h-100 border-info">
+            <div class="card-body">
+              <div class="d-flex align-items-start mb-3">
+                <div class="rounded p-2 bg-info bg-opacity-10 me-3"><i class="fas fa-money-bill-wave fa-2x text-info"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-1">État des paiements</h6>
+                  <small class="text-muted">Liste chronologique de tous les paiements effectués</small>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-info flex-fill text-white" onclick="genererRapport('paiements')"><i class="fas fa-eye me-1"></i>Afficher</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="exportRapport('paiements','pdf')"><i class="fas fa-file-pdf"></i></button>
+                <button class="btn btn-sm btn-outline-success" onclick="exportRapport('paiements','excel')"><i class="fas fa-file-excel"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rapport bailleurs -->
+        <div class="col-md-4">
+          <div class="card h-100 border-secondary">
+            <div class="card-body">
+              <div class="d-flex align-items-start mb-3">
+                <div class="rounded p-2 bg-secondary bg-opacity-10 me-3"><i class="fas fa-handshake fa-2x text-secondary"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-1">Rapport bailleur (PTF)</h6>
+                  <small class="text-muted">Rapport de dépenses par source de financement (FM, PEPFAR, OMS…)</small>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <select class="form-select form-select-sm" id="bailleurSource" style="flex:1">
+                  <option value="">Source...</option>
+                </select>
+                <button class="btn btn-sm btn-secondary" onclick="exportRapport('bailleur','pdf')"><i class="fas fa-file-pdf"></i></button>
+                <button class="btn btn-sm btn-outline-success" onclick="exportRapport('bailleur','excel')"><i class="fas fa-file-excel"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inventaire immobilisations -->
+        <div class="col-md-4">
+          <div class="card h-100 border-dark">
+            <div class="card-body">
+              <div class="d-flex align-items-start mb-3">
+                <div class="rounded p-2 bg-dark bg-opacity-10 me-3"><i class="fas fa-laptop fa-2x text-dark"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-1">Inventaire des immobilisations</h6>
+                  <small class="text-muted">État complet du patrimoine matériel du programme</small>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-dark flex-fill" onclick="genererRapport('inventaire')"><i class="fas fa-eye me-1"></i>Afficher</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="exportRapport('inventaire','pdf')"><i class="fas fa-file-pdf"></i></button>
+                <button class="btn btn-sm btn-outline-success" onclick="exportRapport('inventaire','excel')"><i class="fas fa-file-excel"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zone affichage rapport -->
+      <div id="rapportZone" class="d-none">
+        <div class="card">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold" id="rapportTitre">Rapport</h5>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-danger" onclick="exportCurrentPDF()"><i class="fas fa-file-pdf me-1"></i>PDF</button>
+              <button class="btn btn-sm btn-outline-success" onclick="exportCurrentExcel()"><i class="fas fa-file-excel me-1"></i>Excel</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="fas fa-print me-1"></i>Imprimer</button>
+              <button class="btn btn-sm btn-outline-dark" onclick="fermerRapport()"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          <div class="card-body" id="rapportContenu">
+          </div>
+        </div>
+      </div>
+
+      <!-- Tableau de bord synthétique -->
+      <div class="card" id="dashSynth">
+        <div class="card-header bg-white fw-semibold"><i class="fas fa-tachometer-alt me-2 text-primary"></i>Synthèse de l'exercice en cours</div>
+        <div class="card-body">
+          <div class="row g-4" id="synthContent">
+            <div class="col-12 text-center py-3 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Chargement...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+requireAuth();
+document.getElementById('userName').textContent = (getUser()?.prenom || '') + ' ' + (getUser()?.nom || '');
+
+let currentRapport = null;
+
+async function init() {
+  try {
+    const [exR, srcR] = await Promise.all([
+      api.get('/planification/exercices'),
+      api.get('/budget/sources')
+    ]);
+    const exercices = exR.data || [];
+    const sources = srcR.data || [];
+    const exSel = document.getElementById('globalExercice');
+    exercices.forEach(e => {
+      const o = document.createElement('option'); o.value = e.id; o.textContent = e.libelle;
+      if (e.statut === 'en_cours') o.selected = true;
+      exSel.appendChild(o);
+    });
+    const srcSel = document.getElementById('bailleurSource');
+    sources.forEach(s => {
+      const o = document.createElement('option'); o.value = s.id; o.textContent = s.code + ' — ' + s.libelle;
+      srcSel.appendChild(o);
+    });
+  } catch(e) {}
+  loadAll();
+}
+
+async function loadAll() {
+  const exId = document.getElementById('globalExercice').value;
+  try {
+    const params = exId ? '?exercice_id=' + exId : '';
+    const r = await api.get('/reporting/synthese' + params);
+    const s = r.data || {};
+    document.getElementById('synthContent').innerHTML = `
+      <div class="col-md-3">
+        <div class="text-center p-3 border rounded">
+          <div class="display-6 fw-bold text-primary">${s.dossiers_total || 0}</div>
+          <div class="text-muted small">Dossiers créés</div>
+          <div class="mt-2">
+            <span class="badge bg-success me-1">${s.dossiers_payes || 0} payés</span>
+            <span class="badge bg-warning text-dark">${s.dossiers_encours || 0} en cours</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-center p-3 border rounded">
+          <div class="display-6 fw-bold text-warning">${formatXOF(s.budget_total || 0)}</div>
+          <div class="text-muted small">Budget total</div>
+          <div class="mt-2">
+            <div style="height:8px;background:#e9ecef;border-radius:4px;overflow:hidden">
+              <div style="width:${s.taux_engagement||0}%;height:100%;background:#fd7e14"></div>
+            </div>
+            <small class="text-muted">Engagement : ${s.taux_engagement || 0}%</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-center p-3 border rounded">
+          <div class="display-6 fw-bold text-success">${formatXOF(s.total_paye || 0)}</div>
+          <div class="text-muted small">Total décaissé</div>
+          <div class="mt-2">
+            <div style="height:8px;background:#e9ecef;border-radius:4px;overflow:hidden">
+              <div style="width:${s.taux_paiement||0}%;height:100%;background:#198754"></div>
+            </div>
+            <small class="text-muted">Taux paiement : ${s.taux_paiement || 0}%</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-center p-3 border rounded">
+          <div class="display-6 fw-bold text-danger">${s.anomalies_ouvertes || 0}</div>
+          <div class="text-muted small">Anomalies ouvertes</div>
+          <div class="mt-2">
+            <span class="badge bg-danger me-1">${s.anomalies_critiques || 0} critiques</span>
+            <span class="badge bg-warning text-dark">${s.anomalies_elevees || 0} élevées</span>
+          </div>
+        </div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('synthContent').innerHTML = '<div class="col-12 text-center py-3 text-muted">Données non disponibles</div>';
+  }
+}
+
+async function genererRapport(type) {
+  currentRapport = type;
+  const exId = document.getElementById('globalExercice').value;
+  const params = exId ? '?exercice_id=' + exId : '';
+  const titres = {
+    financier: 'Rapport financier global',
+    budget: 'État d\'exécution budgétaire',
+    gestion: 'Compte de gestion',
+    paiements: 'État des paiements',
+    inventaire: 'Inventaire des immobilisations'
+  };
+  document.getElementById('rapportTitre').textContent = titres[type] || 'Rapport';
+  document.getElementById('rapportContenu').innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-2 text-muted">Génération en cours...</p></div>';
+  document.getElementById('rapportZone').classList.remove('d-none');
+  document.getElementById('dashSynth').classList.add('d-none');
+  document.getElementById('rapportZone').scrollIntoView({ behavior:'smooth' });
+  try {
+    const r = await api.get('/reporting/' + type + params);
+    const data = r.data || {};
+    renderRapport(type, data);
+  } catch(e) {
+    document.getElementById('rapportContenu').innerHTML = '<div class="alert alert-warning">Rapport non disponible : les données seront chargées une fois le serveur démarré.</div>';
+  }
+}
+
+function renderRapport(type, data) {
+  let html = '';
+  if (type === 'financier') {
+    const sources = data.sources || [];
+    html = `<div class="table-responsive">
+      <table class="table table-bordered">
+        <thead class="table-primary"><tr><th>Source</th><th class="text-end">Dotation</th><th class="text-end">Engagé</th><th class="text-end">Payé</th><th class="text-end">Solde</th><th class="text-center">Taux</th></tr></thead>
+        <tbody>${sources.map(s => `<tr>
+          <td><strong>${s.code}</strong> : ${s.libelle}</td>
+          <td class="text-end">${formatXOF(s.dotation)}</td>
+          <td class="text-end">${formatXOF(s.engage)}</td>
+          <td class="text-end">${formatXOF(s.paye)}</td>
+          <td class="text-end ${s.solde < 0 ? 'text-danger fw-bold' : 'text-success'}">${formatXOF(s.solde)}</td>
+          <td class="text-center">${Math.round((s.paye||0)/(s.dotation||1)*100)}%</td>
+        </tr>`).join('')}</tbody>
+        <tfoot class="table-light fw-bold"><tr><td>TOTAL</td>
+          <td class="text-end">${formatXOF(sources.reduce((a,s)=>a+(s.dotation||0),0))}</td>
+          <td class="text-end">${formatXOF(sources.reduce((a,s)=>a+(s.engage||0),0))}</td>
+          <td class="text-end">${formatXOF(sources.reduce((a,s)=>a+(s.paye||0),0))}</td>
+          <td class="text-end">${formatXOF(sources.reduce((a,s)=>a+(s.solde||0),0))}</td>
+          <td></td>
+        </tr></tfoot>
+      </table></div>`;
+  } else if (type === 'budget') {
+    const rubriques = data.rubriques || [];
+    html = `<div class="table-responsive">
+      <table class="table table-bordered table-sm">
+        <thead class="table-warning"><tr><th>Code</th><th>Rubrique</th><th class="text-end">Budget</th><th class="text-end">Engagé</th><th class="text-end">Liquidé</th><th class="text-end">Payé</th><th class="text-center">Progression</th></tr></thead>
+        <tbody>${rubriques.map(r => {
+          const tx = r.budget > 0 ? Math.round(r.paye/r.budget*100) : 0;
+          return `<tr><td><code>${r.code}</code></td><td>${r.libelle}</td>
+            <td class="text-end">${formatXOF(r.budget)}</td>
+            <td class="text-end">${formatXOF(r.engage)}</td>
+            <td class="text-end">${formatXOF(r.liquide)}</td>
+            <td class="text-end">${formatXOF(r.paye)}</td>
+            <td><div style="background:#e9ecef;border-radius:4px;overflow:hidden;height:18px">
+              <div style="width:${tx}%;height:100%;background:${tx>90?'#dc3545':tx>75?'#ffc107':'#198754'};text-align:center;color:white;font-size:11px;line-height:18px">${tx}%</div>
+            </div></td></tr>`;
+        }).join('')}</tbody>
+      </table></div>`;
+  } else {
+    html = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Rapport disponible après connexion au serveur backend.</div>';
+  }
+  document.getElementById('rapportContenu').innerHTML = html ||
+    '<div class="alert alert-info">Aucune donnée pour ce rapport.</div>';
+}
+
+function fermerRapport() {
+  document.getElementById('rapportZone').classList.add('d-none');
+  document.getElementById('dashSynth').classList.remove('d-none');
+  currentRapport = null;
+}
+
+async function exportRapport(type, format) {
+  const exId = document.getElementById('globalExercice').value;
+  const params = new URLSearchParams({ format });
+  if (exId) params.append('exercice_id', exId);
+  toast(`Export ${format.toUpperCase()} du rapport "${type}" en cours...`, 'info');
+  try {
+    const url = '/api/v1/reporting/' + type + '/export?' + params;
+    window.open(url, '_blank');
+  } catch(e) { toast('Export non disponible, serveur non démarré', 'warning'); }
+}
+
+function exportCurrentPDF() { if (currentRapport) exportRapport(currentRapport, 'pdf'); }
+function exportCurrentExcel() { if (currentRapport) exportRapport(currentRapport, 'excel'); }
+
+init();
+</script>
+
+    <footer class="page-footer">
+      &copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp;
+      Programme Sectoriel de Lutte contre le Sida, les H&eacute;patites Virales et les IST
+      &nbsp;&middot;&nbsp; R&eacute;publique du Tchad &nbsp;&middot;&nbsp; Version 1
+    </footer>
+<script src="../../src/js/roles.js"></script>
+</body>
+</html>

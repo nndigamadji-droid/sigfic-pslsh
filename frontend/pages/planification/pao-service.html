@@ -1,0 +1,1551 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | PAO par Service</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    html, body { height:100%; overflow:hidden; }
+    .app-layout, .main-content { height:100vh; overflow:hidden; }
+    .page-content { flex:1; overflow:hidden; display:flex; flex-direction:column; padding:0; gap:0; }
+    .svp-top { flex-shrink:0; padding:10px 24px 0; }
+    .svp-title-strip { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .svp-title-strip h5 { margin:0; font-size:.95rem; font-weight:800; color:#1b2f52; }
+    .svp-title-strip small { font-size:.7rem; color:#64748b; }
+    .svp-tabs { flex-shrink:0; display:flex; align-items:flex-end; gap:2px; padding:0 24px;
+      border-bottom:2px solid #d1d5db; background:#f8fafc; margin-top:8px; }
+    .svp-tab { padding:8px 20px; font-size:.78rem; font-weight:600; color:#64748b;
+      border:1px solid transparent; border-bottom:none; border-radius:6px 6px 0 0;
+      background:transparent; cursor:pointer; position:relative; bottom:-2px; }
+    .svp-tab.active { color:#1b3a6b; background:#fff; border-color:#d1d5db; border-bottom-color:#fff; font-weight:700; }
+    .svp-body { flex:1; overflow-y:auto; padding:14px 24px 20px; background:#eef2f7; }
+    .svp-panel { display:none; }
+    .svp-panel.active { display:block; }
+
+    /* KPI bar */
+    .pao-kpi-bar { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:18px; }
+    .pao-kpi { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:12px 16px; position:relative; overflow:hidden; }
+    .pao-kpi::before { content:''; position:absolute; top:0;left:0;right:0;height:3px; }
+    .pk-blue::before   { background:#1b3a6b; }
+    .pk-green::before  { background:#15803d; }
+    .pk-orange::before { background:#b45309; }
+    .pk-red::before    { background:#b91c1c; }
+    .pk-purple::before { background:#6d28d9; }
+    .pao-kpi .pk-lbl { font-size:.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
+    .pao-kpi .pk-val { font-size:1.05rem; font-weight:800; color:#1b2f52; font-family:monospace; }
+    .pao-kpi .pk-sub { font-size:.68rem; color:#94a3b8; margin-top:1px; }
+
+    /* Service selector */
+    .svc-header { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 18px; background:#1b2f52; border-radius:10px 10px 0 0; }
+    .svc-header-icon { width:32px; height:32px; border-radius:8px; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; color:#fff; font-size:.85rem; flex-shrink:0; }
+    .svc-header-title { font-size:.82rem; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
+    .svc-btn-wrap { display:flex; gap:6px; flex-wrap:wrap; flex:1; }
+    .svc-btn { font-size:.72rem; font-weight:700; padding:5px 12px; border:1.5px solid rgba(255,255,255,.3); border-radius:8px; background:rgba(255,255,255,.1); color:rgba(255,255,255,.85); cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:5px; }
+    .svc-btn:hover { background:rgba(255,255,255,.22); color:#fff; border-color:rgba(255,255,255,.55); }
+    .svc-btn.active { background:#fff; color:#1b2f52; border-color:#fff; }
+    .svc-btn .svc-count { font-size:.62rem; background:rgba(0,0,0,.15); border-radius:4px; padding:0 5px; }
+    .svc-btn.active .svc-count { background:#e2e8f0; color:#1b2f52; }
+
+    /* Couleur strip */
+    .svc-color-strip { height:4px; transition:background .2s; }
+
+    /* Bloc activités */
+    .pao-bloc { background:#fff; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 12px 12px; overflow:hidden; }
+
+    /* Barre titre service */
+    .pao-svc-bar { display:flex; align-items:center; gap:10px; padding:10px 18px; background:#f8fafc; border-bottom:1px solid #e2e8f0; }
+    .pao-svc-name { font-size:.8rem; font-weight:800; color:#1b2f52; text-transform:uppercase; letter-spacing:.04em; flex:1; }
+    .pao-svc-count { font-size:.72rem; font-weight:700; color:#64748b; background:#e2e8f0; border-radius:20px; padding:2px 10px; }
+    .btn-pao-add { font-size:.72rem; font-weight:700; background:#1b2f52; color:#fff; border:none; border-radius:8px; padding:5px 14px; cursor:pointer; display:flex; align-items:center; gap:5px; }
+    .btn-pao-add:hover { background:#1b3a6b; }
+
+    /* Filtres */
+    .pao-filters { display:flex; gap:8px; align-items:center; padding:10px 16px; background:#fff; border-bottom:1px solid #e2e8f0; flex-wrap:wrap; }
+    .pao-filters label { font-size:.7rem; font-weight:700; color:#4a5568; margin:0; white-space:nowrap; }
+    .pao-filters select, .pao-filters input { font-size:.76rem; padding:3px 8px; border:1px solid #d1d5db; border-radius:6px; background:#fff; color:#1b2f52; height:28px; }
+    .pao-filters input[type=text] { min-width:160px; }
+    .btn-reset-filter { font-size:.72rem; padding:3px 10px; height:28px; border:1px solid #d1d5db; border-radius:6px; background:#fff; color:#64748b; cursor:pointer; }
+    .btn-reset-filter:hover { background:#f1f5f9; }
+
+    /* Table */
+    .pao-table-wrap { overflow-x:auto; }
+    .pao-table { width:100%; border-collapse:collapse; font-size:.77rem; }
+    .pao-table thead th { background:#f1f5f9; color:#1b2f52; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; padding:8px 10px; border-bottom:2px solid #e2e8f0; white-space:nowrap; position:sticky; top:0; z-index:2; }
+    .pao-table tbody td { padding:7px 10px; border-bottom:1px solid #f1f5f9; color:#2d3748; vertical-align:middle; }
+    .pao-table tbody tr:hover td { background:#f8fafc; }
+    .pao-table .text-end { text-align:right; }
+    .pao-table .text-center { text-align:center; }
+    .pao-table .mono { font-family:'Cascadia Code','Consolas',monospace; font-size:.74rem; }
+    .libelle-cell { max-width:300px; }
+    .libelle-cell span { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pao-table .row-total td { background:#1b2f52; color:#fff; font-weight:700; border-bottom:none; }
+    .pao-table .row-total .mono { color:#7dd3fc; }
+    .no-results { text-align:center; padding:30px; color:#94a3b8; font-size:.82rem; }
+
+    /* Badges */
+    .prog-badge { font-size:.65rem; font-weight:800; border-radius:5px; padding:2px 7px; white-space:nowrap; font-family:monospace; }
+    .prog-b1 { background:#dbeafe; color:#1e40af; }
+    .prog-b2 { background:#dcfce7; color:#15803d; }
+    .prog-b3 { background:#fef3c7; color:#92400e; }
+    .st-badge { font-size:.67rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
+    .st-acquis   { background:#dcfce7; color:#15803d; }
+    .st-confirm  { background:#fef3c7; color:#b45309; }
+    .st-recherche { background:#fee2e2; color:#b91c1c; }
+    .st-nc { background:#f1f5f9; color:#94a3b8; }
+    .niv-badge { font-size:.65rem; font-weight:700; border-radius:5px; padding:2px 7px; white-space:nowrap; }
+    .niv-nat { background:#e0e7ff; color:#3730a3; }
+    .niv-cen { background:#f3e8ff; color:#7c3aed; }
+    .trim-pills { display:flex; gap:3px; }
+    .tp { display:inline-block; font-size:.62rem; font-weight:800; border-radius:4px; padding:1px 5px; font-family:monospace; }
+    .tp-on { background:#1b2f52; color:#fff; }
+    .tp-off { background:#f1f5f9; color:#cbd5e1; }
+    .pil-badge { font-size:.63rem; font-weight:800; border-radius:5px; padding:2px 7px; white-space:nowrap; }
+    .pil-1 { background:#ede9fe; color:#6d28d9; }
+    .pil-2 { background:#dbeafe; color:#1d4ed8; }
+    .pil-3 { background:#dcfce7; color:#15803d; }
+    .pil-4 { background:#fef3c7; color:#b45309; }
+    .pil-5 { background:#fee2e2; color:#b91c1c; }
+    .pil-6 { background:#ccfbf1; color:#0d9488; }
+    .pil-7 { background:#e0f2fe; color:#0369a1; }
+    .btn-del, .btn-edit { font-size:.66rem; padding:2px 7px; border-radius:5px; cursor:pointer; display:inline-flex; align-items:center; gap:3px; transition:all .15s; }
+    .btn-del  { border:1px solid #fca5a5; background:#fff5f5; color:#b91c1c; }
+    .btn-del:hover  { background:#fee2e2; }
+    .btn-edit { border:1px solid #93c5fd; background:#eff6ff; color:#1d4ed8; }
+    .btn-edit:hover { background:#dbeafe; }
+
+    /* Synthèses */
+    .synth-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; margin-top:16px; }
+    .synth-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; }
+    .synth-header { display:flex; align-items:center; gap:10px; padding:10px 16px; border-bottom:1px solid #e2e8f0; }
+    .synth-header-icon { width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:.78rem; flex-shrink:0; }
+    .synth-header-title { font-size:.76rem; font-weight:800; color:#1b2f52; text-transform:uppercase; letter-spacing:.04em; flex:1; }
+    .synth-table { width:100%; border-collapse:collapse; font-size:.75rem; }
+    .synth-table th { background:#f8fafc; color:#475569; font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; padding:6px 10px; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+    .synth-table td { padding:6px 10px; border-bottom:1px solid #f1f5f9; color:#2d3748; vertical-align:middle; }
+    .synth-table tr:last-child td { border-bottom:none; }
+    .synth-table .text-end { text-align:right; }
+    .synth-table .text-center { text-align:center; }
+    .synth-table .mono { font-family:'Cascadia Code','Consolas',monospace; font-size:.72rem; }
+    .synth-table .row-foot td { background:#1b2f52; color:#fff; font-weight:700; border-bottom:none; font-size:.72rem; }
+    .synth-table .row-foot .mono { color:#7dd3fc; }
+    .synth-taux { display:inline-block; font-size:.65rem; font-weight:700; border-radius:20px; padding:1px 7px; white-space:nowrap; }
+    .st-green  { background:#dcfce7; color:#15803d; }
+    .st-orange { background:#fef3c7; color:#b45309; }
+    .st-red    { background:#fee2e2; color:#b91c1c; }
+    .st-gray   { background:#f1f5f9; color:#64748b; }
+
+    /* ── Validation Coordonnateur inline ── */
+    .vcol-badge { font-size:.65rem;font-weight:700;border-radius:5px;padding:2px 8px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px; }
+    .vcb-soumis { background:#fef3c7;color:#b45309; }
+    .vcb-valide { background:#dcfce7;color:#15803d; }
+    .vcb-revoir { background:#ede9fe;color:#6d28d9; }
+    .vcb-rejete { background:#fee2e2;color:#b91c1c; }
+    .btn-decider { font-size:.66rem;font-weight:700;padding:3px 10px;border-radius:5px;cursor:pointer;
+      border:1px solid #93c5fd;background:#eff6ff;color:#1d4ed8;
+      display:inline-flex;align-items:center;gap:4px;margin-top:4px;transition:background .12s; }
+    .btn-decider:hover { background:#dbeafe; }
+    /* Bandeau validation en-tête (coordo seulement) */
+    .coord-val-banner { display:none;align-items:center;gap:10px;padding:8px 16px;
+      background:linear-gradient(90deg,#1b2f52,#1d4ed8);border-radius:8px;margin-bottom:12px;
+      font-size:.76rem;color:#fff;font-weight:600; }
+    .coord-val-banner .cvb-count { background:rgba(255,255,255,.2);border-radius:5px;padding:2px 10px;
+      font-size:.8rem;font-weight:800;font-family:monospace; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/planification/pao-global.html">Planification</a></li>
+            <li class="breadcrumb-item active">PAO par Service</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice :
+        <select id="selExercice" class="form-select form-select-sm d-inline-block w-auto ms-1">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Fixed top -->
+      <div class="svp-top">
+        <!-- Bandeau coordonnateur -->
+        <div class="coord-val-banner" id="coordBanner">
+        <i class="fas fa-stamp fa-lg"></i>
+        <span>Mode Coordonnateur : Validation du PAO par service</span>
+        <span class="cvb-count" id="coordPendingCount">…</span>
+        <span>activités en attente de validation</span>
+        <button onclick="validerTout()" style="margin-left:auto;background:#15803d;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:.72rem;font-weight:700;cursor:pointer">
+          <i class="fas fa-check-double me-1"></i>Valider tout le service
+        </button>
+      </div>
+
+        <div class="svp-title-strip">
+          <div>
+            <h5><i class="fas fa-layer-group text-primary me-2"></i>PAO par Service · PSLSH/IST</h5>
+            <small>Activités réparties par service responsable, exercice 2026</small>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="exportCSV()"><i class="fas fa-file-csv me-1"></i> CSV</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="fas fa-print me-1"></i> Imprimer</button>
+          </div>
+        </div>
+        <!-- KPI bar -->
+        <div class="pao-kpi-bar">
+        <div class="pao-kpi pk-blue">
+          <div class="pk-lbl">Activités du service</div>
+          <div class="pk-val" id="kpi-total">0</div>
+          <div class="pk-sub" id="kpi-svc-sub">Service sélectionné</div>
+        </div>
+        <div class="pao-kpi pk-green">
+          <div class="pk-lbl">Acquis</div>
+          <div class="pk-val" id="kpi-acquis">0</div>
+          <div class="pk-sub">Financement confirmé</div>
+        </div>
+        <div class="pao-kpi pk-orange">
+          <div class="pk-lbl">À Confirmer</div>
+          <div class="pk-val" id="kpi-confirm">0</div>
+          <div class="pk-sub">En attente</div>
+        </div>
+        <div class="pao-kpi pk-red">
+          <div class="pk-lbl">À Rechercher</div>
+          <div class="pk-val" id="kpi-recherche">0</div>
+          <div class="pk-sub">Non financé</div>
+        </div>
+        <div class="pao-kpi pk-purple">
+          <div class="pk-lbl">Budget du service</div>
+          <div class="pk-val" id="kpi-budget" style="font-size:.82rem">0</div>
+          <div class="pk-sub">FCFA, 2026</div>
+        </div>
+      </div>
+
+        <!-- Sélecteur de service -->
+        <div class="svc-header" style="border-radius:8px;margin-top:8px;">
+          <div class="svc-header-icon"><i class="fas fa-layer-group"></i></div>
+          <span class="svc-header-title">Service :</span>
+          <div class="svc-btn-wrap" id="svcBtnWrap"></div>
+        </div>
+        <div class="svc-color-strip" id="svcColorStrip" style="background:#1b4fa8;border-radius:0 0 4px 4px;"></div>
+      </div><!-- /svp-top -->
+
+      <!-- Tab bar -->
+      <div class="svp-tabs">
+        <div class="svp-tab active" id="svptab-synthese" onclick="svpSwitchTab('synthese')">
+          <i class="fas fa-chart-pie me-1"></i>Synthèse
+        </div>
+        <div class="svp-tab" id="svptab-activites" onclick="svpSwitchTab('activites')">
+          <i class="fas fa-list me-1"></i>Activités
+        </div>
+        <div class="svp-tab" id="svptab-cibles" onclick="svpSwitchTab('cibles')">
+          <i class="fas fa-bullseye me-1"></i>Cibles &amp; Indicateurs
+        </div>
+      </div>
+
+      <!-- Scrollable body -->
+      <div class="svp-body">
+
+        <!-- Panel : Synthèse -->
+        <div class="svp-panel active" id="svppanel-synthese">
+      <!-- Synthèses -->
+      <div class="synth-grid">
+        <div class="synth-card">
+          <div class="synth-header">
+            <div class="synth-header-icon" style="background:#1b2f52"><i class="fas fa-layer-group"></i></div>
+            <span class="synth-header-title">Synthèse par Programme</span>
+          </div>
+          <table class="synth-table">
+            <thead>
+              <tr>
+                <th>Programme</th>
+                <th class="text-center">Act.</th>
+                <th class="text-center">Acquis</th>
+                <th class="text-center">À Conf.</th>
+                <th class="text-center">À Rech.</th>
+                <th class="text-end">Budget (FCFA)</th>
+                <th class="text-center">Taux</th>
+              </tr>
+            </thead>
+            <tbody id="synthProgTbody"></tbody>
+            <tfoot id="synthProgTfoot"></tfoot>
+          </table>
+        </div>
+        <div class="synth-card">
+          <div class="synth-header">
+            <div class="synth-header-icon" style="background:#3730a3"><i class="fas fa-sitemap"></i></div>
+            <span class="synth-header-title">Synthèse par Pilier</span>
+          </div>
+          <table class="synth-table">
+            <thead>
+              <tr>
+                <th>Pilier</th>
+                <th class="text-center">Act.</th>
+                <th class="text-center">Acquis</th>
+                <th class="text-center">À Conf.</th>
+                <th class="text-center">À Rech.</th>
+                <th class="text-end">Budget (FCFA)</th>
+                <th class="text-center">Taux</th>
+              </tr>
+            </thead>
+            <tbody id="synthPilTbody"></tbody>
+            <tfoot id="synthPilTfoot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+        </div><!-- /svppanel-synthese -->
+
+        <!-- Panel : Activités -->
+        <div class="svp-panel" id="svppanel-activites">
+
+      <!-- Bloc activités -->
+      <div class="pao-bloc">
+        <div class="pao-svc-bar">
+          <i class="fas fa-folder-open" style="color:#1b2f52;font-size:.9rem;"></i>
+          <span class="pao-svc-name" id="activeSvcName"></span>
+          <span class="pao-svc-count" id="activeSvcCount"></span>
+          <button class="btn-pao-add" onclick="showModal('modalAjouter')">
+            <i class="fas fa-plus me-1"></i> Ajouter activité
+          </button>
+        </div>
+
+        <!-- Filtres -->
+        <div class="pao-filters">
+          <label><i class="fas fa-filter me-1"></i>Filtres :</label>
+          <div>
+            <label class="me-1">Programme</label>
+            <select id="fProg" onchange="applyFilters()">
+              <option value="">Tous</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+              <option value="B3">B3</option>
+            </select>
+          </div>
+          <div>
+            <label class="me-1">Pilier</label>
+            <select id="fPilier" onchange="applyFilters()">
+              <option value="">Tous</option>
+              <option value="P1">P1</option>
+              <option value="P2">P2</option>
+              <option value="P3">P3</option>
+              <option value="P4">P4</option>
+              <option value="P5">P5</option>
+              <option value="P6">P6</option>
+              <option value="P7">P7</option>
+            </select>
+          </div>
+          <div>
+            <label class="me-1">Statut</label>
+            <select id="fStatut" onchange="applyFilters()">
+              <option value="">Tous</option>
+              <option value="Acquis">Acquis</option>
+              <option value="À Confirmer">À Confirmer</option>
+              <option value="À Rechercher">À Rechercher</option>
+            </select>
+          </div>
+          <div>
+            <label class="me-1">Trimestre</label>
+            <select id="fTrim" onchange="applyFilters()">
+              <option value="">Tous</option>
+              <option value="T1">T1</option>
+              <option value="T2">T2</option>
+              <option value="T3">T3</option>
+              <option value="T4">T4</option>
+            </select>
+          </div>
+          <div>
+            <input type="text" id="fSearch" placeholder="🔍 Rechercher…" oninput="applyFilters()">
+          </div>
+          <button class="btn-reset-filter" onclick="resetFilters()">
+            <i class="fas fa-times me-1"></i>Réinitialiser
+          </button>
+        </div>
+
+        <!-- Table -->
+        <div class="pao-table-wrap">
+          <table class="pao-table">
+            <thead>
+              <tr>
+                <th style="width:100px">Code</th>
+                <th style="width:55px">Prog.</th>
+                <th style="width:110px">Pilier</th>
+                <th style="min-width:220px">Libellé de l'activité</th>
+                <th style="min-width:180px">Indicateur</th>
+                <th class="text-center" style="width:80px">Cible Ann.</th>
+                <th class="text-end" style="width:130px">Coût estimé (FCFA)</th>
+                <th class="text-center" style="width:90px">Trimestres</th>
+                <th style="width:100px">Statut</th>
+                <th style="width:110px">Bailleur/PTF</th>
+                <th style="width:80px">Niveau</th>
+                <th class="text-center" id="thValidation" style="width:115px;display:none">Validation</th>
+                <th class="text-center" style="width:80px">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="paoTbody"></tbody>
+            <tfoot id="paoTfoot"></tfoot>
+          </table>
+          <div id="noResults" class="no-results" style="display:none">
+            <i class="fas fa-search mb-2 d-block" style="font-size:1.5rem"></i>
+            Aucune activité ne correspond aux filtres sélectionnés.
+          </div>
+        </div>
+      </div><!-- /pao-bloc -->
+
+        </div><!-- /svppanel-activites -->
+
+        <!-- Panel : Cibles & Indicateurs -->
+        <div class="svp-panel" id="svppanel-cibles">
+          <div class="synth-card" style="margin-top:4px">
+            <div class="synth-header">
+              <div class="synth-header-icon" style="background:#7c3aed"><i class="fas fa-bullseye"></i></div>
+              <span class="synth-header-title">Cibles trimestrielles &amp; Indicateurs · <span id="ciblesSvcLabel"></span></span>
+              <span id="ciblesNbBadge" style="font-size:.72rem;font-weight:700;background:#ede9fe;color:#6d28d9;border-radius:12px;padding:2px 10px;margin-left:8px"></span>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="synth-table" style="font-size:.73rem">
+                <thead>
+                  <tr>
+                    <th style="width:100px">Code</th>
+                    <th style="min-width:230px">Libellé</th>
+                    <th style="min-width:200px">Indicateur</th>
+                    <th class="text-center" style="width:80px">Cible Ann.</th>
+                    <th class="text-center" style="width:65px;color:#1e40af">T1</th>
+                    <th class="text-center" style="width:65px;color:#15803d">T2</th>
+                    <th class="text-center" style="width:65px;color:#b45309">T3</th>
+                    <th class="text-center" style="width:65px;color:#b91c1c">T4</th>
+                    <th style="width:140px">Statut exécution</th>
+                    <th class="text-end" style="width:130px">Mobilisé (FCFA)</th>
+                    <th class="text-end" style="width:130px">Exécuté (FCFA)</th>
+                  </tr>
+                </thead>
+                <tbody id="ciblesTbody"></tbody>
+              </table>
+              <div id="ciblesNoData" class="no-results" style="display:none">
+                <i class="fas fa-bullseye mb-2 d-block" style="font-size:1.5rem;color:#c4b5fd"></i>
+                Aucune activité avec indicateur pour ce service.<br>
+                <span style="font-size:.75rem;color:#94a3b8">Renseignez les indicateurs via l'onglet Activités → bouton Modifier.</span>
+              </div>
+            </div>
+          </div>
+        </div><!-- /svppanel-cibles -->
+
+      </div><!-- /svp-body -->
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- MODAL VALIDATION COORDONNATEUR -->
+<div class="modal fade" id="modalValCoord" tabindex="-1">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1b2f52;color:#fff;padding:12px 20px">
+        <h5 class="modal-title" style="font-size:.9rem">
+          <i class="fas fa-stamp me-2"></i>Décision du Coordonnateur : PAO
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:18px">
+        <!-- Fiche activité -->
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:14px">
+          <div style="display:grid;grid-template-columns:90px 1fr;gap:5px 0;font-size:.78rem">
+            <span style="color:#64748b;font-weight:700">Référence</span>
+            <code style="font-weight:800;color:#1b2f52" id="vmCode"></code>
+            <span style="color:#64748b;font-weight:700">Activité</span>
+            <span style="color:#1b2f52;font-weight:600;font-size:.76rem" id="vmLibelle"></span>
+            <span style="color:#64748b;font-weight:700">Service</span>
+            <span style="font-weight:800;color:#1b2f52" id="vmService"></span>
+            <span style="color:#64748b;font-weight:700">Coût estimé</span>
+            <span style="font-family:monospace;font-weight:700" id="vmBudget"></span>
+            <span style="color:#64748b;font-weight:700">Statut actuel</span>
+            <span id="vmStatutActuel"></span>
+          </div>
+        </div>
+        <!-- Observation -->
+        <label style="font-size:.76rem;font-weight:700;color:#374151;margin-bottom:5px;display:block">
+          <i class="fas fa-comment-alt me-1 text-muted"></i>
+          Observation / Motif
+          <span style="color:#94a3b8;font-weight:400">(obligatoire pour Rejet ou Renvoi)</span>
+        </label>
+        <textarea id="vmObs"
+          style="width:100%;border:1px solid #d1d5db;border-radius:6px;font-size:.78rem;
+                 padding:8px 10px;resize:vertical;min-height:65px;color:#1b2f52;outline:none"
+          placeholder="Saisir votre observation, motif ou directive…"
+          onfocus="this.style.borderColor='#93c5fd'"
+          onblur="this.style.borderColor='#d1d5db'"></textarea>
+      </div>
+      <div class="modal-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;gap:8px;padding:10px 18px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>Annuler
+        </button>
+        <button onclick="confirmerVal('Rejeté')"
+          style="background:#b91c1c;color:#fff;border:none;border-radius:7px;padding:6px 14px;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+          <i class="fas fa-times-circle"></i> Rejeter
+        </button>
+        <button onclick="confirmerVal('À revoir')"
+          style="background:#6d28d9;color:#fff;border:none;border-radius:7px;padding:6px 14px;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+          <i class="fas fa-undo"></i> À revoir
+        </button>
+        <button onclick="confirmerVal('Validé')"
+          style="background:#15803d;color:#fff;border:none;border-radius:7px;padding:6px 16px;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+          <i class="fas fa-check-circle"></i> Valider
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AJOUTER -->
+<div class="modal fade" id="modalAjouter" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1b2f52;color:#fff;">
+        <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Ajouter une activité · <span id="modalSvcLabel"></span></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-2">
+            <label class="form-label fw-bold small">Code</label>
+            <input type="text" class="form-control form-control-sm" id="aCode" readonly style="background:#f8fafc">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small">Service</label>
+            <input type="text" class="form-control form-control-sm" id="aService" readonly style="background:#f8fafc">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small">Programme <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="aProg">
+              <option value="">Sélectionner...</option>
+              <option value="B1">B1 · Gouvernance</option>
+              <option value="B2">B2 · Soins</option>
+              <option value="B3">B3 · Médicaments</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Pilier <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="aPilier">
+              <option value="">Sélectionner...</option>
+              <option value="P1">P1 · Gouvernance & leadership</option>
+              <option value="P2">P2 · Financement de la santé</option>
+              <option value="P3">P3 · Ressources humaines</option>
+              <option value="P4">P4 · Systèmes d'information</option>
+              <option value="P5">P5 · Accès aux médicaments</option>
+              <option value="P6">P6 · Médicaments & produits</option>
+              <option value="P7">P7 · Prestations de services</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Statut financement <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="aStatut">
+              <option value="">Sélectionner...</option>
+              <option value="Acquis">Acquis</option>
+              <option value="À Confirmer">À Confirmer</option>
+              <option value="À Rechercher">À Rechercher</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Libellé de l'activité <span class="text-danger">*</span></label>
+            <textarea class="form-control form-control-sm" id="aLibelle" rows="2" placeholder="Description complète de l'activité"></textarea>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Bailleur / PTF</label>
+            <input type="text" class="form-control form-control-sm" id="aBailleur" placeholder="Ex : Etat, FM, OMS…">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Niveau</label>
+            <select class="form-select form-select-sm" id="aNiveau">
+              <option value="National">National</option>
+              <option value="Central">Central</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Coût estimé (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="aCout" placeholder="0" min="0">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Trimestres <span class="text-danger">*</span></label>
+            <div class="d-flex gap-3 mt-1">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="aT1">
+                <label class="form-check-label fw-bold" for="aT1" style="color:#1e40af">T1</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="aT2">
+                <label class="form-check-label fw-bold" for="aT2" style="color:#15803d">T2</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="aT3">
+                <label class="form-check-label fw-bold" for="aT3" style="color:#b45309">T3</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="aT4">
+                <label class="form-check-label fw-bold" for="aT4" style="color:#b91c1c">T4</label>
+              </div>
+            </div>
+          </div>
+          <!-- ── Section Suivi des résultats ── -->
+          <div class="col-12">
+            <hr class="my-1">
+            <p class="fw-bold small mb-2" style="color:#1d4ed8"><i class="fas fa-chart-line me-1"></i>Suivi des résultats &amp; indicateurs</p>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Indicateur de performance</label>
+            <input type="text" class="form-control form-control-sm" id="aIndicateur" placeholder="Ex : Taux de couverture supervision intégrée VIH/IST/Hépatites">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Cible annuelle</label>
+            <input type="text" class="form-control form-control-sm" id="aCibleAnnuelle" placeholder="Ex : 100%">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small" style="color:#1e40af">Cible T1</label>
+            <input type="text" class="form-control form-control-sm" id="aCibleT1" placeholder="25%">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small" style="color:#15803d">Cible T2</label>
+            <input type="text" class="form-control form-control-sm" id="aCibleT2" placeholder="25%">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small" style="color:#b45309">Cible T3</label>
+            <input type="text" class="form-control form-control-sm" id="aCibleT3" placeholder="25%">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small" style="color:#b91c1c">Cible T4</label>
+            <input type="text" class="form-control form-control-sm" id="aCibleT4" placeholder="25%">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Statut d'exécution</label>
+            <select class="form-select form-select-sm" id="aStatutExecution">
+              <option value="non_demarree">Non démarrée</option>
+              <option value="en_cours">En cours</option>
+              <option value="partielle">Partiellement réalisée</option>
+              <option value="realisee">Réalisée</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Budget mobilisé (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="aBudgetMobilise" placeholder="0" min="0">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Budget exécuté (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="aBudgetExecute" placeholder="0" min="0">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="addActivite()">
+          <i class="fas fa-save me-1"></i> Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MODIFIER -->
+<div class="modal fade" id="modalModifier" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1d4ed8;color:#fff;">
+        <h5 class="modal-title"><i class="fas fa-pencil-alt me-2"></i>Modifier l'activité · <span id="mCodeDisplay"></span></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-2">
+            <label class="form-label fw-bold small">Code</label>
+            <input type="text" class="form-control form-control-sm" id="mCode" readonly style="background:#f8fafc">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small">Programme <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="mProg">
+              <option value="">Sélectionner...</option>
+              <option value="B1">B1 · Gouvernance</option>
+              <option value="B2">B2 · Soins</option>
+              <option value="B3">B3 · Médicaments</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Pilier <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="mPilier">
+              <option value="">Sélectionner...</option>
+              <option value="P1">P1 · Gouvernance & leadership</option>
+              <option value="P2">P2 · Financement de la santé</option>
+              <option value="P3">P3 · Ressources humaines</option>
+              <option value="P4">P4 · Systèmes d'information</option>
+              <option value="P5">P5 · Accès aux médicaments</option>
+              <option value="P6">P6 · Médicaments & produits</option>
+              <option value="P7">P7 · Prestations de services</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Statut financement <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="mStatut">
+              <option value="">Sélectionner...</option>
+              <option value="Acquis">Acquis</option>
+              <option value="À Confirmer">À Confirmer</option>
+              <option value="À Rechercher">À Rechercher</option>
+              <option value="Non chiffré">Non chiffré</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small">Niveau</label>
+            <select class="form-select form-select-sm" id="mNiveau">
+              <option value="National">National</option>
+              <option value="Central">Central</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Libellé <span class="text-danger">*</span></label>
+            <textarea class="form-control form-control-sm" id="mLibelle" rows="2"></textarea>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label fw-bold small">Bailleur / PTF</label>
+            <input type="text" class="form-control form-control-sm" id="mBailleur">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Coût estimé (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="mCout" min="0">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Trimestres <span class="text-danger">*</span></label>
+            <div class="d-flex gap-3 mt-1">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="mT1">
+                <label class="form-check-label fw-bold" for="mT1" style="color:#1e40af">T1</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="mT2">
+                <label class="form-check-label fw-bold" for="mT2" style="color:#15803d">T2</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="mT3">
+                <label class="form-check-label fw-bold" for="mT3" style="color:#b45309">T3</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="mT4">
+                <label class="form-check-label fw-bold" for="mT4" style="color:#b91c1c">T4</label>
+              </div>
+            </div>
+          </div>
+          <!-- ── Section Suivi des résultats ── -->
+          <div class="col-12">
+            <hr class="my-1">
+            <p class="fw-bold small mb-2" style="color:#1d4ed8"><i class="fas fa-chart-line me-1"></i>Suivi des résultats &amp; indicateurs</p>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Indicateur de performance</label>
+            <input type="text" class="form-control form-control-sm" id="mIndicateur" placeholder="Ex : Taux de couverture supervision">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Cible annuelle</label>
+            <input type="text" class="form-control form-control-sm" id="mCibleAnnuelle" placeholder="Ex : 100%">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small" style="color:#1e40af">Cible T1</label>
+            <input type="text" class="form-control form-control-sm" id="mCibleT1" placeholder="25%">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small" style="color:#15803d">Cible T2</label>
+            <input type="text" class="form-control form-control-sm" id="mCibleT2" placeholder="25%">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small" style="color:#b45309">Cible T3</label>
+            <input type="text" class="form-control form-control-sm" id="mCibleT3" placeholder="25%">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small" style="color:#b91c1c">Cible T4</label>
+            <input type="text" class="form-control form-control-sm" id="mCibleT4" placeholder="25%">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Statut d'exécution</label>
+            <select class="form-select form-select-sm" id="mStatutExecution">
+              <option value="non_demarree">Non démarrée</option>
+              <option value="en_cours">En cours</option>
+              <option value="partielle">Partiellement réalisée</option>
+              <option value="realisee">Réalisée</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Budget mobilisé (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="mBudgetMobilise" placeholder="0" min="0">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Budget exécuté (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="mBudgetExecute" placeholder="0" min="0">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="saveModification()">
+          <i class="fas fa-save me-1"></i> Enregistrer les modifications
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+
+  /* ── Navigation onglets ──────────────────────────────────────── */
+  function svpSwitchTab(tab) {
+    document.querySelectorAll('.svp-tab').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.svp-panel').forEach(el => el.classList.remove('active'));
+    document.getElementById('svptab-' + tab).classList.add('active');
+    document.getElementById('svppanel-' + tab).classList.add('active');
+  }
+
+  /* ── Sidebar ─────────────────────────────────────────────────── */
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  else if (window.SIGFIC?.renderSidebarNav) SIGFIC.renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  else if (window.SIGFIC?.renderServiceBadge) SIGFIC.renderServiceBadge();
+
+  const u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+  const elU = document.getElementById('userName');
+  if (elU) elU.textContent = u.nom || u.name || u.email || '';
+
+  function logout() {
+    localStorage.removeItem('pslsh_token');
+    localStorage.removeItem('pslsh_user');
+    window.location.href = '/pages/auth/login.html';
+  }
+  function showModal(id) { new bootstrap.Modal(document.getElementById(id)).show(); }
+
+  /* ─── SERVICES ─────────────────────────────────────────────── */
+  const SERVICES = [
+    { code:'SAF',   label:'Service Administratif et Financier',           color:'#1b4fa8' },
+    { code:'SGAS',  label:'Service Gestion Administrative et Suivi',      color:'#2d7a2d' },
+    { code:'SEB',   label:'Service Épidémiologie et Biologie',            color:'#8b4513' },
+    { code:'SPCG',  label:'Service Prévention, Communication et Genre',   color:'#8b0000' },
+    { code:'SPCH',  label:'Service PEC et Charge Virale',                 color:'#b8860b' },
+    { code:'SPSAC', label:'Service PEC Soins et Accomp. Communautaire',   color:'#006400' },
+    { code:'SESRO', label:'Service Suivi-Éval. et Recherche Opérat.',     color:'#4b0082' },
+    { code:'SC',    label:'Service de Coordination',                       color:'#00688b' },
+    { code:'APMS',  label:'Approv. et Produits Médicaux de Santé',        color:'#8b008b' },
+    { code:'SLNR',  label:'Section Labo National de Référence',           color:'#2f4f4f' },
+  ];
+
+  /* ─── DONNÉES PAO (56 activités + champ service) ───────────── */
+  let paoData = [
+    { code:'PSLSH-001', service:'SPCH',  prog:'B1', pilier:'P1', libelle:'Supervisions trimestrielles intégrées sites PEC VIH/IST/Hépatites',                                             cout:30000000,   statut:'Acquis',       bailleur:'ETAT/FM',             niveau:'National', trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-002', service:'SESRO', prog:'B1', pilier:'P4', libelle:'Reproduire outils de collecte données VIH et Hépatites (1000)',                                                 cout:45000000,   statut:'À Confirmer',  bailleur:'Etat',                niveau:'National', trim:['T1'] },
+    { code:'PSLSH-003', service:'SGAS',  prog:'B1', pilier:'P1', libelle:'Atelier évaluation PAO 2026 et validation PAO_2027 (3 jours hors Ndjamena)',                                    cout:7880000,    statut:'Acquis',       bailleur:'Etat',                niveau:'Central',  trim:['T4'] },
+    { code:'PSLSH-004', service:'SESRO', prog:'B1', pilier:'P3', libelle:"Formation à l'étranger 02 personnes suivi évaluation et statistiques",                                          cout:14200000,   statut:'À Confirmer',  bailleur:'Etat',                niveau:'Central',  trim:['T2'] },
+    { code:'PSLSH-005', service:'SESRO', prog:'B1', pilier:'P4', libelle:'Connexion internet mensuelle pour tracker VIH (100 acteurs)',                                                   cout:10000000,   statut:'Acquis',       bailleur:'ETAT/FM',             niveau:'National', trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-006', service:'SGAS',  prog:'B1', pilier:'P3', libelle:'Recruter consultant assistance technique nationale (1 an)',                                                     cout:24000000,   statut:'À Confirmer',  bailleur:'Etat',                niveau:'Central',  trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-007', service:'SESRO', prog:'B1', pilier:'P4', libelle:'Réunions trimestrielles monitorage validation données sites PEC Ndjamena',                                      cout:9192000,    statut:'À Confirmer',  bailleur:'Etat',                niveau:'Central',  trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-008', service:'SGAS',  prog:'B1', pilier:'P1', libelle:'Atelier évaluation mi-parcours PAO 2026 (3 jours Ndjamena)',                                                   cout:7880000,    statut:'Acquis',       bailleur:'Etat',                niveau:'Central',  trim:['T2'] },
+    { code:'PSLSH-009', service:'SESRO', prog:'B1', pilier:'P4', libelle:'Réunions semestrielles monitorage validation données DPSP 4 pools',                                            cout:23000000,   statut:'À Confirmer',  bailleur:'Etat',                niveau:'Central',  trim:['T2','T4'] },
+    { code:'PSLSH-010', service:'SPCH',  prog:'B1', pilier:'P1', libelle:'Révision directives nationales prise en charge VIH',                                                           cout:5000000,    statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T1'] },
+    { code:'PSLSH-011', service:'SPCH',  prog:'B1', pilier:'P1', libelle:'Validation directives nationales révisées PEC VIH à Mandalia',                                                 cout:5000000,    statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T2'] },
+    { code:'PSLSH-012', service:'SLNR',  prog:'B1', pilier:'P3', libelle:'Formation/Recyclage 80 médecins sites PEC IST/VIH/Hépatites (3 sessions, 3 jours, Mandalia)',                 cout:30000000,   statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T1','T2','T3'] },
+    { code:'PSLSH-013', service:'SPCG',  prog:'B1', pilier:'P7', libelle:'Confectionner/reproduire 1000 dépliants algorithmes thérapeutiques VIH/IST/Hépatites',                        cout:10000000,   statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T1'] },
+    { code:'PSLSH-014', service:'SPCG',  prog:'B1', pilier:'P1', libelle:'Reproduire et diffuser 500 directives nationales VIH/IST/Hépatites/Nutrition',                                cout:20000000,   statut:'À Rechercher', bailleur:'Etat',                niveau:'National', trim:['T2'] },
+    { code:'PSLSH-015', service:'SC',    prog:'B1', pilier:'P3', libelle:'Atelier formation formateurs modules PEC Nutrition et protection sociale (40 participants, 3 jours)',          cout:7000000,    statut:'Acquis',       bailleur:'Etat',                niveau:'Central',  trim:['T1'] },
+    { code:'PSLSH-016', service:'SPSAC', prog:'B2', pilier:'P3', libelle:'Formation en cascade 80 paramedics/points focaux délégation de tâches PEC VIH/IST/Hépatites (4 pools)',      cout:35000000,   statut:'À Rechercher', bailleur:'OMS',                 niveau:'National', trim:['T2'] },
+    { code:'PSLSH-017', service:'SPCH',  prog:'B2', pilier:'P1', libelle:'Validation algorithme national PEC hépatites virales à Mandalia',                                              cout:6000000,    statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T1'] },
+    { code:'PSLSH-018', service:'SPSAC', prog:'B2', pilier:'P7', libelle:'Former 100 adolescents-jeunes traitement literacy Ndjamena (2 sessions, 3 jours)',                            cout:5000000,    statut:'Acquis',       bailleur:'Etat',                niveau:'Central',  trim:['T2'] },
+    { code:'PSLSH-019', service:'SPSAC', prog:'B2', pilier:'P7', libelle:'Campagne dépistage systématique 10 districts Ndjamena (UNA + dépistage index)',                               cout:14000000,   statut:'À Rechercher', bailleur:'OMS',                 niveau:'National', trim:['T1','T3'] },
+    { code:'PSLSH-020', service:'SPSAC', prog:'B2', pilier:'P3', libelle:'Former 50 sages-femmes dépistage hépatites virales',                                                           cout:10000000,   statut:'À Confirmer',  bailleur:'Etat',                niveau:'National', trim:['T2'] },
+    { code:'PSLSH-021', service:'SPCG',  prog:'B2', pilier:'P7', libelle:'Journée Mondiale lutte contre SIDA Édition 2026',                                                              cout:15000000,   statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T4'] },
+    { code:'PSLSH-022', service:'SPCG',  prog:'B2', pilier:'P7', libelle:'Journée Mondiale lutte contre les Hépatites Édition 2026',                                                    cout:15000000,   statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T3'] },
+    { code:'PSLSH-023', service:'SPCG',  prog:'B2', pilier:'P7', libelle:'Participation Semaine Nationale Femme Tchadienne (SENAFET) 2026',                                             cout:14000000,   statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T1'] },
+    { code:'PSLSH-024', service:'SPCG',  prog:'B2', pilier:'P7', libelle:'Achat matériel collectif éducation prévention VIH méthode Ruban Rouge',                                      cout:8500000,    statut:'À Rechercher', bailleur:'ETAT/UNICEF',         niveau:'National', trim:['T1'] },
+    { code:'PSLSH-025', service:'SPCG',  prog:'B2', pilier:'P3', libelle:'Atelier formation points focaux méthode Ruban Rouge',                                                          cout:4000000,    statut:'À Rechercher', bailleur:'Etat',                niveau:'National', trim:['T1'] },
+    { code:'PSLSH-026', service:'SPSAC', prog:'B1', pilier:'P1', libelle:'Missions supervisions semestrielles conjointes clubs ados/jeunes (10 villes, 3 axes, 10 jours)',             cout:13000000,   statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T2','T4'] },
+    { code:'PSLSH-027', service:'SC',    prog:'B2', pilier:'P7', libelle:'3 campagnes intégrées prévention/lutte stigmatisation/dépistage VIH/Hépatites avec OSC',                    cout:12000000,   statut:'À Confirmer',  bailleur:'Etat',                niveau:'National', trim:['T1','T2','T3'] },
+    { code:'PSLSH-028', service:'SC',    prog:'B2', pilier:'P7', libelle:'Appui 5 associations/OSC films documentaires prévention IST/VIH/Hépatites/TB',                              cout:15000000,   statut:'À Confirmer',  bailleur:'Etat',                niveau:'National', trim:['T2'] },
+    { code:'PSLSH-029', service:'APMS',  prog:'B2', pilier:'P1', libelle:'Supervision trimestrielle CDV chefs-lieux provinces (3 axes × 4 trimestres) APMS',                          cout:21960000,   statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-030', service:'APMS',  prog:'B2', pilier:'P1', libelle:'Acquisition incinérateur moderne gestion déchets APMS',                                                       cout:26240000,   statut:'À Rechercher', bailleur:'FM',                  niveau:'Central',  trim:['T1'] },
+    { code:'PSLSH-031', service:'APMS',  prog:'B1', pilier:'P5', libelle:'Construction entrepôt stockage intrants + Extension laboratoire APMS',                                        cout:35000000,   statut:'Acquis',       bailleur:'Etat',                niveau:'Central',  trim:['T1','T2'] },
+    { code:'PSLSH-032', service:'APMS',  prog:'B3', pilier:'P5', libelle:'Achat 35% ARV adultes/pédiatriques/PTME/PrEP + réactifs + médicaments IO',                                 cout:2514664083, statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-033', service:'APMS',  prog:'B3', pilier:'P6', libelle:'Achats traitement hépatite B&C + réactifs + consommables + préservatifs + micronutriments',                 cout:753934430,  statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-034', service:'APMS',  prog:'B3', pilier:'P3', libelle:'Formation/Recyclage 85 acteurs gestion produits/dispensation (1 pool, 2 sessions, 3 jours)',                 cout:19224345,   statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T1'] },
+    { code:'PSLSH-035', service:'SAF',   prog:'B1', pilier:'P1', libelle:'2 Spot Check GAS dans 6 provinces (2 axes, 10 jours)',                                                        cout:4070000,    statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T2','T4'] },
+    { code:'PSLSH-036', service:'SEB',   prog:'B2', pilier:'P3', libelle:'Formation 39 techniciens labo système gestion données charge virale (3 jours, Ndjamena)',                    cout:6000000,    statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T1'] },
+    { code:'PSLSH-037', service:'SEB',   prog:'B2', pilier:'P3', libelle:'Formation en cascade 53 techniciens labo/prestataires VISITEC CD4 (23 provinces)',                           cout:8000000,    statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T2'] },
+    { code:'PSLSH-038', service:'SPCH',  prog:'B2', pilier:'P7', libelle:'Achat de performance cible Charge Virale supprimée',                                                          cout:30000000,   statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-039', service:'SEB',   prog:'B2', pilier:'P4', libelle:'Paramétrage appareils GeneXpert charge virale hépatites B&C (23 provinces)',                                 cout:4000000,    statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T1'] },
+    { code:'PSLSH-040', service:'SLNR',  prog:'B2', pilier:'P3', libelle:'Formation 32 techniciens labo contrôle qualité charge virale/diagnostic précoce (3 jours)',                 cout:6000000,    statut:'Acquis',       bailleur:'Etat',                niveau:'National', trim:['T2'] },
+    { code:'PSLSH-041', service:'SLNR',  prog:'B1', pilier:'P3', libelle:'Recrutement consultant national services LNR et Suivi Biologique',                                            cout:2400000,    statut:'Acquis',       bailleur:'Etat',                niveau:'Central',  trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-042', service:'SPSAC', prog:'B2', pilier:'P3', libelle:'Formation CPS/Prestataires stigmatisation, dépistage et counseling Ndjamena',                                cout:3900000,    statut:'Acquis',       bailleur:'Collectivites locales', niveau:'Central', trim:['T1'] },
+    { code:'PSLSH-043', service:'SPCH',  prog:'B2', pilier:'P4', libelle:'Mission suivi réalisation charge virale site haut volume via RNTAP+',                                         cout:8000000,    statut:'À Confirmer',  bailleur:'Etat',                niveau:'National', trim:['T2','T4'] },
+    { code:'PSLSH-044', service:'SAF',   prog:'B1', pilier:'P1', libelle:'Achats carburants véhicules + groupe électrogène + entretien véhicules',                                      cout:25000000,   statut:'Acquis',       bailleur:'Etat',                niveau:'Central',  trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-045', service:'SAF',   prog:'B1', pilier:'P1', libelle:'Achats fournitures bureau + matériels informatiques (encres, ordinateurs, imprimantes, etc.)',               cout:30280000,   statut:'Acquis',       bailleur:'Etat',                niveau:'Central',  trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-046', service:'SAF',   prog:'B1', pilier:'P1', libelle:'Achat matériels entretien (Ajax, Omo, désinfectants, balais, etc.)',                                          cout:17000000,   statut:'Acquis',       bailleur:'Etat',                niveau:'Central',  trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-047', service:'SAF',   prog:'B1', pilier:'P1', libelle:'Contrat gardiennage + nettoyage + ramassage ordures',                                                         cout:6900000,    statut:'Acquis',       bailleur:'Etat',                niveau:'Central',  trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-048', service:'APMS',  prog:'B1', pilier:'P1', libelle:'Contrat gardiennage + nettoyage + ramassage ordures (APMS)',                                                  cout:null,       statut:'Non chiffré',  bailleur:'',                    niveau:'Central',  trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-049', service:'SAF',   prog:'B1', pilier:'P3', libelle:"Formation à l'étranger 04 personnes gestion programmes (planification budgétaire, comptabilité)",            cout:17400000,   statut:'À Confirmer',  bailleur:'Etat',                niveau:'Central',  trim:['T2'] },
+    { code:'PSLSH-050', service:'SGAS',  prog:'B1', pilier:'P1', libelle:'Participation 7 personnes conférences internationales (ICASA, AFRA VIH, etc.)',                              cout:25000000,   statut:'À Confirmer',  bailleur:'Etat',                niveau:'Central',  trim:['T2','T3'] },
+    { code:'PSLSH-051', service:'SAF',   prog:'B1', pilier:'P2', libelle:'Atelier processus demande financement hors Ndjamena (2 sessions)',                                            cout:9000000,    statut:'À Confirmer',  bailleur:'Etat',                niveau:'Central',  trim:['T1','T3'] },
+    { code:'PSLSH-052', service:'SGAS',  prog:'B1', pilier:'P1', libelle:'Atelier suivi Plan Conjoint National TB/VIH/HÉPATITES à Bakara',                                             cout:4000000,    statut:'À Confirmer',  bailleur:'Etat',                niveau:'Central',  trim:['T2'] },
+    { code:'PSLSH-053', service:'SESRO', prog:'B1', pilier:'P4', libelle:'Recrutement consultant national formation équipe programme intelligence artificielle',                         cout:4200000,    statut:'À Confirmer',  bailleur:'Etat',                niveau:'Central',  trim:['T1'] },
+    { code:'PSLSH-054', service:'SPSAC', prog:'B1', pilier:'P7', libelle:'Appui trimestriel fonctionnement Centre Espoir de Vie',                                                       cout:2400000,    statut:'Acquis',       bailleur:'Etat',                niveau:'Central',  trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-055', service:'SEB',   prog:'B1', pilier:'P4', libelle:'Transport échantillons sites prélèvement vers sites Genexpert (trimestriel)',                                 cout:5200000,    statut:'À Confirmer',  bailleur:'Etat',                niveau:'National', trim:['T1','T2','T3','T4'] },
+    { code:'PSLSH-056', service:'APMS',  prog:'B1', pilier:'P5', libelle:'Transport intrants et réactifs vers les PPA (semestriel)',                                                    cout:5000000,    statut:'À Confirmer',  bailleur:'Etat',                niveau:'National', trim:['T2','T4'] },
+  ];
+
+  /* ─── ÉTAT ──────────────────────────────────────────────────── */
+  let currentService = 'SAF';
+
+  /* ─── HELPERS ───────────────────────────────────────────────── */
+  function fmt(n) {
+    if (n === null || n === undefined) return '<span style="color:#94a3b8">nc</span>';
+    return Math.round(n).toLocaleString('fr-FR');
+  }
+  function fmtPlain(n) {
+    if (!n) return '0';
+    return Math.round(n).toLocaleString('fr-FR');
+  }
+  function progBadge(p) {
+    const m = { B1:['prog-b1','B1 Gouv.'], B2:['prog-b2','B2 Soins'], B3:['prog-b3','B3 Médic.'] };
+    const [cls, lbl] = m[p] || ['prog-b1', p];
+    return `<span class="prog-badge ${cls}">${lbl}</span>`;
+  }
+  const PILIERS_DEF = {
+    P1:{ label:'P1 · Gouvernance & leadership',          cls:'pil-1' },
+    P2:{ label:'P2 · Financement de la santé',           cls:'pil-2' },
+    P3:{ label:'P3 · Ressources humaines',               cls:'pil-3' },
+    P4:{ label:"P4 · Systèmes d'information sanitaire",  cls:'pil-4' },
+    P5:{ label:'P5 · Accès aux médicaments',             cls:'pil-5' },
+    P6:{ label:'P6 · Médicaments & produits de santé',   cls:'pil-6' },
+    P7:{ label:'P7 · Prestations de services de santé',  cls:'pil-7' },
+  };
+  function pilierBadge(p) {
+    const d = PILIERS_DEF[p];
+    if (!d) return `<span class="pil-badge" style="background:#f1f5f9;color:#64748b">nc</span>`;
+    return `<span class="pil-badge ${d.cls}">${d.label}</span>`;
+  }
+  function statutBadge(s) {
+    if (s === 'Acquis')       return `<span class="st-badge st-acquis">Acquis</span>`;
+    if (s === 'À Confirmer')  return `<span class="st-badge st-confirm">À Confirmer</span>`;
+    if (s === 'À Rechercher') return `<span class="st-badge st-recherche">À Rechercher</span>`;
+    return `<span class="st-badge st-nc">${s}</span>`;
+  }
+  function niveauBadge(n) {
+    return `<span class="niv-badge ${n==='National'?'niv-nat':'niv-cen'}">${n}</span>`;
+  }
+  function trimPills(trims) {
+    return ['T1','T2','T3','T4'].map(t =>
+      `<span class="tp ${trims.includes(t)?'tp-on':'tp-off'}">${t}</span>`
+    ).join('');
+  }
+
+  /* ─── BOUTONS SERVICE ───────────────────────────────────────── */
+  function buildServiceButtons() {
+    const wrap = document.getElementById('svcBtnWrap');
+    wrap.innerHTML = SERVICES.map(s => {
+      const count = paoData.filter(a => a.service === s.code).length;
+      return `<button class="svc-btn ${s.code === currentService ? 'active' : ''}"
+        onclick="switchService('${s.code}')" id="btn-${s.code}" title="${s.label}">
+        <span>${s.code}</span><span class="svc-count">${count}</span>
+      </button>`;
+    }).join('');
+  }
+
+  /* ─── SWITCH SERVICE ────────────────────────────────────────── */
+  function switchService(code) {
+    currentService = code;
+    SERVICES.forEach(s => {
+      const btn = document.getElementById('btn-' + s.code);
+      if (btn) btn.classList.toggle('active', s.code === code);
+    });
+    const svc = SERVICES.find(s => s.code === code);
+    document.getElementById('svcColorStrip').style.background = svc ? svc.color : '#1b2f52';
+    resetFiltersOnly();
+    renderAll();
+  }
+
+  function renderAll() {
+    const svcData = paoData.filter(a => a.service === currentService);
+    updateKpis(svcData);
+    renderSyntheses(svcData);
+    applyFilters();
+    renderCibles();
+    _updateCoordBanner();
+  }
+
+  /* ─── KPIs ──────────────────────────────────────────────────── */
+  function updateKpis(data) {
+    const svc = SERVICES.find(s => s.code === currentService);
+    document.getElementById('kpi-total').textContent    = data.length;
+    document.getElementById('kpi-svc-sub').textContent  = svc ? svc.code : currentService;
+    document.getElementById('kpi-acquis').textContent   = data.filter(a => a.statut === 'Acquis').length;
+    document.getElementById('kpi-confirm').textContent  = data.filter(a => a.statut === 'À Confirmer').length;
+    document.getElementById('kpi-recherche').textContent= data.filter(a => a.statut === 'À Rechercher').length;
+    const tot = data.reduce((s, a) => s + (a.cout || 0), 0);
+    document.getElementById('kpi-budget').textContent   = fmtPlain(tot) + ' FCFA';
+  }
+
+  /* ─── SYNTHÈSES ─────────────────────────────────────────────── */
+  function tauxClass(t) { return t >= 75 ? 'st-green' : t >= 40 ? 'st-orange' : t > 0 ? 'st-red' : 'st-gray'; }
+
+  function synthRow(badgeHtml, items) {
+    const nb     = items.length;
+    const acquis = items.filter(a => a.statut === 'Acquis').length;
+    const conf   = items.filter(a => a.statut === 'À Confirmer').length;
+    const rech   = items.filter(a => a.statut === 'À Rechercher').length;
+    const budget = items.reduce((s, a) => s + (a.cout || 0), 0);
+    const taux   = nb > 0 ? Math.round((acquis / nb) * 100) : 0;
+    return { badgeHtml, nb, acquis, conf, rech, budget, taux };
+  }
+
+  function renderSyntheses(data) {
+    const progs = [
+      { key:'B1', badge:'<span class="prog-badge prog-b1">B1 · Gouvernance</span>' },
+      { key:'B2', badge:'<span class="prog-badge prog-b2">B2 · Soins & Prév.</span>' },
+      { key:'B3', badge:'<span class="prog-badge prog-b3">B3 · Médicaments</span>' },
+    ];
+    _fillSynth('synthProgTbody', 'synthProgTfoot',
+      progs.map(p => synthRow(p.badge, data.filter(a => a.prog === p.key)))
+    );
+    _fillSynth('synthPilTbody', 'synthPilTfoot',
+      Object.entries(PILIERS_DEF).map(([key, d]) =>
+        synthRow(`<span class="pil-badge ${d.cls}">${d.label}</span>`, data.filter(a => a.pilier === key))
+      )
+    );
+  }
+
+  function _fillSynth(tbodyId, tfootId, rows) {
+    const tbody = document.getElementById(tbodyId);
+    const tfoot = document.getElementById(tfootId);
+    if (!tbody) return;
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td>${r.badgeHtml}</td>
+        <td class="text-center fw-bold">${r.nb}</td>
+        <td class="text-center" style="color:#15803d;font-weight:700">${r.acquis}</td>
+        <td class="text-center" style="color:#b45309">${r.conf}</td>
+        <td class="text-center" style="color:#b91c1c">${r.rech}</td>
+        <td class="text-end mono">${fmt(r.budget)}</td>
+        <td class="text-center"><span class="synth-taux ${tauxClass(r.taux)}">${r.taux}%</span></td>
+      </tr>`).join('');
+    const totNb     = rows.reduce((s, r) => s + r.nb, 0);
+    const totAcquis = rows.reduce((s, r) => s + r.acquis, 0);
+    const totConf   = rows.reduce((s, r) => s + r.conf, 0);
+    const totRech   = rows.reduce((s, r) => s + r.rech, 0);
+    const totBudget = rows.reduce((s, r) => s + r.budget, 0);
+    const totTaux   = totNb > 0 ? Math.round((totAcquis / totNb) * 100) : 0;
+    if (tfoot) tfoot.innerHTML = `<tr class="row-foot">
+      <td>TOTAL</td>
+      <td class="text-center">${totNb}</td>
+      <td class="text-center">${totAcquis}</td>
+      <td class="text-center">${totConf}</td>
+      <td class="text-center">${totRech}</td>
+      <td class="text-end mono">${fmt(totBudget)}</td>
+      <td class="text-center"><span class="synth-taux ${tauxClass(totTaux)}">${totTaux}%</span></td>
+    </tr>`;
+  }
+
+  /* ─── TABLE ─────────────────────────────────────────────────── */
+  function renderTable(data) {
+    const tbody  = document.getElementById('paoTbody');
+    const tfoot  = document.getElementById('paoTfoot');
+    const noRes  = document.getElementById('noResults');
+    const svcEl  = document.getElementById('activeSvcName');
+    const cntEl  = document.getElementById('activeSvcCount');
+    const svc    = SERVICES.find(s => s.code === currentService);
+
+    if (svcEl) svcEl.textContent = svc ? `${svc.code} · ${svc.label}` : currentService;
+
+    if (data.length === 0) {
+      tbody.innerHTML = '';
+      tfoot.innerHTML = '';
+      noRes.style.display = '';
+      if (cntEl) cntEl.textContent = '0 activité';
+      return;
+    }
+    noRes.style.display = 'none';
+    if (cntEl) cntEl.textContent = data.length + ' activité' + (data.length > 1 ? 's' : '');
+
+    tbody.innerHTML = data.map(a => {
+      const isPend = ['Soumis','À revoir'].includes(a.valStatut);
+      const valCell = _isCoord ? `<td class="text-center" id="valcell-${a.code}">
+        ${valBadge(a.valStatut)}
+        ${isPend ? `<br><button class="btn-decider" onclick="openValModal('${a.code}')">
+          <i class="fas fa-stamp"></i> Décider
+        </button>` : ''}
+      </td>` : '';
+      const indic = a.indicateur ? `<span title="${a.indicateur.replace(/"/g,'&quot;')}" style="font-size:.72rem;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:180px">${a.indicateur}</span>` : '<span style="color:#cbd5e1;font-size:.7rem">nc</span>';
+      const cibleA = a.cible_annuelle || '<span style="color:#cbd5e1;font-size:.7rem">nc</span>';
+      return `<tr data-code="${a.code}">
+        <td><code style="font-size:.72rem;color:#1b2f52;font-weight:700">${a.code}</code></td>
+        <td>${progBadge(a.prog)}</td>
+        <td>${pilierBadge(a.pilier)}</td>
+        <td class="libelle-cell" title="${a.libelle.replace(/"/g,'&quot;')}"><span>${a.libelle}</span></td>
+        <td>${indic}</td>
+        <td class="text-center" style="font-size:.76rem;font-weight:700;color:#1b3a6b">${cibleA}</td>
+        <td class="text-end mono">${fmt(a.cout)}</td>
+        <td class="text-center"><div class="trim-pills justify-content-center">${trimPills(a.trim)}</div></td>
+        <td>${statutBadge(a.statut)}</td>
+        <td style="font-size:.74rem;color:#4a5568">${a.bailleur}</td>
+        <td>${niveauBadge(a.niveau)}</td>
+        ${valCell}
+        <td class="text-center" style="white-space:nowrap">
+          <button class="btn-edit me-1" onclick="editActivite('${a.code}')" title="Modifier">
+            <i class="fas fa-pencil-alt"></i>
+          </button>
+          <button class="btn-del" onclick="deleteActivite('${a.code}')" title="Supprimer">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    const totalCout = data.reduce((s, a) => s + (a.cout || 0), 0);
+    tfoot.innerHTML = `<tr class="row-total">
+      <td colspan="6"><strong>TOTAL ${currentService} : ${data.length} activité${data.length > 1 ? 's' : ''}</strong></td>
+      <td class="text-end mono"><strong>${fmt(totalCout)}</strong></td>
+      <td colspan="5"></td>
+    </tr>`;
+  }
+
+  /* ─── FILTRES ───────────────────────────────────────────────── */
+  function applyFilters() {
+    const prog   = document.getElementById('fProg').value;
+    const pilier = document.getElementById('fPilier').value;
+    const statut = document.getElementById('fStatut').value;
+    const trim   = document.getElementById('fTrim').value;
+    const search = document.getElementById('fSearch').value.toLowerCase().trim();
+
+    const filtered = paoData
+      .filter(a => a.service === currentService)
+      .filter(a => {
+        if (prog   && a.prog   !== prog)   return false;
+        if (pilier && a.pilier !== pilier) return false;
+        if (statut && a.statut !== statut) return false;
+        if (trim   && !a.trim.includes(trim)) return false;
+        if (search && !a.code.toLowerCase().includes(search) && !a.libelle.toLowerCase().includes(search)) return false;
+        return true;
+      });
+    renderTable(filtered);
+  }
+
+  function resetFiltersOnly() {
+    ['fProg','fPilier','fStatut','fTrim'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fSearch').value = '';
+  }
+  function resetFilters() { resetFiltersOnly(); applyFilters(); }
+
+  /* ─── SUPPRIMER ─────────────────────────────────────────────── */
+  function deleteActivite(code) {
+    const act = paoData.find(a => a.code === code);
+    if (!act) return;
+    if (confirm(`Supprimer l'activité « ${code} » ?\n${act.libelle.substring(0, 80)}…\n\nCette action est irréversible.`)) {
+      const row = document.querySelector(`tr[data-code="${code}"]`);
+      if (row) { row.style.transition = 'opacity .25s'; row.style.opacity = '0'; }
+      setTimeout(() => {
+        paoData = paoData.filter(a => a.code !== code);
+        savePaoToStorage();
+        buildServiceButtons();
+        renderAll();
+        toast(`Activité <strong>${code}</strong> supprimée.`, '#b91c1c');
+      }, 250);
+    }
+  }
+
+  /* ─── MODIFIER ──────────────────────────────────────────────── */
+  let _editCode = null;
+
+  function editActivite(code) {
+    const a = paoData.find(x => x.code === code);
+    if (!a) return;
+    _editCode = code;
+    document.getElementById('mCode').value           = a.code;
+    document.getElementById('mCodeDisplay').textContent = a.code;
+    document.getElementById('mProg').value            = a.prog;
+    document.getElementById('mPilier').value          = a.pilier || '';
+    document.getElementById('mStatut').value          = a.statut;
+    document.getElementById('mNiveau').value          = a.niveau;
+    document.getElementById('mLibelle').value         = a.libelle;
+    document.getElementById('mBailleur').value        = a.bailleur || '';
+    document.getElementById('mCout').value            = a.cout !== null ? a.cout : '';
+    ['T1','T2','T3','T4'].forEach(t => document.getElementById('m'+t).checked = a.trim.includes(t));
+    document.getElementById('mIndicateur').value      = a.indicateur || '';
+    document.getElementById('mCibleAnnuelle').value   = a.cible_annuelle || '';
+    document.getElementById('mCibleT1').value         = a.cible_t1 || '';
+    document.getElementById('mCibleT2').value         = a.cible_t2 || '';
+    document.getElementById('mCibleT3').value         = a.cible_t3 || '';
+    document.getElementById('mCibleT4').value         = a.cible_t4 || '';
+    document.getElementById('mStatutExecution').value = a.statut_execution || 'non_demarree';
+    document.getElementById('mBudgetMobilise').value  = a.budget_mobilise || '';
+    document.getElementById('mBudgetExecute').value   = a.budget_execute || '';
+    new bootstrap.Modal(document.getElementById('modalModifier')).show();
+  }
+
+  function saveModification() {
+    const prog    = document.getElementById('mProg').value;
+    const pilier  = document.getElementById('mPilier').value;
+    const libelle = document.getElementById('mLibelle').value.trim();
+    const statut  = document.getElementById('mStatut').value;
+    const niveau  = document.getElementById('mNiveau').value;
+    const bailleur= document.getElementById('mBailleur').value.trim();
+    const cout    = parseFloat(document.getElementById('mCout').value) || null;
+    const trim    = ['T1','T2','T3','T4'].filter(t => document.getElementById('m'+t).checked);
+    const indicateur      = document.getElementById('mIndicateur').value.trim();
+    const cible_annuelle  = document.getElementById('mCibleAnnuelle').value.trim();
+    const cible_t1        = document.getElementById('mCibleT1').value.trim();
+    const cible_t2        = document.getElementById('mCibleT2').value.trim();
+    const cible_t3        = document.getElementById('mCibleT3').value.trim();
+    const cible_t4        = document.getElementById('mCibleT4').value.trim();
+    const statut_execution= document.getElementById('mStatutExecution').value;
+    const budget_mobilise = parseFloat(document.getElementById('mBudgetMobilise').value) || null;
+    const budget_execute  = parseFloat(document.getElementById('mBudgetExecute').value) || null;
+
+    if (!prog)    { alert('Programme obligatoire.'); return; }
+    if (!pilier)  { alert('Pilier obligatoire.'); return; }
+    if (!libelle) { alert('Libellé obligatoire.'); return; }
+    if (!statut)  { alert('Statut obligatoire.'); return; }
+    if (trim.length === 0) { alert('Sélectionner au moins un trimestre.'); return; }
+
+    const idx = paoData.findIndex(x => x.code === _editCode);
+    if (idx !== -1) {
+      paoData[idx] = { ...paoData[idx], prog, pilier, libelle, statut, niveau,
+        bailleur: bailleur || 'Etat', cout, trim,
+        indicateur, cible_annuelle, cible_t1, cible_t2, cible_t3, cible_t4,
+        statut_execution, budget_mobilise, budget_execute };
+    }
+    savePaoToStorage();
+    bootstrap.Modal.getInstance(document.getElementById('modalModifier')).hide();
+    renderAll();
+    toast(`✓ Activité <strong>${_editCode}</strong> modifiée et enregistrée.`, '#1d4ed8');
+  }
+
+  /* ─── AJOUTER ───────────────────────────────────────────────── */
+  function autoCode() {
+    const max = paoData.reduce((m, a) => {
+      const n = parseInt(a.code.replace('PSLSH-', '')) || 0;
+      return n > m ? n : m;
+    }, 0);
+    return 'PSLSH-' + String(max + 1).padStart(3, '0');
+  }
+
+  document.getElementById('modalAjouter').addEventListener('show.bs.modal', function() {
+    document.getElementById('aCode').value    = autoCode();
+    document.getElementById('aService').value = currentService;
+    const lbl = document.getElementById('modalSvcLabel');
+    if (lbl) lbl.textContent = currentService;
+    ['aProg','aPilier','aStatut'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('aNiveau').value        = 'National';
+    document.getElementById('aLibelle').value       = '';
+    document.getElementById('aBailleur').value      = '';
+    document.getElementById('aCout').value          = '';
+    document.getElementById('aIndicateur').value    = '';
+    document.getElementById('aCibleAnnuelle').value = '';
+    document.getElementById('aCibleT1').value       = '';
+    document.getElementById('aCibleT2').value       = '';
+    document.getElementById('aCibleT3').value       = '';
+    document.getElementById('aCibleT4').value       = '';
+    document.getElementById('aStatutExecution').value = 'non_demarree';
+    document.getElementById('aBudgetMobilise').value  = '';
+    document.getElementById('aBudgetExecute').value   = '';
+    ['T1','T2','T3','T4'].forEach(t => document.getElementById('a'+t).checked = false);
+  });
+
+  function addActivite() {
+    const prog    = document.getElementById('aProg').value;
+    const pilier  = document.getElementById('aPilier').value;
+    const libelle = document.getElementById('aLibelle').value.trim();
+    const statut  = document.getElementById('aStatut').value;
+    const niveau  = document.getElementById('aNiveau').value;
+    const bailleur= document.getElementById('aBailleur').value.trim();
+    const cout    = parseFloat(document.getElementById('aCout').value) || null;
+    const code    = document.getElementById('aCode').value;
+    const trim    = ['T1','T2','T3','T4'].filter(t => document.getElementById('a'+t).checked);
+    const indicateur      = document.getElementById('aIndicateur').value.trim();
+    const cible_annuelle  = document.getElementById('aCibleAnnuelle').value.trim();
+    const cible_t1        = document.getElementById('aCibleT1').value.trim();
+    const cible_t2        = document.getElementById('aCibleT2').value.trim();
+    const cible_t3        = document.getElementById('aCibleT3').value.trim();
+    const cible_t4        = document.getElementById('aCibleT4').value.trim();
+    const statut_execution= document.getElementById('aStatutExecution').value;
+    const budget_mobilise = parseFloat(document.getElementById('aBudgetMobilise').value) || null;
+    const budget_execute  = parseFloat(document.getElementById('aBudgetExecute').value) || null;
+
+    if (!prog)    { alert('Programme obligatoire.'); return; }
+    if (!pilier)  { alert('Pilier obligatoire.'); return; }
+    if (!libelle) { alert('Libellé obligatoire.'); return; }
+    if (!statut)  { alert('Statut obligatoire.'); return; }
+    if (trim.length === 0) { alert('Sélectionner au moins un trimestre.'); return; }
+
+    paoData.push({ code, service: currentService, prog, pilier, libelle, cout, statut,
+      bailleur: bailleur || 'Etat', niveau, trim,
+      indicateur, cible_annuelle, cible_t1, cible_t2, cible_t3, cible_t4,
+      statut_execution, budget_mobilise, budget_execute });
+    savePaoToStorage();
+    bootstrap.Modal.getInstance(document.getElementById('modalAjouter')).hide();
+    buildServiceButtons();
+    renderAll();
+    toast(`✓ Activité <strong>${code}</strong> ajoutée au service ${currentService}.`);
+  }
+
+  /* ─── VALIDATION COORDONNATEUR ─────────────────────────────── */
+  // Détection du rôle Coordonnateur
+  const _isCoord = (function() {
+    try {
+      const u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+      const r = (u.role || u.profil || '').toLowerCase();
+      if (r.includes('coord') || r === 'coordinateur' || r === 'gestionnaire' ||
+          r === 'comptable' || r === 'administrateur') return true;
+      // Démo : toujours actif — retirer en production
+      return true;
+    } catch(e) { return false; }
+  })();
+
+  let _valCode = null;
+
+  function valBadge(v) {
+    const cfg = {
+      'Soumis':   ['vcb-soumis', 'hourglass-half', 'En attente'],
+      'Validé':   ['vcb-valide', 'check-circle',   'Validé'],
+      'À revoir': ['vcb-revoir', 'undo',            'À revoir'],
+      'Rejeté':   ['vcb-rejete', 'times-circle',    'Rejeté'],
+    };
+    const [cls, icon, label] = cfg[v] || cfg['Soumis'];
+    return `<span class="vcol-badge ${cls}"><i class="fas fa-${icon}"></i>${label}</span>`;
+  }
+
+  function _updateCoordBanner() {
+    if (!_isCoord) return;
+    const svcData = paoData.filter(a => a.service === currentService);
+    const pending = svcData.filter(a => ['Soumis','À revoir'].includes(a.valStatut)).length;
+    document.getElementById('coordPendingCount').textContent = pending;
+    document.getElementById('coordBanner').style.display = 'flex';
+    document.getElementById('thValidation').style.display = '';
+  }
+
+  function openValModal(code) {
+    const a = paoData.find(x => x.code === code);
+    if (!a) return;
+    _valCode = code;
+    document.getElementById('vmCode').textContent    = code;
+    document.getElementById('vmLibelle').textContent = a.libelle.substring(0, 90) + (a.libelle.length > 90 ? '…' : '');
+    document.getElementById('vmService').textContent = a.service;
+    document.getElementById('vmBudget').textContent  = a.cout ? fmtPlain(a.cout) + ' FCFA' : 'Non chiffré';
+    document.getElementById('vmStatutActuel').innerHTML = valBadge(a.valStatut);
+    document.getElementById('vmObs').value = '';
+    document.getElementById('vmObs').style.borderColor = '#d1d5db';
+    new bootstrap.Modal(document.getElementById('modalValCoord')).show();
+  }
+
+  function confirmerVal(decision) {
+    const a = paoData.find(x => x.code === _valCode);
+    if (!a) return;
+    const obs = document.getElementById('vmObs').value.trim();
+    if (['Rejeté', 'À revoir'].includes(decision) && !obs) {
+      const el = document.getElementById('vmObs');
+      el.style.borderColor = '#b91c1c';
+      el.focus();
+      return;
+    }
+    a.valStatut = decision;
+    bootstrap.Modal.getInstance(document.getElementById('modalValCoord')).hide();
+    renderAll();
+    // Toast de confirmation
+    const col  = decision === 'Validé' ? '#15803d' : decision === 'Rejeté' ? '#b91c1c' : '#6d28d9';
+    const icon = decision === 'Validé' ? 'check-circle' : decision === 'Rejeté' ? 'times-circle' : 'undo';
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${col};color:#fff;border-radius:10px;
+      padding:12px 20px;font-size:.8rem;font-weight:700;z-index:9999;display:flex;align-items:center;gap:10px;
+      box-shadow:0 4px 20px rgba(0,0,0,.25);`;
+    t.innerHTML = `<i class="fas fa-${icon} fa-lg"></i>
+      <span><strong>${_valCode}</strong> · Décision : <strong>${decision}</strong>${obs ? ' · ' + obs.substring(0,40) : ''}</span>`;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 3500);
+  }
+
+  function validerTout() {
+    const svcData = paoData.filter(a => a.service === currentService && ['Soumis','À revoir'].includes(a.valStatut));
+    if (!svcData.length) { alert('Aucune activité en attente de validation pour ce service.'); return; }
+    if (!confirm(`Valider les ${svcData.length} activité(s) du service ${currentService} en attente ?\n\nCette action enregistrera une décision « Validé » pour toutes.`)) return;
+    svcData.forEach(a => { a.valStatut = 'Validé'; });
+    renderAll();
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:#15803d;color:#fff;border-radius:10px;
+      padding:12px 20px;font-size:.8rem;font-weight:700;z-index:9999;display:flex;align-items:center;gap:10px;
+      box-shadow:0 4px 20px rgba(0,0,0,.25);`;
+    t.innerHTML = `<i class="fas fa-check-double fa-lg"></i>
+      <span>${svcData.length} activité(s) du service <strong>${currentService}</strong> validée(s)</span>`;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 3500);
+  }
+
+  /* ─── TOAST ─────────────────────────────────────────────────── */
+  function toast(msg, bg) {
+    bg = bg || '#15803d';
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${bg};color:#fff;border-radius:10px;
+      padding:12px 20px;font-size:.8rem;font-weight:700;z-index:9999;display:flex;align-items:center;gap:10px;
+      box-shadow:0 4px 20px rgba(0,0,0,.25);max-width:380px;`;
+    t.innerHTML = `<i class="fas fa-check-circle fa-lg"></i><span>${msg}</span>`;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3200);
+  }
+
+  /* ─── EXPORT CSV ────────────────────────────────────────────── */
+  function exportCSV() {
+    const data = paoData.filter(a => a.service === currentService);
+    const headers = [
+      'Code','Service','Programme','Pilier','Libellé','Coût FCFA',
+      'T1','T2','T3','T4','Statut','Bailleur','Niveau',
+      'Indicateur','Cible Annuelle','Cible T1','Cible T2','Cible T3','Cible T4',
+      'Statut Exécution','Budget Mobilisé (FCFA)','Budget Exécuté (FCFA)'
+    ];
+    const rows = data.map(a => [
+      a.code, a.service, a.prog, a.pilier,
+      '"' + (a.libelle || '').replace(/"/g, '""') + '"',
+      a.cout || '',
+      a.trim.includes('T1')?'✓':'', a.trim.includes('T2')?'✓':'',
+      a.trim.includes('T3')?'✓':'', a.trim.includes('T4')?'✓':'',
+      a.statut, a.bailleur, a.niveau,
+      '"' + (a.indicateur || '').replace(/"/g, '""') + '"',
+      a.cible_annuelle || '', a.cible_t1 || '', a.cible_t2 || '',
+      a.cible_t3 || '', a.cible_t4 || '',
+      a.statut_execution || 'non_demarree',
+      a.budget_mobilise || '', a.budget_execute || ''
+    ]);
+    const csv = [headers, ...rows].map(r => r.join(';')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `PAO-${currentService}-2026.csv`;
+    link.click();
+    toast(`Export CSV généré : ${data.length} activité(s) du service ${currentService}`, '#1b2f52');
+  }
+
+  /* ─── ONGLET CIBLES ─────────────────────────────────────────── */
+  const STATUT_EXEC_LABELS = {
+    non_demarree: { label:'Non démarrée', color:'#64748b', bg:'#f1f5f9' },
+    en_cours:     { label:'En cours',     color:'#b45309', bg:'#fef3c7' },
+    partielle:    { label:'Part. réalisée',color:'#1d4ed8', bg:'#dbeafe' },
+    realisee:     { label:'Réalisée',     color:'#15803d', bg:'#dcfce7' },
+  };
+
+  function renderCibles() {
+    const svcData = paoData.filter(a => a.service === currentService);
+    const tbody   = document.getElementById('ciblesTbody');
+    const noData  = document.getElementById('ciblesNoData');
+    const label   = document.getElementById('ciblesSvcLabel');
+    const badge   = document.getElementById('ciblesNbBadge');
+    if (!tbody) return;
+
+    const svc = SERVICES.find(s => s.code === currentService);
+    if (label) label.textContent = svc ? `${svc.code} · ${svc.label}` : currentService;
+    if (badge) badge.textContent = svcData.length + ' activité' + (svcData.length > 1 ? 's' : '');
+
+    if (svcData.length === 0) {
+      tbody.innerHTML = '';
+      noData.style.display = '';
+      return;
+    }
+    noData.style.display = 'none';
+
+    tbody.innerHTML = svcData.map(a => {
+      const se  = STATUT_EXEC_LABELS[a.statut_execution] || STATUT_EXEC_LABELS['non_demarree'];
+      const mob = a.budget_mobilise ? Math.round(a.budget_mobilise).toLocaleString('fr-FR') : '<span style="color:#cbd5e1;font-size:.7rem">nc</span>';
+      const exe = a.budget_execute  ? Math.round(a.budget_execute ).toLocaleString('fr-FR') : '<span style="color:#cbd5e1;font-size:.7rem">nc</span>';
+      const indic = a.indicateur || '<span style="color:#cbd5e1;font-size:.7rem">Non renseigné</span>';
+      const dash  = '<span style="color:#cbd5e1;font-size:.7rem">nc</span>';
+      return `<tr>
+        <td><code style="font-size:.7rem;color:#1b2f52;font-weight:700">${a.code}</code></td>
+        <td style="max-width:230px"><span style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${a.libelle.replace(/"/g,'&quot;')}">${a.libelle}</span></td>
+        <td style="max-width:200px"><span style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.71rem" title="${(a.indicateur||'').replace(/"/g,'&quot;')}">${indic}</span></td>
+        <td class="text-center" style="font-weight:700;color:#1b3a6b">${a.cible_annuelle || dash}</td>
+        <td class="text-center" style="color:#1e40af;font-weight:700">${a.cible_t1 || dash}</td>
+        <td class="text-center" style="color:#15803d;font-weight:700">${a.cible_t2 || dash}</td>
+        <td class="text-center" style="color:#b45309;font-weight:700">${a.cible_t3 || dash}</td>
+        <td class="text-center" style="color:#b91c1c;font-weight:700">${a.cible_t4 || dash}</td>
+        <td><span style="font-size:.67rem;font-weight:700;border-radius:5px;padding:2px 8px;white-space:nowrap;background:${se.bg};color:${se.color}">${se.label}</span></td>
+        <td class="text-end mono">${mob}</td>
+        <td class="text-end mono">${exe}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  /* ─── STOCKAGE PARTAGÉ ──────────────────────────────────────── */
+  const PAO_SHARED_KEY = 'pslsh_pao_v1';
+
+  function savePaoToStorage() {
+    localStorage.setItem(PAO_SHARED_KEY, JSON.stringify(paoData));
+  }
+
+  /* ─── INIT ──────────────────────────────────────────────────── */
+  // Charger depuis localStorage partagé si disponible
+  (function() {
+    const raw = localStorage.getItem(PAO_SHARED_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          paoData = parsed;
+        }
+      } catch(e) {}
+    }
+    // Assurer les valeurs par défaut pour les nouveaux champs
+    paoData.forEach(a => {
+      if (a.indicateur      === undefined) a.indicateur = '';
+      if (a.cible_annuelle  === undefined) a.cible_annuelle = '';
+      if (a.cible_t1        === undefined) a.cible_t1 = '';
+      if (a.cible_t2        === undefined) a.cible_t2 = '';
+      if (a.cible_t3        === undefined) a.cible_t3 = '';
+      if (a.cible_t4        === undefined) a.cible_t4 = '';
+      if (a.statut_execution=== undefined) a.statut_execution = 'non_demarree';
+      if (a.budget_mobilise === undefined) a.budget_mobilise = null;
+      if (a.budget_execute  === undefined) a.budget_execute = null;
+      if (!a.valStatut)                    a.valStatut = 'Soumis';
+    });
+    // Quelques activités déjà validées pour la démo (première fois seulement)
+    if (!raw) {
+      ['PSLSH-001','PSLSH-003','PSLSH-005','PSLSH-008','PSLSH-010','PSLSH-012','PSLSH-017']
+        .forEach(code => { const a = paoData.find(x => x.code === code); if (a) a.valStatut = 'Validé'; });
+      savePaoToStorage();
+    }
+  })();
+
+  buildServiceButtons();
+  switchService('SAF');
+</script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Journal d'audit</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo"
+           onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+        <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/admin/index.html">Administration</a></li>
+            <li class="breadcrumb-item active">Journal d'audit</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong>2026</strong>
+      </div>
+
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-history text-primary me-2"></i>Journal d'audit</h4>
+          <small class="text-muted">Traçabilité de toutes les actions effectuées dans le système</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="fas fa-print me-1"></i>Imprimer</button>
+          <button class="btn btn-sm btn-outline-success" onclick="exportAudit()"><i class="fas fa-file-excel me-1"></i>Exporter</button>
+        </div>
+      </div>
+
+      <!-- Filtres -->
+      <div class="card mb-3">
+        <div class="card-body py-2">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Action</label>
+              <select class="form-select form-select-sm" id="filterAction" onchange="loadLogs()">
+                <option value="">Toutes actions</option>
+                <option value="CREATE">Création</option>
+                <option value="UPDATE">Modification</option>
+                <option value="DELETE">Suppression</option>
+                <option value="LOGIN">Connexion</option>
+                <option value="LOGOUT">Déconnexion</option>
+                <option value="TRANSITION">Transition workflow</option>
+                <option value="VALIDATE">Validation</option>
+                <option value="REJECT">Rejet</option>
+                <option value="EXPORT">Export</option>
+                <option value="UPLOAD">Téléversement</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Ressource</label>
+              <select class="form-select form-select-sm" id="filterResource" onchange="loadLogs()">
+                <option value="">Toutes</option>
+                <option value="dossiers">Dossiers</option>
+                <option value="users">Utilisateurs</option>
+                <option value="ecritures">Écritures</option>
+                <option value="paiements">Paiements</option>
+                <option value="documents">Documents</option>
+                <option value="budget">Budget</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Utilisateur</label>
+              <select class="form-select form-select-sm" id="filterUser" onchange="loadLogs()">
+                <option value="">Tous</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Du</label>
+              <input type="date" class="form-control form-control-sm" id="filterDateDe" onchange="loadLogs()">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Au</label>
+              <input type="date" class="form-control form-control-sm" id="filterDateA" onchange="loadLogs()">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Recherche</label>
+              <div class="input-group input-group-sm">
+                <input type="text" class="form-control" id="filterSearch" placeholder="ID ressource..." oninput="loadLogs()">
+                <button class="btn btn-outline-secondary" onclick="resetFilters()"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats rapides -->
+      <div class="row g-3 mb-3" id="statsRow">
+        <div class="col-md-3">
+          <div class="card text-center py-2">
+            <div class="fw-bold text-primary fs-4" id="statTotal">—</div>
+            <div class="text-muted small">Entrées totales</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center py-2">
+            <div class="fw-bold text-success fs-4" id="statToday">—</div>
+            <div class="text-muted small">Aujourd'hui</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center py-2">
+            <div class="fw-bold text-warning fs-4" id="statUsers">—</div>
+            <div class="text-muted small">Utilisateurs actifs</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center py-2">
+            <div class="fw-bold text-danger fs-4" id="statSensible">—</div>
+            <div class="text-muted small">Actions sensibles</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tableau des logs -->
+      <div class="card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-2">
+          <span class="text-muted small" id="resultCount">Chargement...</span>
+          <div class="d-flex align-items-center gap-2">
+            <label class="form-label mb-0 small">Par page :</label>
+            <select class="form-select form-select-sm" id="perPage" onchange="loadLogs()" style="width:80px">
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0" id="auditTable">
+              <thead class="table-light">
+                <tr>
+                  <th style="width:150px">Date/Heure</th>
+                  <th>Utilisateur</th>
+                  <th style="width:120px">Action</th>
+                  <th>Ressource</th>
+                  <th>ID</th>
+                  <th>Détails</th>
+                  <th style="width:120px">IP</th>
+                </tr>
+              </thead>
+              <tbody id="bodyLogs">
+                <tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer bg-white">
+          <nav><ul class="pagination pagination-sm justify-content-center mb-0" id="pagination"></ul></nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Détail log -->
+<div class="modal fade" id="modalDetail" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Détail de l'action</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" id="detailContent"></div>
+      <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+requireAuth();
+document.getElementById('userName').textContent = (getUser()?.prenom || '') + ' ' + (getUser()?.nom || '');
+
+let currentPage = 1;
+
+const actionConfig = {
+  CREATE:     { badge: 'bg-success',   icon: 'fa-plus',          label: 'Création' },
+  UPDATE:     { badge: 'bg-primary',   icon: 'fa-edit',          label: 'Modification' },
+  DELETE:     { badge: 'bg-danger',    icon: 'fa-trash',         label: 'Suppression' },
+  LOGIN:      { badge: 'bg-info',      icon: 'fa-sign-in-alt',   label: 'Connexion' },
+  LOGOUT:     { badge: 'bg-secondary', icon: 'fa-sign-out-alt',  label: 'Déconnexion' },
+  TRANSITION: { badge: 'bg-warning text-dark', icon: 'fa-exchange-alt', label: 'Transition' },
+  VALIDATE:   { badge: 'bg-success',   icon: 'fa-check',         label: 'Validation' },
+  REJECT:     { badge: 'bg-danger',    icon: 'fa-times',         label: 'Rejet' },
+  EXPORT:     { badge: 'bg-dark',      icon: 'fa-file-export',   label: 'Export' },
+  UPLOAD:     { badge: 'bg-info',      icon: 'fa-upload',        label: 'Upload' }
+};
+
+function getActionBadge(action) {
+  const cfg = actionConfig[action] || { badge: 'bg-secondary', icon: 'fa-circle', label: action };
+  return `<span class="badge ${cfg.badge}"><i class="fas ${cfg.icon} me-1"></i>${cfg.label}</span>`;
+}
+
+async function init() {
+  try {
+    const r = await api.get('/admin/users?limit=100');
+    const users = r.data || [];
+    const sel = document.getElementById('filterUser');
+    users.forEach(u => {
+      const o = document.createElement('option'); o.value = u.id;
+      o.textContent = u.prenom + ' ' + u.nom;
+      sel.appendChild(o);
+    });
+  } catch(e) {}
+
+  // Dates par défaut: 30 derniers jours
+  const today = new Date();
+  const monthAgo = new Date(today); monthAgo.setDate(today.getDate() - 30);
+  document.getElementById('filterDateA').value = today.toISOString().substring(0,10);
+  document.getElementById('filterDateDe').value = monthAgo.toISOString().substring(0,10);
+
+  loadLogs();
+  loadStats();
+}
+
+async function loadStats() {
+  try {
+    const r = await api.get('/admin/audit-stats');
+    const s = r.data || {};
+    document.getElementById('statTotal').textContent = s.total?.toLocaleString() || '0';
+    document.getElementById('statToday').textContent = s.today || '0';
+    document.getElementById('statUsers').textContent = s.active_users || '0';
+    document.getElementById('statSensible').textContent = s.sensitive || '0';
+  } catch(e) {}
+}
+
+async function loadLogs() {
+  const params = new URLSearchParams();
+  const action = document.getElementById('filterAction').value;
+  const resource = document.getElementById('filterResource').value;
+  const userId = document.getElementById('filterUser').value;
+  const dateDe = document.getElementById('filterDateDe').value;
+  const dateA = document.getElementById('filterDateA').value;
+  const q = document.getElementById('filterSearch').value;
+  const perPage = document.getElementById('perPage').value;
+
+  if (action) params.append('action', action);
+  if (resource) params.append('resource', resource);
+  if (userId) params.append('user_id', userId);
+  if (dateDe) params.append('date_de', dateDe);
+  if (dateA) params.append('date_a', dateA);
+  if (q) params.append('q', q);
+  params.append('page', currentPage);
+  params.append('limit', perPage);
+
+  try {
+    const r = await api.get('/admin/audit-logs?' + params);
+    const items = r.data || [];
+    const total = r.total || items.length;
+    const totalPages = Math.ceil(total / parseInt(perPage));
+
+    document.getElementById('resultCount').textContent = total.toLocaleString() + ' entrée(s)';
+
+    document.getElementById('bodyLogs').innerHTML = items.length ? items.map(log => {
+      const details = typeof log.details === 'object' ? JSON.stringify(log.details, null, 2) : (log.details || '—');
+      const shortDetails = details.length > 80 ? details.substring(0,80) + '...' : details;
+      return `<tr>
+        <td class="text-muted small" style="white-space:nowrap">${formatDateTime(log.created_at)}</td>
+        <td>
+          <div class="small fw-semibold">${log.User?.prenom || ''} ${log.User?.nom || '—'}</div>
+          <div class="text-muted" style="font-size:0.7rem">${log.User?.email || ''}</div>
+        </td>
+        <td>${getActionBadge(log.action)}</td>
+        <td><code class="small">${log.resource || '—'}</code></td>
+        <td><code class="small text-muted">${log.resource_id || '—'}</code></td>
+        <td class="small text-muted">
+          <span style="cursor:pointer" onclick='showDetail(${JSON.stringify(log).replace(/"/g,"&quot;")})'
+            title="Voir détails">${shortDetails}</span>
+        </td>
+        <td class="small text-muted">${log.ip_address || '—'}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-search me-2"></i>Aucune entrée trouvée</td></tr>';
+
+    // Pagination
+    renderPagination(currentPage, totalPages);
+  } catch(e) {
+    document.getElementById('bodyLogs').innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Erreur de chargement — vérifiez que le serveur est démarré</td></tr>';
+  }
+}
+
+function renderPagination(page, total) {
+  if (total <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  let html = '';
+  html += `<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="goPage(${page-1})">«</a></li>`;
+  const start = Math.max(1, page - 2);
+  const end = Math.min(total, start + 4);
+  for (let i = start; i <= end; i++) {
+    html += `<li class="page-item ${i === page ? 'active' : ''}"><a class="page-link" href="#" onclick="goPage(${i})">${i}</a></li>`;
+  }
+  html += `<li class="page-item ${page === total ? 'disabled' : ''}"><a class="page-link" href="#" onclick="goPage(${page+1})">»</a></li>`;
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function goPage(p) {
+  currentPage = p;
+  loadLogs();
+}
+
+function showDetail(log) {
+  const cfg = actionConfig[log.action] || { badge: 'bg-secondary', icon: 'fa-circle', label: log.action };
+  const details = typeof log.details === 'object' ? JSON.stringify(log.details, null, 2) : (log.details || 'Aucun détail');
+  document.getElementById('detailContent').innerHTML = `
+    <div class="row g-3">
+      <div class="col-md-6">
+        <table class="table table-sm table-bordered">
+          <tr><th class="table-light">Date/Heure</th><td>${formatDateTime(log.created_at)}</td></tr>
+          <tr><th class="table-light">Utilisateur</th><td>${log.User?.prenom || ''} ${log.User?.nom || '—'}<br><small class="text-muted">${log.User?.email || ''}</small></td></tr>
+          <tr><th class="table-light">Action</th><td>${getActionBadge(log.action)}</td></tr>
+          <tr><th class="table-light">Ressource</th><td><code>${log.resource || '—'}</code></td></tr>
+          <tr><th class="table-light">ID ressource</th><td><code>${log.resource_id || '—'}</code></td></tr>
+          <tr><th class="table-light">Adresse IP</th><td>${log.ip_address || '—'}</td></tr>
+          <tr><th class="table-light">User-Agent</th><td class="small">${log.user_agent || '—'}</td></tr>
+        </table>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Données de l'action :</label>
+        <pre class="bg-light border rounded p-3 small" style="max-height:300px;overflow:auto">${details}</pre>
+      </div>
+    </div>`;
+  new bootstrap.Modal(document.getElementById('modalDetail')).show();
+}
+
+function formatDateTime(dt) {
+  if (!dt) return '—';
+  const d = new Date(dt);
+  return d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+
+function resetFilters() {
+  ['filterAction','filterResource','filterUser'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('filterSearch').value = '';
+  currentPage = 1;
+  loadLogs();
+}
+
+function exportAudit() {
+  const params = new URLSearchParams();
+  const action = document.getElementById('filterAction').value;
+  const resource = document.getElementById('filterResource').value;
+  const dateDe = document.getElementById('filterDateDe').value;
+  const dateA = document.getElementById('filterDateA').value;
+  if (action) params.append('action', action);
+  if (resource) params.append('resource', resource);
+  if (dateDe) params.append('date_de', dateDe);
+  if (dateA) params.append('date_a', dateA);
+  params.append('format', 'excel');
+  toast('Export du journal d\'audit en cours...', 'info');
+  window.open('/api/v1/admin/audit-logs/export?' + params, '_blank');
+}
+
+init();
+</script>
+
+    <footer class="page-footer">
+      &copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp;
+      Programme Sectoriel de Lutte contre le Sida, les H&eacute;patites Virales et les IST
+      &nbsp;&middot;&nbsp; R&eacute;publique du Tchad &nbsp;&middot;&nbsp; Version 1
+    </footer>
+<script src="../../src/js/roles.js"></script>
+</body>
+</html>

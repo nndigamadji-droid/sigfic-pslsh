@@ -1,0 +1,28 @@
+{
+  "extends": "stylelint-config-standard",
+  "ignoreFiles": [
+    "node_modules/**",
+    "**/node_modules/**",
+    "frontend/pages/**/*.html",
+    "graphify-out/**"
+  ],
+  "rules": {
+    "no-duplicate-selectors": true,
+    "no-descending-specificity": null,
+    "selector-class-pattern": null,
+    "custom-property-pattern": null,
+    "alpha-value-notation": "number",
+    "color-function-notation": "modern",
+    "declaration-block-no-redundant-longhand-properties": true,
+    "shorthand-property-no-redundant-values": true,
+    "no-empty-source": null,
+    "comment-no-empty": true,
+    "max-nesting-depth": 4,
+    "selector-max-compound-selectors": 5,
+    "declaration-block-single-line-max-declarations": 2,
+    "rule-empty-line-before": null,
+    "value-keyword-case": null,
+    "media-feature-range-notation": null,
+    "comment-empty-line-before": null
+  }
+}

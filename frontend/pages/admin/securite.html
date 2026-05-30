@@ -1,0 +1,469 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SIGFIC-PSLSH | Sécurité &amp; Sessions</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Gestion Financière</div></div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="../admin/index.html">Administration</a></li>
+          <li class="breadcrumb-item active">Sécurité &amp; Sessions</li>
+        </ol></nav>
+      </div>
+      <div class="topbar-center"><i class="fas fa-calendar-alt"></i> Exercice : <strong>2026</strong></div>
+      <div class="topbar-right">
+        <button class="topbar-btn"><i class="fas fa-bell"></i></button>
+        <div class="dropdown">
+          <div class="user-pill dropdown-toggle" data-bs-toggle="dropdown" style="cursor:pointer">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div><div class="user-name" id="userName">—</div><div class="user-role" id="userRole">—</div></div>
+            <i class="fas fa-chevron-down ms-1" style="font-size:.6rem;color:rgba(255,255,255,.4)"></i>
+          </div>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- En-tête de page -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-shield-alt text-primary me-2"></i>Sécurité &amp; Sessions</h4>
+          <small class="text-muted">Supervision des accès et des sessions</small>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm" onclick="location.reload()">
+          <i class="fas fa-sync-alt me-1"></i>Actualiser
+        </button>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid kpi-grid-4 mb-4">
+        <div class="kpi-card kpi-green">
+          <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-value">7</div>
+            <div class="kpi-label">Sessions actives</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi-red">
+          <div class="kpi-icon"><i class="fas fa-user-lock"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-value">2</div>
+            <div class="kpi-label">Comptes verrouillés</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi-orange">
+          <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-value">15</div>
+            <div class="kpi-label">Tentatives échouées (24h)</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi-blue">
+          <div class="kpi-icon"><i class="fas fa-sign-in-alt"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-value">23</div>
+            <div class="kpi-label">Connexions aujourd'hui</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sessions actives + Comptes verrouillés -->
+      <div class="row g-4 mb-4">
+
+        <!-- Sessions actives -->
+        <div class="col-lg-7">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span><i class="fas fa-desktop text-success me-2"></i><strong>Sessions actives</strong></span>
+              <span class="badge bg-success">7 en ligne</span>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Utilisateur</th>
+                      <th>Service</th>
+                      <th>Rôle</th>
+                      <th>Connecté à</th>
+                      <th>Dernière activité</th>
+                      <th>IP</th>
+                      <th class="text-end">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><div class="d-flex align-items-center gap-2"><div class="user-avatar-sm bg-primary text-white">AB</div><span>ABDOU Brahim</span></div></td>
+                      <td><span class="badge bg-light text-dark">SAF</span></td>
+                      <td>Comptable</td>
+                      <td>08:14</td>
+                      <td><span class="text-success"><i class="fas fa-circle" style="font-size:.5rem"></i> il y a 2 min</span></td>
+                      <td><code>192.168.1.10</code></td>
+                      <td class="text-end"><button class="btn btn-outline-danger btn-sm" onclick="forceLogout(1,'ABDOU Brahim')"><i class="fas fa-ban me-1"></i>Déconnecter</button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="d-flex align-items-center gap-2"><div class="user-avatar-sm bg-info text-white">MK</div><span>MOUSSA Kaltouma</span></div></td>
+                      <td><span class="badge bg-light text-dark">SGAS</span></td>
+                      <td>Gestionnaire</td>
+                      <td>08:32</td>
+                      <td><span class="text-success"><i class="fas fa-circle" style="font-size:.5rem"></i> il y a 5 min</span></td>
+                      <td><code>192.168.1.21</code></td>
+                      <td class="text-end"><button class="btn btn-outline-danger btn-sm" onclick="forceLogout(2,'MOUSSA Kaltouma')"><i class="fas fa-ban me-1"></i>Déconnecter</button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="d-flex align-items-center gap-2"><div class="user-avatar-sm bg-warning text-dark">HD</div><span>HAMID Diarahim</span></div></td>
+                      <td><span class="badge bg-light text-dark">Direction</span></td>
+                      <td>Coordinateur</td>
+                      <td>09:05</td>
+                      <td><span class="text-success"><i class="fas fa-circle" style="font-size:.5rem"></i> il y a 1 min</span></td>
+                      <td><code>192.168.1.5</code></td>
+                      <td class="text-end"><button class="btn btn-outline-danger btn-sm" onclick="forceLogout(3,'HAMID Diarahim')"><i class="fas fa-ban me-1"></i>Déconnecter</button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="d-flex align-items-center gap-2"><div class="user-avatar-sm bg-success text-white">FN</div><span>FADOUL Nadjikimo</span></div></td>
+                      <td><span class="badge bg-light text-dark">Passation</span></td>
+                      <td>Acheteur</td>
+                      <td>09:20</td>
+                      <td><span class="text-warning"><i class="fas fa-circle" style="font-size:.5rem"></i> il y a 18 min</span></td>
+                      <td><code>192.168.1.33</code></td>
+                      <td class="text-end"><button class="btn btn-outline-danger btn-sm" onclick="forceLogout(4,'FADOUL Nadjikimo')"><i class="fas fa-ban me-1"></i>Déconnecter</button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="d-flex align-items-center gap-2"><div class="user-avatar-sm bg-secondary text-white">AT</div><span>AMIR Tchoroma</span></div></td>
+                      <td><span class="badge bg-light text-dark">Audit</span></td>
+                      <td>Auditeur</td>
+                      <td>09:48</td>
+                      <td><span class="text-success"><i class="fas fa-circle" style="font-size:.5rem"></i> il y a 4 min</span></td>
+                      <td><code>192.168.1.44</code></td>
+                      <td class="text-end"><button class="btn btn-outline-danger btn-sm" onclick="forceLogout(5,'AMIR Tchoroma')"><i class="fas fa-ban me-1"></i>Déconnecter</button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="d-flex align-items-center gap-2"><div class="user-avatar-sm bg-danger text-white">IB</div><span>IDRISS Bakhit</span></div></td>
+                      <td><span class="badge bg-light text-dark">Logistique</span></td>
+                      <td>Magasinier</td>
+                      <td>10:01</td>
+                      <td><span class="text-warning"><i class="fas fa-circle" style="font-size:.5rem"></i> il y a 22 min</span></td>
+                      <td><code>192.168.1.58</code></td>
+                      <td class="text-end"><button class="btn btn-outline-danger btn-sm" onclick="forceLogout(6,'IDRISS Bakhit')"><i class="fas fa-ban me-1"></i>Déconnecter</button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="d-flex align-items-center gap-2"><div class="user-avatar-sm bg-dark text-white">ZM</div><span>ZARA Mahamat</span></div></td>
+                      <td><span class="badge bg-light text-dark">Administration</span></td>
+                      <td>Administrateur</td>
+                      <td>07:55</td>
+                      <td><span class="text-success"><i class="fas fa-circle" style="font-size:.5rem"></i> il y a 1 min</span></td>
+                      <td><code>192.168.1.2</code></td>
+                      <td class="text-end"><button class="btn btn-outline-danger btn-sm" onclick="forceLogout(7,'ZARA Mahamat')"><i class="fas fa-ban me-1"></i>Déconnecter</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comptes verrouillés -->
+        <div class="col-lg-5">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span><i class="fas fa-user-lock text-danger me-2"></i><strong>Comptes verrouillés</strong></span>
+              <span class="badge bg-danger">2</span>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Utilisateur</th>
+                      <th>Email</th>
+                      <th>Raison</th>
+                      <th>Verrouillé à</th>
+                      <th class="text-end">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>TRAORE Seydou</strong></td>
+                      <td><small>stock@pslsh.org</small></td>
+                      <td><span class="badge bg-warning text-dark">5 tentatives échouées</span></td>
+                      <td><small>2026-03-28<br>14:45</small></td>
+                      <td class="text-end"><button class="btn btn-success btn-sm" onclick="unlockAccount(10,'TRAORE Seydou')"><i class="fas fa-unlock me-1"></i>Déverrouiller</button></td>
+                    </tr>
+                    <tr>
+                      <td><strong>KOUMA Alain</strong></td>
+                      <td><small>kouma@pslsh.org</small></td>
+                      <td><span class="badge bg-secondary">Verrouillage manuel</span></td>
+                      <td><small>2026-04-01<br>09:00</small></td>
+                      <td class="text-end"><button class="btn btn-success btn-sm" onclick="unlockAccount(11,'KOUMA Alain')"><i class="fas fa-unlock me-1"></i>Déverrouiller</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card-footer bg-light">
+              <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Un compte est automatiquement verrouillé après 5 tentatives échouées consécutives.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tentatives de connexion échouées -->
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="fas fa-exclamation-triangle text-warning me-2"></i><strong>Tentatives de connexion échouées (24h)</strong></span>
+          <span class="badge bg-warning text-dark">15 tentatives</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Utilisateur / Email</th>
+                  <th>Date / Heure</th>
+                  <th>IP</th>
+                  <th>Tentatives</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>stock@pslsh.org</td>
+                  <td>2026-04-04 14:20</td>
+                  <td><code>192.168.1.77</code></td>
+                  <td><strong class="text-danger">5/5</strong></td>
+                  <td><span class="badge bg-danger">Compte verrouillé</span></td>
+                </tr>
+                <tr>
+                  <td>stock@pslsh.org</td>
+                  <td>2026-04-04 14:18</td>
+                  <td><code>192.168.1.77</code></td>
+                  <td>4/5</td>
+                  <td><span class="badge bg-warning text-dark">Tentative</span></td>
+                </tr>
+                <tr>
+                  <td>stock@pslsh.org</td>
+                  <td>2026-04-04 14:15</td>
+                  <td><code>192.168.1.77</code></td>
+                  <td>3/5</td>
+                  <td><span class="badge bg-warning text-dark">Tentative</span></td>
+                </tr>
+                <tr>
+                  <td>kouma@pslsh.org</td>
+                  <td>2026-04-04 11:03</td>
+                  <td><code>10.0.0.45</code></td>
+                  <td>2/5</td>
+                  <td><span class="badge bg-warning text-dark">Tentative</span></td>
+                </tr>
+                <tr>
+                  <td>kouma@pslsh.org</td>
+                  <td>2026-04-04 11:01</td>
+                  <td><code>10.0.0.45</code></td>
+                  <td>1/5</td>
+                  <td><span class="badge bg-warning text-dark">Tentative</span></td>
+                </tr>
+                <tr>
+                  <td>jdupont@pslsh.org</td>
+                  <td>2026-04-04 09:45</td>
+                  <td><code>192.168.1.45</code></td>
+                  <td>3/5</td>
+                  <td><span class="badge bg-warning text-dark">Tentative</span></td>
+                </tr>
+                <tr>
+                  <td>inconnu@ext.com</td>
+                  <td>2026-04-04 07:12</td>
+                  <td><code>41.202.219.8</code></td>
+                  <td>1/5</td>
+                  <td><span class="badge bg-secondary">Tentative</span></td>
+                </tr>
+                <tr>
+                  <td>admin@pslsh.org</td>
+                  <td>2026-04-03 23:55</td>
+                  <td><code>41.202.219.8</code></td>
+                  <td>5/5</td>
+                  <td><span class="badge bg-danger">Compte verrouillé</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Politique de sécurité active -->
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="fas fa-cog text-secondary me-2"></i><strong>Politique de sécurité active</strong></span>
+          <a href="parametrage.html" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-pen me-1"></i>Modifier la politique
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4 col-sm-6">
+              <div class="d-flex align-items-center gap-3 p-3 border rounded bg-light">
+                <div class="text-primary fs-4"><i class="fas fa-key"></i></div>
+                <div>
+                  <div class="text-muted small">Longueur mot de passe min.</div>
+                  <div class="fw-bold fs-5">8 caractères</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <div class="d-flex align-items-center gap-3 p-3 border rounded bg-light">
+                <div class="text-warning fs-4"><i class="fas fa-calendar-times"></i></div>
+                <div>
+                  <div class="text-muted small">Expiration mot de passe</div>
+                  <div class="fw-bold fs-5">90 jours</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <div class="d-flex align-items-center gap-3 p-3 border rounded bg-light">
+                <div class="text-danger fs-4"><i class="fas fa-exclamation-circle"></i></div>
+                <div>
+                  <div class="text-muted small">Max. tentatives échouées</div>
+                  <div class="fw-bold fs-5">5 tentatives</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <div class="d-flex align-items-center gap-3 p-3 border rounded bg-light">
+                <div class="text-danger fs-4"><i class="fas fa-lock"></i></div>
+                <div>
+                  <div class="text-muted small">Durée de verrouillage</div>
+                  <div class="fw-bold fs-5">30 minutes</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <div class="d-flex align-items-center gap-3 p-3 border rounded bg-light">
+                <div class="text-success fs-4"><i class="fas fa-clock"></i></div>
+                <div>
+                  <div class="text-muted small">Durée max. de session</div>
+                  <div class="fw-bold fs-5">480 minutes</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <div class="d-flex align-items-center gap-3 p-3 border rounded bg-light">
+                <div class="text-info fs-4"><i class="fas fa-shield-alt"></i></div>
+                <div>
+                  <div class="text-muted small">Double authentification</div>
+                  <div class="fw-bold fs-5 text-secondary">Désactivée</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.page-content -->
+
+    <footer class="page-footer">&copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp; République du Tchad &nbsp;&middot;&nbsp; Version 1</footer>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+  <div id="liveToast" class="toast align-items-center text-white border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  // Initialisation de l'utilisateur depuis le localStorage
+  (function initUser() {
+    try {
+      const raw = localStorage.getItem('sigfic_user') || localStorage.getItem('user');
+      if (raw) {
+        const u = JSON.parse(raw);
+        const fullName = ((u.prenom || '') + ' ' + (u.nom || '')).trim() || u.name || '—';
+        const initials = fullName.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase();
+        document.getElementById('userName').textContent = fullName;
+        document.getElementById('userRole').textContent = u.role || u.role_libelle || '—';
+        document.getElementById('userAvatar').textContent = initials || 'A';
+      }
+    } catch (e) {}
+  })();
+
+  // Fonction toast partagée
+  function showToast(msg, type = 'success') {
+    const toastEl = document.getElementById('liveToast');
+    const toastMsg = document.getElementById('toastMsg');
+    toastEl.className = 'toast align-items-center text-white border-0 bg-' + type;
+    toastMsg.innerHTML = msg;
+    const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+    toast.show();
+  }
+
+  // Forcer la déconnexion d'une session
+  function forceLogout(userId, name) {
+    if (!confirm('Confirmer la déconnexion forcée de ' + name + ' ?')) return;
+    // Appel API (simulation)
+    showToast('<i class="fas fa-check-circle me-2"></i>Session de <strong>' + name + '</strong> terminée avec succès.', 'success');
+    // Griser la ligne après action
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(function(row) {
+      if (row.textContent.includes(name)) {
+        row.style.opacity = '0.4';
+        row.querySelector('button').disabled = true;
+      }
+    });
+  }
+
+  // Déverrouiller un compte
+  function unlockAccount(userId, name) {
+    if (!confirm('Confirmer le déverrouillage du compte de ' + name + ' ?')) return;
+    // Appel API (simulation)
+    showToast('<i class="fas fa-unlock me-2"></i><strong>' + name + '</strong> déverrouillé avec succès.', 'success');
+    // Retirer la ligne
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(function(row) {
+      if (row.textContent.includes(name) && row.querySelector('.btn-success')) {
+        row.style.opacity = '0.4';
+        row.querySelector('button').disabled = true;
+      }
+    });
+  }
+
+  // Déconnexion globale
+  function logout() {
+    if (confirm('Confirmer la déconnexion ?')) {
+      localStorage.clear();
+      window.location.href = '../../index.html';
+    }
+  }
+</script>
+</body>
+</html>

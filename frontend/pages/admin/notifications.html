@@ -1,0 +1,664 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SIGFIC-PSLSH | Notifications</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .notif-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background .15s;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item.unread { background-color: #f0f6ff; }
+    .notif-item:hover { background-color: #f8f9fa; }
+    .notif-item.unread:hover { background-color: #e6f0fc; }
+    .notif-icon {
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: .95rem;
+    }
+    .notif-icon.danger  { background: #fde8e8; color: #dc3545; }
+    .notif-icon.warning { background: #fff3cd; color: #fd7e14; }
+    .notif-icon.info    { background: #dbeafe; color: #0d6efd; }
+    .notif-icon.success { background: #d1fae5; color: #198754; }
+    .notif-body { flex: 1; min-width: 0; }
+    .notif-title { font-weight: 600; font-size: .92rem; margin-bottom: .15rem; }
+    .notif-msg { font-size: .84rem; color: #555; margin-bottom: .25rem; }
+    .notif-time { font-size: .78rem; color: #999; }
+    .notif-actions { flex-shrink: 0; }
+    .unread-dot {
+      width: .55rem; height: .55rem;
+      background: #0d6efd;
+      border-radius: 50%;
+      display: inline-block;
+      margin-left: .4rem;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Gestion Financière</div></div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="../admin/index.html">Administration</a></li>
+          <li class="breadcrumb-item active">Centre de notifications</li>
+        </ol></nav>
+      </div>
+      <div class="topbar-center"><i class="fas fa-calendar-alt"></i> Exercice : <strong>2026</strong></div>
+      <div class="topbar-right">
+        <button class="topbar-btn"><i class="fas fa-bell"></i></button>
+        <div class="dropdown">
+          <div class="user-pill dropdown-toggle" data-bs-toggle="dropdown" style="cursor:pointer">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div><div class="user-name" id="userName">—</div><div class="user-role" id="userRole">—</div></div>
+            <i class="fas fa-chevron-down ms-1" style="font-size:.6rem;color:rgba(255,255,255,.4)"></i>
+          </div>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- En-tête de page -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-bell text-primary me-2"></i>Centre de notifications</h4>
+          <small class="text-muted">Alertes, messages système et communications internes</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-secondary btn-sm" onclick="markAllRead()">
+            <i class="fas fa-check-double me-1"></i>Marquer tout comme lu
+          </button>
+          <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalNotif">
+            <i class="fas fa-paper-plane me-1"></i>Envoyer une notification
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid kpi-grid-4 mb-4">
+        <div class="kpi-card kpi-red">
+          <div class="kpi-icon"><i class="fas fa-envelope"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-value" id="kpiUnread">8</div>
+            <div class="kpi-label">Non lues</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi-orange">
+          <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-value">3</div>
+            <div class="kpi-label">Alertes système</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi-blue">
+          <div class="kpi-icon"><i class="fas fa-paper-plane"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-value">42</div>
+            <div class="kpi-label">Notifications envoyées (7j)</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi-green">
+          <div class="kpi-icon"><i class="fas fa-envelope-open"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-value">34</div>
+            <div class="kpi-label">Notifications lues</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Onglets -->
+      <div class="card">
+        <div class="card-header p-0">
+          <ul class="nav nav-tabs border-0 px-3 pt-2" id="notifTabs">
+            <li class="nav-item">
+              <a class="nav-link active" href="#" onclick="switchTab('all', this); return false;">
+                Toutes <span class="badge bg-danger ms-1" id="badgeAll">8</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" onclick="switchTab('alertes', this); return false;">
+                Alertes <span class="badge bg-warning text-dark ms-1">3</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" onclick="switchTab('systeme', this); return false;">
+                Système
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" onclick="switchTab('envoyees', this); return false;">
+                Envoyées
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Onglet Toutes -->
+        <div id="tabAll" class="card-body p-0">
+          <div id="notifList">
+
+            <!-- 1 - danger, non lu -->
+            <div class="notif-item unread" id="notif-1">
+              <div class="notif-icon danger"><i class="fas fa-shield-alt"></i></div>
+              <div class="notif-body">
+                <div class="notif-title">Tentatives de connexion suspectes <span class="unread-dot"></span></div>
+                <div class="notif-msg">3 tentatives échouées sur le compte jdupont@pslsh.org depuis IP 192.168.1.45</div>
+                <div class="notif-time"><i class="fas fa-clock me-1"></i>il y a 12 min</div>
+              </div>
+              <div class="notif-actions">
+                <a href="#" class="text-muted small" onclick="markRead('notif-1'); return false;">Marquer comme lu</a>
+              </div>
+            </div>
+
+            <!-- 2 - warning, non lu -->
+            <div class="notif-item unread" id="notif-2">
+              <div class="notif-icon warning"><i class="fas fa-user-clock"></i></div>
+              <div class="notif-body">
+                <div class="notif-title">Compte inactif <span class="unread-dot"></span></div>
+                <div class="notif-msg">Le compte m.pierre@pslsh.org est inactif depuis 30 jours</div>
+                <div class="notif-time"><i class="fas fa-clock me-1"></i>hier 17:30</div>
+              </div>
+              <div class="notif-actions">
+                <a href="#" class="text-muted small" onclick="markRead('notif-2'); return false;">Marquer comme lu</a>
+              </div>
+            </div>
+
+            <!-- 3 - success, lu -->
+            <div class="notif-item" id="notif-3">
+              <div class="notif-icon success"><i class="fas fa-user-plus"></i></div>
+              <div class="notif-body">
+                <div class="notif-title">Nouveau compte créé</div>
+                <div class="notif-msg">Compte asanchez (SAF) créé avec succès par l'administrateur</div>
+                <div class="notif-time"><i class="fas fa-clock me-1"></i>aujourd'hui 09:14</div>
+              </div>
+              <div class="notif-actions"></div>
+            </div>
+
+            <!-- 4 - warning, non lu -->
+            <div class="notif-item unread" id="notif-4">
+              <div class="notif-icon warning"><i class="fas fa-key"></i></div>
+              <div class="notif-body">
+                <div class="notif-title">Mots de passe expirés <span class="unread-dot"></span></div>
+                <div class="notif-msg">2 comptes ont un mot de passe expiré depuis plus de 90 jours</div>
+                <div class="notif-time"><i class="fas fa-clock me-1"></i>aujourd'hui 08:00</div>
+              </div>
+              <div class="notif-actions">
+                <a href="#" class="text-muted small" onclick="markRead('notif-4'); return false;">Marquer comme lu</a>
+              </div>
+            </div>
+
+            <!-- 5 - info, lu -->
+            <div class="notif-item" id="notif-5">
+              <div class="notif-icon info"><i class="fas fa-file-alt"></i></div>
+              <div class="notif-body">
+                <div class="notif-title">Soumission PAO</div>
+                <div class="notif-msg">Le service SAF a soumis son plan de travail PAO 2026</div>
+                <div class="notif-time"><i class="fas fa-clock me-1"></i>hier 14:22</div>
+              </div>
+              <div class="notif-actions"></div>
+            </div>
+
+            <!-- 6 - info, lu -->
+            <div class="notif-item" id="notif-6">
+              <div class="notif-icon info"><i class="fas fa-check-circle"></i></div>
+              <div class="notif-body">
+                <div class="notif-title">Validation PAO</div>
+                <div class="notif-msg">Le PAO du service SGAS a été validé par la Coordination</div>
+                <div class="notif-time"><i class="fas fa-clock me-1"></i>il y a 2 jours</div>
+              </div>
+              <div class="notif-actions"></div>
+            </div>
+
+            <!-- 7 - success, lu -->
+            <div class="notif-item" id="notif-7">
+              <div class="notif-icon success"><i class="fas fa-database"></i></div>
+              <div class="notif-body">
+                <div class="notif-title">Sauvegarde automatique</div>
+                <div class="notif-msg">Sauvegarde quotidienne effectuée avec succès</div>
+                <div class="notif-time"><i class="fas fa-clock me-1"></i>aujourd'hui 03:00</div>
+              </div>
+              <div class="notif-actions"></div>
+            </div>
+
+            <!-- 8 - danger, non lu -->
+            <div class="notif-item unread" id="notif-8">
+              <div class="notif-icon danger"><i class="fas fa-ban"></i></div>
+              <div class="notif-body">
+                <div class="notif-title">Erreur d'accès <span class="unread-dot"></span></div>
+                <div class="notif-msg">Tentative d'accès non autorisé au module Administration</div>
+                <div class="notif-time"><i class="fas fa-clock me-1"></i>il y a 2h</div>
+              </div>
+              <div class="notif-actions">
+                <a href="#" class="text-muted small" onclick="markRead('notif-8'); return false;">Marquer comme lu</a>
+              </div>
+            </div>
+
+            <!-- 9 - info, non lu -->
+            <div class="notif-item unread" id="notif-9">
+              <div class="notif-icon info"><i class="fas fa-calendar-alt"></i></div>
+              <div class="notif-body">
+                <div class="notif-title">Campagne PAO <span class="unread-dot"></span></div>
+                <div class="notif-msg">Rappel : La date limite de soumission PAO est dans 5 jours (28/02/2026)</div>
+                <div class="notif-time"><i class="fas fa-clock me-1"></i>hier 09:00</div>
+              </div>
+              <div class="notif-actions">
+                <a href="#" class="text-muted small" onclick="markRead('notif-9'); return false;">Marquer comme lu</a>
+              </div>
+            </div>
+
+            <!-- 10 - warning, lu -->
+            <div class="notif-item" id="notif-10">
+              <div class="notif-icon warning"><i class="fas fa-hdd"></i></div>
+              <div class="notif-body">
+                <div class="notif-title">Espace disque</div>
+                <div class="notif-msg">L'espace de stockage des justificatifs est à 78% de capacité</div>
+                <div class="notif-time"><i class="fas fa-clock me-1"></i>il y a 3 jours</div>
+              </div>
+              <div class="notif-actions"></div>
+            </div>
+
+          </div><!-- /#notifList -->
+        </div>
+
+        <!-- Onglet Alertes -->
+        <div id="tabAlertes" class="card-body d-none">
+          <div class="notif-item unread">
+            <div class="notif-icon danger"><i class="fas fa-shield-alt"></i></div>
+            <div class="notif-body">
+              <div class="notif-title">Tentatives de connexion suspectes <span class="unread-dot"></span></div>
+              <div class="notif-msg">3 tentatives échouées sur le compte jdupont@pslsh.org depuis IP 192.168.1.45</div>
+              <div class="notif-time"><i class="fas fa-clock me-1"></i>il y a 12 min</div>
+            </div>
+          </div>
+          <div class="notif-item unread">
+            <div class="notif-icon danger"><i class="fas fa-ban"></i></div>
+            <div class="notif-body">
+              <div class="notif-title">Erreur d'accès <span class="unread-dot"></span></div>
+              <div class="notif-msg">Tentative d'accès non autorisé au module Administration</div>
+              <div class="notif-time"><i class="fas fa-clock me-1"></i>il y a 2h</div>
+            </div>
+          </div>
+          <div class="notif-item unread">
+            <div class="notif-icon warning"><i class="fas fa-key"></i></div>
+            <div class="notif-body">
+              <div class="notif-title">Mots de passe expirés <span class="unread-dot"></span></div>
+              <div class="notif-msg">2 comptes ont un mot de passe expiré depuis plus de 90 jours</div>
+              <div class="notif-time"><i class="fas fa-clock me-1"></i>aujourd'hui 08:00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Onglet Système -->
+        <div id="tabSysteme" class="card-body d-none">
+          <div class="notif-item">
+            <div class="notif-icon success"><i class="fas fa-database"></i></div>
+            <div class="notif-body">
+              <div class="notif-title">Sauvegarde automatique</div>
+              <div class="notif-msg">Sauvegarde quotidienne effectuée avec succès</div>
+              <div class="notif-time"><i class="fas fa-clock me-1"></i>aujourd'hui 03:00</div>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-icon warning"><i class="fas fa-hdd"></i></div>
+            <div class="notif-body">
+              <div class="notif-title">Espace disque</div>
+              <div class="notif-msg">L'espace de stockage des justificatifs est à 78% de capacité</div>
+              <div class="notif-time"><i class="fas fa-clock me-1"></i>il y a 3 jours</div>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-icon info"><i class="fas fa-server"></i></div>
+            <div class="notif-body">
+              <div class="notif-title">Maintenance planifiée</div>
+              <div class="notif-msg">Une maintenance système est prévue le 10/04/2026 à 22:00</div>
+              <div class="notif-time"><i class="fas fa-clock me-1"></i>il y a 1 jour</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Onglet Envoyées -->
+        <div id="tabEnvoyees" class="card-body d-none">
+          <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Titre</th>
+                  <th>Destinataires</th>
+                  <th>Type</th>
+                  <th>Envoyée le</th>
+                  <th>Envoyée par</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Rappel soumission PAO 2026</td>
+                  <td>Tous les utilisateurs</td>
+                  <td><span class="badge bg-info">Information</span></td>
+                  <td>2026-04-03 09:00</td>
+                  <td>ZARA Mahamat</td>
+                </tr>
+                <tr>
+                  <td>Clôture du trimestre Q1</td>
+                  <td>Rôle : Comptable</td>
+                  <td><span class="badge bg-warning text-dark">Avertissement</span></td>
+                  <td>2026-03-28 14:00</td>
+                  <td>HAMID Diarahim</td>
+                </tr>
+                <tr>
+                  <td>Mise à jour procédures achat</td>
+                  <td>Service : Passation</td>
+                  <td><span class="badge bg-info">Information</span></td>
+                  <td>2026-03-20 11:30</td>
+                  <td>ZARA Mahamat</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /.card -->
+
+    </div><!-- /.page-content -->
+
+    <footer class="page-footer">&copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp; République du Tchad &nbsp;&middot;&nbsp; Version 1</footer>
+  </div>
+</div>
+
+<!-- Modal Envoyer une notification -->
+<div class="modal fade" id="modalNotif" tabindex="-1" aria-labelledby="modalNotifLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalNotifLabel"><i class="fas fa-paper-plane me-2 text-primary"></i>Envoyer une notification</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+
+          <!-- Destinataires -->
+          <div class="col-12">
+            <label class="form-label fw-semibold">Destinataires <span class="text-danger">*</span></label>
+            <div class="d-flex flex-wrap gap-3">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="destType" id="destAll" value="all" checked onchange="toggleDest()">
+                <label class="form-check-label" for="destAll">Tous les utilisateurs</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="destType" id="destRole" value="role" onchange="toggleDest()">
+                <label class="form-check-label" for="destRole">Par rôle</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="destType" id="destService" value="service" onchange="toggleDest()">
+                <label class="form-check-label" for="destService">Par service</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="destType" id="destUser" value="user" onchange="toggleDest()">
+                <label class="form-check-label" for="destUser">Utilisateur spécifique</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sélection dynamique par rôle -->
+          <div class="col-md-6 d-none" id="destRoleSelect">
+            <label class="form-label">Rôle</label>
+            <select class="form-select" id="selectRole">
+              <option value="">-- Sélectionner un rôle --</option>
+              <option>Administrateur</option>
+              <option>Coordinateur</option>
+              <option>Comptable</option>
+              <option>Gestionnaire</option>
+              <option>Acheteur</option>
+              <option>Auditeur</option>
+              <option>Magasinier</option>
+              <option>Superviseur</option>
+            </select>
+          </div>
+
+          <!-- Sélection dynamique par service -->
+          <div class="col-md-6 d-none" id="destServiceSelect">
+            <label class="form-label">Service</label>
+            <select class="form-select" id="selectService">
+              <option value="">-- Sélectionner un service --</option>
+              <option>SAF</option>
+              <option>SGAS</option>
+              <option>Direction</option>
+              <option>Passation</option>
+              <option>Audit</option>
+              <option>Logistique</option>
+              <option>Administration</option>
+            </select>
+          </div>
+
+          <!-- Sélection dynamique par utilisateur -->
+          <div class="col-md-6 d-none" id="destUserSelect">
+            <label class="form-label">Utilisateur</label>
+            <select class="form-select" id="selectUser">
+              <option value="">-- Sélectionner un utilisateur --</option>
+              <option>ABDOU Brahim</option>
+              <option>MOUSSA Kaltouma</option>
+              <option>HAMID Diarahim</option>
+              <option>FADOUL Nadjikimo</option>
+              <option>AMIR Tchoroma</option>
+              <option>IDRISS Bakhit</option>
+              <option>ZARA Mahamat</option>
+              <option>TRAORE Seydou</option>
+            </select>
+          </div>
+
+          <!-- Type -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Type <span class="text-danger">*</span></label>
+            <select class="form-select" id="notifType">
+              <option value="">-- Sélectionner --</option>
+              <option value="info">Information</option>
+              <option value="warning">Avertissement</option>
+              <option value="danger">Alerte</option>
+            </select>
+          </div>
+
+          <!-- Titre -->
+          <div class="col-md-8">
+            <label class="form-label fw-semibold">Titre <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="notifTitre" placeholder="Objet de la notification">
+          </div>
+
+          <!-- Message -->
+          <div class="col-12">
+            <label class="form-label fw-semibold">Message <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="notifMessage" rows="5" placeholder="Rédigez votre message ici..."></textarea>
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-primary" onclick="sendNotif()">
+          <i class="fas fa-paper-plane me-1"></i>Envoyer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+  <div id="liveToast" class="toast align-items-center text-white border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  // Initialisation de l'utilisateur depuis le localStorage
+  (function initUser() {
+    try {
+      const raw = localStorage.getItem('sigfic_user') || localStorage.getItem('user');
+      if (raw) {
+        const u = JSON.parse(raw);
+        const fullName = ((u.prenom || '') + ' ' + (u.nom || '')).trim() || u.name || '—';
+        const initials = fullName.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase();
+        document.getElementById('userName').textContent = fullName;
+        document.getElementById('userRole').textContent = u.role || u.role_libelle || '—';
+        document.getElementById('userAvatar').textContent = initials || 'A';
+      }
+    } catch (e) {}
+  })();
+
+  // Compteur de non-lus
+  let unreadCount = 8;
+
+  // Fonction toast partagée
+  function showToast(msg, type = 'success') {
+    const toastEl = document.getElementById('liveToast');
+    const toastMsg = document.getElementById('toastMsg');
+    toastEl.className = 'toast align-items-center text-white border-0 bg-' + type;
+    toastMsg.innerHTML = msg;
+    const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+    toast.show();
+  }
+
+  // Gestion des onglets
+  function switchTab(tab, el) {
+    // Désactiver tous les onglets
+    document.querySelectorAll('#notifTabs .nav-link').forEach(a => a.classList.remove('active'));
+    el.classList.add('active');
+
+    // Masquer tous les panneaux
+    ['tabAll', 'tabAlertes', 'tabSysteme', 'tabEnvoyees'].forEach(id => {
+      document.getElementById(id).classList.add('d-none');
+    });
+
+    // Afficher le panneau actif
+    const map = { all: 'tabAll', alertes: 'tabAlertes', systeme: 'tabSysteme', envoyees: 'tabEnvoyees' };
+    document.getElementById(map[tab]).classList.remove('d-none');
+  }
+
+  // Marquer tout comme lu
+  function markAllRead() {
+    const items = document.querySelectorAll('#notifList .notif-item.unread');
+    items.forEach(function(item) {
+      item.classList.remove('unread');
+      const dot = item.querySelector('.unread-dot');
+      if (dot) dot.remove();
+      const link = item.querySelector('.notif-actions a');
+      if (link) link.remove();
+    });
+    unreadCount = 0;
+    document.getElementById('badgeAll').textContent = '0';
+    document.getElementById('kpiUnread').textContent = '0';
+    showToast('<i class="fas fa-check-double me-2"></i>Toutes les notifications ont été marquées comme lues.', 'success');
+  }
+
+  // Marquer une notification comme lue
+  function markRead(id) {
+    const item = document.getElementById(id);
+    if (!item) return;
+    item.classList.remove('unread');
+    const dot = item.querySelector('.unread-dot');
+    if (dot) dot.remove();
+    const link = item.querySelector('.notif-actions a');
+    if (link) link.remove();
+    if (unreadCount > 0) {
+      unreadCount--;
+      document.getElementById('badgeAll').textContent = unreadCount > 0 ? unreadCount : '0';
+      document.getElementById('kpiUnread').textContent = unreadCount;
+    }
+  }
+
+  // Gestion affichage dynamique des destinataires
+  function toggleDest() {
+    const val = document.querySelector('input[name="destType"]:checked').value;
+    document.getElementById('destRoleSelect').classList.add('d-none');
+    document.getElementById('destServiceSelect').classList.add('d-none');
+    document.getElementById('destUserSelect').classList.add('d-none');
+
+    if (val === 'role')    document.getElementById('destRoleSelect').classList.remove('d-none');
+    if (val === 'service') document.getElementById('destServiceSelect').classList.remove('d-none');
+    if (val === 'user')    document.getElementById('destUserSelect').classList.remove('d-none');
+  }
+
+  // Envoi d'une notification
+  function sendNotif() {
+    const type  = document.getElementById('notifType').value;
+    const titre = document.getElementById('notifTitre').value.trim();
+    const msg   = document.getElementById('notifMessage').value.trim();
+    const destVal = document.querySelector('input[name="destType"]:checked').value;
+
+    if (!type || !titre || !msg) {
+      showToast('<i class="fas fa-exclamation-circle me-2"></i>Veuillez remplir tous les champs obligatoires.', 'warning');
+      return;
+    }
+
+    // Validation sélection spécifique
+    if (destVal === 'role' && !document.getElementById('selectRole').value) {
+      showToast('<i class="fas fa-exclamation-circle me-2"></i>Veuillez sélectionner un rôle.', 'warning');
+      return;
+    }
+    if (destVal === 'service' && !document.getElementById('selectService').value) {
+      showToast('<i class="fas fa-exclamation-circle me-2"></i>Veuillez sélectionner un service.', 'warning');
+      return;
+    }
+    if (destVal === 'user' && !document.getElementById('selectUser').value) {
+      showToast('<i class="fas fa-exclamation-circle me-2"></i>Veuillez sélectionner un utilisateur.', 'warning');
+      return;
+    }
+
+    // Fermer la modal
+    bootstrap.Modal.getInstance(document.getElementById('modalNotif')).hide();
+
+    // Réinitialiser le formulaire
+    document.getElementById('notifType').value = '';
+    document.getElementById('notifTitre').value = '';
+    document.getElementById('notifMessage').value = '';
+
+    showToast('<i class="fas fa-paper-plane me-2"></i>Notification <strong>«' + titre + '»</strong> envoyée avec succès.', 'success');
+  }
+
+  // Déconnexion globale
+  function logout() {
+    if (confirm('Confirmer la déconnexion ?')) {
+      localStorage.clear();
+      window.location.href = '../../index.html';
+    }
+  }
+</script>
+</body>
+</html>

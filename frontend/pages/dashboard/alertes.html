@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Alertes &amp; Urgences</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    /* ── Excel full-height layout ── */
+    html, body          { height: 100%; overflow: hidden; }
+    .app-layout         { height: 100vh; overflow: hidden; }
+    .main-content       { height: 100vh; overflow: hidden; }
+    .page-content {
+      flex: 1; overflow: hidden;
+      display: flex; flex-direction: column;
+      padding: 0; gap: 0;
+    }
+    .al-fixed-top { flex-shrink: 0; padding: 14px 24px 0; }
+    .al-tabs {
+      flex-shrink: 0;
+      display: flex; align-items: flex-end; gap: 2px;
+      padding: 0 24px;
+      border-bottom: 2px solid #d1d5db;
+      background: #f8fafc;
+      margin-top: 12px;
+    }
+    .al-tab {
+      padding: 8px 20px; font-size: .78rem; font-weight: 600; color: #64748b;
+      border: 1px solid transparent; border-bottom: none;
+      border-radius: 6px 6px 0 0; background: transparent;
+      cursor: pointer; position: relative; bottom: -2px;
+    }
+    .al-tab.active {
+      color: #1b3a6b; background: #fff;
+      border-color: #d1d5db; border-bottom-color: #fff; font-weight: 700;
+    }
+    .al-body { flex: 1; overflow-y: auto; padding: 18px 24px 20px; background: #eef2f7; }
+    .al-panel { display: none; }
+    .al-panel.active { display: block; }
+
+    /* ── KPI row ── */
+    .kpi-row { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:0; }
+    @media(max-width:900px){ .kpi-row { grid-template-columns:repeat(2,1fr); } }
+    .kpi-card { background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 18px;
+      display:flex;align-items:center;gap:14px;position:relative;overflow:hidden; }
+    .kpi-card::before { content:'';position:absolute;top:0;left:0;right:0;height:3px; }
+    .kc-red::before    { background:#b91c1c; }
+    .kc-orange::before { background:#b45309; }
+    .kc-blue::before   { background:#1b3a6b; }
+    .kc-gray::before   { background:#64748b; }
+    .kpi-icon { width:40px;height:40px;border-radius:10px;display:flex;align-items:center;
+      justify-content:center;font-size:1rem;flex-shrink:0; }
+    .kpi-lbl { font-size:.62rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em; }
+    .kpi-val { font-size:1.4rem;font-weight:800;color:#1b2f52;font-family:monospace;line-height:1.1;margin-top:2px; }
+    .kpi-sub { font-size:.62rem;color:#94a3b8;margin-top:2px; }
+
+    /* ── Status badges ── */
+    .s-pend { background:#fef3c7;color:#b45309;font-size:.66rem;font-weight:700;border-radius:5px;padding:2px 8px; }
+    .s-valid { background:#dcfce7;color:#15803d;font-size:.66rem;font-weight:700;border-radius:5px;padding:2px 8px; }
+    .s-rej   { background:#fee2e2;color:#b91c1c;font-size:.66rem;font-weight:700;border-radius:5px;padding:2px 8px; }
+    .s-inc   { background:#f1f5f9;color:#64748b;font-size:.66rem;font-weight:700;border-radius:5px;padding:2px 8px; }
+
+    /* ── Priority badges ── */
+    .prio-crit { background:#fee2e2;color:#b91c1c;font-size:.63rem;font-weight:800;border-radius:5px;padding:2px 8px; }
+    .prio-urg  { background:#fef3c7;color:#b45309;font-size:.63rem;font-weight:800;border-radius:5px;padding:2px 8px; }
+    .prio-moy  { background:#dbeafe;color:#1d4ed8;font-size:.63rem;font-weight:800;border-radius:5px;padding:2px 8px; }
+    .prio-info { background:#f0fdf4;color:#15803d;font-size:.63rem;font-weight:800;border-radius:5px;padding:2px 8px; }
+
+    /* ── Table card ── */
+    .table-card { background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:16px; }
+    .table-card-head { display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid #e2e8f0;
+      background:linear-gradient(90deg,#0f2944,#1b3a6b); }
+    .tch-icon  { width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.15);
+      display:flex;align-items:center;justify-content:center;color:#fca5a5;font-size:.9rem; }
+    .tch-title { color:#fff;font-size:.85rem;font-weight:800;flex:1; }
+    .tch-count { font-size:.75rem;font-weight:700;color:#fca5a5;background:rgba(185,28,28,.3);
+      border-radius:20px;padding:2px 10px; }
+
+    .alerte-tbl { width:100%;border-collapse:collapse;font-size:.76rem; }
+    .alerte-tbl thead th { background:#f8fafc;color:#64748b;font-size:.62rem;font-weight:700;
+      text-transform:uppercase;padding:8px 12px;border-bottom:1px solid #e2e8f0;white-space:nowrap; }
+    .alerte-tbl tbody td { padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle; }
+    .alerte-tbl tbody tr:last-child td { border-bottom:none; }
+    .alerte-tbl tbody tr:hover td { background:#fafafa; }
+
+    /* ── Filter bar ── */
+    .filter-bar { background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 16px;
+      margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
+    .filter-bar .form-select,
+    .filter-bar .form-control { font-size:.76rem;height:32px;padding:3px 8px;border-color:#d1d5db; }
+    .filter-bar label { font-size:.72rem;font-weight:700;color:#64748b;white-space:nowrap; }
+
+    .btn-exp { font-size:.71rem;font-weight:600;padding:5px 11px;border-radius:7px;
+      border:1px solid #d1d5db;background:#fff;color:#374151;cursor:pointer;display:flex;align-items:center;gap:5px; }
+    .btn-exp:hover { background:#f8fafc; }
+    .btn-act { font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:6px;border:none;cursor:pointer; }
+    .btn-voir    { background:#dbeafe;color:#1d4ed8; }
+    .btn-traiter { background:#dcfce7;color:#15803d; }
+    .btn-comp    { background:#fef3c7;color:#b45309; }
+    .btn-voir:hover    { background:#bfdbfe; }
+    .btn-traiter:hover { background:#bbf7d0; }
+    .btn-comp:hover    { background:#fde68a; }
+
+    .dos-ref { font-size:.68rem;font-weight:700;font-family:monospace;
+      background:#f1f5f9;color:#1b2f52;border-radius:4px;padding:1px 6px; }
+    .module-tag { font-size:.64rem;font-weight:700;background:#ede9fe;color:#7c3aed;
+      border-radius:4px;padding:1px 6px; }
+    .since-tag  { font-size:.72rem;font-weight:700;color:#64748b; }
+
+    /* ── Page title strip ── */
+    .page-title-strip {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px;
+    }
+    .page-title-strip h5 { margin: 0; font-size: .95rem; font-weight: 800; color: #1b2f52; }
+    .page-title-strip small { font-size: .7rem; color: #64748b; }
+
+    /* ── Empty state ── */
+    .empty-state { text-align:center;padding:60px 20px;color:#94a3b8; }
+    .empty-state i { font-size:2.5rem;margin-bottom:12px;display:block; }
+    .empty-state p { font-size:.8rem; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/dashboard/index.html">Tableau de bord</a></li>
+            <li class="breadcrumb-item active">Alertes &amp; urgences</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i> Exercice :
+        <select id="selEx" class="form-select form-select-sm d-inline-block w-auto ms-1">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-sm btn-outline-secondary me-1" onclick="window.location.reload()">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-secondary me-2">
+          <i class="fas fa-download"></i>
+        </button>
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- Fixed top: title + KPIs -->
+      <div class="al-fixed-top">
+        <div class="page-title-strip">
+          <div>
+            <h5><i class="fas fa-bell text-danger me-2"></i>Alertes &amp; Urgences</h5>
+            <small>Notifications temps réel : dossiers bloqués, dépassements budgétaires, échéances critiques</small>
+          </div>
+        </div>
+
+        <!-- KPI row -->
+        <div class="kpi-row">
+          <div class="kpi-card kc-red">
+            <div class="kpi-icon" style="background:#fee2e2;color:#b91c1c">
+              <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div>
+              <div class="kpi-lbl">Alertes critiques</div>
+              <div class="kpi-val" id="cnt-critique">—</div>
+              <div class="kpi-sub">Action immédiate requise</div>
+            </div>
+          </div>
+          <div class="kpi-card kc-orange">
+            <div class="kpi-icon" style="background:#fef3c7;color:#b45309">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div>
+              <div class="kpi-lbl">Avertissements</div>
+              <div class="kpi-val" id="cnt-urgent">—</div>
+              <div class="kpi-sub">À traiter sous 48h</div>
+            </div>
+          </div>
+          <div class="kpi-card kc-blue">
+            <div class="kpi-icon" style="background:#dbeafe;color:#1d4ed8">
+              <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div>
+              <div class="kpi-lbl">En attente de validation</div>
+              <div class="kpi-val" id="cnt-attente">—</div>
+              <div class="kpi-sub">Dossiers en circuit</div>
+            </div>
+          </div>
+          <div class="kpi-card kc-gray">
+            <div class="kpi-icon" style="background:#f1f5f9;color:#64748b">
+              <i class="fas fa-lock"></i>
+            </div>
+            <div>
+              <div class="kpi-lbl">Dossiers bloqués</div>
+              <div class="kpi-val" id="cnt-bloque">—</div>
+              <div class="kpi-sub">Intervention nécessaire</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="al-tabs">
+        <div class="al-tab active" id="altab-actives" onclick="alSwitchTab('actives')">
+          <i class="fas fa-bell me-1"></i>Alertes actives
+        </div>
+        <div class="al-tab" id="altab-resolues" onclick="alSwitchTab('resolues')">
+          <i class="fas fa-check-circle me-1"></i>Alertes résolues
+        </div>
+        <div class="al-tab" id="altab-parametrage" onclick="alSwitchTab('parametrage')">
+          <i class="fas fa-cog me-1"></i>Paramétrage
+        </div>
+      </div>
+
+      <!-- Scrollable body -->
+      <div class="al-body">
+
+        <!-- Panel : Alertes actives -->
+        <div class="al-panel active" id="alpanel-actives">
+          <!-- Filter bar -->
+          <div class="filter-bar">
+            <i class="fas fa-filter text-muted" style="font-size:.8rem"></i>
+            <label>Priorité</label>
+            <select class="form-select">
+              <option value="">Toutes</option>
+              <option>CRITIQUE</option>
+              <option>URGENT</option>
+              <option>MOYEN</option>
+              <option>INFO</option>
+            </select>
+            <label>Type</label>
+            <select class="form-select">
+              <option value="">Tous</option>
+              <option>Budget</option>
+              <option>Validation</option>
+              <option>Paiement</option>
+              <option>Archivage</option>
+              <option>Stock</option>
+            </select>
+            <label>Module</label>
+            <select class="form-select">
+              <option value="">Tous</option>
+              <option>Budget</option>
+              <option>Validation</option>
+              <option>Finances</option>
+              <option>Opérations</option>
+              <option>Comptabilité</option>
+            </select>
+            <label>Depuis</label>
+            <input type="date" class="form-control" style="width:140px">
+            <button class="btn btn-sm ms-1" style="background:#1b3a6b;color:#fff;font-size:.73rem;border-radius:7px;padding:4px 14px">
+              <i class="fas fa-search me-1"></i>Filtrer
+            </button>
+            <button class="btn btn-sm ms-1" style="border:1px solid #d1d5db;background:#fff;font-size:.73rem;border-radius:7px;padding:4px 12px;color:#64748b">
+              <i class="fas fa-times me-1"></i>Réinitialiser
+            </button>
+          </div>
+
+          <!-- Table alertes actives -->
+          <div class="table-card">
+            <div class="table-card-head">
+              <div class="tch-icon"><i class="fas fa-bell"></i></div>
+              <div class="tch-title">Alertes actives</div>
+              <div class="tch-count" id="al-count-badge">—</div>
+            </div>
+            <div class="table-responsive">
+              <table class="alerte-tbl">
+                <thead>
+                  <tr>
+                    <th>Priorité</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Module</th>
+                    <th>Dossier concerné</th>
+                    <th>Depuis</th>
+                    <th>Statut</th>
+                    <th style="text-align:center">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="alertes-tbody">
+                  <tr>
+                    <td colspan="8" style="text-align:center;padding:24px;color:#94a3b8;font-size:.8rem;">
+                      <i class="fas fa-bell-slash me-2"></i>Aucune alerte active enregistrée.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div><!-- /alpanel-actives -->
+
+        <!-- Panel : Alertes résolues -->
+        <div class="al-panel" id="alpanel-resolues">
+          <div class="table-card">
+            <div class="table-card-head" style="background:linear-gradient(90deg,#064e3b,#059669)">
+              <div class="tch-icon" style="color:#6ee7b7"><i class="fas fa-check-circle"></i></div>
+              <div class="tch-title">Alertes résolues</div>
+              <span style="font-size:.72rem;font-weight:700;color:#6ee7b7;background:rgba(6,78,59,.4);border-radius:20px;padding:2px 10px;">Exercice 2026</span>
+            </div>
+            <div class="empty-state">
+              <i class="fas fa-check-circle text-success"></i>
+              <p>Aucune alerte résolue enregistrée pour cet exercice.</p>
+            </div>
+          </div>
+        </div><!-- /alpanel-resolues -->
+
+        <!-- Panel : Paramétrage -->
+        <div class="al-panel" id="alpanel-parametrage">
+          <div class="table-card">
+            <div class="table-card-head" style="background:linear-gradient(90deg,#374151,#4b5563)">
+              <div class="tch-icon" style="color:#d1d5db"><i class="fas fa-cog"></i></div>
+              <div class="tch-title">Paramétrage des alertes</div>
+            </div>
+            <div class="empty-state">
+              <i class="fas fa-cog text-muted"></i>
+              <p>Configuration des seuils et règles d'alerte — à venir.</p>
+            </div>
+          </div>
+        </div><!-- /alpanel-parametrage -->
+
+      </div><!-- /al-body -->
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if(typeof renderSidebarNav==='function') renderSidebarNav('sidebarNav');
+  if(typeof renderServiceBadge==='function') renderServiceBadge();
+  const _u=JSON.parse(localStorage.getItem('pslsh_user')||'{}');
+  document.getElementById('userName').textContent=_u.nom||_u.name||_u.email||'';
+
+  function alSwitchTab(tab) {
+    document.querySelectorAll('.al-tab').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.al-panel').forEach(el => el.classList.remove('active'));
+    document.getElementById('altab-' + tab).classList.add('active');
+    document.getElementById('alpanel-' + tab).classList.add('active');
+  }
+
+  function loadAlertes() {
+    /* Appel API — les compteurs s'afficheront dès réception des données réelles */
+    ['cnt-critique','cnt-urgent','cnt-attente','cnt-bloque'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '0';
+    });
+    const badge = document.getElementById('al-count-badge');
+    if (badge) badge.textContent = '0 alerte';
+  }
+
+  document.addEventListener('DOMContentLoaded', loadAlertes);
+</script>
+</body>
+</html>

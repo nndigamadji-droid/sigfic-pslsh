@@ -1,0 +1,830 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SIGFIC-PSLSH | Paramètres système</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .param-card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 1.25rem; }
+    .param-card .card-header { background: #f8f9fa; border-radius: 10px 10px 0 0 !important; border-bottom: 1px solid #e9ecef; font-weight: 600; font-size: .875rem; }
+    .param-section-title { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: #6c757d; font-weight: 700; margin-bottom: .75rem; }
+    .ref-table th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; background: #f8f9fa; }
+    .ref-table td { font-size: .85rem; vertical-align: middle; }
+    .notif-row { display: flex; align-items: center; justify-content: space-between; padding: .65rem 0; border-bottom: 1px solid #f0f0f0; }
+    .notif-row:last-child { border-bottom: none; }
+    .notif-label { font-size: .875rem; }
+    .notif-desc { font-size: .75rem; color: #6c757d; }
+    .form-switch .form-check-input { width: 2.5em; height: 1.3em; }
+    .nav-tabs .nav-link { font-size: .85rem; font-weight: 500; color: #495057; }
+    .nav-tabs .nav-link.active { color: #1b4fa8; font-weight: 600; }
+    .form-label.fw-semibold { font-size: .875rem; }
+    .save-bar { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid #e9ecef; padding: .75rem 1.25rem; display: flex; justify-content: flex-end; gap: .5rem; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Gestion Financière</div></div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="../admin/index.html">Administration</a></li>
+          <li class="breadcrumb-item active">Paramètres système</li>
+        </ol></nav>
+      </div>
+      <div class="topbar-center"><i class="fas fa-calendar-alt"></i> Exercice : <strong>2026</strong></div>
+      <div class="topbar-right">
+        <button class="topbar-btn"><i class="fas fa-bell"></i></button>
+        <div class="dropdown">
+          <div class="user-pill dropdown-toggle" data-bs-toggle="dropdown" style="cursor:pointer">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div><div class="user-name" id="userName">—</div><div class="user-role" id="userRole">—</div></div>
+            <i class="fas fa-chevron-down ms-1" style="font-size:.6rem;color:rgba(255,255,255,.4)"></i>
+          </div>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- En-tête -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-cog text-primary me-2"></i>Paramétrage</h4>
+          <small class="text-muted">Configuration de l'application SIGFIC-PSLSH</small>
+        </div>
+        <button class="btn btn-primary" onclick="saveAll()">
+          <i class="fas fa-save me-1"></i>Enregistrer les modifications
+        </button>
+      </div>
+
+      <!-- Onglets Bootstrap -->
+      <ul class="nav nav-tabs mb-4" id="paramTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="tab-exercice" data-bs-toggle="tab" data-bs-target="#paneExercice" type="button" role="tab">
+            <i class="fas fa-calendar-alt me-1"></i>Exercice &amp; Campagne
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-securite" data-bs-toggle="tab" data-bs-target="#paneSecurite" type="button" role="tab">
+            <i class="fas fa-lock me-1"></i>Politique de sécurité
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-referentiels" data-bs-toggle="tab" data-bs-target="#paneReferentiels" type="button" role="tab">
+            <i class="fas fa-list me-1"></i>Référentiels
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-types" data-bs-toggle="tab" data-bs-target="#paneTypes" type="button" role="tab">
+            <i class="fas fa-tags me-1"></i>Types &amp; nomenclatures
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-notifs" data-bs-toggle="tab" data-bs-target="#paneNotifs" type="button" role="tab">
+            <i class="fas fa-bell me-1"></i>Notifications
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="paramTabContent">
+
+        <!-- ══════════════════════════════════════════════════════════
+             ONGLET 1 — Exercice & Campagne
+        ══════════════════════════════════════════════════════════ -->
+        <div class="tab-pane fade show active" id="paneExercice" role="tabpanel">
+
+          <!-- Exercice budgétaire actif -->
+          <div class="card param-card">
+            <div class="card-header d-flex align-items-center gap-2">
+              <i class="fas fa-calendar-check text-primary"></i>
+              Exercice budgétaire actif
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Exercice actif</label>
+                  <input type="number" class="form-control" id="exerciceAnnee" value="2026" min="2020" max="2035">
+                  <div class="form-text">Année de référence pour toutes les opérations</div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Date début exercice</label>
+                  <input type="date" class="form-control" id="exerciceDebut" value="2026-01-01">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Date fin exercice</label>
+                  <input type="date" class="form-control" id="exerciceFin" value="2026-12-31">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Statut de l'exercice</label>
+                  <select class="form-select" id="exerciceStatut">
+                    <option value="ouvert" selected>Ouvert</option>
+                    <option value="en_cloture">En clôture</option>
+                    <option value="ferme">Fermé</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Devise</label>
+                  <select class="form-select" id="exerciceDevise">
+                    <option value="FCFA" selected>FCFA — Franc CFA</option>
+                    <option value="EUR">EUR — Euro</option>
+                    <option value="USD">USD — Dollar américain</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campagne PAO -->
+          <div class="card param-card">
+            <div class="card-header d-flex align-items-center gap-2">
+              <i class="fas fa-project-diagram text-warning"></i>
+              Campagne PAO
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Statut de la campagne</label>
+                  <select class="form-select" id="campagneStatut">
+                    <option value="ouverte" selected>Ouverte</option>
+                    <option value="en_validation">En validation</option>
+                    <option value="fermee">Fermée</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Date d'ouverture de soumission PAO</label>
+                  <input type="date" class="form-control" id="campagneOuverture" value="2026-01-15">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Date limite de soumission</label>
+                  <input type="date" class="form-control" id="campagneLimite" value="2026-02-28">
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label fw-semibold">Message aux services</label>
+                  <textarea class="form-control" id="campagneMessage" rows="3"
+                    placeholder="Instructions à communiquer aux chefs de service pour la soumission du PAO...">La campagne de soumission des Plans d'Action Opérationnels (PAO) pour l'exercice 2026 est ouverte. Chaque chef de service doit soumettre son PAO validé avant la date limite du 28 février 2026. Tout dossier soumis après cette date ne sera pas pris en compte.</textarea>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="campagneNotifAuto" checked>
+                    <label class="form-check-label" for="campagneNotifAuto">
+                      Envoyer une notification aux chefs de service à l'ouverture de la campagne
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /paneExercice -->
+
+        <!-- ══════════════════════════════════════════════════════════
+             ONGLET 2 — Politique de sécurité
+        ══════════════════════════════════════════════════════════ -->
+        <div class="tab-pane fade" id="paneSecurite" role="tabpanel">
+
+          <!-- Mots de passe -->
+          <div class="card param-card">
+            <div class="card-header d-flex align-items-center gap-2">
+              <i class="fas fa-key text-primary"></i>
+              Politique des mots de passe
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Longueur minimale (caractères)</label>
+                  <input type="number" class="form-control" id="mdpLongueur" value="8" min="6" max="32">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Expiration (jours) <span class="text-muted small">(0 = jamais)</span></label>
+                  <input type="number" class="form-control" id="mdpExpiration" value="90" min="0">
+                </div>
+                <div class="col-md-12">
+                  <div class="param-section-title mt-2">Complexité requise</div>
+                  <div class="row g-2">
+                    <div class="col-md-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="mdpMajuscule" checked>
+                        <label class="form-check-label" for="mdpMajuscule">Majuscules (A-Z)</label>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="mdpMinuscule" checked>
+                        <label class="form-check-label" for="mdpMinuscule">Minuscules (a-z)</label>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="mdpChiffre" checked>
+                        <label class="form-check-label" for="mdpChiffre">Chiffres (0-9)</label>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="mdpSpecial" checked>
+                        <label class="form-check-label" for="mdpSpecial">Caractères spéciaux</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="mdpForceChange" checked>
+                    <label class="form-check-label" for="mdpForceChange">
+                      Forcer le changement de mot de passe à la première connexion
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Verrouillage de compte -->
+          <div class="card param-card">
+            <div class="card-header d-flex align-items-center gap-2">
+              <i class="fas fa-user-lock text-danger"></i>
+              Verrouillage de compte
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Max tentatives de connexion échouées</label>
+                  <input type="number" class="form-control" id="lockTentatives" value="5" min="1" max="20">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Durée de verrouillage (minutes)</label>
+                  <input type="number" class="form-control" id="lockDuree" value="30" min="1">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Alerte administrateur après N tentatives</label>
+                  <input type="number" class="form-control" id="lockAlerte" value="3" min="1">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sessions -->
+          <div class="card param-card">
+            <div class="card-header d-flex align-items-center gap-2">
+              <i class="fas fa-clock text-info"></i>
+              Gestion des sessions
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Durée maximale de session (minutes)</label>
+                  <input type="number" class="form-control" id="sessionDuree" value="480" min="30">
+                  <div class="form-text">480 minutes = 8 heures (journée de travail)</div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Délai d'inactivité avant déconnexion (minutes)</label>
+                  <input type="number" class="form-control" id="sessionInactivite" value="30" min="5">
+                </div>
+                <div class="col-md-12">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="sessionAutoLogout" checked>
+                    <label class="form-check-label" for="sessionAutoLogout">
+                      Activer la déconnexion automatique après inactivité
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /paneSecurite -->
+
+        <!-- ══════════════════════════════════════════════════════════
+             ONGLET 3 — Référentiels
+        ══════════════════════════════════════════════════════════ -->
+        <div class="tab-pane fade" id="paneReferentiels" role="tabpanel">
+
+          <!-- Types de dépense -->
+          <div class="card param-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span><i class="fas fa-tags text-primary me-2"></i>Types de dépense</span>
+              <button class="btn btn-sm btn-outline-primary" onclick="addRefRow('typeDepenseTable', ['', '', ''])">
+                <i class="fas fa-plus me-1"></i>Ajouter
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <table class="table table-sm table-hover ref-table mb-0" id="typeDepenseTable">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Libellé</th>
+                    <th>Description</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="badge bg-primary">SAL</span></td>
+                    <td>Salaires et rémunérations</td>
+                    <td class="text-muted">Charges de personnel</td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-info">FONC</span></td>
+                    <td>Fonctionnement</td>
+                    <td class="text-muted">Dépenses courantes de gestion</td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-warning text-dark">INVEST</span></td>
+                    <td>Investissement</td>
+                    <td class="text-muted">Acquisition d'immobilisations</td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-success">FORM</span></td>
+                    <td>Formation et renforcement</td>
+                    <td class="text-muted">Formation du personnel</td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-secondary">DIV</span></td>
+                    <td>Divers</td>
+                    <td class="text-muted">Autres dépenses non classifiées</td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Sources de financement -->
+          <div class="card param-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span><i class="fas fa-wallet text-success me-2"></i>Sources de financement</span>
+              <button class="btn btn-sm btn-outline-success" onclick="addRefRow('sourceFinTable', ['', '', ''])">
+                <i class="fas fa-plus me-1"></i>Ajouter
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <table class="table table-sm table-hover ref-table mb-0" id="sourceFinTable">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Libellé</th>
+                    <th>Type</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="badge bg-danger">FM</span></td>
+                    <td>Fonds Mondial</td>
+                    <td class="text-muted">Financement international</td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-primary">CBT</span></td>
+                    <td>Contribution Bilatérale Tchad</td>
+                    <td class="text-muted">Financement national</td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-dark">ETAT</span></td>
+                    <td>Budget de l'État</td>
+                    <td class="text-muted">Dotation publique</td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div><!-- /paneReferentiels -->
+
+        <!-- ══════════════════════════════════════════════════════════
+             ONGLET 4 — Types & nomenclatures
+        ══════════════════════════════════════════════════════════ -->
+        <div class="tab-pane fade" id="paneTypes" role="tabpanel">
+
+          <!-- Types de justificatifs -->
+          <div class="card param-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span><i class="fas fa-file-alt text-primary me-2"></i>Types de justificatifs</span>
+              <button class="btn btn-sm btn-outline-primary"><i class="fas fa-plus me-1"></i>Ajouter</button>
+            </div>
+            <div class="card-body p-0">
+              <table class="table table-sm table-hover ref-table mb-0">
+                <thead>
+                  <tr><th>Code</th><th>Libellé</th><th>Obligatoire</th><th>Statut</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="badge bg-primary">FACT</span></td>
+                    <td>Facture proforma / définitive</td>
+                    <td><i class="fas fa-check-circle text-success"></i></td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-info">BL</span></td>
+                    <td>Bon de livraison</td>
+                    <td><i class="fas fa-check-circle text-success"></i></td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-warning text-dark">PVR</span></td>
+                    <td>PV de réception</td>
+                    <td><i class="fas fa-check-circle text-success"></i></td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-success">OP</span></td>
+                    <td>Ordre de paiement</td>
+                    <td><i class="fas fa-check-circle text-success"></i></td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-dark">CONT</span></td>
+                    <td>Contrat / Marché</td>
+                    <td><i class="fas fa-minus-circle text-secondary"></i></td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Types de rapports -->
+          <div class="card param-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span><i class="fas fa-chart-bar text-warning me-2"></i>Types de rapports</span>
+              <button class="btn btn-sm btn-outline-warning"><i class="fas fa-plus me-1"></i>Ajouter</button>
+            </div>
+            <div class="card-body p-0">
+              <table class="table table-sm table-hover ref-table mb-0">
+                <thead>
+                  <tr><th>Code</th><th>Libellé</th><th>Périodicité</th><th>Statut</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="badge bg-primary">RM</span></td>
+                    <td>Rapport mensuel d'activités</td>
+                    <td class="text-muted">Mensuelle</td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-info">RT</span></td>
+                    <td>Rapport trimestriel d'exécution</td>
+                    <td class="text-muted">Trimestrielle</td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-success">RA</span></td>
+                    <td>Rapport annuel</td>
+                    <td class="text-muted">Annuelle</td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-warning text-dark">BPAO</span></td>
+                    <td>Bilan d'exécution du PAO</td>
+                    <td class="text-muted">Semestrielle / annuelle</td>
+                    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Formats de fichiers -->
+          <div class="card param-card">
+            <div class="card-header d-flex align-items-center gap-2">
+              <i class="fas fa-file-upload text-success"></i>
+              Formats de fichiers autorisés pour les pièces justificatives
+            </div>
+            <div class="card-body">
+              <div class="row g-3 align-items-center">
+                <div class="col-md-8">
+                  <div class="param-section-title">Types acceptés</div>
+                  <div class="d-flex gap-4 flex-wrap">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="fmtPDF" checked>
+                      <label class="form-check-label" for="fmtPDF"><i class="far fa-file-pdf text-danger me-1"></i>PDF</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="fmtExcel" checked>
+                      <label class="form-check-label" for="fmtExcel"><i class="far fa-file-excel text-success me-1"></i>Excel (.xlsx)</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="fmtWord" checked>
+                      <label class="form-check-label" for="fmtWord"><i class="far fa-file-word text-primary me-1"></i>Word (.docx)</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="fmtImage" checked>
+                      <label class="form-check-label" for="fmtImage"><i class="far fa-file-image text-warning me-1"></i>Image (jpg, png)</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Taille maximale par fichier</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="fmtTailleMax" value="10" min="1" max="100">
+                    <span class="input-group-text">Mo</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /paneTypes -->
+
+        <!-- ══════════════════════════════════════════════════════════
+             ONGLET 5 — Notifications
+        ══════════════════════════════════════════════════════════ -->
+        <div class="tab-pane fade" id="paneNotifs" role="tabpanel">
+
+          <div class="card param-card">
+            <div class="card-header d-flex align-items-center gap-2">
+              <i class="fas fa-bell text-warning"></i>
+              Événements déclencheurs de notifications
+            </div>
+            <div class="card-body">
+
+              <div class="notif-row">
+                <div>
+                  <div class="notif-label fw-semibold">Création de compte utilisateur</div>
+                  <div class="notif-desc">Notifier le nouvel utilisateur et l'administrateur à la création d'un compte</div>
+                </div>
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" id="notifCreationCompte" checked>
+                </div>
+              </div>
+
+              <div class="notif-row">
+                <div>
+                  <div class="notif-label fw-semibold">Réinitialisation de mot de passe</div>
+                  <div class="notif-desc">Envoyer un lien de réinitialisation par email lors d'une demande de reset</div>
+                </div>
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" id="notifResetMdp" checked>
+                </div>
+              </div>
+
+              <div class="notif-row">
+                <div>
+                  <div class="notif-label fw-semibold">Soumission d'un PAO</div>
+                  <div class="notif-desc">Alerter la coordination à chaque soumission de plan d'action opérationnel</div>
+                </div>
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" id="notifSoumPAO" checked>
+                </div>
+              </div>
+
+              <div class="notif-row">
+                <div>
+                  <div class="notif-label fw-semibold">Validation ou rejet d'un dossier</div>
+                  <div class="notif-desc">Notifier le service concerné lors d'une validation ou d'un rejet de dossier</div>
+                </div>
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" id="notifValidRejet" checked>
+                </div>
+              </div>
+
+              <div class="notif-row">
+                <div>
+                  <div class="notif-label fw-semibold">Alerte de connexion suspecte</div>
+                  <div class="notif-desc">Notifier l'administrateur en cas de tentatives répétées ou d'accès inhabituel</div>
+                </div>
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" id="notifConnexionSuspecte" checked>
+                </div>
+              </div>
+
+              <div class="notif-row">
+                <div>
+                  <div class="notif-label fw-semibold">Rappel ouverture de campagne PAO</div>
+                  <div class="notif-desc">Envoyer un rappel automatique aux chefs de service avant la date limite</div>
+                </div>
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" id="notifRappelPAO" checked>
+                </div>
+              </div>
+
+              <div class="notif-row">
+                <div>
+                  <div class="notif-label fw-semibold">Résumé hebdomadaire d'activité</div>
+                  <div class="notif-desc">Envoyer chaque lundi un résumé des opérations de la semaine à la coordination</div>
+                </div>
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" id="notifResHebdo">
+                  <!-- OFF par défaut -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Email administrateur -->
+          <div class="card param-card">
+            <div class="card-header d-flex align-items-center gap-2">
+              <i class="fas fa-envelope text-info"></i>
+              Email destinataire administrateur système
+            </div>
+            <div class="card-body">
+              <div class="row g-3 align-items-center">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Adresse email de l'administrateur</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                    <input type="email" class="form-control" id="adminEmail" value="admin@pslsh.org" placeholder="admin@pslsh.org">
+                  </div>
+                  <div class="form-text">Toutes les alertes système et notifications critiques seront envoyées à cette adresse.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /paneNotifs -->
+
+      </div><!-- /tab-content -->
+
+      <!-- Bouton bas de page -->
+      <div class="d-flex justify-content-end mt-3 mb-2">
+        <button class="btn btn-primary btn-lg" onclick="saveAll()">
+          <i class="fas fa-save me-2"></i>Enregistrer les modifications
+        </button>
+      </div>
+
+    </div><!-- /page-content -->
+
+    <footer class="page-footer">&copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp; République du Tchad &nbsp;&middot;&nbsp; Version 1</footer>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1100"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   Paramètres système — JS
+═══════════════════════════════════════════════════════════ */
+
+/* ── Enregistrement global ──────────────────────────────── */
+function saveAll() {
+  // Collecter les valeurs (à transmettre à l'API)
+  const params = {
+    exercice: {
+      annee:    document.getElementById('exerciceAnnee').value,
+      debut:    document.getElementById('exerciceDebut').value,
+      fin:      document.getElementById('exerciceFin').value,
+      statut:   document.getElementById('exerciceStatut').value,
+      devise:   document.getElementById('exerciceDevise').value,
+    },
+    campagne: {
+      statut:    document.getElementById('campagneStatut').value,
+      ouverture: document.getElementById('campagneOuverture').value,
+      limite:    document.getElementById('campagneLimite').value,
+      message:   document.getElementById('campagneMessage').value,
+      notifAuto: document.getElementById('campagneNotifAuto').checked,
+    },
+    securite: {
+      mdpLongueur:   document.getElementById('mdpLongueur').value,
+      mdpExpiration: document.getElementById('mdpExpiration').value,
+      majuscule:     document.getElementById('mdpMajuscule').checked,
+      minuscule:     document.getElementById('mdpMinuscule').checked,
+      chiffre:       document.getElementById('mdpChiffre').checked,
+      special:       document.getElementById('mdpSpecial').checked,
+      forceChange:   document.getElementById('mdpForceChange').checked,
+      lockTentatives:document.getElementById('lockTentatives').value,
+      lockDuree:     document.getElementById('lockDuree').value,
+      lockAlerte:    document.getElementById('lockAlerte').value,
+      sessionDuree:  document.getElementById('sessionDuree').value,
+      sessionInact:  document.getElementById('sessionInactivite').value,
+      sessionAuto:   document.getElementById('sessionAutoLogout').checked,
+    },
+    notifs: {
+      creationCompte:     document.getElementById('notifCreationCompte').checked,
+      resetMdp:           document.getElementById('notifResetMdp').checked,
+      soumPAO:            document.getElementById('notifSoumPAO').checked,
+      validRejet:         document.getElementById('notifValidRejet').checked,
+      connexionSuspecte:  document.getElementById('notifConnexionSuspecte').checked,
+      rappelPAO:          document.getElementById('notifRappelPAO').checked,
+      resHebdo:           document.getElementById('notifResHebdo').checked,
+      adminEmail:         document.getElementById('adminEmail').value,
+    },
+    fichiers: {
+      pdf:      document.getElementById('fmtPDF').checked,
+      excel:    document.getElementById('fmtExcel').checked,
+      word:     document.getElementById('fmtWord').checked,
+      image:    document.getElementById('fmtImage').checked,
+      tailleMax: document.getElementById('fmtTailleMax').value,
+    }
+  };
+
+  // Simulation sauvegarde (remplacer par API call)
+  console.info('[SIGFIC] Paramètres à enregistrer :', params);
+
+  showToast('Paramètres enregistrés avec succès.', 'success');
+}
+
+/* ── Ajout ligne référentiel ────────────────────────────── */
+function addRefRow(tableId, cells) {
+  const tbody = document.querySelector(`#${tableId} tbody`);
+  if (!tbody) return;
+
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="form-control form-control-sm" placeholder="CODE" style="width:80px"></td>
+    <td><input type="text" class="form-control form-control-sm" placeholder="Libellé..."></td>
+    <td><input type="text" class="form-control form-control-sm" placeholder="Description..."></td>
+    <td><span class="badge bg-success-subtle text-success">Actif</span></td>
+    <td>
+      <button class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()" title="Supprimer">
+        <i class="fas fa-trash-alt"></i>
+      </button>
+    </td>`;
+  tbody.appendChild(tr);
+  tr.querySelector('input').focus();
+}
+
+/* ── Toast ──────────────────────────────────────────────── */
+function showToast(msg, type) {
+  const container = document.getElementById('toastContainer');
+  const icons = {
+    success: 'fa-check-circle text-success',
+    danger:  'fa-exclamation-circle text-danger',
+    info:    'fa-info-circle text-primary',
+    warning: 'fa-exclamation-triangle text-warning',
+  };
+  const id = 'toast_' + Date.now();
+  container.insertAdjacentHTML('beforeend', `
+    <div id="${id}" class="toast align-items-center border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body"><i class="fas ${icons[type] || icons.info} me-2"></i>${msg}</div>
+        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>`);
+  const el = document.getElementById(id);
+  new bootstrap.Toast(el, { delay: 3500 }).show();
+  el.addEventListener('hidden.bs.toast', () => el.remove());
+}
+
+/* ── Déconnexion ─────────────────────────────────────────── */
+function logout() {
+  localStorage.removeItem('pslsh_user');
+  localStorage.removeItem('pslsh_token');
+  window.location.href = '/pages/auth/login.html';
+}
+
+/* ── Init ────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function () {
+  const user = (typeof SIGFIC !== 'undefined') ? SIGFIC.getUser() : null;
+  if (user) {
+    const nom = user.nom || user.name || '—';
+    const el  = document.getElementById('userAvatar');
+    if (el) el.textContent = nom.charAt(0).toUpperCase();
+    const elN = document.getElementById('userName');
+    if (elN) elN.textContent = nom;
+    const elR = document.getElementById('userRole');
+    if (elR) elR.textContent = user.role || user.profil || '—';
+  }
+});
+</script>
+</body>
+</html>

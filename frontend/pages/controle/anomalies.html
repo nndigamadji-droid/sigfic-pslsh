@@ -1,0 +1,332 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Anomalies &amp; Rejets</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .page-body { padding: 22px 28px 48px; }
+
+    /* KPI */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+    @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    .kpi-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .kpi-red::before    { background: #b91c1c; }
+    .kpi-orange::before { background: #b45309; }
+    .kpi-green::before  { background: #15803d; }
+    .kpi-gray::before   { background: #64748b; }
+    .kpi-icon { width: 46px; height: 46px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .kpi-icon-red    { background: #fee2e2; color: #b91c1c; }
+    .kpi-icon-orange { background: #fef3c7; color: #b45309; }
+    .kpi-icon-green  { background: #dcfce7; color: #15803d; }
+    .kpi-icon-gray   { background: #f1f5f9; color: #64748b; }
+    .kpi-lbl { font-size: .63rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+    .kpi-val { font-size: 1.5rem; font-weight: 800; color: #1b2f52; font-family: monospace; margin-top: 2px; }
+    .kpi-sub { font-size: .63rem; color: #94a3b8; margin-top: 2px; }
+
+    /* Panel */
+    .panel-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+    .panel-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 13px 18px;
+      border-bottom: 1px solid #e2e8f0;
+      background: linear-gradient(90deg, #4a0505, #7f1d1d);
+    }
+    .panel-head-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; color: #fca5a5; font-size: .9rem; }
+    .panel-head-title { color: #fff; font-size: .88rem; font-weight: 800; flex: 1; }
+
+    /* Filter */
+    .filter-bar { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; flex-wrap: wrap; }
+    .filter-bar label { font-size: .72rem; font-weight: 700; color: #64748b; white-space: nowrap; }
+
+    /* Table */
+    .data-tbl { width: 100%; border-collapse: collapse; font-size: .78rem; }
+    .data-tbl thead th { background: #f8fafc; color: #64748b; font-size: .63rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 9px 14px; border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
+    .data-tbl tbody td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; color: #1b2f52; }
+    .data-tbl tbody tr:last-child td { border-bottom: none; }
+    .data-tbl tbody tr:hover td { background: #f8fafc; }
+
+    /* Niveau badges */
+    .niv-critique { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 20px; font-size: .65rem; font-weight: 800; text-transform: uppercase; }
+    .niv-majeur   { background: #fef3c7; color: #b45309; padding: 2px 8px; border-radius: 20px; font-size: .65rem; font-weight: 800; text-transform: uppercase; }
+    .niv-mineur   { background: #dbeafe; color: #1b3a6b; padding: 2px 8px; border-radius: 20px; font-size: .65rem; font-weight: 800; text-transform: uppercase; }
+
+    /* Statut badges */
+    .stat-ouverte    { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 20px; font-size: .65rem; font-weight: 700; }
+    .stat-en-cours   { background: #fef3c7; color: #b45309; padding: 2px 8px; border-radius: 20px; font-size: .65rem; font-weight: 700; }
+    .stat-regularis  { background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 20px; font-size: .65rem; font-weight: 700; }
+
+    /* Action buttons */
+    .btn-act { font-size: .68rem; padding: 3px 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+    .btn-act-view { background: #dbeafe; color: #1b3a6b; }
+    .btn-act-view:hover { background: #bfdbfe; }
+    .btn-act-reg  { background: #dcfce7; color: #15803d; }
+    .btn-act-reg:hover { background: #bbf7d0; }
+
+    .btn-exp { font-size: .71rem; font-weight: 600; padding: 5px 11px; border-radius: 7px; border: 1px solid #d1d5db; background: #fff; color: #374151; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    .btn-exp:hover { background: #f8fafc; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/controle/index.html">Contrôle &amp; audit</a></li>
+            <li class="breadcrumb-item active">Anomalies</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i> Exercice :
+        <select class="form-select form-select-sm d-inline-block w-auto ms-1">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+
+    <div class="page-content page-body">
+
+      <!-- Titre -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-exclamation-triangle text-danger me-2"></i>Anomalies &amp; Rejets</h4>
+          <small class="text-muted">Suivi des irrégularités détectées, régularisation et clôture des anomalies</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-exp"><i class="fas fa-file-excel"></i> Exporter</button>
+          <button class="btn-exp"><i class="fas fa-print"></i> Imprimer</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-red">
+          <div class="kpi-icon kpi-icon-red"><i class="fas fa-exclamation-circle"></i></div>
+          <div>
+            <div class="kpi-lbl">Anomalies ouvertes</div>
+            <div class="kpi-val">9</div>
+            <div class="kpi-sub">Non régularisées</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi-orange">
+          <div class="kpi-icon kpi-icon-orange"><i class="fas fa-tools"></i></div>
+          <div>
+            <div class="kpi-lbl">En cours de régularisation</div>
+            <div class="kpi-val">5</div>
+            <div class="kpi-sub">En traitement</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi-green">
+          <div class="kpi-icon kpi-icon-green"><i class="fas fa-check-double"></i></div>
+          <div>
+            <div class="kpi-lbl">Régularisées</div>
+            <div class="kpi-val">23</div>
+            <div class="kpi-sub">Cumulé exercice 2026</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi-gray">
+          <div class="kpi-icon kpi-icon-gray"><i class="fas fa-ban"></i></div>
+          <div>
+            <div class="kpi-lbl">Rejets définitifs</div>
+            <div class="kpi-val">2</div>
+            <div class="kpi-sub">Dossiers rejetés</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tableau des anomalies -->
+      <div class="panel-card">
+        <div class="panel-head">
+          <div class="panel-head-icon"><i class="fas fa-list-alt"></i></div>
+          <span class="panel-head-title">Registre des anomalies et rejets</span>
+        </div>
+        <div class="filter-bar">
+          <label>Niveau :</label>
+          <select class="form-select form-select-sm w-auto">
+            <option value="">Tous</option>
+            <option>Critique</option>
+            <option>Majeur</option>
+            <option>Mineur</option>
+          </select>
+          <label class="ms-2">Statut :</label>
+          <select class="form-select form-select-sm w-auto">
+            <option value="">Tous</option>
+            <option>Ouverte</option>
+            <option>En cours</option>
+            <option>Régularisée</option>
+          </select>
+          <label class="ms-2">Module :</label>
+          <select class="form-select form-select-sm w-auto">
+            <option value="">Tous</option>
+            <option>Budget</option>
+            <option>Pièces</option>
+            <option>Délai</option>
+            <option>Paiement</option>
+            <option>Procédure</option>
+          </select>
+          <button class="btn btn-sm ms-1" style="background:#7f1d1d;color:#fff;font-size:.72rem;">
+            <i class="fas fa-search"></i> Filtrer
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-tbl">
+            <thead>
+              <tr>
+                <th>N°</th>
+                <th>Date détection</th>
+                <th>Niveau</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Dossier / Réf.</th>
+                <th>Détecté par</th>
+                <th>Statut</th>
+                <th>Date régularisation</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>AN-001</strong></td>
+                <td>10/03/2026</td>
+                <td><span class="niv-critique">Critique</span></td>
+                <td>Budget</td>
+                <td>Dépassement ligne LB-024</td>
+                <td><span style="font-family:monospace;font-size:.75rem;">DOS-018</span></td>
+                <td>Contrôleur A</td>
+                <td><span class="stat-ouverte"><i class="fas fa-circle me-1" style="font-size:.4rem;vertical-align:middle;"></i>Ouverte</span></td>
+                <td><span class="text-muted">—</span></td>
+                <td class="text-center">
+                  <button class="btn-act btn-act-view me-1"><i class="fas fa-eye"></i> Voir</button>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>AN-002</strong></td>
+                <td>12/03/2026</td>
+                <td><span class="niv-majeur">Majeur</span></td>
+                <td>Pièces</td>
+                <td>Facture manquante</td>
+                <td><span style="font-family:monospace;font-size:.75rem;">DOS-012</span></td>
+                <td>Contrôleur A</td>
+                <td><span class="stat-en-cours"><i class="fas fa-circle me-1" style="font-size:.4rem;vertical-align:middle;"></i>En cours</span></td>
+                <td><span class="text-muted">—</span></td>
+                <td class="text-center">
+                  <button class="btn-act btn-act-view me-1"><i class="fas fa-eye"></i> Voir</button>
+                  <button class="btn-act btn-act-reg"><i class="fas fa-check"></i> Régulariser</button>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>AN-003</strong></td>
+                <td>15/03/2026</td>
+                <td><span class="niv-mineur">Mineur</span></td>
+                <td>Délai</td>
+                <td>BC signé hors délai réglementaire</td>
+                <td><span style="font-family:monospace;font-size:.75rem;">BC-2026-011</span></td>
+                <td>Contrôleur B</td>
+                <td><span class="stat-regularis"><i class="fas fa-check-circle me-1"></i>Régularisée</span></td>
+                <td>25/03/2026</td>
+                <td class="text-center">
+                  <button class="btn-act btn-act-view me-1"><i class="fas fa-eye"></i> Voir</button>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>AN-004</strong></td>
+                <td>20/03/2026</td>
+                <td><span class="niv-critique">Critique</span></td>
+                <td>Paiement</td>
+                <td>Double paiement détecté</td>
+                <td><span style="font-family:monospace;font-size:.75rem;">OP-031</span></td>
+                <td>Contrôleur B</td>
+                <td><span class="stat-ouverte"><i class="fas fa-circle me-1" style="font-size:.4rem;vertical-align:middle;"></i>Ouverte</span></td>
+                <td><span class="text-muted">—</span></td>
+                <td class="text-center">
+                  <button class="btn-act btn-act-view me-1"><i class="fas fa-eye"></i> Voir</button>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>AN-005</strong></td>
+                <td>25/03/2026</td>
+                <td><span class="niv-majeur">Majeur</span></td>
+                <td>Procédure</td>
+                <td>Absence tableau comparatif des offres</td>
+                <td><span style="font-family:monospace;font-size:.75rem;">DOS-013</span></td>
+                <td>Contrôleur A</td>
+                <td><span class="stat-en-cours"><i class="fas fa-circle me-1" style="font-size:.4rem;vertical-align:middle;"></i>En cours</span></td>
+                <td><span class="text-muted">—</span></td>
+                <td class="text-center">
+                  <button class="btn-act btn-act-view me-1"><i class="fas fa-eye"></i> Voir</button>
+                  <button class="btn-act btn-act-reg"><i class="fas fa-check"></i> Régulariser</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="d-flex align-items-center justify-content-between px-3 py-2" style="background:#f8fafc;border-top:1px solid #e2e8f0;">
+          <small class="text-muted">5 résultats affichés, page 1 / 1</small>
+          <nav>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>
+              <li class="page-item active"><a class="page-link" href="#" style="background:#7f1d1d;border-color:#7f1d1d;">1</a></li>
+              <li class="page-item disabled"><a class="page-link" href="#">&raquo;</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+  document.getElementById('userName').textContent = _u.nom || _u.name || _u.email || '';
+</script>
+</body>
+</html>

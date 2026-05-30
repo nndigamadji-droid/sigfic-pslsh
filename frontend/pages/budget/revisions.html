@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Révisions & transferts budgétaires</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .page-body { padding: 22px 28px 48px; }
+
+    /* ── KPI ── */
+    .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+    @media(max-width:900px){ .kpi-grid { grid-template-columns:repeat(2,1fr); } }
+    .kpi-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:15px 18px;
+      position:relative; overflow:hidden; }
+    .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+    .kc-blue::before   { background:#1b3a6b; }
+    .kc-green::before  { background:#22c55e; }
+    .kc-orange::before { background:#f59e0b; }
+    .kc-purple::before { background:#8b5cf6; }
+    .kpi-icon { width:36px; height:36px; border-radius:9px; display:flex; align-items:center;
+      justify-content:center; font-size:.85rem; margin-bottom:8px; }
+    .ki-blue   { background:#dbeafe; color:#1b3a6b; }
+    .ki-green  { background:#dcfce7; color:#15803d; }
+    .ki-orange { background:#fef3c7; color:#b45309; }
+    .ki-purple { background:#ede9fe; color:#6d28d9; }
+    .kpi-lbl { font-size:.63rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
+    .kpi-val { font-size:1rem; font-weight:800; color:#1b2f52; font-family:monospace; margin-top:3px; }
+    .kpi-sub { font-size:.62rem; color:#94a3b8; margin-top:2px; }
+
+    /* ── Bannière info ── */
+    .info-banner { background:#dbeafe; border:1px solid #93c5fd; border-radius:10px;
+      padding:12px 16px; margin-bottom:16px; display:flex; align-items:flex-start; gap:10px; }
+    .info-banner i { color:#1b3a6b; font-size:.95rem; margin-top:1px; flex-shrink:0; }
+    .info-banner span { font-size:.79rem; color:#1b2f52; font-weight:600; }
+
+    /* ── Barre de filtres ── */
+    .filter-bar { background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+      padding:12px 16px; margin-bottom:14px; display:flex; align-items:center;
+      gap:10px; flex-wrap:wrap; }
+    .filter-bar label { font-size:.7rem; font-weight:700; color:#64748b;
+      text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px; display:block; }
+    .filter-bar .form-select,
+    .filter-bar .form-control { font-size:.79rem; border-radius:7px; border:1px solid #e2e8f0; }
+    .filter-group { display:flex; flex-direction:column; }
+
+    /* ── Table ── */
+    .rev-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px;
+      overflow:hidden; margin-bottom:20px; }
+    .rev-head { display:flex; align-items:center; gap:10px; padding:12px 18px;
+      border-bottom:1px solid #e2e8f0;
+      background:linear-gradient(90deg,#0f2944,#1b3a6b); }
+    .rev-head-icon { width:32px; height:32px; border-radius:8px;
+      background:rgba(255,255,255,.15); display:flex; align-items:center;
+      justify-content:center; color:#7dd3fc; font-size:.9rem; }
+    .rev-head-title { color:#fff; font-size:.85rem; font-weight:800; flex:1; }
+    .rev-head-count { font-size:.72rem; color:#bfdbfe; font-weight:700; }
+
+    .rev-tbl { width:100%; border-collapse:collapse; font-size:.78rem; }
+    .rev-tbl thead th { background:#f8fafc; color:#64748b; font-size:.64rem; font-weight:700;
+      text-transform:uppercase; padding:9px 14px; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+    .rev-tbl tbody td { padding:9px 14px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+    .rev-tbl tbody tr:last-child td { border-bottom:none; }
+    .rev-tbl tbody tr:hover td { background:#f8fafc; }
+    .te { text-align:right; }
+    .mono { font-family:'Cascadia Code','Consolas',monospace; font-size:.74rem; }
+    .num-ref { font-weight:700; color:#1b3a6b; font-size:.8rem; }
+
+    /* Type badges */
+    .type-badge { display:inline-block; font-size:.65rem; font-weight:700;
+      border-radius:6px; padding:2px 8px; }
+    .tb-transfert  { background:#dbeafe; color:#1e40af; }
+    .tb-reaffect   { background:#fef3c7; color:#b45309; }
+    .tb-revision   { background:#ede9fe; color:#6d28d9; }
+
+    /* Statut badges */
+    .stat-badge { display:inline-flex; align-items:center; gap:4px; font-size:.67rem;
+      font-weight:700; border-radius:20px; padding:3px 9px; }
+    .sb-approuve { background:#dcfce7; color:#15803d; }
+    .sb-attente  { background:#fef3c7; color:#b45309; }
+    .sb-soumis   { background:#dbeafe; color:#1e40af; }
+    .sb-rejete   { background:#fee2e2; color:#b91c1c; }
+
+    /* Actions */
+    .act-btn { font-size:.65rem; font-weight:600; padding:3px 8px; border-radius:6px;
+      border:none; cursor:pointer; display:inline-flex; align-items:center; gap:4px; }
+    .ab-view   { background:#f1f5f9; color:#374151; }
+    .ab-view:hover { background:#e2e8f0; }
+    .ab-del  { background:#fee2e2; color:#b91c1c; }
+    .ab-del:hover  { background:#fca5a5; }
+
+    /* Buttons */
+    .btn-submit-rev { font-size:.78rem; font-weight:700; padding:8px 18px; border-radius:8px;
+      background:linear-gradient(135deg,#1b2f52,#1b3a6b); color:#fff; border:none;
+      cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+    .btn-submit-rev:hover { opacity:.9; }
+    .btn-exp { font-size:.71rem; font-weight:600; padding:5px 11px; border-radius:7px;
+      border:1px solid #d1d5db; background:#fff; color:#374151; cursor:pointer;
+      display:inline-flex; align-items:center; gap:5px; }
+    .btn-exp:hover { background:#f8fafc; }
+
+    /* Liens rapides */
+    .quick-links { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+    .ql-btn { font-size:.71rem; font-weight:700; padding:5px 12px; border-radius:7px;
+      border:none; cursor:pointer; display:inline-flex; align-items:center; gap:5px;
+      text-decoration:none; }
+    .ql-blue   { background:#dbeafe; color:#1e40af; }
+    .ql-blue:hover   { background:#bfdbfe; }
+    .ql-orange { background:#fef3c7; color:#b45309; }
+    .ql-orange:hover { background:#fde68a; }
+    .ql-indigo { background:#e0e7ff; color:#3730a3; }
+    .ql-indigo:hover { background:#c7d2fe; }
+
+    /* Toast */
+    .toast-box { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex;
+      flex-direction:column; gap:8px; pointer-events:none; }
+    .toast-item { background:#1b2f52; color:#fff; font-size:.8rem; font-weight:600;
+      padding:10px 18px; border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,.2);
+      display:flex; align-items:center; gap:8px; animation:slideUp .25s ease; }
+    .toast-item.ok  { background:#15803d; }
+    .toast-item.err { background:#b91c1c; }
+    @keyframes slideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+
+    .empty-row td { text-align:center; color:#94a3b8; padding:22px; font-size:.78rem; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/budget/synthese.html">Budget</a></li>
+            <li class="breadcrumb-item active">Révisions &amp; transferts</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i> Exercice :
+        <select id="selExercice" class="form-select form-select-sm d-inline-block w-auto ms-1" onchange="render()">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+
+    <div class="page-content page-body">
+
+      <!-- Titre -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-edit text-primary me-2"></i>Révisions &amp; Transferts Budgétaires</h4>
+          <small class="text-muted">PSLSH/IST - modifications des crédits budgétaires</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-submit-rev" onclick="openModal()">
+            <i class="fas fa-plus"></i> Soumettre une révision
+          </button>
+          <button class="btn-exp" onclick="exportCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+          <button class="btn-exp" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+        </div>
+      </div>
+
+      <!-- Liens rapides -->
+      <div class="quick-links">
+        <a href="lignes.html"   class="ql-btn ql-blue"  ><i class="fas fa-list"></i> Lignes budgétaires</a>
+        <a href="depenses.html" class="ql-btn ql-orange" ><i class="fas fa-file-invoice-dollar"></i> Dépenses</a>
+        <a href="arbitrages.html" class="ql-btn ql-indigo"><i class="fas fa-balance-scale"></i> Arbitrages</a>
+        <a href="synthese.html" class="ql-btn ql-indigo" ><i class="fas fa-chart-pie"></i> Synthèse</a>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="kpi-card kc-blue">
+          <div class="kpi-icon ki-blue"><i class="fas fa-paper-plane"></i></div>
+          <div class="kpi-lbl">Soumises</div>
+          <div class="kpi-val" id="kpi-soumis">-</div>
+          <div class="kpi-sub">En cours de traitement</div>
+        </div>
+        <div class="kpi-card kc-green">
+          <div class="kpi-icon ki-green"><i class="fas fa-check-circle"></i></div>
+          <div class="kpi-lbl">Approuvées</div>
+          <div class="kpi-val" id="kpi-approuve">-</div>
+          <div class="kpi-sub">Décisions favorables</div>
+        </div>
+        <div class="kpi-card kc-orange">
+          <div class="kpi-icon ki-orange"><i class="fas fa-hourglass-half"></i></div>
+          <div class="kpi-lbl">En attente</div>
+          <div class="kpi-val" id="kpi-attente">-</div>
+          <div class="kpi-sub">À traiter</div>
+        </div>
+        <div class="kpi-card kc-purple">
+          <div class="kpi-icon ki-purple"><i class="fas fa-coins"></i></div>
+          <div class="kpi-lbl">Montant révisé</div>
+          <div class="kpi-val" id="kpi-montant">-</div>
+          <div class="kpi-sub">FCFA approuvés</div>
+        </div>
+      </div>
+
+      <!-- Bannière -->
+      <div class="info-banner">
+        <i class="fas fa-info-circle"></i>
+        <span>Les révisions et transferts budgétaires doivent être approuvés par le Centre de validation avant d'être effectifs. Toute modification impacte le disponible des lignes concernées.</span>
+      </div>
+
+      <!-- Filtres -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Type</label>
+          <select id="filtType" class="form-select" style="min-width:160px;" onchange="render()">
+            <option value="">Tous les types</option>
+            <option value="Révision">Révision</option>
+            <option value="Transfert">Transfert</option>
+            <option value="Réaffectation">Réaffectation</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Statut</label>
+          <select id="filtStatut" class="form-select" style="min-width:140px;" onchange="render()">
+            <option value="">Tous les statuts</option>
+            <option value="Soumis">Soumis</option>
+            <option value="En attente">En attente</option>
+            <option value="Approuvé">Approuvé</option>
+            <option value="Rejeté">Rejeté</option>
+          </select>
+        </div>
+        <div class="filter-group" style="flex:1;">
+          <label>Recherche</label>
+          <input type="text" id="filtSearch" class="form-control" placeholder="Ligne, motif…" oninput="render()">
+        </div>
+        <div class="filter-group" style="justify-content:flex-end;margin-top:auto;">
+          <button class="btn btn-sm" style="background:#1b3a6b;color:#fff;border-radius:7px;font-size:.78rem;padding:6px 14px;"
+            onclick="resetFiltres()">
+            <i class="fas fa-times me-1"></i>Réinitialiser
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="rev-card">
+        <div class="rev-head">
+          <div class="rev-head-icon"><i class="fas fa-exchange-alt"></i></div>
+          <div class="rev-head-title">Liste des révisions &amp; transferts budgétaires</div>
+          <div class="rev-head-count" id="rev-count">0 enregistrement(s)</div>
+        </div>
+        <div class="table-responsive">
+          <table class="rev-tbl">
+            <thead>
+              <tr>
+                <th>N° Révision</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Ligne source</th>
+                <th>Ligne destination</th>
+                <th class="te">Montant (FCFA)</th>
+                <th>Motif</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rev-tbody">
+              <tr class="empty-row"><td colspan="9">Aucune révision enregistrée.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- Toast -->
+<div class="toast-box" id="toastBox"></div>
+
+<!-- Modal révision -->
+<div class="modal fade" id="modalRevision" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(90deg,#0f2944,#1b3a6b);">
+        <h5 class="modal-title text-white" id="modalRevLabel">
+          <i class="fas fa-edit me-2"></i><span id="modalRevTitre">Soumettre une révision</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="rvId">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label" style="font-size:.75rem;font-weight:700;color:#64748b;">Type <span class="text-danger">*</span></label>
+            <select id="rvType" class="form-select form-select-sm">
+              <option value="">- Sélectionner -</option>
+              <option value="Révision">Révision</option>
+              <option value="Transfert">Transfert</option>
+              <option value="Réaffectation">Réaffectation</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" style="font-size:.75rem;font-weight:700;color:#64748b;">Ligne source <span class="text-danger">*</span></label>
+            <input type="text" id="rvLigneSrc" class="form-control form-control-sm" placeholder="Ex. LB-004">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" style="font-size:.75rem;font-weight:700;color:#64748b;">Ligne destination</label>
+            <input type="text" id="rvLigneDst" class="form-control form-control-sm" placeholder="Ex. LB-012 (si transfert)">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" style="font-size:.75rem;font-weight:700;color:#64748b;">Montant (FCFA) <span class="text-danger">*</span></label>
+            <input type="number" id="rvMontant" class="form-control form-control-sm" placeholder="0" min="0">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" style="font-size:.75rem;font-weight:700;color:#64748b;">Date <span class="text-danger">*</span></label>
+            <input type="date" id="rvDate" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" style="font-size:.75rem;font-weight:700;color:#64748b;">Statut</label>
+            <select id="rvStatut" class="form-select form-select-sm">
+              <option value="Soumis">Soumis</option>
+              <option value="En attente">En attente</option>
+              <option value="Approuvé">Approuvé</option>
+              <option value="Rejeté">Rejeté</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label" style="font-size:.75rem;font-weight:700;color:#64748b;">Motif / Justification <span class="text-danger">*</span></label>
+            <textarea id="rvMotif" class="form-control form-control-sm" rows="3"
+              placeholder="Décrire le motif de la révision ou du transfert budgétaire…"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn-submit-rev" onclick="saveRevision()">
+          <i class="fas fa-paper-plane"></i> Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmation suppression -->
+<div class="modal fade" id="modalDel" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#fee2e2;">
+        <h5 class="modal-title" style="color:#b91c1c;font-size:.9rem;">
+          <i class="fas fa-exclamation-triangle me-2"></i>Supprimer ?
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="font-size:.82rem;">
+        <p id="delMsg">Confirmer la suppression de cette révision ?</p>
+        <input type="hidden" id="delId">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-danger" onclick="execDel()">
+          <i class="fas fa-trash"></i> Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav  === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+  document.getElementById('userName').textContent = _u.nom || _u.name || _u.email || '';
+
+  /* ── Stockage ──────────────────────────────────────────── */
+  const STORAGE_KEY = 'pslsh_revisions_v1';
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) { const p = JSON.parse(raw); return { data: p.data || [], nid: p.nid || 1 }; }
+    } catch(e) {}
+    return { data: [], nid: 1 };
+  }
+
+  function saveData(store) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  }
+
+  /* ── Utilitaires ──────────────────────────────────────── */
+  function el(id) { return document.getElementById(id); }
+
+  function fmt(n) { return Number(n || 0).toLocaleString('fr-FR'); }
+
+  function toast(msg, ok = true) {
+    const box  = el('toastBox');
+    const item = document.createElement('div');
+    item.className = 'toast-item ' + (ok ? 'ok' : 'err');
+    item.innerHTML = `<i class="fas fa-${ok ? 'check' : 'times'}-circle"></i>${msg}`;
+    box.appendChild(item);
+    setTimeout(() => item.remove(), 3500);
+  }
+
+  function typeBadge(t) {
+    const map = {
+      'Transfert':    'tb-transfert',
+      'Réaffectation':'tb-reaffect',
+      'Révision':     'tb-revision'
+    };
+    return `<span class="type-badge ${map[t] || 'tb-revision'}">${t}</span>`;
+  }
+
+  function statutBadge(s) {
+    const map = {
+      'Approuvé':   ['sb-approuve', 'fa-check-circle'],
+      'En attente': ['sb-attente',  'fa-clock'],
+      'Soumis':     ['sb-soumis',   'fa-paper-plane'],
+      'Rejeté':     ['sb-rejete',   'fa-times-circle']
+    };
+    const [cls, icon] = map[s] || ['sb-soumis', 'fa-circle'];
+    return `<span class="stat-badge ${cls}"><i class="fas ${icon}"></i>${s}</span>`;
+  }
+
+  /* ── Filtres ─────────────────────────────────────────── */
+  function getFiltered() {
+    const { data } = loadData();
+    const type   = el('filtType').value;
+    const statut = el('filtStatut').value;
+    const search = (el('filtSearch').value || '').toLowerCase();
+    return data.filter(r =>
+      (!type   || r.type   === type)   &&
+      (!statut || r.statut === statut) &&
+      (!search || (r.ligneSrc + r.ligneDst + r.motif + r.ref).toLowerCase().includes(search))
+    );
+  }
+
+  function resetFiltres() {
+    el('filtType').value   = '';
+    el('filtStatut').value = '';
+    el('filtSearch').value = '';
+    render();
+  }
+
+  /* ── Rendu ───────────────────────────────────────────── */
+  function render() {
+    const { data } = loadData();
+    const filtered  = getFiltered();
+
+    /* KPIs */
+    const soumis   = data.filter(r => r.statut === 'Soumis').length;
+    const approuve = data.filter(r => r.statut === 'Approuvé').length;
+    const attente  = data.filter(r => r.statut === 'En attente').length;
+    const montant  = data.filter(r => r.statut === 'Approuvé')
+                         .reduce((s, r) => s + Number(r.montant || 0), 0);
+    el('kpi-soumis').textContent   = soumis;
+    el('kpi-approuve').textContent = approuve;
+    el('kpi-attente').textContent  = attente;
+    el('kpi-montant').textContent  = fmt(montant) + ' FCFA';
+
+    /* Table */
+    el('rev-count').textContent = filtered.length + ' enregistrement(s)';
+    const tbody = el('rev-tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Aucune révision correspondant aux filtres.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(r => `
+      <tr>
+        <td><span class="num-ref">${r.ref}</span></td>
+        <td>${r.date || '-'}</td>
+        <td>${typeBadge(r.type)}</td>
+        <td class="mono">${r.ligneSrc || '-'}</td>
+        <td class="mono">${r.ligneDst || '<span class="text-muted">-</span>'}</td>
+        <td class="te mono">${fmt(r.montant)}</td>
+        <td style="max-width:220px;font-size:.75rem;color:#475569">${r.motif || '-'}</td>
+        <td>${statutBadge(r.statut)}</td>
+        <td>
+          <button class="act-btn ab-view" onclick="openModal(${r.id})"><i class="fas fa-edit"></i></button>
+          <button class="act-btn ab-del"  onclick="confirmDel(${r.id},'${r.ref}')"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  /* ── Modal ───────────────────────────────────────────── */
+  function openModal(id = null) {
+    el('rvId').value      = id || '';
+    el('rvType').value    = '';
+    el('rvLigneSrc').value= '';
+    el('rvLigneDst').value= '';
+    el('rvMontant').value = '';
+    el('rvDate').value    = new Date().toISOString().slice(0,10);
+    el('rvStatut').value  = 'Soumis';
+    el('rvMotif').value   = '';
+    el('modalRevTitre').textContent = 'Soumettre une révision';
+
+    if (id) {
+      const { data } = loadData();
+      const r = data.find(x => x.id === id);
+      if (r) {
+        el('modalRevTitre').textContent = 'Modifier - ' + r.ref;
+        el('rvType').value    = r.type    || '';
+        el('rvLigneSrc').value= r.ligneSrc|| '';
+        el('rvLigneDst').value= r.ligneDst|| '';
+        el('rvMontant').value = r.montant || '';
+        el('rvDate').value    = r.date    || '';
+        el('rvStatut').value  = r.statut  || 'Soumis';
+        el('rvMotif').value   = r.motif   || '';
+      }
+    }
+    bootstrap.Modal.getOrCreateInstance(el('modalRevision')).show();
+  }
+
+  /* ── Sauvegarde ─────────────────────────────────────── */
+  function saveRevision() {
+    const type     = el('rvType').value.trim();
+    const ligneSrc = el('rvLigneSrc').value.trim();
+    const montant  = Number(el('rvMontant').value);
+    const date     = el('rvDate').value;
+    const motif    = el('rvMotif').value.trim();
+    if (!type || !ligneSrc || !montant || !date || !motif) {
+      toast('Veuillez remplir tous les champs obligatoires.', false); return;
+    }
+
+    const store  = loadData();
+    const id     = el('rvId').value ? Number(el('rvId').value) : null;
+
+    if (id) {
+      const idx = store.data.findIndex(r => r.id === id);
+      if (idx !== -1) {
+        store.data[idx] = { ...store.data[idx], type, ligneSrc,
+          ligneDst: el('rvLigneDst').value.trim(),
+          montant, date, statut: el('rvStatut').value, motif };
+        toast('Révision mise à jour.');
+      }
+    } else {
+      const nid = store.nid++;
+      const ref = 'RV-' + new Date().getFullYear() + '-' + String(nid).padStart(2,'0');
+      store.data.unshift({ id: nid, ref, type, ligneSrc,
+        ligneDst: el('rvLigneDst').value.trim(),
+        montant, date, statut: el('rvStatut').value, motif });
+      toast('Révision enregistrée - ' + ref);
+    }
+    saveData(store);
+    bootstrap.Modal.getInstance(el('modalRevision')).hide();
+    render();
+  }
+
+  /* ── Suppression ─────────────────────────────────────── */
+  function confirmDel(id, ref) {
+    el('delId').value = id;
+    el('delMsg').textContent = `Supprimer la révision ${ref} ? Cette action est irréversible.`;
+    bootstrap.Modal.getOrCreateInstance(el('modalDel')).show();
+  }
+
+  function execDel() {
+    const id    = Number(el('delId').value);
+    const store = loadData();
+    store.data  = store.data.filter(r => r.id !== id);
+    saveData(store);
+    bootstrap.Modal.getInstance(el('modalDel')).hide();
+    toast('Révision supprimée.');
+    render();
+  }
+
+  /* ── Export CSV ─────────────────────────────────────── */
+  function exportCSV() {
+    const { data } = loadData();
+    const rows = [['N° Révision','Date','Type','Ligne source','Ligne destination','Montant (FCFA)','Motif','Statut']];
+    data.forEach(r => rows.push([r.ref, r.date, r.type, r.ligneSrc, r.ligneDst||'', r.montant, r.motif, r.statut]));
+    const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
+    const a   = document.createElement('a');
+    a.href    = 'data:text/csv;charset=utf-8,' + encodeURIComponent('\uFEFF' + csv);
+    a.download= 'revisions_budgetaires.csv';
+    a.click();
+  }
+
+  /* ── Init ──────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', render);
+  if (document.readyState !== 'loading') render();
+</script>
+</body>
+</html>

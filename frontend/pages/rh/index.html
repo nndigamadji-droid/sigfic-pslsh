@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Ressources Humaines</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    /* ── Excel full-height layout ── */
+    html, body { height:100%; overflow:hidden; }
+    .app-layout, .main-content { height:100vh; overflow:hidden; }
+    .page-content { flex:1; overflow:hidden; display:flex; flex-direction:column; padding:0; gap:0; }
+
+    /* ── Focus global (Accessibilité §1) ── */
+    *:focus-visible { outline:2px solid #1b3a6b; outline-offset:2px; border-radius:4px; }
+
+    /* ── Fixed top ── */
+    .rh-top { flex-shrink:0; padding:10px 24px 0; background:#fff; border-bottom:1px solid #e2e8f0; }
+    .rh-title-strip { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .rh-title-strip h5 { margin:0; font-size:.95rem; font-weight:800; color:#1b2f52; }
+    .rh-title-strip small { font-size:.7rem; color:#64748b; }
+
+    /* ── KPI bar ── */
+    .rh-kpi-bar { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:10px; }
+    .rh-kpi {
+      background:#fff; border:1px solid #e2e8f0; border-radius:12px;
+      padding:14px 16px; position:relative; overflow:hidden;
+      transition: box-shadow .2s ease, transform .2s ease;
+    }
+    .rh-kpi:hover { box-shadow:0 4px 16px rgba(27,58,107,.10); transform:translateY(-2px); }
+    .rh-kpi::before { content:''; position:absolute; top:0;left:0;right:0;height:4px; border-radius:12px 12px 0 0; }
+    .rk-blue::before   { background: linear-gradient(90deg,#1b3a6b,#2563eb); }
+    .rk-green::before  { background: linear-gradient(90deg,#15803d,#22c55e); }
+    .rk-orange::before { background: linear-gradient(90deg,#b45309,#f59e0b); }
+    .rk-red::before    { background: linear-gradient(90deg,#b91c1c,#ef4444); }
+    .rk-purple::before { background: linear-gradient(90deg,#6d28d9,#a855f7); }
+    .rh-kpi .rk-icon { position:absolute; top:12px; right:14px; font-size:1.5rem; opacity:.07; }
+    .rk-blue .rk-icon { color:#1b3a6b; } .rk-green .rk-icon { color:#15803d; }
+    .rk-orange .rk-icon { color:#b45309; } .rk-red .rk-icon { color:#b91c1c; }
+    .rk-purple .rk-icon { color:#6d28d9; }
+    .rh-kpi .rk-lbl { font-size:.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; }
+    .rh-kpi .rk-val { font-size:1.1rem; font-weight:800; color:#1b2f52; font-family:monospace; margin:5px 0 3px; line-height:1.2; }
+    .rh-kpi .rk-sub { font-size:.70rem; color:#94a3b8; }
+
+    /* ── Tabs ── */
+    .rh-tabs { flex-shrink:0; display:flex; align-items:flex-end; gap:2px; padding:0 24px;
+      border-bottom:2px solid #d1d5db; background:#f8fafc; }
+    .rh-tab { padding:9px 20px; font-size:.78rem; font-weight:600; color:#64748b;
+      border:1px solid transparent; border-bottom:none; border-radius:7px 7px 0 0;
+      background:transparent; cursor:pointer; position:relative; bottom:-2px;
+      transition:all .15s; display:flex; align-items:center; gap:6px; user-select:none; }
+    .rh-tab:hover { color:#1b2f52; background:#eff6ff; }
+    .rh-tab.active { color:#1b3a6b; background:#fff; border-color:#d1d5db; border-bottom-color:#fff; font-weight:700; }
+
+    /* ── Scrollable body ── */
+    .rh-body { flex:1; overflow-y:auto; padding:16px 24px 24px; background:#eef2f7; }
+    .rh-panel { display:none; }
+    .rh-panel.active { display:block; animation:rhFadeIn .2s ease; }
+    @keyframes rhFadeIn { from{opacity:0;transform:translateY(5px);} to{opacity:1;transform:translateY(0);} }
+
+    /* ── Cards ── */
+    .rh-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; margin-bottom:16px; }
+    .rh-card-head { display:flex; align-items:center; gap:10px; padding:12px 18px;
+      background:linear-gradient(135deg,#1b2f52 0%,#1b3a6b 100%); }
+    .rh-card-head-icon { width:30px; height:30px; border-radius:7px; background:rgba(255,255,255,.15);
+      display:flex; align-items:center; justify-content:center; color:#fff; font-size:.85rem; flex-shrink:0; }
+    .rh-card-title { font-size:.82rem; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:.04em; flex:1; }
+    .rh-card-sub { font-size:.7rem; color:rgba(255,255,255,.7); }
+    .btn-rh-add { font-size:.72rem; font-weight:700; background:rgba(255,255,255,.18); color:#fff;
+      border:1px solid rgba(255,255,255,.40); border-radius:8px; padding:6px 14px; cursor:pointer;
+      display:flex; align-items:center; gap:6px; transition:all .15s; min-height:32px; }
+    .btn-rh-add:hover { background:rgba(255,255,255,.28); }
+
+    /* ── Filtres ── */
+    .rh-filters { display:flex; gap:8px; align-items:center; padding:10px 16px; background:#f8fafc;
+      border-bottom:1px solid #e2e8f0; flex-wrap:wrap; }
+    .rh-filters label { font-size:.72rem; font-weight:700; color:#374151; margin:0; display:flex; align-items:center; gap:5px; }
+    .rh-filters input, .rh-filters select { font-size:.76rem; padding:4px 10px; border:1px solid #cbd5e1;
+      border-radius:7px; height:32px; background:#fff; color:#374151; }
+    .rh-filters input:focus, .rh-filters select:focus { outline:none; border-color:#1b3a6b;
+      box-shadow:0 0 0 3px rgba(27,58,107,.10); }
+
+    /* ── Table ── */
+    .rh-table-wrap { overflow-x:auto; }
+    .rh-table { width:100%; border-collapse:collapse; font-size:.79rem; }
+    .rh-table thead th { background:#f1f5f9; color:#1b2f52; font-size:.69rem; font-weight:700;
+      text-transform:uppercase; letter-spacing:.03em; padding:9px 10px;
+      border-bottom:2px solid #e2e8f0; white-space:nowrap; position:sticky; top:0; z-index:2; }
+    .rh-table tbody td { padding:8px 10px; border-bottom:1px solid #f1f5f9; color:#2d3748; vertical-align:middle; }
+    .rh-table tbody tr:hover td { background:#eff6ff; transition:background .12s ease; }
+    .rh-table .text-end { text-align:right; }
+    .rh-table .text-center { text-align:center; }
+    .rh-table .mono { font-family:'Cascadia Code','Consolas',monospace; font-size:.75rem; }
+
+    /* ── Avatar ── */
+    .rh-avatar { width:32px; height:32px; border-radius:50%; background:#1b3a6b; color:#fff;
+      display:inline-flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:700;
+      vertical-align:middle; margin-right:8px; }
+    .ra-bleu { background:#1b3a6b; } .ra-vert { background:#15803d; } .ra-orange { background:#b45309; }
+    .ra-violet { background:#6d28d9; } .ra-rouge { background:#b91c1c; } .ra-cyan { background:#0891b2; }
+
+    /* ── Badges ── */
+    .badge-st { display:inline-block; padding:3px 9px; border-radius:6px; font-size:.68rem; font-weight:700; white-space:nowrap; }
+    .bs-actif    { background:#dcfce7; color:#15803d; }
+    .bs-conge    { background:#dbeafe; color:#1d4ed8; }
+    .bs-mission  { background:#fef3c7; color:#b45309; }
+    .bs-absent   { background:#fee2e2; color:#b91c1c; }
+    .bs-detache  { background:#ede9fe; color:#6d28d9; }
+
+    /* ── Type contrat ── */
+    .ct-cdi  { background:#e0f2fe; color:#075985; }
+    .ct-cdd  { background:#fef3c7; color:#92400e; }
+    .ct-stag { background:#fce7f3; color:#9d174d; }
+    .ct-pf   { background:#dcfce7; color:#166534; }
+    .ct-cons { background:#ede9fe; color:#5b21b6; }
+
+    /* ── Catégorie ── */
+    .cat-cadre  { background:#1b3a6b; color:#fff; }
+    .cat-techn  { background:#15803d; color:#fff; }
+    .cat-admin  { background:#b45309; color:#fff; }
+    .cat-soutien{ background:#64748b; color:#fff; }
+
+    /* ── Buttons action ── */
+    .btn-act { font-size:.70rem; padding:5px 10px; border-radius:6px; cursor:pointer;
+      display:inline-flex; align-items:center; gap:4px; font-weight:600; transition:all .15s;
+      border:1px solid; min-height:30px; }
+    .btn-act-view { background:#eff6ff; color:#1d4ed8; border-color:#93c5fd; }
+    .btn-act-view:hover { background:#dbeafe; }
+    .btn-act-edit { background:#f0fdf4; color:#15803d; border-color:#86efac; }
+    .btn-act-edit:hover { background:#dcfce7; }
+
+    /* ── Congés progress ── */
+    .conge-bar { display:flex; align-items:center; gap:6px; min-width:90px; }
+    .conge-bar-track { flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden; }
+    .conge-bar-fill { height:100%; border-radius:3px; }
+    .cb-low { background:#15803d; } .cb-med { background:#b45309; } .cb-high { background:#b91c1c; }
+
+    /* ── Service distribution chart ── */
+    .svc-bar-row { display:flex; align-items:center; gap:10px; padding:6px 0; font-size:.76rem; }
+    .svc-bar-label { flex:0 0 200px; color:#374151; font-weight:600; }
+    .svc-bar-track { flex:1; height:14px; background:#f1f5f9; border-radius:4px; overflow:hidden; position:relative; }
+    .svc-bar-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#1b3a6b,#3b82f6); }
+    .svc-bar-count { flex:0 0 60px; text-align:right; font-family:monospace; font-weight:700; color:#1b2f52; font-size:.75rem; }
+
+    /* ── Pointage grid (monthly view) ── */
+    .pointage-grid { display:grid; grid-template-columns:200px repeat(31, 1fr); gap:1px; background:#e2e8f0;
+      border:1px solid #e2e8f0; border-radius:6px; overflow:hidden; font-size:.65rem; }
+    .pg-cell { background:#fff; padding:4px 5px; text-align:center; min-width:24px; }
+    .pg-header { background:#1b2f52; color:#fff; font-weight:700; }
+    .pg-name { background:#f8fafc; text-align:left; font-weight:600; color:#1b2f52; padding:5px 10px; }
+    .pg-p { background:#dcfce7; color:#15803d; font-weight:700; }    /* Présent */
+    .pg-a { background:#fee2e2; color:#b91c1c; font-weight:700; }    /* Absent */
+    .pg-c { background:#dbeafe; color:#1d4ed8; font-weight:700; }    /* Congé */
+    .pg-m { background:#fef3c7; color:#b45309; font-weight:700; }    /* Mission */
+    .pg-w { background:#f1f5f9; color:#94a3b8; }                     /* Week-end */
+
+    /* ── Formation cards ── */
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; padding:16px; }
+    .form-card { border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; background:#fff;
+      transition:box-shadow .2s; }
+    .form-card:hover { box-shadow:0 4px 12px rgba(27,58,107,.08); }
+    .form-card-head { padding:11px 14px; color:#fff; display:flex; align-items:center; gap:8px;
+      font-size:.78rem; font-weight:700; }
+    .fch-tech { background:linear-gradient(135deg,#1b3a6b,#2563eb); }
+    .fch-fin  { background:linear-gradient(135deg,#15803d,#22c55e); }
+    .fch-adm  { background:linear-gradient(135deg,#b45309,#f59e0b); }
+    .fch-cli  { background:linear-gradient(135deg,#6d28d9,#a855f7); }
+    .form-card-body { padding:12px 14px; }
+    .form-row { display:flex; justify-content:space-between; font-size:.73rem; padding:3px 0; }
+    .fr-lbl { color:#64748b; } .fr-val { font-weight:700; color:#1b2f52; }
+
+    /* ── Empty state ── */
+    .rh-empty { text-align:center; padding:40px 20px; color:#94a3b8; font-size:.85rem; }
+    .rh-empty i { font-size:2rem; margin-bottom:10px; opacity:.5; }
+
+    /* ── Modals ── */
+    .modal-header-rh { background:linear-gradient(135deg,#1b2f52,#1b3a6b); color:#fff; border-radius:8px 8px 0 0; }
+    .modal-header-rh .btn-close { filter:invert(1); }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <div class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item text-muted">Opérations</li>
+            <li class="breadcrumb-item active fw-semibold">Ressources Humaines</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-users me-1"></i>
+        Effectif PSLSH/IST — Exercice : <strong>2026</strong>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-notif" id="btnNotif" title="Alertes RH">
+          <i class="fas fa-bell"></i>
+          <span class="notif-dot"></span>
+        </div>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;" id="userAvatar">?</div>
+            <span id="userName" style="font-size:.82rem;font-weight:600;">…</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="../admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE CONTENT -->
+    <div class="page-content">
+
+      <!-- Fixed top -->
+      <div class="rh-top">
+        <div class="rh-title-strip">
+          <h5><i class="fas fa-users me-2" style="color:#1b3a6b;"></i>Ressources Humaines
+            <small class="ms-2">PSLSH/IST — exercice 2026</small>
+          </h5>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="exportRh()">
+              <i class="fas fa-file-excel me-1"></i>Exporter
+            </button>
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalAjoutAgent">
+              <i class="fas fa-user-plus me-1"></i>Nouvel agent
+            </button>
+          </div>
+        </div>
+        <div class="rh-kpi-bar">
+          <div class="rh-kpi rk-blue" title="Effectif total tous services confondus">
+            <i class="fas fa-users rk-icon"></i>
+            <div class="rk-lbl">Effectif total</div>
+            <div class="rk-val" id="kpiEffectif">—</div>
+            <div class="rk-sub" id="kpiEffectifSub">agents tous statuts</div>
+          </div>
+          <div class="rh-kpi rk-green" title="Agents présents au bureau aujourd'hui">
+            <i class="fas fa-user-check rk-icon"></i>
+            <div class="rk-lbl">Présents aujourd'hui</div>
+            <div class="rk-val" id="kpiPresents">—</div>
+            <div class="rk-sub" id="kpiTauxPresence">taux de présence</div>
+          </div>
+          <div class="rh-kpi rk-orange" title="Agents en congé annuel ou maladie">
+            <i class="fas fa-umbrella-beach rk-icon"></i>
+            <div class="rk-lbl">En congé / mission</div>
+            <div class="rk-val" id="kpiEnConge">—</div>
+            <div class="rk-sub">congés + missions terrain</div>
+          </div>
+          <div class="rh-kpi rk-red" title="Demandes RH en attente de validation">
+            <i class="fas fa-hourglass-half rk-icon"></i>
+            <div class="rk-lbl">Demandes en attente</div>
+            <div class="rk-val" id="kpiDemandes">—</div>
+            <div class="rk-sub">à valider</div>
+          </div>
+          <div class="rh-kpi rk-purple" title="Masse salariale du mois en cours">
+            <i class="fas fa-money-bill-wave rk-icon"></i>
+            <div class="rk-lbl">Masse salariale (mois)</div>
+            <div class="rk-val" id="kpiMasse" style="font-size:1.0rem">—</div>
+            <div class="rk-sub">FCFA · brut total</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="rh-tabs" role="tablist" aria-label="Vues Ressources Humaines">
+        <div class="rh-tab active" role="tab" aria-selected="true" tabindex="0"
+             onclick="rhSwitchTab('personnel')" onkeydown="if(event.key==='Enter'||event.key===' ')rhSwitchTab('personnel')">
+          <i class="fas fa-id-card-alt"></i>Personnel
+        </div>
+        <div class="rh-tab" role="tab" aria-selected="false" tabindex="-1"
+             onclick="rhSwitchTab('conges')" onkeydown="if(event.key==='Enter'||event.key===' ')rhSwitchTab('conges')">
+          <i class="fas fa-umbrella-beach"></i>Congés &amp; Absences
+        </div>
+        <div class="rh-tab" role="tab" aria-selected="false" tabindex="-1"
+             onclick="rhSwitchTab('pointage')" onkeydown="if(event.key==='Enter'||event.key===' ')rhSwitchTab('pointage')">
+          <i class="fas fa-clipboard-check"></i>Pointage
+        </div>
+        <div class="rh-tab" role="tab" aria-selected="false" tabindex="-1"
+             onclick="rhSwitchTab('paie')" onkeydown="if(event.key==='Enter'||event.key===' ')rhSwitchTab('paie')">
+          <i class="fas fa-money-check-alt"></i>Paie
+        </div>
+        <div class="rh-tab" role="tab" aria-selected="false" tabindex="-1"
+             onclick="rhSwitchTab('formations')" onkeydown="if(event.key==='Enter'||event.key===' ')rhSwitchTab('formations')">
+          <i class="fas fa-graduation-cap"></i>Formations
+        </div>
+      </div>
+
+      <!-- Scrollable body -->
+      <div class="rh-body">
+
+        <!-- ═══════════════════════════════════════════════════════════
+             PANEL : PERSONNEL
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="rh-panel active" id="rhpanel-personnel">
+          <div class="rh-card">
+            <div class="rh-card-head">
+              <div class="rh-card-head-icon"><i class="fas fa-id-card-alt"></i></div>
+              <span class="rh-card-title">Liste du personnel — Effectif global</span>
+              <span class="rh-card-sub" id="personnelCount">—</span>
+              <button class="btn-rh-add" data-bs-toggle="modal" data-bs-target="#modalAjoutAgent">
+                <i class="fas fa-user-plus"></i>Nouvel agent
+              </button>
+            </div>
+            <!-- Filtres -->
+            <div class="rh-filters">
+              <label><i class="fas fa-filter" style="color:#1b3a6b"></i>Filtres :</label>
+              <select id="fService" onchange="renderPersonnel()">
+                <option value="">Tous services</option>
+              </select>
+              <select id="fCategorie" onchange="renderPersonnel()">
+                <option value="">Toutes catégories</option>
+                <option value="Cadre">Cadre</option>
+                <option value="Technique">Technique</option>
+                <option value="Administratif">Administratif</option>
+                <option value="Soutien">Soutien</option>
+              </select>
+              <select id="fContrat" onchange="renderPersonnel()">
+                <option value="">Tous contrats</option>
+                <option value="CDI">CDI</option>
+                <option value="CDD">CDD</option>
+                <option value="Stagiaire">Stagiaire</option>
+                <option value="Personnel financé">Personnel financé</option>
+                <option value="Consultant">Consultant</option>
+              </select>
+              <select id="fStatut" onchange="renderPersonnel()">
+                <option value="">Tous statuts</option>
+                <option value="Actif">Actif</option>
+                <option value="En congé">En congé</option>
+                <option value="En mission">En mission</option>
+                <option value="Détaché">Détaché</option>
+              </select>
+              <input type="text" id="fSearch" oninput="renderPersonnel()" placeholder="Rechercher (nom, matricule…)" aria-label="Rechercher un agent" style="min-width:200px">
+              <button onclick="resetFilters()" aria-label="Réinitialiser les filtres" style="font-size:.72rem;padding:4px 12px;height:32px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#475569;cursor:pointer;font-weight:600;">
+                <i class="fas fa-times me-1"></i>Réinitialiser
+              </button>
+            </div>
+            <div class="rh-table-wrap">
+              <table class="rh-table">
+                <thead>
+                  <tr>
+                    <th style="width:90px">Matricule</th>
+                    <th style="min-width:220px">Nom &amp; Prénom</th>
+                    <th style="min-width:200px">Fonction</th>
+                    <th style="min-width:150px">Service</th>
+                    <th style="width:90px">Catégorie</th>
+                    <th style="width:90px">Contrat</th>
+                    <th class="text-end" style="width:120px">Salaire brut</th>
+                    <th class="text-center" style="width:100px">Solde congés</th>
+                    <th class="text-center" style="width:90px">Statut</th>
+                    <th class="text-center" style="width:100px">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="personnelTbody"></tbody>
+                <tfoot id="personnelTfoot"></tfoot>
+              </table>
+            </div>
+          </div>
+
+          <!-- Distribution par service -->
+          <div class="rh-card">
+            <div class="rh-card-head">
+              <div class="rh-card-head-icon"><i class="fas fa-chart-bar"></i></div>
+              <span class="rh-card-title">Répartition de l'effectif par service</span>
+            </div>
+            <div style="padding:14px 18px" id="serviceDistribution"></div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             PANEL : CONGÉS & ABSENCES
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="rh-panel" id="rhpanel-conges">
+          <div class="rh-card">
+            <div class="rh-card-head">
+              <div class="rh-card-head-icon"><i class="fas fa-clock"></i></div>
+              <span class="rh-card-title">Demandes en attente de validation</span>
+              <span class="rh-card-sub" id="congesPendingCount">—</span>
+              <button class="btn-rh-add" data-bs-toggle="modal" data-bs-target="#modalDemandeConge">
+                <i class="fas fa-plus"></i>Nouvelle demande
+              </button>
+            </div>
+            <div class="rh-table-wrap">
+              <table class="rh-table">
+                <thead>
+                  <tr>
+                    <th style="width:80px">N°</th>
+                    <th style="width:90px">Matricule</th>
+                    <th style="min-width:220px">Demandeur</th>
+                    <th style="width:120px">Type d'absence</th>
+                    <th style="width:100px">Date début</th>
+                    <th style="width:100px">Date fin</th>
+                    <th class="text-center" style="width:70px">Jours</th>
+                    <th style="min-width:200px">Motif</th>
+                    <th class="text-center" style="width:100px">Statut</th>
+                    <th class="text-center" style="width:120px">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="congesPendingTbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="rh-card">
+            <div class="rh-card-head">
+              <div class="rh-card-head-icon"><i class="fas fa-history"></i></div>
+              <span class="rh-card-title">Historique des congés — Exercice 2026</span>
+            </div>
+            <div class="rh-table-wrap">
+              <table class="rh-table">
+                <thead>
+                  <tr>
+                    <th style="width:80px">N°</th>
+                    <th style="min-width:220px">Agent</th>
+                    <th style="width:120px">Type</th>
+                    <th style="width:100px">Du</th>
+                    <th style="width:100px">Au</th>
+                    <th class="text-center" style="width:70px">Jours</th>
+                    <th class="text-center" style="width:100px">Statut</th>
+                    <th style="min-width:200px">Validé par</th>
+                  </tr>
+                </thead>
+                <tbody id="congesHistoryTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             PANEL : POINTAGE
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="rh-panel" id="rhpanel-pointage">
+          <div class="rh-card">
+            <div class="rh-card-head">
+              <div class="rh-card-head-icon"><i class="fas fa-clipboard-check"></i></div>
+              <span class="rh-card-title">Pointage mensuel — <span id="pointageMonth">—</span></span>
+              <select id="pointageMois" onchange="renderPointage()" style="font-size:.72rem;padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;height:32px;cursor:pointer;">
+                <option value="2026-04">Avril 2026</option>
+                <option value="2026-03">Mars 2026</option>
+                <option value="2026-02">Février 2026</option>
+                <option value="2026-01">Janvier 2026</option>
+              </select>
+            </div>
+            <div style="padding:8px 18px;font-size:.7rem;color:#64748b;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;gap:14px;flex-wrap:wrap;">
+              <span><span class="badge-st bs-actif" style="padding:1px 6px">P</span> Présent</span>
+              <span><span class="badge-st bs-absent" style="padding:1px 6px">A</span> Absent</span>
+              <span><span class="badge-st bs-conge" style="padding:1px 6px">C</span> Congé</span>
+              <span><span class="badge-st bs-mission" style="padding:1px 6px">M</span> Mission</span>
+              <span><span style="background:#f1f5f9;color:#94a3b8;padding:1px 6px;border-radius:4px">·</span> Week-end / Férié</span>
+            </div>
+            <div style="padding:14px 18px;overflow-x:auto;">
+              <div id="pointageGrid"></div>
+            </div>
+          </div>
+
+          <div class="rh-card">
+            <div class="rh-card-head">
+              <div class="rh-card-head-icon"><i class="fas fa-percent"></i></div>
+              <span class="rh-card-title">Synthèse mensuelle — Taux de présence par service</span>
+            </div>
+            <div style="padding:14px 18px" id="pointageSyntheseService"></div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             PANEL : PAIE
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="rh-panel" id="rhpanel-paie">
+          <div class="rh-card">
+            <div class="rh-card-head">
+              <div class="rh-card-head-icon"><i class="fas fa-money-check-alt"></i></div>
+              <span class="rh-card-title">État de paie — <span id="paieMonth">Avril 2026</span></span>
+              <span class="rh-card-sub" id="paieMontant">—</span>
+              <button class="btn-rh-add" onclick="genererPaie()">
+                <i class="fas fa-cogs"></i>Générer la paie
+              </button>
+            </div>
+            <div class="rh-filters">
+              <label><i class="fas fa-calendar"></i>Période :</label>
+              <select id="paiePeriode" onchange="renderPaie()">
+                <option value="2026-04">Avril 2026</option>
+                <option value="2026-03">Mars 2026</option>
+                <option value="2026-02">Février 2026</option>
+                <option value="2026-01">Janvier 2026</option>
+              </select>
+              <label style="margin-left:10px"><i class="fas fa-building"></i>Service :</label>
+              <select id="paieService" onchange="renderPaie()">
+                <option value="">Tous services</option>
+              </select>
+            </div>
+            <div class="rh-table-wrap">
+              <table class="rh-table">
+                <thead>
+                  <tr>
+                    <th style="width:90px">Matricule</th>
+                    <th style="min-width:200px">Agent</th>
+                    <th style="min-width:140px">Service</th>
+                    <th class="text-end" style="width:110px">Salaire brut</th>
+                    <th class="text-end" style="width:90px">Primes</th>
+                    <th class="text-end" style="width:100px">CNPS (3,5%)</th>
+                    <th class="text-end" style="width:90px">IRPP</th>
+                    <th class="text-end" style="width:120px">Net à payer</th>
+                    <th style="width:120px">Mode paiement</th>
+                    <th class="text-center" style="width:90px">Statut</th>
+                  </tr>
+                </thead>
+                <tbody id="paieTbody"></tbody>
+                <tfoot id="paieTfoot"></tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             PANEL : FORMATIONS
+        ═══════════════════════════════════════════════════════════ -->
+        <div class="rh-panel" id="rhpanel-formations">
+          <div class="rh-card">
+            <div class="rh-card-head">
+              <div class="rh-card-head-icon"><i class="fas fa-graduation-cap"></i></div>
+              <span class="rh-card-title">Plan de formation 2026</span>
+              <span class="rh-card-sub" id="formationsCount">—</span>
+              <button class="btn-rh-add" data-bs-toggle="modal" data-bs-target="#modalFormation">
+                <i class="fas fa-plus"></i>Nouvelle formation
+              </button>
+            </div>
+            <div class="form-grid" id="formationsGrid"></div>
+          </div>
+
+          <div class="rh-card">
+            <div class="rh-card-head">
+              <div class="rh-card-head-icon"><i class="fas fa-table"></i></div>
+              <span class="rh-card-title">Sessions programmées &amp; bénéficiaires</span>
+            </div>
+            <div class="rh-table-wrap">
+              <table class="rh-table">
+                <thead>
+                  <tr>
+                    <th style="width:80px">N°</th>
+                    <th style="min-width:280px">Intitulé</th>
+                    <th style="width:130px">Domaine</th>
+                    <th style="width:100px">Date début</th>
+                    <th style="width:100px">Date fin</th>
+                    <th class="text-center" style="width:80px">Durée</th>
+                    <th style="min-width:160px">Lieu / Organisme</th>
+                    <th class="text-center" style="width:90px">Bénéf.</th>
+                    <th class="text-end" style="width:130px">Coût (FCFA)</th>
+                    <th class="text-center" style="width:100px">Statut</th>
+                  </tr>
+                </thead>
+                <tbody id="formSessionsTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /rh-body -->
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL : Ajouter un agent
+═══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalAjoutAgent" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-header-rh">
+        <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Nouvel agent</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formAjoutAgent" onsubmit="ajouterAgent(event)">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Matricule</label>
+              <input type="text" class="form-control form-control-sm" id="aaMatricule" placeholder="auto" readonly>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Nom *</label>
+              <input type="text" class="form-control form-control-sm" id="aaNom" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Prénom *</label>
+              <input type="text" class="form-control form-control-sm" id="aaPrenom" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Fonction *</label>
+              <input type="text" class="form-control form-control-sm" id="aaFonction" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Service *</label>
+              <select class="form-select form-select-sm" id="aaService" required></select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Catégorie *</label>
+              <select class="form-select form-select-sm" id="aaCategorie" required>
+                <option value="Cadre">Cadre</option>
+                <option value="Technique">Technique</option>
+                <option value="Administratif">Administratif</option>
+                <option value="Soutien">Soutien</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Contrat *</label>
+              <select class="form-select form-select-sm" id="aaContrat" required>
+                <option value="CDI">CDI</option>
+                <option value="CDD">CDD</option>
+                <option value="Stagiaire">Stagiaire</option>
+                <option value="Personnel financé">Personnel financé (PF)</option>
+                <option value="Consultant">Consultant</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Date d'embauche</label>
+              <input type="date" class="form-control form-control-sm" id="aaDateEmbauche">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Salaire brut (FCFA) *</label>
+              <input type="number" class="form-control form-control-sm" id="aaSalaire" required min="0">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Téléphone</label>
+              <input type="text" class="form-control form-control-sm" id="aaTel">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Email</label>
+              <input type="email" class="form-control form-control-sm" id="aaEmail">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Solde congés</label>
+              <input type="number" class="form-control form-control-sm" id="aaSoldeConges" value="30">
+            </div>
+          </div>
+          <div class="text-end mt-3">
+            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-check me-1"></i>Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL : Demande de congé
+═══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalDemandeConge" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-rh">
+        <h5 class="modal-title"><i class="fas fa-umbrella-beach me-2"></i>Nouvelle demande de congé</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="ajouterDemandeConge(event)">
+          <div class="mb-2">
+            <label class="form-label small fw-bold">Agent demandeur *</label>
+            <select class="form-select form-select-sm" id="dcAgent" required></select>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label small fw-bold">Type *</label>
+              <select class="form-select form-select-sm" id="dcType" required>
+                <option value="Congé annuel">Congé annuel</option>
+                <option value="Congé maladie">Congé maladie</option>
+                <option value="Congé maternité">Congé maternité</option>
+                <option value="Congé exceptionnel">Congé exceptionnel</option>
+                <option value="Mission terrain">Mission terrain</option>
+              </select>
+            </div>
+            <div class="col-3">
+              <label class="form-label small fw-bold">Du *</label>
+              <input type="date" class="form-control form-control-sm" id="dcDu" required>
+            </div>
+            <div class="col-3">
+              <label class="form-label small fw-bold">Au *</label>
+              <input type="date" class="form-control form-control-sm" id="dcAu" required>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold">Motif</label>
+            <textarea class="form-control form-control-sm" id="dcMotif" rows="2"></textarea>
+          </div>
+          <div class="text-end">
+            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-paper-plane me-1"></i>Soumettre</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   RH MODULE — Ressources Humaines PSLSH/IST
+   Storage : localStorage 'pslsh_rh_v1'
+═══════════════════════════════════════════════════════════════ */
+
+const RH_KEY = 'pslsh_rh_v1';
+
+const SERVICES_PSLSH = [
+  'Coordination Nationale',
+  'Service Administratif & Financier (SAF)',
+  'Service Suivi-Évaluation',
+  'Service Communication & Plaidoyer',
+  'Service Achats & Logistique (SAL)',
+  'Service Comptabilité',
+  'Pharmacie Centrale (CPA)',
+  'Service Médical & Clinique',
+  'Service Laboratoire & Réactifs',
+  'Service Information & Recherche',
+  'Antenne Régionale Nord',
+  'Antenne Régionale Sud',
+];
+
+/* Données par défaut : 24 agents PSLSH/IST */
+const DEFAULT_AGENTS = [
+  { mat:'PSLSH-A001', nom:'NDIGAMADJI', prenom:'Mahamat', fonction:'Coordonnateur National', service:'Coordination Nationale',          cat:'Cadre',         contrat:'CDI',  salaire:1450000, soldeConges:18, statut:'Actif',     dateEmb:'2018-03-15' },
+  { mat:'PSLSH-A002', nom:'OUSMANE',     prenom:'Fatimé',   fonction:'Chef SAF',                  service:'Service Administratif & Financier (SAF)', cat:'Cadre',         contrat:'CDI',  salaire:1200000, soldeConges:22, statut:'Actif',     dateEmb:'2019-01-10' },
+  { mat:'PSLSH-A003', nom:'DJIBRINE',    prenom:'Adam',     fonction:'Comptable principal',       service:'Service Comptabilité',       cat:'Cadre',         contrat:'CDI',  salaire:850000,  soldeConges:25, statut:'Actif',     dateEmb:'2020-06-01' },
+  { mat:'PSLSH-A004', nom:'HASSANA',     prenom:'Achta',    fonction:'Comptable assistante',      service:'Service Comptabilité',       cat:'Administratif', contrat:'CDD',  salaire:425000,  soldeConges:30, statut:'Actif',     dateEmb:'2024-09-15' },
+  { mat:'PSLSH-A005', nom:'MAHAMAT',     prenom:'Issa',     fonction:'Chef Achats & Logistique',  service:'Service Achats & Logistique (SAL)',       cat:'Cadre',         contrat:'CDI',  salaire:980000,  soldeConges:15, statut:'En mission', dateEmb:'2017-11-20' },
+  { mat:'PSLSH-A006', nom:'ABAKAR',      prenom:'Hawa',     fonction:'Gestionnaire stock',        service:'Service Achats & Logistique (SAL)',       cat:'Technique',     contrat:'CDI',  salaire:520000,  soldeConges:20, statut:'Actif',     dateEmb:'2021-04-12' },
+  { mat:'PSLSH-A007', nom:'YAYA',        prenom:'Brahim',   fonction:'Pharmacien-chef CPA',       service:'Pharmacie Centrale (CPA)',   cat:'Cadre',         contrat:'CDI',  salaire:1100000, soldeConges:12, statut:'Actif',     dateEmb:'2016-08-01' },
+  { mat:'PSLSH-A008', nom:'ALI',         prenom:'Kaltouma', fonction:'Préparatrice pharmacie',    service:'Pharmacie Centrale (CPA)',   cat:'Technique',     contrat:'CDI',  salaire:485000,  soldeConges:28, statut:'Actif',     dateEmb:'2022-02-15' },
+  { mat:'PSLSH-A009', nom:'MAHADI',      prenom:'Souleyman',fonction:'Médecin référent',          service:'Service Médical & Clinique', cat:'Cadre',         contrat:'CDI',  salaire:1350000, soldeConges:10, statut:'Actif',     dateEmb:'2015-05-20' },
+  { mat:'PSLSH-A010', nom:'NGARMBASSA',  prenom:'Esther',   fonction:'Infirmière diplômée',       service:'Service Médical & Clinique', cat:'Technique',     contrat:'CDI',  salaire:520000,  soldeConges:22, statut:'En congé', dateEmb:'2020-11-01' },
+  { mat:'PSLSH-A011', nom:'TCHAGAYE',    prenom:'Moussa',   fonction:'Chef Laboratoire',          service:'Service Laboratoire & Réactifs', cat:'Cadre',     contrat:'CDI',  salaire:1050000, soldeConges:18, statut:'Actif',     dateEmb:'2019-03-10' },
+  { mat:'PSLSH-A012', nom:'AMINE',       prenom:'Roukia',   fonction:'Technicienne biologiste',   service:'Service Laboratoire & Réactifs', cat:'Technique', contrat:'CDD',  salaire:485000,  soldeConges:25, statut:'Actif',     dateEmb:'2024-01-20' },
+  { mat:'PSLSH-A013', nom:'YOUSSOUF',    prenom:'Aïcha',    fonction:'Chargée Suivi-Évaluation',  service:'Service Suivi-Évaluation',   cat:'Cadre',         contrat:'CDI',  salaire:925000,  soldeConges:20, statut:'Actif',     dateEmb:'2020-07-15' },
+  { mat:'PSLSH-A014', nom:'ABDOULAYE',   prenom:'Fatima',   fonction:'Statisticienne',            service:'Service Suivi-Évaluation',   cat:'Technique',     contrat:'Personnel financé', salaire:680000, soldeConges:30, statut:'Actif', dateEmb:'2023-04-01' },
+  { mat:'PSLSH-A015', nom:'ADOUM',       prenom:'Hamid',    fonction:'Chargé Communication',      service:'Service Communication & Plaidoyer', cat:'Cadre', contrat:'CDI',  salaire:825000,  soldeConges:24, statut:'Actif',     dateEmb:'2021-09-01' },
+  { mat:'PSLSH-A016', nom:'ALI',         prenom:'Mariam',   fonction:'Chargée Plaidoyer',         service:'Service Communication & Plaidoyer', cat:'Cadre', contrat:'CDD',  salaire:620000,  soldeConges:20, statut:'Actif',     dateEmb:'2024-03-15' },
+  { mat:'PSLSH-A017', nom:'IBRAHIM',     prenom:'Halime',   fonction:'Documentaliste',            service:'Service Information & Recherche',   cat:'Administratif', contrat:'CDI', salaire:485000, soldeConges:22, statut:'Actif', dateEmb:'2019-12-01' },
+  { mat:'PSLSH-A018', nom:'MOUSSA',      prenom:'Khadidja', fonction:'Secrétaire de direction',   service:'Coordination Nationale',     cat:'Administratif', contrat:'CDI',  salaire:425000,  soldeConges:18, statut:'Actif',     dateEmb:'2018-09-10' },
+  { mat:'PSLSH-A019', nom:'HAROUN',      prenom:'Saleh',    fonction:'Chef Antenne Nord',         service:'Antenne Régionale Nord',     cat:'Cadre',         contrat:'CDI',  salaire:870000,  soldeConges:15, statut:'En mission', dateEmb:'2017-03-20' },
+  { mat:'PSLSH-A020', nom:'TIDJANI',     prenom:'Aminata',  fonction:'Coordinatrice Antenne Sud', service:'Antenne Régionale Sud',      cat:'Cadre',         contrat:'CDI',  salaire:870000,  soldeConges:20, statut:'Actif',     dateEmb:'2019-06-15' },
+  { mat:'PSLSH-A021', nom:'KOUSSOU',     prenom:'Mahamoud', fonction:'Chauffeur principal',       service:'Coordination Nationale',     cat:'Soutien',       contrat:'CDI',  salaire:285000,  soldeConges:25, statut:'Actif',     dateEmb:'2016-11-01' },
+  { mat:'PSLSH-A022', nom:'ZARA',        prenom:'Boukar',   fonction:'Agent d\'entretien',        service:'Service Administratif & Financier (SAF)', cat:'Soutien',  contrat:'CDI',  salaire:215000, soldeConges:30, statut:'Actif', dateEmb:'2020-01-15' },
+  { mat:'PSLSH-A023', nom:'ABDALLAH',    prenom:'Mahamat',  fonction:'Stagiaire achats',          service:'Service Achats & Logistique (SAL)',       cat:'Administratif', contrat:'Stagiaire', salaire:150000, soldeConges:0, statut:'Actif', dateEmb:'2026-01-10' },
+  { mat:'PSLSH-A024', nom:'NADJI',       prenom:'Bichara',  fonction:'Consultant suivi',          service:'Service Suivi-Évaluation',   cat:'Cadre',         contrat:'Consultant', salaire:1250000, soldeConges:0, statut:'Actif', dateEmb:'2025-10-01' },
+];
+
+const DEFAULT_DEMANDES = [
+  { id:1, mat:'PSLSH-A013', nom:'YOUSSOUF Aïcha',  type:'Congé annuel',     du:'2026-05-12', au:'2026-05-23', jours:10, motif:'Congé familial', statut:'En attente' },
+  { id:2, mat:'PSLSH-A006', nom:'ABAKAR Hawa',     type:'Congé maternité',  du:'2026-06-01', au:'2026-08-31', jours:90, motif:'Congé légal',    statut:'En attente' },
+  { id:3, mat:'PSLSH-A015', nom:'ADOUM Hamid',     type:'Mission terrain',  du:'2026-05-08', au:'2026-05-12', jours:5,  motif:'Atelier régional Abéché', statut:'En attente' },
+  { id:4, mat:'PSLSH-A011', nom:'TCHAGAYE Moussa', type:'Congé exceptionnel', du:'2026-04-29', au:'2026-04-30', jours:2, motif:'Évènement familial', statut:'En attente' },
+];
+
+const DEFAULT_HISTORIQUE = [
+  { id:101, nom:'NDIGAMADJI Mahamat', type:'Congé annuel',  du:'2026-02-10', au:'2026-02-21', jours:10, statut:'Approuvé', valideur:'Conseil de coordination' },
+  { id:102, nom:'OUSMANE Fatimé',     type:'Congé maladie', du:'2026-03-15', au:'2026-03-19', jours:5,  statut:'Approuvé', valideur:'Coordonnateur' },
+  { id:103, nom:'NGARMBASSA Esther',  type:'Congé annuel',  du:'2026-04-15', au:'2026-04-30', jours:14, statut:'En cours', valideur:'Coordonnateur' },
+  { id:104, nom:'MAHAMAT Issa',       type:'Mission terrain', du:'2026-04-22', au:'2026-04-26', jours:5, statut:'En cours', valideur:'Coordonnateur' },
+  { id:105, nom:'HAROUN Saleh',       type:'Mission terrain', du:'2026-04-25', au:'2026-04-30', jours:6, statut:'En cours', valideur:'Coordonnateur' },
+];
+
+const DEFAULT_FORMATIONS = [
+  { id:1, intitule:'Mise à jour SYSCOHADA révisé 2024',     domaine:'Comptabilité', type:'fin', du:'2026-05-19', au:'2026-05-23', duree:5, lieu:'CRESPO N\'Djamena',           benef:6, cout:1850000, statut:'Programmée' },
+  { id:2, intitule:'Pilotage budgétaire & PTBA',            domaine:'Finance',      type:'fin', du:'2026-06-09', au:'2026-06-13', duree:5, lieu:'IFRPM Yaoundé',                benef:4, cout:3200000, statut:'Programmée' },
+  { id:3, intitule:'Diagnostic VIH par PCR & charge virale',domaine:'Technique',    type:'tech',du:'2026-04-14', au:'2026-04-25', duree:10,lieu:'INSP N\'Djamena',              benef:8, cout:2400000, statut:'En cours' },
+  { id:4, intitule:'Gestion qualité ISO 15189 (laboratoire)',domaine:'Technique',   type:'tech',du:'2026-07-07', au:'2026-07-11', duree:5, lieu:'OMS N\'Djamena',               benef:5, cout:1650000, statut:'Programmée' },
+  { id:5, intitule:'Procédures passation marchés publics',  domaine:'Administratif',type:'adm', du:'2026-09-15', au:'2026-09-19', duree:5, lieu:'ENAM N\'Djamena',              benef:3, cout:1100000, statut:'Programmée' },
+  { id:6, intitule:'Communication digitale & plaidoyer',    domaine:'Clinique',     type:'cli', du:'2026-08-04', au:'2026-08-08', duree:5, lieu:'Centre Sahel Yaoundé',         benef:4, cout:1850000, statut:'Programmée' },
+  { id:7, intitule:'Suivi-évaluation indicateurs PEPFAR',   domaine:'Suivi',        type:'tech',du:'2026-03-10', au:'2026-03-14', duree:5, lieu:'Visioconférence',              benef:6, cout:850000,  statut:'Terminée' },
+];
+
+let _agents = [];
+let _demandes = [];
+let _historique = [];
+let _formations = [];
+
+/* ── 1. Chargement / persistance ── */
+function loadRh() {
+  try {
+    const raw = localStorage.getItem(RH_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      _agents     = data.agents     || DEFAULT_AGENTS;
+      _demandes   = data.demandes   || DEFAULT_DEMANDES;
+      _historique = data.historique || DEFAULT_HISTORIQUE;
+      _formations = data.formations || DEFAULT_FORMATIONS;
+    } else {
+      _agents = DEFAULT_AGENTS;
+      _demandes = DEFAULT_DEMANDES;
+      _historique = DEFAULT_HISTORIQUE;
+      _formations = DEFAULT_FORMATIONS;
+      saveRh();
+    }
+  } catch (e) {
+    console.warn('Erreur chargement RH', e);
+    _agents = DEFAULT_AGENTS;
+    _demandes = DEFAULT_DEMANDES;
+    _historique = DEFAULT_HISTORIQUE;
+    _formations = DEFAULT_FORMATIONS;
+  }
+}
+
+function saveRh() {
+  try {
+    localStorage.setItem(RH_KEY, JSON.stringify({
+      agents:_agents, demandes:_demandes, historique:_historique, formations:_formations
+    }));
+  } catch (e) { console.warn('Erreur sauvegarde RH', e); }
+}
+
+/* ── 2. Helpers ── */
+function fmt(n) { return Math.round(n).toLocaleString('fr-FR'); }
+
+function avatarColor(nom) {
+  const cls = ['ra-bleu','ra-vert','ra-orange','ra-violet','ra-rouge','ra-cyan'];
+  return cls[(nom.charCodeAt(0) || 0) % cls.length];
+}
+
+function avatarInitials(prenom, nom) {
+  return ((prenom||'')[0] + (nom||'')[0]).toUpperCase();
+}
+
+function statutBadge(s) {
+  const map = { 'Actif':'bs-actif', 'En congé':'bs-conge', 'En mission':'bs-mission', 'Absent':'bs-absent', 'Détaché':'bs-detache' };
+  return `<span class="badge-st ${map[s]||'bs-actif'}">${s}</span>`;
+}
+
+function contratBadge(c) {
+  const map = { 'CDI':'ct-cdi','CDD':'ct-cdd','Stagiaire':'ct-stag','Personnel financé':'ct-pf','Consultant':'ct-cons' };
+  return `<span class="badge-st ${map[c]||'ct-cdi'}">${c}</span>`;
+}
+
+function categorieBadge(c) {
+  const map = { 'Cadre':'cat-cadre','Technique':'cat-techn','Administratif':'cat-admin','Soutien':'cat-soutien' };
+  return `<span class="badge-st ${map[c]||''}">${c}</span>`;
+}
+
+function congeBar(solde, max=30) {
+  const pct = Math.max(0, Math.min(100, (solde/max)*100));
+  const cls = pct>=66 ? 'cb-low' : pct>=33 ? 'cb-med' : 'cb-high';
+  return `<div class="conge-bar">
+    <div class="conge-bar-track"><div class="conge-bar-fill ${cls}" style="width:${pct}%"></div></div>
+    <span class="mono" style="font-size:.7rem;font-weight:700;color:#1b2f52">${solde}j</span>
+  </div>`;
+}
+
+/* ── 3. KPIs ── */
+function updateKpis() {
+  const eff = _agents.length;
+  const actifs = _agents.filter(a => a.statut==='Actif').length;
+  const enConge = _agents.filter(a => a.statut==='En congé' || a.statut==='En mission').length;
+  const masseSalariale = _agents.reduce((s,a) => s + (a.salaire||0), 0);
+  const demandesAttente = _demandes.filter(d => d.statut==='En attente').length;
+
+  document.getElementById('kpiEffectif').textContent = eff;
+  document.getElementById('kpiEffectifSub').textContent = `${actifs} actifs · ${eff-actifs} non disponibles`;
+  document.getElementById('kpiPresents').textContent = actifs;
+  document.getElementById('kpiTauxPresence').textContent = eff>0 ? `${Math.round(actifs/eff*100)}% de présence` : '0%';
+  document.getElementById('kpiEnConge').textContent = enConge;
+  document.getElementById('kpiDemandes').textContent = demandesAttente;
+  document.getElementById('kpiMasse').textContent = fmt(masseSalariale);
+}
+
+/* ── 4. Render Personnel ── */
+function renderPersonnel() {
+  const fS = document.getElementById('fService').value;
+  const fC = document.getElementById('fCategorie').value;
+  const fCt = document.getElementById('fContrat').value;
+  const fSt = document.getElementById('fStatut').value;
+  const q = (document.getElementById('fSearch').value || '').toLowerCase().trim();
+
+  const filtered = _agents.filter(a => {
+    if (fS && a.service !== fS) return false;
+    if (fC && a.cat !== fC) return false;
+    if (fCt && a.contrat !== fCt) return false;
+    if (fSt && a.statut !== fSt) return false;
+    if (q && !`${a.nom} ${a.prenom} ${a.mat} ${a.fonction}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('personnelTbody');
+  document.getElementById('personnelCount').textContent = `${filtered.length} agent${filtered.length>1?'s':''} affichés / ${_agents.length} total`;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="rh-empty"><i class="fas fa-user-slash d-block"></i>Aucun agent ne correspond aux filtres</div></td></tr>`;
+    document.getElementById('personnelTfoot').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(a => `
+    <tr data-mat="${a.mat}">
+      <td class="mono" style="font-weight:700;color:#1b3a6b">${a.mat}</td>
+      <td>
+        <span class="rh-avatar ${avatarColor(a.nom)}">${avatarInitials(a.prenom,a.nom)}</span>
+        <strong>${a.nom}</strong> ${a.prenom}
+      </td>
+      <td>${a.fonction}</td>
+      <td style="font-size:.74rem;color:#475569">${a.service}</td>
+      <td>${categorieBadge(a.cat)}</td>
+      <td>${contratBadge(a.contrat)}</td>
+      <td class="text-end mono">${fmt(a.salaire)}</td>
+      <td class="text-center">${congeBar(a.soldeConges)}</td>
+      <td class="text-center">${statutBadge(a.statut)}</td>
+      <td class="text-center" style="white-space:nowrap">
+        <button class="btn-act btn-act-view" title="Voir fiche" onclick="voirAgent('${a.mat}')"><i class="fas fa-eye"></i></button>
+        <button class="btn-act btn-act-edit" title="Éditer"   onclick="editerAgent('${a.mat}')"><i class="fas fa-pencil-alt"></i></button>
+      </td>
+    </tr>`).join('');
+
+  const totalSalaire = filtered.reduce((s,a)=>s+a.salaire,0);
+  document.getElementById('personnelTfoot').innerHTML = `<tr style="background:#1b2f52;color:#fff">
+    <td colspan="6" style="font-weight:700">TOTAL — ${filtered.length} agent${filtered.length>1?'s':''}</td>
+    <td class="text-end mono" style="color:#7dd3fc;font-weight:700">${fmt(totalSalaire)}</td>
+    <td colspan="3"></td>
+  </tr>`;
+}
+
+/* ── 5. Distribution par service ── */
+function renderServiceDistribution() {
+  const map = {};
+  _agents.forEach(a => { map[a.service] = (map[a.service]||0) + 1; });
+  const max = Math.max(...Object.values(map), 1);
+  const html = Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([svc,n]) => {
+    const pct = (n/max)*100;
+    return `<div class="svc-bar-row">
+      <span class="svc-bar-label">${svc}</span>
+      <div class="svc-bar-track"><div class="svc-bar-fill" style="width:${pct}%"></div></div>
+      <span class="svc-bar-count">${n} agent${n>1?'s':''}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('serviceDistribution').innerHTML = html;
+}
+
+/* ── 6. Render Congés ── */
+function renderConges() {
+  const tb = document.getElementById('congesPendingTbody');
+  const pending = _demandes.filter(d => d.statut==='En attente');
+  document.getElementById('congesPendingCount').textContent = `${pending.length} en attente`;
+
+  if (pending.length === 0) {
+    tb.innerHTML = `<tr><td colspan="10"><div class="rh-empty"><i class="fas fa-check-circle d-block" style="color:#15803d"></i>Aucune demande en attente</div></td></tr>`;
+  } else {
+    tb.innerHTML = pending.map(d => `
+      <tr>
+        <td class="mono" style="font-weight:700;color:#64748b">#${d.id.toString().padStart(3,'0')}</td>
+        <td class="mono" style="font-weight:700;color:#1b3a6b">${d.mat}</td>
+        <td><strong>${d.nom}</strong></td>
+        <td><span class="badge-st bs-conge">${d.type}</span></td>
+        <td class="mono">${d.du}</td>
+        <td class="mono">${d.au}</td>
+        <td class="text-center mono"><strong>${d.jours}</strong></td>
+        <td style="font-size:.73rem;color:#475569">${d.motif||'—'}</td>
+        <td class="text-center"><span class="badge-st bs-mission">En attente</span></td>
+        <td class="text-center" style="white-space:nowrap">
+          <button class="btn-act btn-act-edit" onclick="validerDemande(${d.id})" title="Approuver"><i class="fas fa-check"></i></button>
+          <button class="btn-act" style="background:#fff5f5;color:#b91c1c;border-color:#fca5a5" onclick="rejeterDemande(${d.id})" title="Rejeter"><i class="fas fa-times"></i></button>
+        </td>
+      </tr>`).join('');
+  }
+
+  const th = document.getElementById('congesHistoryTbody');
+  th.innerHTML = _historique.map(h => {
+    const st = h.statut==='Approuvé' ? 'bs-actif' : h.statut==='En cours' ? 'bs-mission' : 'bs-absent';
+    return `<tr>
+      <td class="mono" style="color:#64748b">#${h.id}</td>
+      <td><strong>${h.nom}</strong></td>
+      <td><span class="badge-st bs-conge">${h.type}</span></td>
+      <td class="mono">${h.du}</td>
+      <td class="mono">${h.au}</td>
+      <td class="text-center mono"><strong>${h.jours}</strong></td>
+      <td class="text-center"><span class="badge-st ${st}">${h.statut}</span></td>
+      <td style="font-size:.73rem;color:#475569">${h.valideur||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── 7. Render Pointage (mois en cours) ── */
+function renderPointage() {
+  const periode = document.getElementById('pointageMois').value;
+  const [year, month] = periode.split('-').map(Number);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  document.getElementById('pointageMonth').textContent =
+    new Date(year, month-1).toLocaleDateString('fr-FR', { month:'long', year:'numeric' });
+
+  // Header
+  let html = `<div class="pointage-grid" style="grid-template-columns:200px repeat(${daysInMonth}, 1fr)">`;
+  html += `<div class="pg-cell pg-header">Agent</div>`;
+  for (let d=1; d<=daysInMonth; d++) {
+    const date = new Date(year, month-1, d);
+    const isWeekend = date.getDay()===0 || date.getDay()===6;
+    html += `<div class="pg-cell pg-header" style="${isWeekend?'background:#0f172a':''}">${d}</div>`;
+  }
+  // Lignes
+  _agents.slice(0, 12).forEach(a => {
+    html += `<div class="pg-cell pg-name" title="${a.fonction}">${a.nom} ${a.prenom[0]}.</div>`;
+    for (let d=1; d<=daysInMonth; d++) {
+      const date = new Date(year, month-1, d);
+      const isWeekend = date.getDay()===0 || date.getDay()===6;
+      let st = 'pg-p', txt = 'P';
+      if (isWeekend) { st = 'pg-w'; txt = '·'; }
+      else {
+        // Pseudo-aléatoire stable
+        const seed = (a.mat.charCodeAt(7) + d * 7) % 30;
+        if (seed === 0) { st='pg-c'; txt='C'; }
+        else if (seed === 7) { st='pg-m'; txt='M'; }
+        else if (seed === 13) { st='pg-a'; txt='A'; }
+      }
+      html += `<div class="pg-cell ${st}">${txt}</div>`;
+    }
+  });
+  html += `</div>`;
+  document.getElementById('pointageGrid').innerHTML = html;
+
+  // Synthèse par service
+  const svcMap = {};
+  SERVICES_PSLSH.forEach(s => svcMap[s] = { total:0, presents:0 });
+  _agents.forEach(a => {
+    if (svcMap[a.service]) {
+      svcMap[a.service].total++;
+      if (a.statut === 'Actif') svcMap[a.service].presents++;
+    }
+  });
+  const synthHtml = Object.entries(svcMap)
+    .filter(([_,v]) => v.total > 0)
+    .sort((a,b) => (b[1].presents/b[1].total) - (a[1].presents/a[1].total))
+    .map(([svc, v]) => {
+      const pct = v.total>0 ? Math.round(v.presents/v.total*100) : 0;
+      const col = pct>=80 ? '#15803d' : pct>=60 ? '#b45309' : '#b91c1c';
+      return `<div class="svc-bar-row">
+        <span class="svc-bar-label">${svc}</span>
+        <div class="svc-bar-track"><div class="svc-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${col},${col}aa)"></div></div>
+        <span class="svc-bar-count">${pct}% (${v.presents}/${v.total})</span>
+      </div>`;
+    }).join('');
+  document.getElementById('pointageSyntheseService').innerHTML = synthHtml;
+}
+
+/* ── 8. Render Paie ── */
+function renderPaie() {
+  const fSvc = document.getElementById('paieService').value;
+  const filtered = _agents.filter(a => !fSvc || a.service === fSvc);
+
+  document.getElementById('paieMonth').textContent = (() => {
+    const p = document.getElementById('paiePeriode').value;
+    const [y, m] = p.split('-').map(Number);
+    return new Date(y, m-1).toLocaleDateString('fr-FR', { month:'long', year:'numeric' });
+  })();
+
+  const tb = document.getElementById('paieTbody');
+  let totBrut=0, totPrimes=0, totCnps=0, totIrpp=0, totNet=0;
+
+  tb.innerHTML = filtered.map(a => {
+    const brut = a.salaire;
+    const primes = Math.round(brut * 0.10);  // 10% primes
+    const cnps = Math.round(brut * 0.035);   // 3,5% CNPS salarié
+    const irpp = Math.round(brut * 0.12);    // 12% IRPP simplifié
+    const net = brut + primes - cnps - irpp;
+    const mode = brut > 600000 ? 'Virement' : 'Espèces';
+    totBrut+=brut; totPrimes+=primes; totCnps+=cnps; totIrpp+=irpp; totNet+=net;
+    return `<tr>
+      <td class="mono" style="font-weight:700;color:#1b3a6b">${a.mat}</td>
+      <td>
+        <span class="rh-avatar ${avatarColor(a.nom)}">${avatarInitials(a.prenom,a.nom)}</span>
+        <strong>${a.nom}</strong> ${a.prenom}
+      </td>
+      <td style="font-size:.73rem;color:#475569">${a.service}</td>
+      <td class="text-end mono">${fmt(brut)}</td>
+      <td class="text-end mono" style="color:#15803d">${fmt(primes)}</td>
+      <td class="text-end mono" style="color:#b91c1c">${fmt(cnps)}</td>
+      <td class="text-end mono" style="color:#b91c1c">${fmt(irpp)}</td>
+      <td class="text-end mono" style="color:#1b3a6b;font-weight:800">${fmt(net)}</td>
+      <td><span class="badge-st ${mode==='Virement'?'bs-conge':'bs-mission'}">${mode}</span></td>
+      <td class="text-center"><span class="badge-st bs-actif">Validé</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('paieTfoot').innerHTML = `<tr style="background:#1b2f52;color:#fff">
+    <td colspan="3" style="font-weight:700">TOTAL — ${filtered.length} agent${filtered.length>1?'s':''}</td>
+    <td class="text-end mono" style="color:#7dd3fc;font-weight:700">${fmt(totBrut)}</td>
+    <td class="text-end mono" style="color:#86efac;font-weight:700">${fmt(totPrimes)}</td>
+    <td class="text-end mono" style="color:#fca5a5;font-weight:700">${fmt(totCnps)}</td>
+    <td class="text-end mono" style="color:#fca5a5;font-weight:700">${fmt(totIrpp)}</td>
+    <td class="text-end mono" style="color:#7dd3fc;font-weight:800">${fmt(totNet)}</td>
+    <td colspan="2"></td>
+  </tr>`;
+  document.getElementById('paieMontant').textContent = fmt(totNet) + ' FCFA net';
+}
+
+/* ── 9. Render Formations ── */
+function renderFormations() {
+  document.getElementById('formationsCount').textContent = `${_formations.length} formation${_formations.length>1?'s':''}`;
+
+  const grid = document.getElementById('formationsGrid');
+  grid.innerHTML = _formations.map(f => {
+    const headCls = `fch-${f.type}`;
+    const icon = { tech:'fa-microscope', fin:'fa-coins', adm:'fa-clipboard-list', cli:'fa-stethoscope' }[f.type] || 'fa-graduation-cap';
+    return `<div class="form-card">
+      <div class="form-card-head ${headCls}">
+        <i class="fas ${icon}"></i>
+        <span style="flex:1">${f.intitule}</span>
+      </div>
+      <div class="form-card-body">
+        <div class="form-row"><span class="fr-lbl">Domaine</span><span class="fr-val">${f.domaine}</span></div>
+        <div class="form-row"><span class="fr-lbl">Période</span><span class="fr-val mono">${f.du} → ${f.au}</span></div>
+        <div class="form-row"><span class="fr-lbl">Durée</span><span class="fr-val">${f.duree} jour${f.duree>1?'s':''}</span></div>
+        <div class="form-row"><span class="fr-lbl">Bénéficiaires</span><span class="fr-val">${f.benef} agents</span></div>
+        <div class="form-row"><span class="fr-lbl">Coût</span><span class="fr-val mono">${fmt(f.cout)} FCFA</span></div>
+        <div class="form-row"><span class="fr-lbl">Statut</span>${statutBadgeFormation(f.statut)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Sessions table
+  const tb = document.getElementById('formSessionsTbody');
+  tb.innerHTML = _formations.map(f => `
+    <tr>
+      <td class="mono" style="color:#64748b">#${f.id.toString().padStart(3,'0')}</td>
+      <td><strong>${f.intitule}</strong></td>
+      <td><span class="badge-st bs-conge">${f.domaine}</span></td>
+      <td class="mono">${f.du}</td>
+      <td class="mono">${f.au}</td>
+      <td class="text-center mono"><strong>${f.duree}j</strong></td>
+      <td>${f.lieu}</td>
+      <td class="text-center mono"><strong>${f.benef}</strong></td>
+      <td class="text-end mono">${fmt(f.cout)}</td>
+      <td class="text-center">${statutBadgeFormation(f.statut)}</td>
+    </tr>`).join('');
+}
+
+function statutBadgeFormation(s) {
+  const m = { 'Programmée':'bs-conge', 'En cours':'bs-mission', 'Terminée':'bs-actif', 'Annulée':'bs-absent' };
+  return `<span class="badge-st ${m[s]||'bs-actif'}">${s}</span>`;
+}
+
+/* ── 10. Actions ── */
+function rhSwitchTab(id) {
+  const tabs = document.querySelectorAll('.rh-tab');
+  tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); t.setAttribute('tabindex','-1'); });
+  document.querySelectorAll('.rh-panel').forEach(p => p.classList.remove('active'));
+  const target = document.querySelector('.rh-tab[onclick*="\''+id+'\'"]');
+  if (target) { target.classList.add('active'); target.setAttribute('aria-selected','true'); target.setAttribute('tabindex','0'); }
+  document.getElementById('rhpanel-'+id).classList.add('active');
+  if (id==='conges')     renderConges();
+  if (id==='pointage')   renderPointage();
+  if (id==='paie')       renderPaie();
+  if (id==='formations') renderFormations();
+}
+
+function resetFilters() {
+  ['fService','fCategorie','fContrat','fStatut'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fSearch').value = '';
+  renderPersonnel();
+}
+
+function voirAgent(mat) {
+  const a = _agents.find(x => x.mat === mat);
+  if (!a) return;
+  alert(`Fiche agent ${a.mat}\n\n${a.prenom} ${a.nom}\n${a.fonction}\n${a.service}\nContrat : ${a.contrat}\nDate d'embauche : ${a.dateEmb||'—'}\nSalaire : ${fmt(a.salaire)} FCFA\nSolde congés : ${a.soldeConges} jours`);
+}
+
+function editerAgent(mat) { alert('Édition agent ' + mat + ' (à implémenter)'); }
+
+function validerDemande(id) {
+  const d = _demandes.find(x => x.id === id);
+  if (!d) return;
+  if (!confirm(`Approuver la demande de ${d.nom} (${d.type}, ${d.jours} jours) ?`)) return;
+  d.statut = 'Approuvé';
+  _historique.unshift({ id: 200+id, nom:d.nom, type:d.type, du:d.du, au:d.au, jours:d.jours, statut:'Approuvé', valideur:'Coordonnateur' });
+  _demandes = _demandes.filter(x => x.id !== id);
+  saveRh();
+  updateKpis();
+  renderConges();
+}
+
+function rejeterDemande(id) {
+  const d = _demandes.find(x => x.id === id);
+  if (!d) return;
+  if (!confirm(`Rejeter la demande de ${d.nom} ?`)) return;
+  _demandes = _demandes.filter(x => x.id !== id);
+  saveRh();
+  updateKpis();
+  renderConges();
+}
+
+function ajouterAgent(e) {
+  e.preventDefault();
+  const newAgent = {
+    mat: 'PSLSH-A' + (100 + _agents.length + 1).toString().padStart(3,'0'),
+    nom: document.getElementById('aaNom').value.toUpperCase(),
+    prenom: document.getElementById('aaPrenom').value,
+    fonction: document.getElementById('aaFonction').value,
+    service: document.getElementById('aaService').value,
+    cat: document.getElementById('aaCategorie').value,
+    contrat: document.getElementById('aaContrat').value,
+    salaire: parseInt(document.getElementById('aaSalaire').value, 10) || 0,
+    soldeConges: parseInt(document.getElementById('aaSoldeConges').value, 10) || 30,
+    statut: 'Actif',
+    dateEmb: document.getElementById('aaDateEmbauche').value || new Date().toISOString().slice(0,10),
+  };
+  _agents.push(newAgent);
+  saveRh();
+  bootstrap.Modal.getInstance(document.getElementById('modalAjoutAgent')).hide();
+  document.getElementById('formAjoutAgent').reset();
+  initServiceSelects();
+  updateKpis();
+  renderPersonnel();
+  renderServiceDistribution();
+}
+
+function ajouterDemandeConge(e) {
+  e.preventDefault();
+  const mat = document.getElementById('dcAgent').value;
+  const a = _agents.find(x => x.mat === mat);
+  const du = document.getElementById('dcDu').value;
+  const au = document.getElementById('dcAu').value;
+  const jours = Math.ceil((new Date(au) - new Date(du)) / (1000*60*60*24)) + 1;
+  _demandes.push({
+    id: Math.max(0, ..._demandes.map(d => d.id)) + 1,
+    mat: mat,
+    nom: `${a.nom} ${a.prenom}`,
+    type: document.getElementById('dcType').value,
+    du, au, jours,
+    motif: document.getElementById('dcMotif').value,
+    statut: 'En attente'
+  });
+  saveRh();
+  bootstrap.Modal.getInstance(document.getElementById('modalDemandeConge')).hide();
+  e.target.reset();
+  updateKpis();
+  renderConges();
+}
+
+function genererPaie() { alert('Génération paie pour la période ' + document.getElementById('paiePeriode').value + ' — ' + _agents.length + ' agents traités.'); }
+
+function exportRh() { alert('Export Excel RH (à implémenter)'); }
+
+/* ── 11. Init selects services ── */
+function initServiceSelects() {
+  const optsAll = '<option value="">Tous services</option>' + SERVICES_PSLSH.map(s => `<option value="${s}">${s}</option>`).join('');
+  const optsReq = SERVICES_PSLSH.map(s => `<option value="${s}">${s}</option>`).join('');
+  const optsAgents = _agents.map(a => `<option value="${a.mat}">${a.nom} ${a.prenom} (${a.service})</option>`).join('');
+
+  document.getElementById('fService').innerHTML = optsAll;
+  document.getElementById('paieService').innerHTML = optsAll;
+  document.getElementById('aaService').innerHTML = optsReq;
+  document.getElementById('dcAgent').innerHTML = '<option value="">Sélectionner un agent…</option>' + optsAgents;
+}
+
+/* ── 12. Boot ── */
+document.addEventListener('DOMContentLoaded', () => {
+  loadRh();
+  initServiceSelects();
+  updateKpis();
+  renderPersonnel();
+  renderServiceDistribution();
+});
+</script>
+</body>
+</html>

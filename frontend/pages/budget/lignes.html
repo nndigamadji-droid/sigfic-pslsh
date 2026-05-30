@@ -1,0 +1,764 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Lignes budgétaires</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .lb-page { padding:22px 28px 48px; }
+
+    /* ── KPI bar ── */
+    .lb-kpi-bar { display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px; }
+    .lb-kpi { background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 15px;position:relative;overflow:hidden; }
+    .lb-kpi::before { content:'';position:absolute;top:0;left:0;right:0;height:3px; }
+    .lk-blue::before   { background:#1b3a6b; }
+    .lk-orange::before { background:#b45309; }
+    .lk-green::before  { background:#15803d; }
+    .lk-teal::before   { background:#0f766e; }
+    .lk-red::before    { background:#b91c1c; }
+    .lb-kpi .lk-lbl { font-size:.67rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em; }
+    .lb-kpi .lk-val { font-size:.93rem;font-weight:800;color:#1b2f52;font-family:monospace;margin-top:2px; }
+    .lb-kpi .lk-sub { font-size:.67rem;color:#94a3b8;margin-top:1px; }
+
+    /* ── Toolbar ── */
+    .lb-toolbar { background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 16px;margin-bottom:14px;
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
+    .lb-toolbar select, .lb-toolbar input { font-size:.78rem;padding:5px 10px;border:1px solid #d1d5db;border-radius:7px;
+      background:#f8fafc;color:#1b2f52;height:32px; }
+    .lb-toolbar select:focus, .lb-toolbar input:focus { outline:none;border-color:#93c5fd;background:#fff; }
+    .lb-spacer { flex:1; }
+    .btn-lb-add { font-size:.75rem;font-weight:700;padding:6px 15px;border-radius:8px;border:none;
+      background:#1b2f52;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px; }
+    .btn-lb-add:hover { background:#1b3a6b; }
+    .btn-lb-amend { font-size:.72rem;font-weight:700;padding:5px 11px;border-radius:7px;border:none;
+      background:#b45309;color:#fff;cursor:pointer;display:flex;align-items:center;gap:5px; }
+    .btn-lb-amend:hover { background:#92400e; }
+    .btn-lb-export { font-size:.72rem;font-weight:600;padding:5px 11px;border-radius:7px;
+      border:1px solid #d1d5db;background:#fff;color:#374151;cursor:pointer;display:flex;align-items:center;gap:5px; }
+    .btn-lb-export:hover { background:#f8fafc; }
+
+    /* ── Table ── */
+    .lb-card { background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden; }
+    .lb-table { width:100%;border-collapse:collapse;font-size:.77rem; }
+    .lb-table thead th { background:#f1f5f9;color:#1b2f52;font-size:.65rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.03em;padding:9px 12px;border-bottom:2px solid #e2e8f0;white-space:nowrap; }
+    .lb-table tbody td { padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle; }
+    .lb-table tbody tr:hover td { background:#f8fafc; }
+    .lb-table tfoot td { font-weight:800;background:#1b2f52;color:#fff;padding:8px 12px; }
+    .lb-table .text-end { text-align:right; }
+    .lb-table .mono { font-family:'Cascadia Code','Consolas',monospace;font-size:.74rem; }
+
+    /* ── Source badge ── */
+    .src-badge { display:inline-block;font-size:.65rem;font-weight:700;border-radius:5px;padding:2px 7px;white-space:nowrap; }
+    .src-etat    { background:#dbeafe;color:#1d4ed8; }
+    .src-fm      { background:#dcfce7;color:#15803d; }
+    .src-oms     { background:#fef3c7;color:#b45309; }
+    .src-propre  { background:#f3e8ff;color:#7e22ce; }
+    .src-unicef  { background:#cffafe;color:#0e7490; }
+
+    /* ── Statut badge ── */
+    .stat-badge { display:inline-block;font-size:.65rem;font-weight:700;border-radius:20px;padding:2px 8px;white-space:nowrap; }
+    .sb-active   { background:#dcfce7;color:#15803d; }
+    .sb-revise   { background:#fef3c7;color:#b45309; }
+    .sb-ferme    { background:#fee2e2;color:#b91c1c; }
+    .sb-cloture  { background:#f1f5f9;color:#64748b; }
+
+    /* ── Barre d'exécution ── */
+    .exec-bar-wrap { display:flex;align-items:center;gap:7px; }
+    .exec-bar { flex:1;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;min-width:60px; }
+    .exec-fill { height:100%;border-radius:3px;transition:width .3s; }
+    .ef-green  { background:#15803d; }
+    .ef-orange { background:#b45309; }
+    .ef-red    { background:#b91c1c; }
+    .ef-over   { background:#7e22ce; }
+    .exec-pct  { font-size:.68rem;font-weight:700;min-width:36px;text-align:right;font-family:monospace; }
+
+    /* ── Action buttons ── */
+    .btn-act { font-size:.65rem;padding:2px 7px;border-radius:5px;cursor:pointer;
+      display:inline-flex;align-items:center;gap:3px;font-weight:700;border:1px solid;transition:all .12s; }
+    .ba-edit   { border-color:#93c5fd;background:#eff6ff;color:#1d4ed8; }
+    .ba-edit:hover { background:#dbeafe; }
+    .ba-amend  { border-color:#fcd34d;background:#fffbeb;color:#b45309; }
+    .ba-amend:hover { background:#fef3c7; }
+    .ba-del    { border-color:#fca5a5;background:#fff5f5;color:#b91c1c; }
+    .ba-del:hover  { background:#fee2e2; }
+
+    /* ── Rubrique pill ── */
+    .rub-pill { font-size:.65rem;background:#f1f5f9;color:#475569;border-radius:4px;padding:2px 6px;
+      font-weight:600;white-space:nowrap;border:1px solid #e2e8f0; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/budget/synthese.html">Budget</a></li>
+            <li class="breadcrumb-item active">Lignes budgétaires</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i> Exercice :
+        <select id="selEx" class="form-select form-select-sm d-inline-block w-auto ms-1" onchange="renderAll()">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+
+    <div class="page-content lb-page">
+
+      <!-- Titre -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-coins text-primary me-2"></i>Lignes Budgétaires</h4>
+          <small class="text-muted">PSLSH/IST, exercice 2026, nomenclature des crédits par rubrique et source de financement</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-lb-export" onclick="exportCSV()">
+            <i class="fas fa-file-csv"></i> Exporter CSV
+          </button>
+          <button class="btn-lb-export" onclick="window.print()">
+            <i class="fas fa-print"></i> Imprimer
+          </button>
+          <button class="btn-lb-export" style="color:#fff;background:#15803d;border-color:#15803d" onclick="sauvegarder()" title="Sauvegarder comme référence"><i class="fas fa-save"></i> Sauvegarder</button>
+          <button class="btn-lb-export" style="color:#b91c1c;border-color:#fca5a5" onclick="reinitialiserDonnees()" title="Réinitialiser"><i class="fas fa-undo"></i> Réinitialiser</button>
+        </div>
+      </div>
+
+      <!-- Liens rapides -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+        <a href="synthese.html"  style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#e0e7ff;color:#3730a3;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-chart-pie"></i> Synthèse</a>
+        <a href="sources.html"   style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#ccfbf1;color:#0f766e;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-sitemap"></i> Sources</a>
+        <a href="depenses.html"  style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#fef3c7;color:#b45309;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-file-invoice-dollar"></i> Dépenses</a>
+        <a href="revisions.html" style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#ede9fe;color:#6d28d9;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-edit"></i> Révisions</a>
+        <a href="suivi.html"     style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#dbeafe;color:#1e40af;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-chart-bar"></i> Suivi</a>
+      </div>
+
+      <!-- KPI bar -->
+      <div class="lb-kpi-bar mb-3">
+        <div class="lb-kpi lk-blue">
+          <div class="lk-lbl">Crédits ouverts</div>
+          <div class="lk-val" id="kTotal">-</div>
+          <div class="lk-sub">Budget voté + révisions</div>
+        </div>
+        <div class="lb-kpi lk-orange">
+          <div class="lk-lbl">Engagé</div>
+          <div class="lk-val" id="kEngage">-</div>
+          <div class="lk-sub" id="kEngRate">-</div>
+        </div>
+        <div class="lb-kpi lk-green">
+          <div class="lk-lbl">Payé</div>
+          <div class="lk-val" id="kPaye">-</div>
+          <div class="lk-sub" id="kPayRate">-</div>
+        </div>
+        <div class="lb-kpi lk-teal">
+          <div class="lk-lbl">Disponible</div>
+          <div class="lk-val" id="kDispo">-</div>
+          <div class="lk-sub">Crédits non engagés</div>
+        </div>
+        <div class="lb-kpi lk-red">
+          <div class="lk-lbl">Lignes actives</div>
+          <div class="lk-val" id="kActives">-</div>
+          <div class="lk-sub" id="kDepass">-</div>
+        </div>
+      </div>
+
+      <!-- Toolbar filtres -->
+      <div class="lb-toolbar">
+        <select id="filtreSource" onchange="renderAll()">
+          <option value="">Toutes sources</option>
+          <option value="ETAT">État</option>
+          <option value="FM">Fonds Mondial</option>
+          <option value="OMS">OMS</option>
+          <option value="UNICEF">UNICEF</option>
+          <option value="PROPRE">Ressources propres</option>
+        </select>
+        <select id="filtreRubrique" onchange="renderAll()">
+          <option value="">Toutes rubriques</option>
+          <option value="DF">Fonctionnement</option>
+          <option value="DI">Investissements</option>
+          <option value="DM">Médicaments</option>
+        </select>
+        <select id="filtreStatut" onchange="renderAll()">
+          <option value="">Tous statuts</option>
+          <option value="Actif">Actif</option>
+          <option value="Révisé">Révisé</option>
+          <option value="Clôturé">Clôturé</option>
+        </select>
+        <input type="text" id="filtreSearch" placeholder="&#xf002; Rechercher..." oninput="renderAll()"
+          style="font-family:'Font Awesome 6 Free',sans-serif">
+        <div class="lb-spacer"></div>
+        <button class="btn-lb-export" onclick="renderAll()"><i class="fas fa-filter"></i> Filtrer</button>
+        <button class="btn-lb-add" onclick="openModal('add', null)">
+          <i class="fas fa-plus"></i> Nouvelle ligne
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="lb-card">
+        <div style="overflow-x:auto">
+          <table class="lb-table">
+            <thead>
+              <tr>
+                <th style="width:90px">Code</th>
+                <th style="min-width:240px">Libellé</th>
+                <th style="width:80px">Rubrique</th>
+                <th style="width:100px">Source</th>
+                <th class="text-end">Crédits ouverts (FCFA)</th>
+                <th class="text-end">Révisé (FCFA)</th>
+                <th class="text-end">Engagé (FCFA)</th>
+                <th class="text-end">Payé (FCFA)</th>
+                <th style="width:130px">Taux d'exécution</th>
+                <th style="width:60px">Statut</th>
+                <th class="text-end" style="width:100px">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyLignes">
+              <tr><td colspan="11" class="text-center py-4 text-muted">Chargement...</td></tr>
+            </tbody>
+            <tfoot id="tfootLignes"></tfoot>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ═══ MODAL Ajouter / Modifier ═══ -->
+<div class="modal fade" id="modalLigne" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1b2f52;color:#fff;padding:12px 20px">
+        <h5 class="modal-title" id="modalLigneTitle" style="font-size:.9rem">
+          <i class="fas fa-coins me-2"></i>Ligne budgétaire
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:22px">
+        <input type="hidden" id="lId">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Code ligne <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="lCode" placeholder="Ex : L-DF1-001">
+          </div>
+          <div class="col-md-9">
+            <label class="form-label fw-bold small">Libellé de la ligne <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="lLibelle" placeholder="Description complète de la ligne budgétaire">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Rubrique budgétaire <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="lRubrique">
+              <option value="DF">DF - Fonctionnement</option>
+              <option value="DI">DI - Investissements</option>
+              <option value="DM">DM - Médicaments &amp; Intrants</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Source de financement <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="lSource">
+              <option value="ETAT">État</option>
+              <option value="FM">Fonds Mondial (FM)</option>
+              <option value="OMS">OMS</option>
+              <option value="UNICEF">UNICEF</option>
+              <option value="PROPRE">Ressources propres</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Statut</label>
+            <select class="form-select form-select-sm" id="lStatut">
+              <option value="Actif">Actif</option>
+              <option value="Révisé">Révisé</option>
+              <option value="Clôturé">Clôturé</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Montant initial (FCFA) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control form-control-sm" id="lMontant" min="0" oninput="calcLigne()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Montant révisé (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="lRevise" min="0" placeholder="Laisser vide = même que initial" oninput="calcLigne()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Montant engagé (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="lEngage" min="0" value="0" oninput="calcLigne()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Montant payé (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="lPaye" min="0" value="0" oninput="calcLigne()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Disponible - calculé</label>
+            <input type="number" class="form-control form-control-sm" id="lDispo" readonly style="background:#f8fafc">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Taux exécution - calculé</label>
+            <input type="text" class="form-control form-control-sm" id="lTaux" readonly style="background:#f8fafc">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Observation / Justification</label>
+            <textarea class="form-control form-control-sm" id="lNote" rows="2" placeholder="Observation ou justification facultative"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="background:#f8fafc;padding:10px 18px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-sm" style="background:#1b2f52;color:#fff;border:none;border-radius:7px;padding:6px 18px;font-size:.78rem;font-weight:700" onclick="saveLigne()">
+          <i class="fas fa-save me-1"></i>Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL Amender ═══ -->
+<div class="modal fade" id="modalAmender" tabindex="-1">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#b45309;color:#fff;padding:12px 20px">
+        <h5 class="modal-title" style="font-size:.88rem"><i class="fas fa-pen-ruler me-2"></i>Amendement budgétaire</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:20px">
+        <input type="hidden" id="aId">
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Ligne concernée</label>
+          <input type="text" class="form-control form-control-sm" id="aLigneLabel" readonly style="background:#f8fafc">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Montant actuel (FCFA)</label>
+          <input type="text" class="form-control form-control-sm" id="aMontantActuel" readonly style="background:#f8fafc">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Nouveau montant révisé (FCFA) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control form-control-sm" id="aNouveauMontant" min="0">
+        </div>
+        <div>
+          <label class="form-label fw-bold small">Motif de l'amendement <span class="text-danger">*</span></label>
+          <textarea class="form-control form-control-sm" id="aMotif" rows="3" placeholder="Justification de la révision budgétaire..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="background:#f8fafc;padding:10px 18px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-sm" style="background:#b45309;color:#fff;border:none;border-radius:7px;padding:6px 18px;font-size:.78rem;font-weight:700" onclick="saveAmendement()">
+          <i class="fas fa-check me-1"></i>Valider l'amendement
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL Confirmer suppression ═══ -->
+<div class="modal fade" id="modalDel" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#b91c1c;color:#fff;padding:10px 16px">
+        <h6 class="modal-title" style="font-size:.85rem"><i class="fas fa-exclamation-triangle me-2"></i>Confirmer</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center" style="padding:18px">
+        <p style="font-size:.82rem;color:#1b2f52;margin:0" id="delMsg">Supprimer cette ligne ?</p>
+      </div>
+      <div class="modal-footer" style="padding:8px 16px;gap:8px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Non</button>
+        <button class="btn btn-sm btn-danger" id="btnDel"><i class="fas fa-trash-alt me-1"></i>Supprimer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  else if (window.SIGFIC?.renderSidebarNav) SIGFIC.renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+
+  const u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+  document.getElementById('userName').textContent = u.nom || u.name || u.email || '';
+  function logout() {
+    localStorage.removeItem('pslsh_token');
+    localStorage.removeItem('pslsh_user');
+    window.location.href = '/pages/auth/login.html';
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     DONNÉES - LIGNES BUDGÉTAIRES
+  ══════════════════════════════════════════════════════════════ */
+  let _nextId = 20;
+  const DEFAULT_LIGNES = [
+    /* - Fonctionnement - */
+    { id:'L001', code:'L-DF1-001', libelle:'Salaires et traitements du personnel permanent', rubrique:'DF', source:'ETAT',  montant:205580035, revise:205580035, engage:159341639, paye:142880000, statut:'Actif',  note:'' },
+    { id:'L002', code:'L-DF1-002', libelle:'Primes, performances et indemnités de sujétion', rubrique:'DF', source:'ETAT',  montant:469576601, revise:469576601, engage:314276601, paye:298000000, statut:'Actif',  note:'' },
+    { id:'L003', code:'L-DF1-003', libelle:'Assurances maladies et assistance au personnel',  rubrique:'DF', source:'ETAT',  montant:16500000,  revise:16500000,  engage:1000000,   paye:800000,   statut:'Actif',  note:'' },
+    { id:'L004', code:'L-DF2-001', libelle:'Fournitures et consommables de bureau',           rubrique:'DF', source:'FM',    montant:12470000,  revise:12470000,  engage:17534000,  paye:15200000, statut:'Révisé', note:'Dépassement - révision en cours' },
+    { id:'L005', code:'L-DF2-002', libelle:'Produits d\'entretien et de subsistance',          rubrique:'DF', source:'FM',    montant:10476000,  revise:10476000,  engage:665500,    paye:500000,   statut:'Actif',  note:'' },
+    { id:'L006', code:'L-DF2-003', libelle:'Carburants et lubrifiants',                        rubrique:'DF', source:'ETAT',  montant:44800000,  revise:44800000,  engage:45219000,  paye:41500000, statut:'Révisé', note:'Dépassement - avenant en cours' },
+    { id:'L007', code:'L-DF2-004', libelle:'Entretien et maintenance des équipements',         rubrique:'DF', source:'ETAT',  montant:59369642,  revise:59369642,  engage:81647850,  paye:72000000, statut:'Révisé', note:'Dépassement - avenant budget' },
+    { id:'L008', code:'L-DF2-005', libelle:'Prestations de services et études diverses',       rubrique:'DF', source:'FM',    montant:347213750, revise:347213750, engage:10625000,  paye:9800000,  statut:'Actif',  note:'' },
+    { id:'L009', code:'L-DF3-001', libelle:'Missions et supervisions sur le terrain',          rubrique:'DF', source:'FM',    montant:223951850, revise:223951850, engage:29664240,  paye:25000000, statut:'Actif',  note:'' },
+    { id:'L010', code:'L-DF3-002', libelle:'Ateliers et séminaires de coordination',           rubrique:'DF', source:'OMS',   montant:108812550, revise:108812550, engage:16279350,  paye:14500000, statut:'Actif',  note:'' },
+    { id:'L011', code:'L-DF3-003', libelle:'Formations et renforcement des capacités',         rubrique:'DF', source:'OMS',   montant:444559500, revise:444559500, engage:90561329,  paye:82000000, statut:'Actif',  note:'' },
+    { id:'L012', code:'L-DF4-001', libelle:'Sensibilisation et communication communautaire',   rubrique:'DF', source:'UNICEF',montant:579389500, revise:579389500, engage:91203350,  paye:85000000, statut:'Actif',  note:'' },
+    { id:'L013', code:'L-DF5-001', libelle:'Appuis institutionnels aux structures partenaires',rubrique:'DF', source:'FM',    montant:118867400, revise:118867400, engage:27375000,  paye:23000000, statut:'Actif',  note:'' },
+    /* - Investissements - */
+    { id:'L014', code:'L-DI1-001', libelle:'Constructions et aménagements de locaux',          rubrique:'DI', source:'ETAT',  montant:181925600, revise:181925600, engage:13377500,  paye:10000000, statut:'Actif',  note:'' },
+    { id:'L015', code:'L-DI2-001', libelle:'Mobilier de bureau et équipements',                rubrique:'DI', source:'ETAT',  montant:35840000,  revise:35840000,  engage:2205000,   paye:1800000,  statut:'Actif',  note:'' },
+    { id:'L016', code:'L-DI3-001', libelle:'Équipements informatiques et techniques',          rubrique:'DI', source:'FM',    montant:89320000,  revise:89320000,  engage:45167500,  paye:40000000, statut:'Actif',  note:'' },
+    { id:'L017', code:'L-DI4-001', libelle:'Moyens roulants - acquisition véhicules',          rubrique:'DI', source:'ETAT',  montant:207400000, revise:207400000, engage:0,         paye:0,        statut:'Actif',  note:'Appel d\'offres en préparation' },
+    /* - Médicaments & Intrants - */
+    { id:'L018', code:'L-DM1-001', libelle:'Médicaments essentiels ARV - liste nationale',     rubrique:'DM', source:'FM',    montant:2940448670,revise:2940448670,engage:0,         paye:0,        statut:'Actif',  note:'Approvisionnement Centrale Pharm.' },
+    { id:'L019', code:'L-DM2-001', libelle:'Intrants médicaux consommables',                   rubrique:'DM', source:'FM',    montant:3040843353,revise:3040843353,engage:311246320, paye:290000000,statut:'Actif',  note:'' },
+    { id:'L020', code:'L-DM3-001', libelle:'Matériels médicaux - équipements',                 rubrique:'DM', source:'OMS',   montant:47540000,  revise:47540000,  engage:0,         paye:0,        statut:'Actif',  note:'' },
+    { id:'L021', code:'L-DM4-001', libelle:'Redevances Centrale Pharmaceutique Nationale',     rubrique:'DM', source:'PROPRE',montant:200000000, revise:200000000, engage:199669073, paye:185000000,statut:'Révisé', note:'Clôture en cours' },
+  ];
+
+  /* ══════════════════════════════════════════════════════════════
+     DONNÉES ACTIVES + PERSISTENCE localStorage
+  ══════════════════════════════════════════════════════════════ */
+  let LIGNES = [];
+  const STORAGE_KEY = 'pslsh_lignes_v1';
+  const SAVED_KEY   = 'pslsh_lignes_saved';
+  function saveStorage(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({ _ok:true, data:LIGNES, nextId:_nextId })); }
+  function sauvegarder(){
+    const p = JSON.stringify({ _ok:true, data:LIGNES, nextId:_nextId });
+    localStorage.setItem(STORAGE_KEY, p); localStorage.setItem(SAVED_KEY, p);
+    toast('✓ Lignes budgétaires sauvegardées comme nouvelle référence.');
+  }
+  (function(){
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(SAVED_KEY);
+    if(raw){ try{ const s=JSON.parse(raw); if(s&&s._ok){ LIGNES.splice(0,LIGNES.length,...(s.data||[])); _nextId=s.nextId||20; return; } }catch(e){} }
+    LIGNES.splice(0,LIGNES.length,...DEFAULT_LIGNES); saveStorage();
+  })();
+
+  /* ══════════════════════════════════════════════════════════════
+     HELPERS
+  ══════════════════════════════════════════════════════════════ */
+  function fmt(n) {
+    if (n === null || n === undefined || isNaN(n)) return '-';
+    return Math.round(n).toLocaleString('fr-FR');
+  }
+  function srcBadge(src) {
+    const map = {
+      ETAT:'src-etat', FM:'src-fm', OMS:'src-oms', UNICEF:'src-unicef', PROPRE:'src-propre'
+    };
+    return `<span class="src-badge ${map[src]||''}">${src}</span>`;
+  }
+  function statBadge(s) {
+    const map = { 'Actif':'sb-active', 'Révisé':'sb-revise', 'Clôturé':'sb-cloture', 'Fermé':'sb-ferme' };
+    return `<span class="stat-badge ${map[s]||'sb-cloture'}">${s}</span>`;
+  }
+  function rubBadge(r) {
+    return `<span class="rub-pill">${r}</span>`;
+  }
+  function execBar(engage, budget) {
+    const bref = budget || 1;
+    const pct  = Math.round((engage / bref) * 100);
+    const cls  = pct > 100 ? 'ef-over' : pct >= 80 ? 'ef-red' : pct >= 50 ? 'ef-orange' : 'ef-green';
+    const col  = pct > 100 ? '#7e22ce' : pct >= 80 ? '#b91c1c' : pct >= 50 ? '#b45309' : '#15803d';
+    return `<div class="exec-bar-wrap">
+      <div class="exec-bar"><div class="exec-fill ${cls}" style="width:${Math.min(pct,100)}%"></div></div>
+      <span class="exec-pct" style="color:${col}">${pct}%</span>
+    </div>`;
+  }
+  function toast(msg, ok = true) {
+    const col  = ok ? '#15803d' : '#b91c1c';
+    const icon = ok ? 'check-circle' : 'times-circle';
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${col};color:#fff;border-radius:10px;
+      padding:11px 18px;font-size:.8rem;font-weight:700;z-index:9999;display:flex;align-items:center;gap:9px;
+      box-shadow:0 4px 20px rgba(0,0,0,.25)`;
+    t.innerHTML = `<i class="fas fa-${icon}"></i><span>${msg}</span>`;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 3000);
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     FILTRAGE + RENDU
+  ══════════════════════════════════════════════════════════════ */
+  function getFiltered() {
+    const src    = document.getElementById('filtreSource').value;
+    const rub    = document.getElementById('filtreRubrique').value;
+    const stat   = document.getElementById('filtreStatut').value;
+    const search = document.getElementById('filtreSearch').value.toLowerCase();
+    return LIGNES.filter(l => {
+      if (src    && l.source   !== src)   return false;
+      if (rub    && l.rubrique !== rub)   return false;
+      if (stat   && l.statut  !== stat)   return false;
+      if (search && !l.libelle.toLowerCase().includes(search) && !l.code.toLowerCase().includes(search)) return false;
+      return true;
+    });
+  }
+
+  function renderAll() {
+    const data = getFiltered();
+    const tbody = document.getElementById('tbodyLignes');
+    const tfoot = document.getElementById('tfootLignes');
+
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center py-4 text-muted">Aucune ligne correspondante</td></tr>';
+      tfoot.innerHTML = '';
+      updateKPIs([]);
+      return;
+    }
+
+    tbody.innerHTML = data.map(l => {
+      const budget = l.revise || l.montant;
+      const dispo  = budget - l.engage;
+      return `<tr>
+        <td class="mono" style="font-size:.7rem;color:#64748b">${l.code}</td>
+        <td>
+          <div style="font-weight:600;color:#1b2f52">${l.libelle}</div>
+          ${l.note ? `<div style="font-size:.65rem;color:#b45309;margin-top:2px"><i class="fas fa-exclamation-circle me-1"></i>${l.note}</div>` : ''}
+        </td>
+        <td>${rubBadge(l.rubrique)}</td>
+        <td>${srcBadge(l.source)}</td>
+        <td class="text-end mono">${fmt(l.montant)}</td>
+        <td class="text-end mono" style="${l.revise !== l.montant ? 'color:#b45309;font-weight:700' : ''}">${fmt(l.revise)}</td>
+        <td class="text-end mono">${fmt(l.engage)}</td>
+        <td class="text-end mono" style="color:#15803d">${fmt(l.paye)}</td>
+        <td>${execBar(l.engage, budget)}</td>
+        <td>${statBadge(l.statut)}</td>
+        <td class="text-end" style="white-space:nowrap">
+          <button class="btn-act ba-edit me-1" onclick="openModal('edit','${l.id}')" title="Modifier"><i class="fas fa-pencil-alt"></i></button>
+          <button class="btn-act ba-amend me-1" onclick="openAmender('${l.id}')" title="Amender"><i class="fas fa-pen-ruler"></i></button>
+          <button class="btn-act ba-del" onclick="confirmDel('${l.id}','${l.libelle.substring(0,40).replace(/'/g,"&#39;")}')" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    // Totaux
+    const totMontant = data.reduce((s,l) => s + (l.montant||0), 0);
+    const totRevise  = data.reduce((s,l) => s + (l.revise||0), 0);
+    const totEngage  = data.reduce((s,l) => s + (l.engage||0), 0);
+    const totPaye    = data.reduce((s,l) => s + (l.paye||0), 0);
+    const totTaux    = totRevise > 0 ? Math.round(totEngage/totRevise*100) : 0;
+    tfoot.innerHTML = `<tr>
+      <td colspan="4">TOTAL (${data.length} ligne${data.length>1?'s':''})</td>
+      <td class="text-end mono" style="color:#7dd3fc">${fmt(totMontant)}</td>
+      <td class="text-end mono" style="color:#fcd34d">${fmt(totRevise)}</td>
+      <td class="text-end mono" style="color:#fcd34d">${fmt(totEngage)}</td>
+      <td class="text-end mono" style="color:#a7f3d0">${fmt(totPaye)}</td>
+      <td colspan="3" style="color:#a7f3d0;font-size:.75rem">${totTaux} % engagé</td>
+    </tr>`;
+
+    updateKPIs(data);
+  }
+
+  function updateKPIs(data) {
+    const all = LIGNES; // KPIs sur tout le périmètre
+    const totM = all.reduce((s,l)=>s+(l.revise||l.montant||0),0);
+    const totE = all.reduce((s,l)=>s+(l.engage||0),0);
+    const totP = all.reduce((s,l)=>s+(l.paye||0),0);
+    const totD = totM - totE;
+    const actives = all.filter(l=>l.statut==='Actif').length;
+    const depass  = all.filter(l=>l.engage > (l.revise||l.montant)).length;
+    const txE = totM > 0 ? ((totE/totM)*100).toFixed(1) : 0;
+    const txP = totM > 0 ? ((totP/totM)*100).toFixed(1) : 0;
+
+    document.getElementById('kTotal').textContent   = fmt(totM) + ' FCFA';
+    document.getElementById('kEngage').textContent  = fmt(totE) + ' FCFA';
+    document.getElementById('kEngRate').textContent = txE + ' % du budget';
+    document.getElementById('kPaye').textContent    = fmt(totP) + ' FCFA';
+    document.getElementById('kPayRate').textContent = txP + ' % du budget';
+    document.getElementById('kDispo').textContent   = fmt(totD) + ' FCFA';
+    document.getElementById('kActives').textContent = actives + ' / ' + all.length;
+    const kd = document.getElementById('kDepass');
+    kd.textContent   = depass + ' ligne(s) en dépassement';
+    kd.style.color   = depass > 0 ? '#b91c1c' : '#15803d';
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     MODAL - CRÉER / MODIFIER
+  ══════════════════════════════════════════════════════════════ */
+  let _mode = 'add', _editId = null;
+
+  function openModal(mode, id) {
+    _mode = mode; _editId = id;
+    document.getElementById('modalLigneTitle').innerHTML =
+      `<i class="fas fa-coins me-2"></i>${mode==='add' ? 'Nouvelle ligne budgétaire' : 'Modifier la ligne'}`;
+    const fields = ['lId','lCode','lLibelle','lNote'];
+    if (mode === 'edit' && id) {
+      const l = LIGNES.find(x => x.id === id);
+      if (!l) return;
+      document.getElementById('lId').value       = l.id;
+      document.getElementById('lCode').value     = l.code;
+      document.getElementById('lLibelle').value  = l.libelle;
+      document.getElementById('lRubrique').value = l.rubrique;
+      document.getElementById('lSource').value   = l.source;
+      document.getElementById('lStatut').value   = l.statut;
+      document.getElementById('lMontant').value  = l.montant;
+      document.getElementById('lRevise').value   = l.revise !== l.montant ? l.revise : '';
+      document.getElementById('lEngage').value   = l.engage || 0;
+      document.getElementById('lPaye').value     = l.paye   || 0;
+      document.getElementById('lNote').value     = l.note   || '';
+      calcLigne();
+    } else {
+      ['lId','lCode','lLibelle','lMontant','lRevise','lDispo','lTaux','lNote'].forEach(f => {
+        const el = document.getElementById(f); if(el) el.value='';
+      });
+      document.getElementById('lEngage').value = '0';
+      document.getElementById('lPaye').value   = '0';
+      document.getElementById('lRubrique').value = 'DF';
+      document.getElementById('lSource').value   = 'ETAT';
+      document.getElementById('lStatut').value   = 'Actif';
+    }
+    new bootstrap.Modal(document.getElementById('modalLigne')).show();
+  }
+
+  function calcLigne() {
+    const montant = parseFloat(document.getElementById('lMontant').value) || 0;
+    const revise  = parseFloat(document.getElementById('lRevise').value)  || montant;
+    const engage  = parseFloat(document.getElementById('lEngage').value)  || 0;
+    const dispo   = revise - engage;
+    const taux    = revise > 0 ? ((engage / revise) * 100).toFixed(2) : 0;
+    document.getElementById('lDispo').value = Math.round(dispo);
+    document.getElementById('lTaux').value  = taux + ' %';
+  }
+
+  function saveLigne() {
+    const code    = document.getElementById('lCode').value.trim();
+    const libelle = document.getElementById('lLibelle').value.trim();
+    const montant = parseFloat(document.getElementById('lMontant').value) || 0;
+    if (!code)    { alert('Le code est obligatoire.'); return; }
+    if (!libelle) { alert('Le libellé est obligatoire.'); return; }
+    if (!montant) { alert('Le montant initial est obligatoire.'); return; }
+
+    const revise  = parseFloat(document.getElementById('lRevise').value) || montant;
+    const engage  = parseFloat(document.getElementById('lEngage').value) || 0;
+    const paye    = parseFloat(document.getElementById('lPaye').value)   || 0;
+    const rubrique= document.getElementById('lRubrique').value;
+    const source  = document.getElementById('lSource').value;
+    const statut  = document.getElementById('lStatut').value;
+    const note    = document.getElementById('lNote').value.trim();
+
+    if (_mode === 'add') {
+      LIGNES.push({ id:'L'+(String(_nextId++).padStart(3,'0')), code, libelle, rubrique, source, montant, revise, engage, paye, statut, note });
+    } else {
+      const idx = LIGNES.findIndex(x => x.id === _editId);
+      if (idx !== -1) LIGNES[idx] = { ...LIGNES[idx], code, libelle, rubrique, source, montant, revise, engage, paye, statut, note };
+    }
+    bootstrap.Modal.getInstance(document.getElementById('modalLigne')).hide();
+    saveStorage(); renderAll();
+    toast(_mode === 'add' ? 'Ligne budgétaire créée.' : 'Ligne modifiée.');
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     MODAL - AMENDER
+  ══════════════════════════════════════════════════════════════ */
+  function openAmender(id) {
+    const l = LIGNES.find(x => x.id === id);
+    if (!l) return;
+    document.getElementById('aId').value             = l.id;
+    document.getElementById('aLigneLabel').value     = `[${l.code}] ${l.libelle}`;
+    document.getElementById('aMontantActuel').value  = fmt(l.revise || l.montant) + ' FCFA';
+    document.getElementById('aNouveauMontant').value = '';
+    document.getElementById('aMotif').value          = '';
+    new bootstrap.Modal(document.getElementById('modalAmender')).show();
+  }
+
+  function saveAmendement() {
+    const id     = document.getElementById('aId').value;
+    const nvMont = parseFloat(document.getElementById('aNouveauMontant').value);
+    const motif  = document.getElementById('aMotif').value.trim();
+    if (!nvMont) { alert('Le nouveau montant est obligatoire.'); return; }
+    if (!motif)  { alert('Le motif est obligatoire.'); return; }
+    const idx = LIGNES.findIndex(x => x.id === id);
+    if (idx !== -1) {
+      LIGNES[idx].revise = nvMont;
+      LIGNES[idx].statut = 'Révisé';
+      LIGNES[idx].note   = motif;
+    }
+    bootstrap.Modal.getInstance(document.getElementById('modalAmender')).hide();
+    saveStorage(); renderAll();
+    toast('Amendement budgétaire appliqué.');
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     SUPPRESSION
+  ══════════════════════════════════════════════════════════════ */
+  let _delId = null;
+  function confirmDel(id, label) {
+    _delId = id;
+    document.getElementById('delMsg').innerHTML =
+      `Supprimer la ligne <strong>"${label}"</strong> ?<br><small class="text-muted">Cette action est irréversible.</small>`;
+    document.getElementById('btnDel').onclick = execDel;
+    new bootstrap.Modal(document.getElementById('modalDel')).show();
+  }
+  function execDel() {
+    LIGNES = LIGNES.filter(x => x.id !== _delId);
+    bootstrap.Modal.getInstance(document.getElementById('modalDel')).hide();
+    saveStorage(); renderAll();
+    toast('Ligne supprimée.');
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     EXPORT CSV
+  ══════════════════════════════════════════════════════════════ */
+  function reinitialiserDonnees(){
+    if(!confirm('Réinitialiser aux lignes sauvegardées ?\n\nToutes les modifications non sauvegardées seront perdues.')) return;
+    const raw = localStorage.getItem(SAVED_KEY);
+    let ref=null; if(raw){ try{ const s=JSON.parse(raw); if(s&&s._ok) ref=s; }catch(e){} }
+    if(ref){ LIGNES.splice(0,LIGNES.length,...(ref.data||[])); _nextId=ref.nextId||20; }
+    else   { LIGNES.splice(0,LIGNES.length,...DEFAULT_LIGNES); _nextId=20; }
+    saveStorage(); renderAll(); toast('Lignes réinitialisées.');
+  }
+
+  function exportCSV() {
+    const data = getFiltered();
+    const headers = ['Code','Libellé','Rubrique','Source','Montant initial','Révisé','Engagé','Payé','Disponible','Taux (%)','Statut'];
+    const rows = data.map(l => {
+      const budget = l.revise || l.montant;
+      const dispo  = budget - l.engage;
+      const taux   = budget > 0 ? ((l.engage/budget)*100).toFixed(2) : 0;
+      return [l.code, `"${l.libelle}"`, l.rubrique, l.source, l.montant, l.revise, l.engage, l.paye, dispo, taux, l.statut];
+    });
+    const csv = [headers, ...rows].map(r => r.join(';')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Lignes-Budgetaires-PSLSH-2026.csv';
+    a.click();
+  }
+
+  /* ── INIT ── */
+  renderAll();
+</script>
+</body>
+</html>

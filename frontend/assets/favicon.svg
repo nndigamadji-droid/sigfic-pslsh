@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="geometricPrecision">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e3d6e"/>
+      <stop offset="100%" stop-color="#0f2044"/>
+    </linearGradient>
+    <linearGradient id="shieldGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d9a832"/>
+      <stop offset="100%" stop-color="#b8841e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fond bleu institutionnel avec coins arrondis -->
+  <rect width="32" height="32" rx="6" ry="6" fill="url(#bgGrad)"/>
+
+  <!-- Bouclier doré centré -->
+  <path d="M16 4.5
+           L25 7.8
+           L25 17
+           C25 23.2 20.8 27 16 28.5
+           C11.2 27 7 23.2 7 17
+           L7 7.8 Z"
+        fill="url(#shieldGrad)"/>
+
+  <!-- Reflet interne du bouclier (légère surbrillance) -->
+  <path d="M16 6.5
+           L23 9.2
+           L23 17
+           C23 22 19.5 25.2 16 26.5
+           C12.5 25.2 9 22 9 17
+           L9 9.2 Z"
+        fill="none"
+        stroke="rgba(255,255,255,0.18)"
+        stroke-width="0.8"/>
+
+  <!-- Lettre "S" centrale — identité SIGFIC, lisible même en 16×16 -->
+  <text x="16" y="21.5"
+        font-family="'Segoe UI', 'Arial Black', Arial, sans-serif"
+        font-weight="900"
+        font-size="14.5"
+        fill="#0f2044"
+        text-anchor="middle"
+        letter-spacing="-0.5">S</text>
+</svg>

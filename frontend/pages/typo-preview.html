@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Charte typographique</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="../src/css/main.css" rel="stylesheet">
+  <style>
+    body { background: #f8fafc; padding: 40px 60px; max-width: 1200px; margin: 0 auto; }
+    .specimen { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 32px 40px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+    .specimen-head { border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 24px; }
+    .specimen-num { display: inline-block; width: 28px; height: 28px; border-radius: 50%; background: #1b3a6b; color: #fff; text-align: center; line-height: 28px; font-weight: 700; font-size: .8rem; margin-right: 10px; font-family: var(--font-mono); }
+    .specimen-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: #475569; display: inline-block; text-transform: uppercase; letter-spacing: .06em; }
+    .row { display: grid; grid-template-columns: 200px 1fr; gap: 24px; padding: 10px 0; border-bottom: 1px dashed #f1f5f9; align-items: baseline; }
+    .row:last-child { border-bottom: none; }
+    .row-label { font-family: var(--font-mono); font-size: .72rem; color: #94a3b8; font-weight: 500; }
+    .row-spec  { font-family: var(--font-mono); font-size: .68rem; color: #64748b; margin-top: 4px; }
+    .demo-h1   { font-family: var(--font-display); font-weight: 700; font-size: 2.75rem; line-height: 1.05; letter-spacing: -0.03em; color: #1b2f52; }
+    .demo-h2   { font-family: var(--font-display); font-weight: 600; font-size: 1.875rem; line-height: 1.15; letter-spacing: -0.02em; color: #1b2f52; }
+    .demo-h3   { font-family: var(--font-display); font-weight: 500; font-size: 1.25rem; line-height: 1.3; letter-spacing: -0.005em; color: #1b2f52; }
+    .demo-body { font-family: var(--font-body); font-weight: 400; font-size: 1rem; line-height: 1.6; color: #2d3748; max-width: 65ch; }
+    .demo-small{ font-family: var(--font-body); font-weight: 700; font-size: .72rem; line-height: 1.3; letter-spacing: .08em; text-transform: uppercase; color: #475569; }
+    .demo-mono { font-family: var(--font-mono); font-weight: 500; font-size: .875rem; color: #1b3a6b; font-feature-settings: 'tnum' 1, 'zero' 1; }
+    table.demo-tbl { width: 100%; border-collapse: collapse; }
+    table.demo-tbl th { font-family: var(--font-body); font-weight: 700; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: #475569; padding: 8px 10px; border-bottom: 2px solid #e2e8f0; text-align: left; background: #f8fafc; }
+    table.demo-tbl td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; font-family: var(--font-body); font-size: .85rem; color: #2d3748; }
+    table.demo-tbl td.num { font-family: var(--font-mono); font-feature-settings: 'tnum' 1, 'zero' 1; text-align: right; font-weight: 500; color: #1b3a6b; }
+    .header-hero { background: linear-gradient(135deg, #1b2f52, #1b3a6b); color: #fff; padding: 40px 50px; border-radius: 14px; margin-bottom: 32px; }
+    .header-hero h1 { font-family: var(--font-display); font-weight: 700; font-size: 2.75rem; line-height: 1.05; letter-spacing: -0.03em; color: #fff; margin: 0 0 8px; }
+    .header-hero .sub { font-family: var(--font-body); font-weight: 400; font-size: 1.05rem; opacity: .85; }
+    .header-hero .meta { font-family: var(--font-mono); font-size: .8rem; opacity: .65; margin-top: 16px; letter-spacing: -0.01em; }
+    .glyph-set { display: flex; gap: 8px; flex-wrap: wrap; font-family: var(--font-display); font-size: 1.4rem; color: #1b2f52; font-weight: 600; }
+    .glyph-set span { padding: 4px 8px; background: #f8fafc; border-radius: 6px; min-width: 36px; text-align: center; }
+    .pair-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 14px; }
+    .pair-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; }
+    .pair-card .pc-name { font-family: var(--font-mono); font-size: .72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .pair-card .pc-sample-display { font-family: var(--font-display); font-size: 2rem; font-weight: 700; line-height: 1; color: #1b2f52; letter-spacing: -0.02em; }
+    .pair-card .pc-sample-body { font-family: var(--font-body); font-size: 1.4rem; font-weight: 400; line-height: 1.1; color: #2d3748; }
+    .pair-card .pc-sample-mono { font-family: var(--font-mono); font-size: 1.4rem; font-weight: 500; color: #1b3a6b; }
+    .badge-st { display: inline-block; font-family: var(--font-body); padding: 3px 9px; border-radius: 6px; font-size: .68rem; font-weight: 700; letter-spacing: .03em; }
+  </style>
+</head>
+<body>
+
+  <div class="header-hero">
+    <h1>Charte typographique SIGFIC-PSLSH</h1>
+    <div class="sub">Combinaison B — « Modernité civique »</div>
+    <div class="meta">Bricolage Grotesque + Public Sans + IBM Plex Mono · v2.0 · Active sur 61 pages</div>
+  </div>
+
+  <!-- 1. APERÇU DU TRIO -->
+  <div class="specimen">
+    <div class="specimen-head">
+      <span class="specimen-num">1</span>
+      <span class="specimen-title">Trio typographique — aperçu</span>
+    </div>
+    <div class="pair-grid">
+      <div class="pair-card">
+        <div class="pc-name">Display · Bricolage Grotesque</div>
+        <div class="pc-sample-display">Aa Bb Çç Éé</div>
+        <div class="row-spec" style="margin-top: 12px;">opsz 12..96 · wght 200..800 · italic</div>
+      </div>
+      <div class="pair-card">
+        <div class="pc-name">Body · Public Sans</div>
+        <div class="pc-sample-body">Aa Bb Çç Éé Ëë</div>
+        <div class="row-spec" style="margin-top: 12px;">wght 100..900 · italic</div>
+      </div>
+      <div class="pair-card">
+        <div class="pc-name">Mono · IBM Plex Mono</div>
+        <div class="pc-sample-mono">A0 B1 C0 Ø1</div>
+        <div class="row-spec" style="margin-top: 12px;">wght 100..700 · ø barré natif</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. ÉCHELLE TITRES -->
+  <div class="specimen">
+    <div class="specimen-head">
+      <span class="specimen-num">2</span>
+      <span class="specimen-title">Hiérarchie des titres — Bricolage Grotesque</span>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-label">H1 — Page</div>
+        <div class="row-spec">44px / 1.05 / -0.03em / 700</div>
+      </div>
+      <div class="demo-h1">Plan d'achat des intrants 2026</div>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-label">H2 — Section</div>
+        <div class="row-spec">30px / 1.15 / -0.02em / 600</div>
+      </div>
+      <div class="demo-h2">Compte financier : réactifs &amp; consommables</div>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-label">H3 — Sous-section</div>
+        <div class="row-spec">20px / 1.3 / -0.005em / 500</div>
+      </div>
+      <div class="demo-h3">Sources de financement par PAO</div>
+    </div>
+  </div>
+
+  <!-- 3. CORPS DE TEXTE -->
+  <div class="specimen">
+    <div class="specimen-head">
+      <span class="specimen-num">3</span>
+      <span class="specimen-title">Corps de texte — Public Sans</span>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-label">Body — Lecture longue</div>
+        <div class="row-spec">16px / 1.6 / 0 / 400</div>
+      </div>
+      <div class="demo-body">
+        Le Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les Infections Sexuellement
+        Transmissibles assure la gestion intégrée du cycle administratif, budgétaire et comptable. Toute opération
+        financière doit être rattachée à un dossier d'opération unique, conformément au manuel de procédures 2025
+        et aux normes SYSCOHADA en vigueur.
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-label">Small caps — Labels</div>
+        <div class="row-spec">11.5px / 1.3 / 0.08em / 700</div>
+      </div>
+      <div class="demo-small">Budget engagé · Total exercice 2026</div>
+    </div>
+  </div>
+
+  <!-- 4. TABLEAU FINANCIER -->
+  <div class="specimen">
+    <div class="specimen-head">
+      <span class="specimen-num">4</span>
+      <span class="specimen-title">Tableau financier — chiffres mono tabulaires</span>
+    </div>
+    <table class="demo-tbl">
+      <thead>
+        <tr>
+          <th>Matricule</th>
+          <th>Agent</th>
+          <th>Service</th>
+          <th style="text-align:right">Salaire brut</th>
+          <th style="text-align:right">CNPS</th>
+          <th style="text-align:right">Net à payer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="num">PSLSH-A001</td><td>NDIGAMADJI Mahamat</td><td>Coordination Nationale</td><td class="num">1 450 000</td><td class="num">50 750</td><td class="num">1 399 250</td></tr>
+        <tr><td class="num">PSLSH-A002</td><td>OUSMANE Fatimé</td><td>SAF</td><td class="num">1 200 000</td><td class="num">42 000</td><td class="num">1 158 000</td></tr>
+        <tr><td class="num">PSLSH-A003</td><td>DJIBRINE Adam</td><td>Comptabilité</td><td class="num">  850 000</td><td class="num">29 750</td><td class="num">  820 250</td></tr>
+        <tr><td class="num">PSLSH-A007</td><td>YAYA Brahim</td><td>Pharmacie Centrale</td><td class="num">1 100 000</td><td class="num">38 500</td><td class="num">1 061 500</td></tr>
+      </tbody>
+    </table>
+    <div class="row-spec" style="margin-top: 14px;">
+      Note : <code class="mono">font-feature-settings: 'tnum' 1, 'zero' 1</code> — les chiffres sont à chasse fixe (parfaitement alignés en colonne) et le <strong>zéro est barré</strong> pour éviter toute confusion avec la lettre O dans les matricules.
+    </div>
+  </div>
+
+  <!-- 5. BADGES & INDICATEURS -->
+  <div class="specimen">
+    <div class="specimen-head">
+      <span class="specimen-num">5</span>
+      <span class="specimen-title">Badges &amp; indicateurs visuels</span>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+      <span class="badge-st" style="background:#dcfce7;color:#15803d">Actif</span>
+      <span class="badge-st" style="background:#dbeafe;color:#1d4ed8">En congé</span>
+      <span class="badge-st" style="background:#fef3c7;color:#b45309">En mission</span>
+      <span class="badge-st" style="background:#fee2e2;color:#b91c1c">Rejeté</span>
+      <span class="badge-st" style="background:#ede9fe;color:#6d28d9">Détaché</span>
+      <span class="badge-st" style="background:#1b3a6b;color:#fff">Cadre</span>
+      <span class="badge-st" style="background:#15803d;color:#fff">Technique</span>
+      <span class="badge-st" style="background:#b45309;color:#fff">Administratif</span>
+    </div>
+  </div>
+
+  <!-- 6. JEU DE GLYPHES -->
+  <div class="specimen">
+    <div class="specimen-head">
+      <span class="specimen-num">6</span>
+      <span class="specimen-title">Caractères français — diacritiques &amp; ponctuation</span>
+    </div>
+    <div class="glyph-set">
+      <span>À</span><span>Â</span><span>Ä</span><span>Æ</span><span>Ç</span>
+      <span>É</span><span>È</span><span>Ê</span><span>Ë</span><span>Î</span>
+      <span>Ï</span><span>Ô</span><span>Œ</span><span>Ù</span><span>Û</span>
+      <span>Ü</span><span>Ÿ</span><span>«</span><span>»</span><span>—</span>
+      <span>°</span><span>€</span><span>№</span>
+    </div>
+    <div class="row-spec" style="margin-top: 14px;">
+      Bricolage Grotesque couvre 100 % du jeu Latin Extended-A — les accents tchadiens, arabes (translittération)
+      et français sont rendus avec la même précision typographique qu'un manuel d'imprimerie.
+    </div>
+  </div>
+
+  <!-- 7. RÈGLES D'OR -->
+  <div class="specimen" style="background: #1b2f52; color: #fff; border: none;">
+    <div class="specimen-head" style="border-color: rgba(255,255,255,.15);">
+      <span class="specimen-num" style="background: #fff; color: #1b3a6b;">★</span>
+      <span class="specimen-title" style="color: #fff;">3 règles d'or à respecter partout</span>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+      <div>
+        <div style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; margin-bottom: 8px;">1.</div>
+        <div style="font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; margin-bottom: 6px;">Variabilité contrôlée</div>
+        <div style="font-family: var(--font-body); font-size: .85rem; opacity: .8; line-height: 1.5;">Minimum 4 tailles distinctes par page. Échelle modulaire 1.25.</div>
+      </div>
+      <div>
+        <div style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; margin-bottom: 8px;">2.</div>
+        <div style="font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; margin-bottom: 6px;">Letter-spacing intentionnel</div>
+        <div style="font-family: var(--font-body); font-size: .85rem; opacity: .8; line-height: 1.5;">−0.02em sur les gros titres, +0.08em sur les MAJUSCULES, 0 sur le body.</div>
+      </div>
+      <div>
+        <div style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; margin-bottom: 8px;">3.</div>
+        <div style="font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; margin-bottom: 6px;">Line-height proportionnel</div>
+        <div style="font-family: var(--font-body); font-size: .85rem; opacity: .8; line-height: 1.5;">1.05 pour les titres, 1.6 pour le body, 1.5 pour les colonnes de chiffres.</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

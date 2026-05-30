@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Bon de commande</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #d5dbe4; font-family: 'Times New Roman', Times, serif; font-size: 10pt; }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      background: #1b3a6b; color: #fff;
+      padding: 7px 18px; display: flex; align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 200;
+      font-family: Arial, sans-serif;
+    }
+    .toolbar-title { font-size: .8rem; font-weight: 700; }
+    .toolbar .btn  { font-size: .75rem; }
+
+    /* ── Cadre document ── */
+    .doc-frame {
+      max-width: 794px;
+      margin: 20px auto 50px;
+      background: #fff;
+      box-shadow: 0 6px 28px rgba(0,0,0,.25);
+      position: relative;
+    }
+
+    /* ── Filigrane texte ── */
+    .doc-frame::before {
+      content: 'PSLSH/IST';
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-40deg);
+      font-size: 6rem; font-weight: 900;
+      color: rgba(27, 58, 107, 0.055);
+      white-space: nowrap; pointer-events: none;
+      font-family: Arial, sans-serif; letter-spacing: .15em;
+      z-index: 0;
+    }
+
+    /* ── Corps ── */
+    .bc { position: relative; z-index: 1; padding: 14px 26px 16px; }
+
+    /* ── Bandeau pays ── */
+    .country-bar {
+      text-align: center; font-family: Arial, sans-serif;
+      font-size: 7pt; font-weight: 700; color: #1b3a6b;
+      text-transform: uppercase; letter-spacing: .08em;
+      border-bottom: 1px solid #1b3a6b; padding-bottom: 4px; margin-bottom: 8px;
+    }
+
+    /* ── En-tête ── */
+    .bc-header {
+      display: grid; grid-template-columns: 72px 1fr 130px;
+      gap: 10px; align-items: center;
+      border-bottom: 2.5px double #1b3a6b;
+      padding-bottom: 8px; margin-bottom: 10px;
+    }
+    .bc-logo { width: 68px; height: 68px; object-fit: contain; }
+    .bc-header-center { text-align: center; }
+    .bc-ministry { font-family: Arial, sans-serif; font-size: 6.5pt; color: #475569; text-transform: uppercase; letter-spacing: .05em; }
+    .bc-program {
+      font-family: Arial, sans-serif; font-size: 7pt; font-weight: 700;
+      color: #334155; margin: 2px 0; text-transform: uppercase; letter-spacing: .03em;
+    }
+    .bc-service { font-family: Arial, sans-serif; font-size: 6.5pt; color: #64748b; margin-top: 3px; }
+    .bc-title {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 16pt; font-weight: 900; color: #1b3a6b;
+      text-transform: uppercase; letter-spacing: .08em;
+      line-height: 1.15; margin: 5px 0 2px;
+    }
+
+    /* Panneau REF (haut droit) */
+    .ref-panel {
+      border: 1.5px solid #1b3a6b; border-radius: 3px;
+      padding: 5px 8px; font-family: Arial, sans-serif;
+      background: #f0f4fa;
+    }
+    .ref-panel .rl { font-size: 6pt; color: #64748b; text-transform: uppercase; letter-spacing: .07em; margin-top: 4px; }
+    .ref-panel .rl:first-child { margin-top: 0; }
+    .ref-panel .rv {
+      font-size: 8pt; font-weight: 800; color: #1b3a6b;
+      border: none; border-bottom: 1.5px solid #1b3a6b; display: block;
+      width: 100%; min-height: 16px; padding: 0 2px;
+      background: transparent; outline: none;
+      font-family: Arial, sans-serif;
+    }
+    .ref-panel input.rv::placeholder { color: #94a3b8; font-weight: 400; font-size: 7pt; }
+
+    /* ── Champs de références ── */
+    .ref-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; margin-bottom: 8px; }
+    .rf { display: flex; align-items: flex-end; gap: 4px; margin-bottom: 5px; }
+    .rf-lbl {
+      white-space: nowrap; font-family: Arial, sans-serif;
+      font-size: 7.5pt; font-weight: 600; color: #334155; flex-shrink: 0;
+    }
+    .rf-val {
+      flex: 1; border: none; border-bottom: 1px solid #64748b;
+      font-family: 'Times New Roman', Times, serif; font-size: 8.5pt;
+      color: #0f172a; background: transparent; outline: none;
+      padding: 0 3px;
+    }
+    .rf-val:focus { border-bottom-color: #1b3a6b; }
+
+    /* ── Section titre ── */
+    .sect {
+      background: #1b3a6b; color: #fff;
+      font-family: Arial, sans-serif; font-size: 7pt; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .09em;
+      padding: 3px 8px; margin: 8px 0 6px;
+    }
+
+    /* ── Bloc fournisseur / base contractuelle ── */
+    .bc-two-col {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+      border: 1.5px solid #1b3a6b; margin-bottom: 8px;
+    }
+    .bc-col { padding: 8px 10px; }
+    .bc-col:first-child { border-right: 1px solid #1b3a6b; }
+    .bc-col-title {
+      font-family: Arial, sans-serif; font-size: 7pt; font-weight: 800;
+      color: #1b3a6b; text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 6px; padding-bottom: 3px; border-bottom: 1px solid #e2e8f0;
+    }
+
+    /* Lignes de champs */
+    .fl { display: flex; align-items: flex-end; gap: 4px; margin-bottom: 4px; }
+    .fl-lbl {
+      white-space: nowrap; font-family: Arial, sans-serif;
+      font-size: 7.5pt; font-weight: 600; color: #334155; flex-shrink: 0;
+    }
+    .fl-val {
+      flex: 1; border: none; border-bottom: 1px solid #94a3b8;
+      font-family: 'Times New Roman', Times, serif; font-size: 8.5pt;
+      color: #0f172a; background: transparent; outline: none; padding: 0 3px;
+    }
+    .fl-val:focus { border-bottom-color: #1b3a6b; }
+
+    /* Base contractuelle — bullets */
+    .bc-bullet { display: flex; align-items: flex-start; gap: 5px; margin-bottom: 6px; }
+    .bc-bullet::before { content: '•'; color: #1b3a6b; font-size: 10pt; flex-shrink: 0; line-height: 1.2; }
+    .bc-bullet .fl { margin-bottom: 0; flex: 1; }
+
+    /* ── Tableau des fournitures ── */
+    .bc-table-wrap { border: 1.5px solid #1b3a6b; margin-bottom: 8px; overflow: hidden; }
+    .bc-tbl { width: 100%; border-collapse: collapse; font-size: 8pt; }
+    .bc-tbl thead th {
+      background: #1b3a6b; color: #fff;
+      font-family: Arial, sans-serif; font-size: 7pt; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .05em;
+      padding: 5px 8px; text-align: center;
+      border-right: 1px solid rgba(255,255,255,.2);
+    }
+    .bc-tbl thead th:last-child { border-right: none; }
+    .bc-tbl tbody td {
+      padding: 5px 8px; border-bottom: 1px solid #e2e8f0;
+      border-right: 1px solid #e2e8f0; vertical-align: middle;
+    }
+    .bc-tbl tbody td:last-child { border-right: none; }
+    .bc-tbl tbody tr:last-child td { border-bottom: none; }
+    .bc-tbl tbody input {
+      width: 100%; border: none; outline: none; background: transparent;
+      font-family: 'Times New Roman', Times, serif; font-size: 8pt;
+      color: #0f172a; padding: 0;
+    }
+    .bc-tbl tfoot td {
+      padding: 5px 8px; font-family: Arial, sans-serif; font-size: 7.5pt;
+      border-top: 2px solid #1b3a6b; background: #f8fafc;
+      font-weight: 700; color: #1b3a6b;
+    }
+    .col-des  { width: 40%; }
+    .col-qty  { width: 15%; text-align: center; }
+    .col-pu   { width: 22%; text-align: right; }
+    .col-mt   { width: 23%; text-align: right; }
+
+    /* ── Bloc bas : conditions + récapitulatif ── */
+    .bc-bottom {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+      border: 1.5px solid #1b3a6b; margin-bottom: 10px;
+    }
+    .bc-bottom .bc-col:first-child { border-right: 1px solid #1b3a6b; }
+    .bc-cond-item {
+      display: flex; align-items: flex-start; gap: 5px;
+      font-size: 8pt; margin-bottom: 4px;
+    }
+    .bc-cond-item::before { content: '▸'; color: #1b3a6b; flex-shrink: 0; font-size: 7pt; line-height: 1.4; }
+    .recap-line {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      font-size: 8pt; padding: 3px 0; border-bottom: 1px dashed #e2e8f0;
+    }
+    .recap-line:last-child { border-bottom: none; }
+    .recap-lbl { font-family: Arial, sans-serif; font-size: 7.5pt; font-weight: 600; color: #334155; }
+    .recap-val {
+      border: none; border-bottom: 1px solid #94a3b8; background: transparent;
+      outline: none; font-family: 'Times New Roman', Times, serif; font-size: 8pt;
+      color: #0f172a; text-align: right; width: 130px; padding: 0 3px;
+    }
+    .recap-total { font-size: 9.5pt; font-weight: 800; color: #1b3a6b; }
+
+    /* ── Lieu & date ── */
+    .date-line {
+      text-align: right; font-size: 8pt; font-family: Arial, sans-serif;
+      color: #334155; margin: 8px 0 6px;
+      display: flex; justify-content: flex-end; align-items: flex-end; gap: 4px;
+    }
+    .date-line input {
+      border: none; border-bottom: 1px solid #334155;
+      font-family: inherit; font-size: 8pt; color: #0f172a;
+      background: transparent; outline: none;
+      width: 110px; text-align: center; padding: 0 2px;
+    }
+
+    /* ── Signature ── */
+    .sig-wrap { margin-top: 10px; border-top: 2px solid #1b3a6b; padding-top: 10px; }
+    .sig-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+    .sig-cell { text-align: center; padding: 0 8px; border-right: 1px dashed #cbd5e1; }
+    .sig-cell:last-child { border-right: none; }
+    .sig-role {
+      font-family: Arial, sans-serif; font-size: 6.5pt; font-weight: 800;
+      color: #1b3a6b; text-transform: uppercase; letter-spacing: .04em;
+      line-height: 1.3; margin-bottom: 2px;
+    }
+    .sig-name { font-size: 6.5pt; color: #475569; font-style: italic; border-bottom: 1px dotted #94a3b8; min-height: 14px; }
+    .sig-space { height: 40px; }
+    .sig-line { border-bottom: 1px solid #334155; margin: 0 6px 2px; }
+    .sig-label { font-size: 6pt; color: #94a3b8; font-family: Arial, sans-serif; }
+
+    /* ── Pied ── */
+    .doc-footer {
+      display: grid; grid-template-columns: 64px 1fr 64px;
+      align-items: center; gap: 8px;
+      margin-top: 10px; padding-top: 8px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .footer-text {
+      text-align: center; font-family: Arial, sans-serif;
+      font-size: 6pt; color: #94a3b8; line-height: 1.6;
+    }
+    .footer-text strong { color: #475569; }
+    .footer-text .warn { color: #dc2626; font-weight: 700; }
+    #qrBox { display: flex; justify-content: flex-end; }
+    #qrBox canvas, #qrBox img { display: block; }
+
+    /* ── Bouton ajout ligne ── */
+    .btn-add-line {
+      font-size: 7pt; font-family: Arial, sans-serif;
+      background: none; border: 1px dashed #94a3b8; color: #64748b;
+      padding: 2px 10px; border-radius: 3px; cursor: pointer;
+      margin-top: 4px;
+    }
+    .btn-add-line:hover { background: #f8fafc; color: #1b3a6b; border-color: #1b3a6b; }
+
+    /* ══════════ IMPRESSION ══════════ */
+    @media print {
+      body { background: #fff !important; font-size: 9pt; }
+      .toolbar { display: none !important; }
+      .btn-add-line { display: none !important; }
+      .doc-frame {
+        max-width: 100% !important; margin: 0 !important;
+        box-shadow: none !important;
+      }
+      .doc-frame::before {
+        color: rgba(27,58,107,0.05) !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .guilloche-bg {
+        opacity: 0.06 !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .guilloche-bg svg { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .bc { padding: 10px 18px 12px !important; }
+      .sect { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .bc-tbl thead { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .ref-panel { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .fl-val, .rf-val, .recap-val { border-bottom-color: #000 !important; }
+      input { color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @page { size: A4 portrait; margin: 8mm 10mm 8mm; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ BARRE OUTILS ═══ -->
+<div class="toolbar">
+  <div class="d-flex align-items-center gap-3">
+    <a href="index.html" class="btn btn-sm btn-outline-light">
+      <i class="fas fa-arrow-left me-1"></i>Retour
+    </a>
+    <span class="toolbar-title">
+      <i class="fas fa-shopping-cart me-2"></i>Bon de Commande, PSLSH/IST
+    </span>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-sm btn-outline-light" onclick="effacer()">
+      <i class="fas fa-eraser me-1"></i>Effacer
+    </button>
+    <button class="btn btn-sm btn-warning fw-bold" onclick="window.print()">
+      <i class="fas fa-print me-1"></i>Imprimer / PDF
+    </button>
+  </div>
+</div>
+
+<!-- ═══ DOCUMENT ═══ -->
+<div class="doc-frame">
+
+  <!-- Filigrane guilloche -->
+  <div class="guilloche-bg" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 40" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:40px;opacity:.045">
+      <defs>
+        <pattern id="g1" x="0" y="0" width="80" height="40" patternUnits="userSpaceOnUse">
+          <ellipse cx="40" cy="20" rx="36" ry="16" fill="none" stroke="#1b3a6b" stroke-width="0.5"/>
+          <ellipse cx="40" cy="20" rx="28" ry="11" fill="none" stroke="#1b3a6b" stroke-width="0.4"/>
+          <ellipse cx="40" cy="20" rx="20" ry="7"  fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <ellipse cx="40" cy="20" rx="12" ry="4"  fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <line x1="0" y1="4"  x2="80" y2="4"  stroke="#1b3a6b" stroke-width="0.4"/>
+          <line x1="0" y1="36" x2="80" y2="36" stroke="#1b3a6b" stroke-width="0.4"/>
+          <path d="M0,20 Q10,4 20,20 Q30,36 40,20 Q50,4 60,20 Q70,36 80,20" fill="none" stroke="#1b3a6b" stroke-width="0.35"/>
+          <path d="M0,20 Q10,36 20,20 Q30,4 40,20 Q50,36 60,20 Q70,4 80,20" fill="none" stroke="#1b3a6b" stroke-width="0.35"/>
+        </pattern>
+      </defs>
+      <rect width="800" height="40" fill="url(#g1)"/>
+    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 40" preserveAspectRatio="none" style="position:absolute;bottom:0;left:0;width:100%;height:40px;opacity:.045">
+      <defs>
+        <pattern id="g2" x="0" y="0" width="60" height="40" patternUnits="userSpaceOnUse">
+          <circle cx="30" cy="20" r="16" fill="none" stroke="#1b3a6b" stroke-width="0.5"/>
+          <circle cx="30" cy="20" r="11" fill="none" stroke="#1b3a6b" stroke-width="0.4"/>
+          <circle cx="30" cy="20" r="6"  fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <line x1="0" y1="2"  x2="60" y2="2"  stroke="#1b3a6b" stroke-width="0.5"/>
+          <line x1="0" y1="38" x2="60" y2="38" stroke="#1b3a6b" stroke-width="0.5"/>
+          <path d="M0,20 Q15,5 30,20 Q45,35 60,20" fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <path d="M0,20 Q15,35 30,20 Q45,5 60,20" fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+        </pattern>
+      </defs>
+      <rect width="800" height="40" fill="url(#g2)"/>
+    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:40px;left:0;width:100%;height:calc(100% - 80px);opacity:.025" preserveAspectRatio="none">
+      <defs>
+        <pattern id="g3" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <circle cx="60" cy="60" r="38" fill="none" stroke="#1b3a6b" stroke-width="0.25"/>
+          <circle cx="60" cy="60" r="26" fill="none" stroke="#1b3a6b" stroke-width="0.2"/>
+          <path d="M10,60 Q35,10 60,60 Q85,110 110,60" fill="none" stroke="#1b3a6b" stroke-width="0.2"/>
+          <path d="M10,60 Q35,110 60,60 Q85,10 110,60" fill="none" stroke="#1b3a6b" stroke-width="0.2"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#g3)"/>
+    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:16px;height:100%;opacity:.045" preserveAspectRatio="none">
+      <defs>
+        <pattern id="gl" x="0" y="0" width="16" height="32" patternUnits="userSpaceOnUse">
+          <ellipse cx="8" cy="16" rx="6" ry="12" fill="none" stroke="#1b3a6b" stroke-width="0.5"/>
+          <ellipse cx="8" cy="16" rx="3" ry="7"  fill="none" stroke="#1b3a6b" stroke-width="0.35"/>
+          <line x1="2" y1="0" x2="2" y2="32" stroke="#1b3a6b" stroke-width="0.4"/>
+          <line x1="14" y1="0" x2="14" y2="32" stroke="#1b3a6b" stroke-width="0.4"/>
+        </pattern>
+      </defs>
+      <rect width="16" height="100%" fill="url(#gl)"/>
+    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;right:0;width:16px;height:100%;opacity:.045" preserveAspectRatio="none">
+      <defs>
+        <pattern id="gr" x="0" y="0" width="16" height="32" patternUnits="userSpaceOnUse">
+          <ellipse cx="8" cy="16" rx="6" ry="12" fill="none" stroke="#1b3a6b" stroke-width="0.5"/>
+          <ellipse cx="8" cy="16" rx="3" ry="7"  fill="none" stroke="#1b3a6b" stroke-width="0.35"/>
+          <line x1="2" y1="0" x2="2" y2="32" stroke="#1b3a6b" stroke-width="0.4"/>
+          <line x1="14" y1="0" x2="14" y2="32" stroke="#1b3a6b" stroke-width="0.4"/>
+        </pattern>
+      </defs>
+      <rect width="16" height="100%" fill="url(#gr)"/>
+    </svg>
+  </div>
+
+<div class="bc" id="bcDoc">
+
+  <!-- Bandeau pays -->
+  <div class="country-bar">
+    République du Tchad &nbsp;·&nbsp; Unité &nbsp;·&nbsp; Travail &nbsp;·&nbsp; Progrès
+  </div>
+
+  <!-- EN-TÊTE -->
+  <div class="bc-header">
+    <div>
+      <img src="../../assets/logo/logo-pslsh.png" alt="PSLSH/IST" class="bc-logo"
+           onerror="this.style.display='none'">
+    </div>
+    <div class="bc-header-center">
+      <div class="bc-ministry">Ministère de la Santé Publique et de la Prévention</div>
+      <div class="bc-program">Programme Sectoriel de Lutte contre le Sida,<br>les Hépatites Virales et les Infections Sexuellement Transmissibles (PSLSH/IST)</div>
+      <div class="bc-title">Bon de Commande</div>
+      <div class="bc-service">Service Administratif et Financier</div>
+    </div>
+    <div class="ref-panel">
+      <div class="rl">N° BC</div>
+      <input class="rv" id="fNumBC" autocomplete="off" placeholder="N° / PSLSH-IST / 2026">
+      <div class="rl">Date</div>
+      <input class="rv" id="fDate" autocomplete="off" placeholder="jj/mm/aaaa">
+      <div class="rl">Exercice</div>
+      <span class="rv" id="dispExercice">&nbsp;</span>
+    </div>
+  </div>
+
+  <!-- Références -->
+  <div class="ref-fields">
+    <div class="rf">
+      <span class="rf-lbl">Réf. engagement SIGFP :</span>
+      <input class="rf-val" id="fRefSIGFP" autocomplete="off">
+    </div>
+    <div class="rf">
+      <span class="rf-lbl">Source de financement :</span>
+      <input class="rf-val" id="fSource" autocomplete="off">
+    </div>
+    <div class="rf">
+      <span class="rf-lbl">Imputation budgétaire :</span>
+      <input class="rf-val" id="fImputation" autocomplete="off">
+    </div>
+    <div class="rf">
+      <span class="rf-lbl">Réf. dossier :</span>
+      <input class="rf-val" id="fRefDossier" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- ── FOURNISSEUR / BASE CONTRACTUELLE ── -->
+  <div class="bc-two-col">
+    <div class="bc-col">
+      <div class="bc-col-title"><i class="fas fa-store me-1"></i>Fournisseur</div>
+      <div class="fl">
+        <span class="fl-lbl">Raison sociale :</span>
+        <input class="fl-val" id="fFournisseur" autocomplete="off">
+      </div>
+      <div class="fl">
+        <span class="fl-lbl">Adresse :</span>
+        <input class="fl-val" id="fAdresse" autocomplete="off">
+      </div>
+      <div class="fl">
+        <span class="fl-lbl">Tél. :</span>
+        <input class="fl-val" id="fTel" style="max-width:130px" autocomplete="off">
+        &nbsp;
+        <span class="fl-lbl">Email :</span>
+        <input class="fl-val" id="fEmail" autocomplete="off">
+      </div>
+      <div class="fl">
+        <span class="fl-lbl">RCCM :</span>
+        <input class="fl-val" id="fRCCM" style="max-width:120px" autocomplete="off">
+        &nbsp;
+        <span class="fl-lbl">NIF :</span>
+        <input class="fl-val" id="fNIF" autocomplete="off">
+      </div>
+      <div class="fl">
+        <span class="fl-lbl">Ville / Pays :</span>
+        <input class="fl-val" id="fVille" autocomplete="off">
+      </div>
+    </div>
+    <div class="bc-col">
+      <div class="bc-col-title"><i class="fas fa-file-contract me-1"></i>Base contractuelle</div>
+      <p style="font-size:7.5pt;color:#334155;margin-bottom:6px;font-style:italic;">
+        Le présent Bon de Commande est établi en application du :
+      </p>
+      <div class="bc-bullet">
+        <div class="fl">
+          <span class="fl-lbl">Facture pro-forma N° :</span>
+          <input class="fl-val" id="fProforma" autocomplete="off">
+        </div>
+      </div>
+      <div class="bc-bullet">
+        <div class="fl" style="flex-direction:column;align-items:flex-start;gap:2px">
+          <span class="fl-lbl">du :</span>
+          <input class="fl-val" id="fProformaDate" autocomplete="off">
+        </div>
+      </div>
+      <div class="bc-bullet">
+        <div class="fl">
+          <span class="fl-lbl">Contrat N° :</span>
+          <input class="fl-val" id="fContrat" autocomplete="off">
+        </div>
+      </div>
+      <div class="bc-bullet">
+        <div class="fl">
+          <span class="fl-lbl">PV d'attribution N° :</span>
+          <input class="fl-val" id="fPVAttrib" autocomplete="off">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DÉSIGNATION DES FOURNITURES ── -->
+  <div class="sect">Désignation des fournitures / prestations</div>
+
+  <div class="bc-table-wrap">
+    <table class="bc-tbl">
+      <thead>
+        <tr>
+          <th class="col-des">Désignation</th>
+          <th class="col-qty">Quantité</th>
+          <th class="col-pu">Prix unitaire (FCFA)</th>
+          <th class="col-mt">Montant (FCFA)</th>
+        </tr>
+      </thead>
+      <tbody id="lignesTable">
+        <tr>
+          <td><input type="text" placeholder="Description du produit / service"></td>
+          <td style="text-align:center"><input type="text" style="text-align:center" oninput="calcLigne(this)"></td>
+          <td style="text-align:right"><input type="text" style="text-align:right" oninput="calcLigne(this)"></td>
+          <td style="text-align:right"><input type="text" style="text-align:right" id="mt0" readonly></td>
+        </tr>
+        <tr>
+          <td><input type="text"></td>
+          <td style="text-align:center"><input type="text" style="text-align:center" oninput="calcLigne(this)"></td>
+          <td style="text-align:right"><input type="text" style="text-align:right" oninput="calcLigne(this)"></td>
+          <td style="text-align:right"><input type="text" style="text-align:right" id="mt1" readonly></td>
+        </tr>
+        <tr>
+          <td><input type="text"></td>
+          <td style="text-align:center"><input type="text" style="text-align:center" oninput="calcLigne(this)"></td>
+          <td style="text-align:right"><input type="text" style="text-align:right" oninput="calcLigne(this)"></td>
+          <td style="text-align:right"><input type="text" style="text-align:right" id="mt2" readonly></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <button class="btn-add-line" onclick="ajouterLigne()">
+    <i class="fas fa-plus me-1"></i>Ajouter une ligne
+  </button>
+
+  <!-- ── CONDITIONS / RÉCAPITULATIF ── -->
+  <div class="bc-bottom" style="margin-top:6px">
+    <div class="bc-col">
+      <div class="bc-col-title"><i class="fas fa-clipboard-check me-1"></i>Conditions de livraison</div>
+      <div class="bc-cond-item">Les fournitures doivent être neuves et d'origine fabricant</div>
+      <div class="bc-cond-item">Présenter au moins 80 % de validité restante</div>
+      <div class="bc-cond-item">Être accompagnées des certificats d'analyse / conformité</div>
+      <div class="fl" style="margin-top:6px">
+        <span class="fl-lbl">Délai de livraison :</span>
+        <input class="fl-val" id="fDelai" autocomplete="off">
+      </div>
+      <div class="fl">
+        <span class="fl-lbl">Lieu de livraison :</span>
+        <input class="fl-val" id="fLieu" autocomplete="off">
+      </div>
+    </div>
+    <div class="bc-col">
+      <div class="bc-col-title"><i class="fas fa-calculator me-1"></i>Récapitulatif financier</div>
+      <div class="recap-line">
+        <span class="fl-lbl">Montant total HT :</span>
+        <input class="recap-val" id="fTotalHT" readonly placeholder="0 FCFA">
+      </div>
+      <div class="recap-line">
+        <span class="fl-lbl">TVA :</span>
+        <input class="recap-val" id="fTVA" autocomplete="off" placeholder="Exonéré">
+      </div>
+      <div class="recap-line recap-total">
+        <span class="fl-lbl" style="font-size:9pt;font-weight:800;color:#1b3a6b">Montant total TTC :</span>
+        <input class="recap-val" id="fTotalTTC" readonly placeholder="0 FCFA" style="font-weight:800;color:#1b3a6b;border-bottom-color:#1b3a6b">
+      </div>
+      <div class="recap-line" style="margin-top:6px">
+        <span class="fl-lbl">En lettres :</span>
+      </div>
+      <input class="fl-val" id="fTotalLettres" autocomplete="off" style="width:100%;margin-top:2px">
+    </div>
+  </div>
+
+  <!-- Lieu & Date -->
+  <div class="date-line">
+    <span>Fait à N'Djamena, le</span>
+    <input id="fDateLieu" autocomplete="off">
+  </div>
+
+  <!-- ── SIGNATURES ── -->
+  <div class="sig-wrap">
+    <div class="sig-grid">
+      <div class="sig-cell">
+        <div class="sig-role">Le Responsable<br>Financier (DAF)</div>
+        <div class="sig-name">&nbsp;</div>
+        <div class="sig-space"></div>
+        <div class="sig-line"></div>
+        <div class="sig-label">Signature &amp; Cachet</div>
+      </div>
+      <div class="sig-cell">
+        <div class="sig-role">Le Coordonnateur<br>du PSLSH/IST</div>
+        <div class="sig-name">&nbsp;</div>
+        <div class="sig-space"></div>
+        <div class="sig-line"></div>
+        <div class="sig-label">Signature &amp; Cachet</div>
+      </div>
+      <div class="sig-cell">
+        <div class="sig-role">Le Fournisseur<br>(Bon pour accord)</div>
+        <div class="sig-name">&nbsp;</div>
+        <div class="sig-space"></div>
+        <div class="sig-line"></div>
+        <div class="sig-label">Signature &amp; Cachet</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PIED ── -->
+  <div class="doc-footer">
+    <img src="../../assets/logo/cachet-pslsh.png" alt="Cachet officiel PSLSH"
+         style="width:62px;height:62px;object-fit:contain"
+         onerror="this.style.display='none'">
+    <div class="footer-text">
+      <strong>Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les Infections Sexuellement Transmissibles (PSLSH/IST)</strong><br>
+      Ministère de la Santé Publique — République du Tchad — N'Djamena<br>
+      <span class="warn">Document officiel — Toute falsification est passible de poursuites judiciaires</span><br>
+      <span id="footerRef" style="font-size:5.5pt"></span>
+    </div>
+    <div id="qrBox"></div>
+  </div>
+
+</div><!-- .bc -->
+</div><!-- .doc-frame -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+/* ── Calcul automatique des lignes ── */
+let ligneCount = 3;
+
+function parseMontant(s) {
+  return parseFloat((s || '').replace(/\s/g,'').replace(/[^0-9.,-]/g,'').replace(',','.')) || 0;
+}
+function formatMt(n) {
+  if (!n) return '';
+  return n.toLocaleString('fr-FR') + ' FCFA';
+}
+
+function calcLigne(el) {
+  const row = el.closest('tr');
+  const cells = row.querySelectorAll('input');
+  const qty = parseMontant(cells[1].value);
+  const pu  = parseMontant(cells[2].value);
+  if (qty && pu) cells[3].value = formatMt(qty * pu);
+  calcTotal();
+}
+
+function calcTotal() {
+  let total = 0;
+  document.querySelectorAll('#lignesTable tr').forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    if (inputs.length >= 4) {
+      total += parseMontant(inputs[3].value);
+    }
+  });
+  document.getElementById('fTotalHT').value  = total ? formatMt(total) : '';
+  document.getElementById('fTotalTTC').value = total ? formatMt(total) : '';
+  if (total) document.getElementById('fTotalLettres').value = nombreEnLettres(total) + ' francs CFA';
+}
+
+function ajouterLigne() {
+  const tbody = document.getElementById('lignesTable');
+  const idx = ligneCount++;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text"></td>
+    <td style="text-align:center"><input type="text" style="text-align:center" oninput="calcLigne(this)"></td>
+    <td style="text-align:right"><input type="text" style="text-align:right" oninput="calcLigne(this)"></td>
+    <td style="text-align:right"><input type="text" style="text-align:right" id="mt${idx}" readonly></td>`;
+  tbody.appendChild(tr);
+}
+
+/* ── Montant en lettres ── */
+function nombreEnLettres(n) {
+  if (!n || isNaN(n)) return '';
+  n = Math.round(n);
+  const u  = ['','un','deux','trois','quatre','cinq','six','sept','huit','neuf',
+               'dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+  const dz = ['','','vingt','trente','quarante','cinquante','soixante','soixante','quatre-vingt','quatre-vingt'];
+  function dix(n){
+    if(n<20)return u[n];
+    const x=Math.floor(n/10),r=n%10;
+    if(x===7)return dz[x]+(r===1?'-et-':'-')+u[10+r];
+    if(x===9)return dz[x]+(r>0?'-'+u[10+r]:'s');
+    return dz[x]+(r===1&&x!==8?'-et-':r>0?'-':(x===8?'s':''))+(r?u[r]:'');
+  }
+  function cent(n){
+    if(n===0)return'';
+    const c=Math.floor(n/100),r=n%100;
+    return(c>1?u[c]+'-cent'+(r?'':'s'):(c===1?'cent':''))+(r?(c>=1?' ':'')+dix(r):'');
+  }
+  if(n===0)return'Zéro';
+  let s='';
+  const G=Math.floor(n/1e9);n%=1e9;
+  const M=Math.floor(n/1e6);n%=1e6;
+  const K=Math.floor(n/1e3);n%=1e3;
+  if(G)s+=(G===1?'un milliard':cent(G)+' milliards')+' ';
+  if(M)s+=(M===1?'un million':cent(M)+' millions')+' ';
+  if(K)s+=(K===1?'mille':cent(K)+' mille')+' ';
+  if(n)s+=cent(n);
+  s=s.trim();
+  return s.charAt(0).toUpperCase()+s.slice(1);
+}
+
+/* ── QR Code ── */
+function genererQR() {
+  const ref = document.getElementById('fNumBC').value;
+  const dos = document.getElementById('fRefDossier').value;
+  const dat = document.getElementById('fDate').value;
+  const el  = document.getElementById('qrBox');
+  el.innerHTML = '';
+  const txt = ['PSLSH-BC', ref, dos, dat].filter(Boolean).join(' | ');
+  try {
+    new QRCode(el, { text: txt || 'PSLSH-BC', width: 62, height: 62,
+      colorDark: '#1b3a6b', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M });
+  } catch(e) {}
+}
+
+function effacer() {
+  if (!confirm('Effacer tous les champs ?')) return;
+  document.querySelectorAll('#bcDoc input').forEach(el => { if (!el.readOnly) el.value = ''; });
+  document.getElementById('dispExercice').textContent = new Date().getFullYear();
+  document.getElementById('footerRef').textContent = '';
+  document.getElementById('qrBox').innerHTML = '';
+  genererQR();
+}
+
+/* ── Sync N° BC → footer ── */
+document.getElementById('fNumBC').addEventListener('input', function() {
+  document.getElementById('footerRef').textContent = this.value ? 'BC N° : ' + this.value : '';
+  genererQR();
+});
+document.getElementById('fDate').addEventListener('input', genererQR);
+
+/* ── INIT ── */
+(function() {
+  document.getElementById('dispExercice').textContent = new Date().getFullYear();
+  genererQR();
+
+  /* Charger depuis localStorage si dossier_id dans URL */
+  const params = new URLSearchParams(window.location.search);
+  const dosId  = params.get('dossier_id');
+  if (!dosId) return;
+  try {
+    const raw = localStorage.getItem('pslsh_dossiers_v1');
+    if (!raw) return;
+    const store = JSON.parse(raw);
+    const list  = Array.isArray(store) ? store : (store.data || []);
+    const dos   = list.find(d => d.id === dosId || d.reference === dosId);
+    if (!dos) return;
+    const s = (id, v) => { if (v && document.getElementById(id)) document.getElementById(id).value = v; };
+    s('fRefDossier',  dos.reference || dos.id);
+    s('fImputation',  dos.ligneBudgetaire);
+    s('fSource',      dos.source);
+    s('fFournisseur', dos.beneficiaire);
+
+    const pBC = (dos.pieces || []).find(p => p.typeId === 'BC');
+    if (pBC && pBC.data) {
+      const d = pBC.data;
+      s('fNumBC',       d.numBC);    s('fDate',       d.dateBC);
+      s('fFournisseur', d.fournisseur); s('fAdresse',  d.adresse);
+      s('fTel',         d.tel);      s('fEmail',      d.email);
+      s('fRCCM',        d.rccm);     s('fNIF',        d.nif);
+      s('fProforma',    d.proforma); s('fProformaDate', d.proformaDate);
+      s('fContrat',     d.contrat);  s('fDelai',      d.delai);
+      s('fLieu',        d.lieu);
+    }
+    genererQR();
+  } catch(e) { console.warn(e); }
+})();
+</script>
+<script src="../../src/js/roles.js"></script>
+</body>
+</html>

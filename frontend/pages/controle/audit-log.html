@@ -1,0 +1,320 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Journal d'audit</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .page-body { padding: 22px 28px 48px; }
+
+    /* Panel */
+    .panel-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+    .panel-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 13px 18px;
+      border-bottom: 1px solid #e2e8f0;
+      background: linear-gradient(90deg, #0f2944, #1b3a6b);
+    }
+    .panel-head-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; color: #7dd3fc; font-size: .9rem; }
+    .panel-head-title { color: #fff; font-size: .88rem; font-weight: 800; flex: 1; }
+
+    /* Filter bar */
+    .filter-bar { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; flex-wrap: wrap; }
+    .filter-bar label { font-size: .72rem; font-weight: 700; color: #64748b; white-space: nowrap; }
+
+    /* Table */
+    .data-tbl { width: 100%; border-collapse: collapse; font-size: .75rem; }
+    .data-tbl thead th {
+      background: #f8fafc;
+      color: #64748b;
+      font-size: .62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding: 9px 12px;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .data-tbl tbody td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+      color: #1b2f52;
+    }
+    .data-tbl tbody tr:last-child td { border-bottom: none; }
+    .data-tbl tbody tr:hover td { background: #f8fafc; }
+
+    /* Action badges */
+    .act-approuver { background: #dcfce7; color: #15803d; padding: 2px 9px; border-radius: 20px; font-size: .64rem; font-weight: 700; white-space: nowrap; }
+    .act-modifier   { background: #dbeafe; color: #1e40af; padding: 2px 9px; border-radius: 20px; font-size: .64rem; font-weight: 700; white-space: nowrap; }
+    .act-creer      { background: #cffafe; color: #0e7490; padding: 2px 9px; border-radius: 20px; font-size: .64rem; font-weight: 700; white-space: nowrap; }
+    .act-rejeter    { background: #fee2e2; color: #b91c1c; padding: 2px 9px; border-radius: 20px; font-size: .64rem; font-weight: 700; white-space: nowrap; }
+    .act-soumettre  { background: #fef3c7; color: #b45309; padding: 2px 9px; border-radius: 20px; font-size: .64rem; font-weight: 700; white-space: nowrap; }
+
+    /* Value diff */
+    .val-old { font-family: monospace; font-size: .68rem; color: #b91c1c; background: #fee2e2; padding: 1px 5px; border-radius: 4px; }
+    .val-new { font-family: monospace; font-size: .68rem; color: #15803d; background: #dcfce7; padding: 1px 5px; border-radius: 4px; }
+    .val-na  { font-family: monospace; font-size: .68rem; color: #94a3b8; }
+
+    /* IP */
+    .ip-addr { font-family: monospace; font-size: .68rem; color: #64748b; }
+
+    /* Info banner */
+    .info-banner {
+      background: linear-gradient(135deg, #1b2f52, #1b3a6b);
+      border-radius: 12px;
+      padding: 16px 22px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .ib-icon { width: 46px; height: 46px; background: rgba(255,255,255,.12); border-radius: 11px; display: flex; align-items: center; justify-content: center; color: #7dd3fc; font-size: 1.2rem; flex-shrink: 0; }
+    .ib-title { color: #fff; font-size: .95rem; font-weight: 800; }
+    .ib-sub   { color: #93c5fd; font-size: .75rem; margin-top: 2px; }
+
+    .btn-exp { font-size: .71rem; font-weight: 600; padding: 5px 11px; border-radius: 7px; border: 1px solid #d1d5db; background: #fff; color: #374151; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    .btn-exp:hover { background: #f8fafc; }
+
+    /* Datetime */
+    .dt-date { font-weight: 700; color: #1b2f52; font-size: .74rem; }
+    .dt-time { color: #64748b; font-size: .67rem; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/controle/index.html">Contrôle &amp; audit</a></li>
+            <li class="breadcrumb-item active">Journal d'audit</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i> Exercice :
+        <select class="form-select form-select-sm d-inline-block w-auto ms-1">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+
+    <div class="page-content page-body">
+
+      <!-- Titre -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-history text-primary me-2"></i>Journal d'Audit Système</h4>
+          <small class="text-muted">Traçabilité complète des actions sensibles : qui a fait quoi, quand</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-exp"><i class="fas fa-file-excel"></i> Exporter</button>
+          <button class="btn-exp"><i class="fas fa-print"></i> Imprimer</button>
+        </div>
+      </div>
+
+      <!-- Info banner -->
+      <div class="info-banner">
+        <div class="ib-icon"><i class="fas fa-shield-alt"></i></div>
+        <div>
+          <div class="ib-title">Journal d'audit en lecture seule : données immuables</div>
+          <div class="ib-sub">Toutes les actions sensibles sont enregistrées automatiquement. Aucune modification n'est possible sur ce journal. Accès réservé Coordination et Auditeur.</div>
+        </div>
+      </div>
+
+      <!-- Tableau du journal -->
+      <div class="panel-card">
+        <div class="panel-head">
+          <div class="panel-head-icon"><i class="fas fa-history"></i></div>
+          <span class="panel-head-title">Entrées du journal d'audit</span>
+        </div>
+        <div class="filter-bar">
+          <label>Utilisateur :</label>
+          <input type="text" class="form-control form-control-sm w-auto" placeholder="Nom ou identifiant…" style="min-width:140px;">
+          <label class="ms-2">Module :</label>
+          <select class="form-select form-select-sm w-auto">
+            <option value="">Tous</option>
+            <option>Validation</option>
+            <option>Opérations</option>
+            <option>Administration</option>
+            <option>Budget</option>
+          </select>
+          <label class="ms-2">Type action :</label>
+          <select class="form-select form-select-sm w-auto">
+            <option value="">Toutes</option>
+            <option>Approuver</option>
+            <option>Modifier</option>
+            <option>Créer</option>
+            <option>Rejeter</option>
+            <option>Soumettre</option>
+          </select>
+          <label class="ms-2">Du :</label>
+          <input type="date" class="form-control form-control-sm w-auto" value="2026-04-09">
+          <label>Au :</label>
+          <input type="date" class="form-control form-control-sm w-auto" value="2026-04-09">
+          <button class="btn btn-sm ms-1" style="background:#1b3a6b;color:#fff;font-size:.72rem;">
+            <i class="fas fa-search"></i> Filtrer
+          </button>
+          <button class="btn-exp ms-1"><i class="fas fa-file-export"></i> Exporter CSV</button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-tbl">
+            <thead>
+              <tr>
+                <th>Date / Heure</th>
+                <th>Utilisateur</th>
+                <th>Rôle</th>
+                <th>Module</th>
+                <th>Action</th>
+                <th>Objet concerné</th>
+                <th>Ancienne valeur</th>
+                <th>Nouvelle valeur</th>
+                <th>IP</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="dt-date">09/04/2026</div>
+                  <div class="dt-time">08 h 32</div>
+                </td>
+                <td><strong>KONE Ali</strong></td>
+                <td><span class="badge bg-secondary bg-opacity-25 text-dark" style="font-size:.63rem;">Coordination</span></td>
+                <td>Validation</td>
+                <td><span class="act-approuver"><i class="fas fa-check me-1"></i>Approuver</span></td>
+                <td><span style="font-family:monospace;font-size:.72rem;">OP-2026-031</span></td>
+                <td><span class="val-old">En attente</span></td>
+                <td><span class="val-new">Approuvé</span></td>
+                <td><span class="ip-addr">192.168.1.10</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="dt-date">09/04/2026</div>
+                  <div class="dt-time">09 h 15</div>
+                </td>
+                <td><strong>BRAHIM D.</strong></td>
+                <td><span class="badge bg-secondary bg-opacity-25 text-dark" style="font-size:.63rem;">Chef service</span></td>
+                <td>Opérations</td>
+                <td><span class="act-modifier"><i class="fas fa-pencil-alt me-1"></i>Modifier</span></td>
+                <td><span style="font-family:monospace;font-size:.72rem;">DOS-012</span></td>
+                <td><span class="val-old">genere</span></td>
+                <td><span class="val-new">valide</span></td>
+                <td><span class="ip-addr">192.168.1.12</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="dt-date">09/04/2026</div>
+                  <div class="dt-time">10 h 00</div>
+                </td>
+                <td><strong>ADMIN</strong></td>
+                <td><span class="badge bg-secondary bg-opacity-25 text-dark" style="font-size:.63rem;">Administrateur</span></td>
+                <td>Administration</td>
+                <td><span class="act-creer"><i class="fas fa-plus me-1"></i>Créer utilisateur</span></td>
+                <td><span style="font-family:monospace;font-size:.72rem;">USER-014</span></td>
+                <td><span class="val-na">—</span></td>
+                <td><span class="val-new">Actif</span></td>
+                <td><span class="ip-addr">192.168.1.1</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="dt-date">09/04/2026</div>
+                  <div class="dt-time">11 h 22</div>
+                </td>
+                <td><strong>ADAM M.</strong></td>
+                <td><span class="badge bg-secondary bg-opacity-25 text-dark" style="font-size:.63rem;">Coordination</span></td>
+                <td>Budget</td>
+                <td><span class="act-modifier"><i class="fas fa-pencil-alt me-1"></i>Modifier ligne</span></td>
+                <td><span style="font-family:monospace;font-size:.72rem;">LB-024</span></td>
+                <td><span class="val-old">8 000 000</span></td>
+                <td><span class="val-new">10 500 000</span></td>
+                <td><span class="ip-addr">192.168.1.10</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="dt-date">09/04/2026</div>
+                  <div class="dt-time">14 h 05</div>
+                </td>
+                <td><strong>IBRAHIM S.</strong></td>
+                <td><span class="badge bg-secondary bg-opacity-25 text-dark" style="font-size:.63rem;">Chef service</span></td>
+                <td>Opérations</td>
+                <td><span class="act-soumettre"><i class="fas fa-paper-plane me-1"></i>Soumettre</span></td>
+                <td><span style="font-family:monospace;font-size:.72rem;">EB-004</span></td>
+                <td><span class="val-old">brouillon</span></td>
+                <td><span class="val-new">soumis</span></td>
+                <td><span class="ip-addr">192.168.1.15</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="dt-date">09/04/2026</div>
+                  <div class="dt-time">15 h 30</div>
+                </td>
+                <td><strong>KONE Ali</strong></td>
+                <td><span class="badge bg-secondary bg-opacity-25 text-dark" style="font-size:.63rem;">Coordination</span></td>
+                <td>Validation</td>
+                <td><span class="act-rejeter"><i class="fas fa-times me-1"></i>Rejeter</span></td>
+                <td><span style="font-family:monospace;font-size:.72rem;">PAO-SESRO</span></td>
+                <td><span class="val-old">En attente</span></td>
+                <td><span class="val-new">Rejeté</span></td>
+                <td><span class="ip-addr">192.168.1.10</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="d-flex align-items-center justify-content-between px-3 py-2" style="background:#f8fafc;border-top:1px solid #e2e8f0;">
+          <small class="text-muted">6 entrées affichées, page 1 / 1, journal du 09/04/2026</small>
+          <nav>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>
+              <li class="page-item active"><a class="page-link" href="#" style="background:#1b3a6b;border-color:#1b3a6b;">1</a></li>
+              <li class="page-item disabled"><a class="page-link" href="#">&raquo;</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+  document.getElementById('userName').textContent = _u.nom || _u.name || _u.email || '';
+</script>
+</body>
+</html>

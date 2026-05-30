@@ -1,0 +1,639 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Suivi budgétaire</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .page-body { padding:22px 28px 48px; }
+
+    /* ── Bannière pilotage ── */
+    .pilot-banner { background:linear-gradient(135deg,#1b2f52 0%,#1b3a6b 100%);border-radius:12px;
+      padding:18px 24px;margin-bottom:18px;display:flex;align-items:center;gap:20px;flex-wrap:wrap; }
+    .pb-icon { width:52px;height:52px;background:rgba(255,255,255,.12);border-radius:12px;
+      display:flex;align-items:center;justify-content:center;color:#7dd3fc;font-size:1.4rem;flex-shrink:0; }
+    .pb-text { flex:1; }
+    .pb-title { color:#fff;font-size:1rem;font-weight:800; }
+    .pb-sub   { color:#93c5fd;font-size:.75rem;margin-top:2px; }
+    .pb-links { display:flex;gap:8px; }
+    .pb-link  { font-size:.72rem;font-weight:700;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;
+      display:flex;align-items:center;gap:5px;text-decoration:none; }
+    .pbl-rec  { background:rgba(21,128,61,.3);color:#a7f3d0; }
+    .pbl-rec:hover  { background:rgba(21,128,61,.5); }
+    .pbl-dep  { background:rgba(180,83,9,.3);color:#fcd34d; }
+    .pbl-dep:hover  { background:rgba(180,83,9,.5); }
+
+    /* ── KPI principaux ── */
+    .kpi-main { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px; }
+    .kpi-big  { background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;
+      display:flex;align-items:center;gap:14px; }
+    .kpi-big-icon { width:46px;height:46px;border-radius:11px;display:flex;align-items:center;
+      justify-content:center;font-size:1.1rem;flex-shrink:0; }
+    .kpi-big-lbl  { font-size:.65rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em; }
+    .kpi-big-val  { font-size:1rem;font-weight:800;color:#1b2f52;font-family:monospace;margin-top:2px; }
+    .kpi-big-sub  { font-size:.65rem;color:#94a3b8;margin-top:2px; }
+
+    /* ── KPI secondaires ── */
+    .kpi-sec { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px; }
+    .kpi-sm  { background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 15px;position:relative;overflow:hidden; }
+    .kpi-sm::before { content:'';position:absolute;top:0;left:0;right:0;height:3px; }
+    .ks-teal::before   { background:#0f766e; }
+    .ks-purple::before { background:#7e22ce; }
+    .ks-orange::before { background:#b45309; }
+    .ks-red::before    { background:#b91c1c; }
+    .ks-lbl { font-size:.63rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em; }
+    .ks-val { font-size:.88rem;font-weight:800;color:#1b2f52;font-family:monospace;margin-top:3px; }
+    .ks-sub { font-size:.63rem;color:#94a3b8;margin-top:2px; }
+
+    /* ── Jauges ── */
+    .gauge-card  { background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 22px;margin-bottom:18px; }
+    .gauge-title { font-size:.82rem;font-weight:800;color:#1b2f52;margin-bottom:14px;display:flex;align-items:center;gap:8px; }
+    .gauge-row   { margin-bottom:12px; }
+    .gauge-row-head { display:flex;justify-content:space-between;align-items:center;margin-bottom:4px; }
+    .gauge-lbl   { font-size:.75rem;font-weight:700;color:#374151; }
+    .gauge-val   { font-size:.75rem;font-weight:700;font-family:monospace;color:#1b2f52; }
+    .gauge-bar   { height:10px;background:#e2e8f0;border-radius:5px;overflow:hidden; }
+    .gauge-fill  { height:100%;border-radius:5px;transition:width .5s; }
+    .gf-green  { background:linear-gradient(90deg,#15803d,#22c55e); }
+    .gf-orange { background:linear-gradient(90deg,#b45309,#f59e0b); }
+    .gf-blue   { background:linear-gradient(90deg,#1b3a6b,#3b82f6); }
+    .gauge-pct { font-size:.68rem;color:#94a3b8;margin-top:2px;text-align:right; }
+
+    /* ── Recap grid ── */
+    .recap-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px; }
+    @media(max-width:900px){ .recap-grid { grid-template-columns:1fr; } }
+
+    .sec-card  { background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden; }
+    .sec-head  { display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid #e2e8f0; }
+    .sec-icon  { width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;flex-shrink:0; }
+    .sec-title { font-size:.82rem;font-weight:800;color:#1b2f52;flex:1; }
+    .sec-link  { font-size:.68rem;font-weight:700;color:#1b3a6b;text-decoration:none; }
+    .sec-link:hover { text-decoration:underline; }
+
+    .mini-tbl  { width:100%;border-collapse:collapse;font-size:.75rem; }
+    .mini-tbl thead th { background:#f8fafc;color:#64748b;font-size:.62rem;font-weight:700;
+      text-transform:uppercase;padding:7px 12px;border-bottom:1px solid #e2e8f0; }
+    .mini-tbl tbody td { padding:8px 12px;border-bottom:1px solid #f8fafc;vertical-align:middle; }
+    .mini-tbl tbody tr:last-child td { border-bottom:none; }
+    .mini-tbl tbody tr:hover td { background:#f8fafc; }
+    .mini-tbl tfoot td { background:#f1f5f9;font-weight:800;padding:7px 12px;font-size:.74rem;color:#1b2f52; }
+    .te  { text-align:right; }
+    .mono{ font-family:'Cascadia Code','Consolas',monospace;font-size:.72rem; }
+
+    /* ── Taux badge ── */
+    .tx    { display:inline-block;font-size:.67rem;font-weight:700;border-radius:20px;padding:2px 7px;font-family:monospace; }
+    .tx-hi  { background:#dcfce7;color:#15803d; }
+    .tx-mid { background:#fef3c7;color:#b45309; }
+    .tx-low { background:#fee2e2;color:#b91c1c; }
+    .tx-na  { background:#f1f5f9;color:#94a3b8; }
+
+    /* ── Alertes ── */
+    .alert-item { display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid #f1f5f9; }
+    .alert-item:last-child { border-bottom:none; }
+    .ai-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px; }
+    .ai-msg { font-size:.75rem;color:#1b2f52;flex:1; }
+    .ai-tag { font-size:.62rem;font-weight:700;border-radius:4px;padding:2px 6px;white-space:nowrap; }
+
+    .btn-exp { font-size:.71rem;font-weight:600;padding:5px 11px;border-radius:7px;
+      border:1px solid #d1d5db;background:#fff;color:#374151;cursor:pointer;display:flex;align-items:center;gap:5px; }
+    .btn-exp:hover { background:#f8fafc; }
+
+    /* ── Fonds disponibles par source ── */
+    .fd-card  { background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:18px; }
+    .fd-head  { display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid #e2e8f0;
+                background:linear-gradient(90deg,#0f2944,#1b3a6b); }
+    .fd-head-icon { width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.15);
+                    display:flex;align-items:center;justify-content:center;color:#7dd3fc;font-size:.9rem; }
+    .fd-head-title { color:#fff;font-size:.85rem;font-weight:800;flex:1; }
+    .fd-head-total { font-size:.78rem;font-weight:800;color:#a5f3fc;font-family:monospace; }
+    .fd-grid  { display:grid;grid-template-columns:repeat(4,1fr);gap:0; }
+    @media(max-width:900px){ .fd-grid { grid-template-columns:repeat(2,1fr); } }
+    .fd-item  { padding:16px 18px;border-right:1px solid #f1f5f9;position:relative; }
+    .fd-item:last-child { border-right:none; }
+    .fd-source-name  { font-size:.72rem;font-weight:800;color:#1b2f52;margin-bottom:2px; }
+    .fd-bank         { font-size:.63rem;color:#64748b;margin-bottom:10px;display:flex;align-items:center;gap:4px; }
+    .fd-amount       { font-size:1rem;font-weight:800;font-family:monospace;color:#0f766e;margin-bottom:6px; }
+    .fd-amount.zero  { color:#94a3b8; }
+    .fd-amount.alert { color:#b91c1c; }
+    .fd-prev         { font-size:.63rem;color:#94a3b8;margin-bottom:6px; }
+    .fd-bar-wrap     { height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden; }
+    .fd-bar-fill     { height:100%;border-radius:3px;background:linear-gradient(90deg,#0f766e,#22c55e);transition:width .5s; }
+    .fd-taux         { font-size:.62rem;color:#64748b;margin-top:3px;text-align:right; }
+    .fd-total-row    { padding:10px 18px;background:#f8fafc;border-top:2px solid #e2e8f0;
+                       display:flex;align-items:center;justify-content:space-between; }
+    .fd-total-lbl    { font-size:.72rem;font-weight:800;color:#1b2f52; }
+    .fd-total-val    { font-size:.88rem;font-weight:800;font-family:monospace;color:#0f766e; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/budget/synthese.html">Budget</a></li>
+            <li class="breadcrumb-item active">Suivi budgétaire</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i> Exercice :
+        <select id="selEx" class="form-select form-select-sm d-inline-block w-auto ms-1">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+
+    <div class="page-content page-body">
+
+      <!-- Titre -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-chart-bar text-primary me-2"></i>Exécution budgétaire</h4>
+          <small class="text-muted">PSLSH/IST, exercice 2026, arrêtée au 05/04/2026</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-exp" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+        </div>
+      </div>
+
+      <!-- Liens rapides -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+        <a href="synthese.html"  style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#e0e7ff;color:#3730a3;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-chart-pie"></i> Synthèse</a>
+        <a href="recettes.html"  style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#dcfce7;color:#15803d;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-arrow-trend-up"></i> Recettes</a>
+        <a href="depenses.html"  style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#fef3c7;color:#b45309;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-file-invoice-dollar"></i> Dépenses</a>
+        <a href="lignes.html"    style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#dbeafe;color:#1e40af;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-list"></i> Lignes budgétaires</a>
+        <a href="sources.html"   style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#ccfbf1;color:#0f766e;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-sitemap"></i> Sources</a>
+      </div>
+
+      <!-- Bannière pilotage -->
+      <div class="pilot-banner mb-3">
+        <div class="pb-icon"><i class="fas fa-chart-bar"></i></div>
+        <div class="pb-text">
+          <div class="pb-title">Tableau de bord budgétaire, exercice 2026</div>
+          <div class="pb-sub">Recettes et dépenses, situation au T1 2026, toutes sources</div>
+        </div>
+        <div class="pb-links">
+          <a href="recettes.html" class="pb-link pbl-rec"><i class="fas fa-arrow-trend-up"></i> Détail Recettes</a>
+          <a href="depenses.html" class="pb-link pbl-dep"><i class="fas fa-file-invoice-dollar"></i> Détail Dépenses</a>
+        </div>
+      </div>
+
+      <!-- KPI principaux -->
+      <div class="kpi-main">
+        <div class="kpi-big">
+          <div class="kpi-big-icon" style="background:#dbeafe;color:#1d4ed8"><i class="fas fa-wallet"></i></div>
+          <div>
+            <div class="kpi-big-lbl">Budget total prévu</div>
+            <div class="kpi-big-val" id="kBudget">-</div>
+            <div class="kpi-big-sub">Σ Dépenses prévisionnelles (référence)</div>
+          </div>
+        </div>
+        <div class="kpi-big">
+          <div class="kpi-big-icon" style="background:#dcfce7;color:#15803d"><i class="fas fa-arrow-trend-up"></i></div>
+          <div>
+            <div class="kpi-big-lbl">Recettes mobilisées</div>
+            <div class="kpi-big-val" id="kRecettes">-</div>
+            <div class="kpi-big-sub" id="kRecSub">-</div>
+          </div>
+        </div>
+        <div class="kpi-big">
+          <div class="kpi-big-icon" style="background:#fef3c7;color:#b45309"><i class="fas fa-file-invoice-dollar"></i></div>
+          <div>
+            <div class="kpi-big-lbl">Dépenses engagées</div>
+            <div class="kpi-big-val" id="kDepenses">-</div>
+            <div class="kpi-big-sub" id="kDepSub">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI secondaires -->
+      <div class="kpi-sec">
+        <div class="kpi-sm ks-teal">
+          <div class="ks-lbl">Fonds disponibles</div>
+          <div class="ks-val" id="kDispo">-</div>
+          <div class="ks-sub">Recettes - Dépenses</div>
+        </div>
+        <div class="kpi-sm ks-purple">
+          <div class="ks-lbl">Gap de financement</div>
+          <div class="ks-val" id="kGap">-</div>
+          <div class="ks-sub">Recettes non mobilisées</div>
+        </div>
+        <div class="kpi-sm ks-orange">
+          <div class="ks-lbl">Taux d'exécution global</div>
+          <div class="ks-val" id="kTaux">-</div>
+          <div class="ks-sub">Engagé / Crédits ouverts</div>
+        </div>
+        <div class="kpi-sm ks-red">
+          <div class="ks-lbl">Lignes en dépassement</div>
+          <div class="ks-val" id="kDepass">-</div>
+          <div class="ks-sub">Disponible négatif</div>
+        </div>
+      </div>
+
+      <!-- Fonds disponibles par source de financement -->
+      <div class="fd-card">
+        <div class="fd-head">
+          <div class="fd-head-icon"><i class="fas fa-piggy-bank"></i></div>
+          <div class="fd-head-title">Fonds disponibles par source de financement</div>
+          <div class="fd-head-total" id="fdTotalHead">-</div>
+        </div>
+        <div class="fd-grid" id="fdGrid">
+          <!-- Rempli par JS -->
+        </div>
+        <div class="fd-total-row">
+          <span class="fd-total-lbl"><i class="fas fa-sigma me-1"></i>Total fonds disponibles (recettes mobilisées)</span>
+          <span class="fd-total-val" id="fdTotalVal">-</span>
+        </div>
+      </div>
+
+      <!-- Jauges par catégorie -->
+      <div class="gauge-card">
+        <div class="gauge-title"><i class="fas fa-tachometer-alt text-primary"></i> Taux d'exécution par catégorie de dépense</div>
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="gauge-row">
+              <div class="gauge-row-head">
+                <span class="gauge-lbl"><i class="fas fa-cogs me-1" style="color:#1b3a6b"></i>Fonctionnement (DF)</span>
+                <span class="gauge-val" id="gDFval">-</span>
+              </div>
+              <div class="gauge-bar"><div class="gauge-fill gf-blue" id="gDFbar" style="width:0%"></div></div>
+              <div class="gauge-pct" id="gDFpct">-</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="gauge-row">
+              <div class="gauge-row-head">
+                <span class="gauge-lbl"><i class="fas fa-building me-1" style="color:#b45309"></i>Investissements (DI)</span>
+                <span class="gauge-val" id="gDIval">-</span>
+              </div>
+              <div class="gauge-bar"><div class="gauge-fill gf-orange" id="gDIbar" style="width:0%"></div></div>
+              <div class="gauge-pct" id="gDIpct">-</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="gauge-row">
+              <div class="gauge-row-head">
+                <span class="gauge-lbl"><i class="fas fa-pills me-1" style="color:#15803d"></i>Médicaments (DM)</span>
+                <span class="gauge-val" id="gDMval">-</span>
+              </div>
+              <div class="gauge-bar"><div class="gauge-fill gf-green" id="gDMbar" style="width:0%"></div></div>
+              <div class="gauge-pct" id="gDMpct">-</div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="gauge-row">
+              <div class="gauge-row-head">
+                <span class="gauge-lbl" style="font-size:.78rem;font-weight:800;color:#1b2f52">
+                  <i class="fas fa-chart-bar me-1"></i>Taux global d'exécution budgétaire
+                </span>
+                <span class="gauge-val" style="font-size:.82rem" id="gTotval">-</span>
+              </div>
+              <div class="gauge-bar" style="height:14px"><div class="gauge-fill gf-blue" id="gTotbar" style="width:0%"></div></div>
+              <div class="gauge-pct" id="gTotpct">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Récap recettes + dépenses -->
+      <div class="recap-grid">
+        <div class="sec-card">
+          <div class="sec-head">
+            <div class="sec-icon" style="background:#15803d"><i class="fas fa-arrow-trend-up"></i></div>
+            <div><div class="sec-title">Récapitulatif Recettes</div></div>
+            <a href="recettes.html" class="sec-link"><i class="fas fa-external-link-alt me-1"></i>Détail</a>
+          </div>
+          <table class="mini-tbl">
+            <thead><tr><th>Source</th><th class="te">Prévision</th><th class="te">Réalisé</th><th class="te">Taux de mobilisation</th></tr></thead>
+            <tbody id="tbodyRec"></tbody>
+            <tfoot id="tfootRec"></tfoot>
+          </table>
+        </div>
+        <div class="sec-card">
+          <div class="sec-head">
+            <div class="sec-icon" style="background:#b45309"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div><div class="sec-title">Récapitulatif Dépenses</div></div>
+            <a href="depenses.html" class="sec-link"><i class="fas fa-external-link-alt me-1"></i>Détail</a>
+          </div>
+          <table class="mini-tbl">
+            <thead><tr><th>Catégorie</th><th class="te">Crédits ouverts</th><th class="te">Engagé</th><th class="te">Taux d'exécution</th></tr></thead>
+            <tbody id="tbodyDep"></tbody>
+            <tfoot id="tfootDep"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Alertes -->
+      <div class="sec-card">
+        <div class="sec-head">
+          <div class="sec-icon" style="background:#b91c1c"><i class="fas fa-exclamation-triangle"></i></div>
+          <div><div class="sec-title">Alertes et signaux budgétaires</div></div>
+        </div>
+        <div id="alertPanel"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user')||'{}');
+  document.getElementById('userName').textContent = _u.nom||_u.name||_u.email||'';
+  function logout(){ localStorage.removeItem('pslsh_token'); localStorage.removeItem('pslsh_user'); location.href='/pages/auth/login.html'; }
+
+  /* ══ LECTURE LIVE DES DONNÉES RECETTES & DÉPENSES ══ */
+
+  /* Données de repli recettes (si localStorage absent) */
+  const DEFAULT_RECETTES = [
+    { id:'R1', libelle:'Budget État - Fonctionnement PSLSH',          origine:'État',         prev:1236624278, real:908736479  },
+    { id:'R2', libelle:'Subvention Fonds Mondial - Cycle 7 (ARV)',    origine:'Fonds Mondial',prev:6250000000, real:621830393  },
+    { id:'R3', libelle:'Appui OMS - Formations & Supervisions',        origine:'OMS',          prev:554772050,  real:106840679  },
+    { id:'R4', libelle:'Appui UNICEF - Sensibilisation communautaire', origine:'UNICEF',       prev:579389500,  real:91203350   },
+    { id:'R5', libelle:'Redevances Centrale Pharmaceutique (CPN)',     origine:'Autre',        prev:200000000,  real:199669073  },
+    { id:'R6', libelle:'Report solde exercice 2025',                   origine:'Report',       prev:85000000,   real:85000000   },
+    { id:'R7', libelle:'Subvention USAID - Prévue (en négociation)',   origine:'Autre',        prev:250000000,  real:0          },
+  ];
+
+  /* Données de repli dépenses (si localStorage absent) */
+  const DEFAULT_DEP = [
+    { id:'T1', titre:'I',   niv:0, credit:2641566828, creditRevise:2641566828, engage:0 },
+    { id:'T2', titre:'II',  niv:0, credit:514485600,  creditRevise:514485600,  engage:0 },
+    { id:'T3', titre:'III', niv:0, credit:6228832023, creditRevise:6228832023, engage:0 },
+  ];
+
+  /* Libellés des titres */
+  const TITRE_LABELS = { 'I':'Fonctionnement (T-I)', 'II':'Investissements (T-II)', 'III':'Médicaments & Intrants (T-III)' };
+  const TITRE_CATS   = { 'I':'DF', 'II':'DI', 'III':'DM' };
+
+  function loadRecettes() {
+    const raw = localStorage.getItem('pslsh_recettes_v1') || localStorage.getItem('pslsh_recettes_saved');
+    if (raw) {
+      try { const s = JSON.parse(raw); if (s && s._ok && s.data) return s.data; } catch(e) {}
+    }
+    return DEFAULT_RECETTES;
+  }
+
+  function loadDepenses() {
+    const raw = localStorage.getItem('pslsh_depenses_v1') || localStorage.getItem('pslsh_depenses_saved');
+    if (raw) {
+      try { const s = JSON.parse(raw); if (s && s._ok && s.data) return s.data; } catch(e) {}
+    }
+    return DEFAULT_DEP;
+  }
+
+  /* Construction des sections dépenses par titre à partir des articles (niv=2) */
+  function buildDepSections(depData) {
+    const titres   = depData.filter(d => d.niv === 0);
+    const articles = depData.filter(d => d.niv === 2);
+    return titres.map(t => ({
+      cat:     TITRE_CATS[t.titre]   || t.titre,
+      libelle: TITRE_LABELS[t.titre] || ('Titre ' + t.titre),
+      credit:  t.creditRevise || t.credit || 0,
+      engage:  articles.filter(a => a.titre === t.titre).reduce((s, a) => s + (a.engage || 0), 0),
+    }));
+  }
+
+  function fmt(n){ return Math.round(n).toLocaleString('fr-FR'); }
+  function fmtM(n){
+    if(n>=1e9) return (n/1e9).toFixed(2)+' Mrd';
+    if(n>=1e6) return (n/1e6).toFixed(1)+' M';
+    return fmt(n);
+  }
+  function txBadge(e,c){
+    if(!c) return `<span class="tx tx-na">N/A</span>`;
+    const t=(e/c)*100;
+    return `<span class="tx ${t>=90?'tx-hi':t>=50?'tx-mid':'tx-low'}">${t.toFixed(1)}%</span>`;
+  }
+
+  function renderAll(){
+    /* ── Chargement live depuis localStorage ── */
+    const RECETTES    = loadRecettes();
+    const depData     = loadDepenses();
+    const DEP_SECTIONS = buildDepSections(depData);
+    const articles    = depData.filter(d => d.niv === 2);
+
+    /* ── Calculs recettes ── */
+    const totRecPrev = RECETTES.reduce((s,r) => s + (r.prev||0), 0); /* recettes prévisionnelles (planifiées) */
+    const totMobilise = RECETTES.reduce((s,r) => s + (r.real||0), 0); /* recettes mobilisées (déjà encaissées) */
+
+    /* ── Calculs dépenses ── */
+    const totCredit = DEP_SECTIONS.reduce((s,d) => s + d.credit, 0); /* budget total prévu = Σ dépenses prévisionnelles */
+    const totEngage = DEP_SECTIONS.reduce((s,d) => s + d.engage, 0); /* dépenses engagées */
+
+    /* ── Équilibre budgétaire (principe PSLSH) ──
+       Budget total prévu      = totCredit   (Σ dépenses prévisionnelles - référence)
+       Recettes prévisionnelles = totRecPrev  (ce qui est planifié côté recettes)
+       Gap à rechercher         = totCredit - totRecPrev  (différence à combler)
+       Fonds disponibles        = totMobilise (recettes déjà encaissées)
+       Taux couverture prévis.  = totRecPrev / totCredit
+    */
+    const gap          = totCredit - totRecPrev;  /* > 0 : recettes prévues insuffisantes */
+    const txCouverture = totCredit > 0 ? (totRecPrev  / totCredit) * 100 : 0;
+    const txDep        = totCredit > 0 ? (totEngage   / totCredit) * 100 : 0;
+    const txMobilise   = totRecPrev > 0 ? (totMobilise / totRecPrev) * 100 : 0;
+    const depass       = articles.filter(a => (a.engage||0) > (a.creditRevise||a.credit||0)).length;
+
+    /* ── KPI principaux ── */
+    document.getElementById('kBudget').textContent   = fmtM(totCredit)  + ' FCFA';
+    document.getElementById('kRecettes').textContent = fmtM(totRecPrev) + ' FCFA';
+    document.getElementById('kRecSub').textContent   = txCouverture.toFixed(1) + '% du budget couvert (prévisionnel)';
+    document.getElementById('kDepenses').textContent = fmtM(totEngage)  + ' FCFA';
+    document.getElementById('kDepSub').textContent   = txDep.toFixed(1) + '% des crédits engagés';
+
+    /* ── KPI secondaires ── */
+    /* kDispo sera mis à jour après calcul des 4 sources (fdTotal) */
+
+    /* Gap = budget - recettes prévisionnelles */
+    const kg = document.getElementById('kGap');
+    kg.textContent = fmtM(Math.abs(gap)) + ' FCFA';
+    kg.style.color = gap > 0 ? '#b91c1c' : '#15803d';
+    const kgSub = kg.nextElementSibling;
+    if (kgSub) kgSub.textContent = gap > 0 ? 'À rechercher / mobiliser' : 'Recettes > budget';
+
+    document.getElementById('kTaux').textContent = txDep.toFixed(1) + ' %';
+
+    const kdepass = document.getElementById('kDepass');
+    kdepass.textContent = depass + ' ligne(s)';
+    kdepass.style.color = depass > 0 ? '#b91c1c' : '#15803d';
+
+    /* ── Fonds disponibles par source ── */
+    const FD_SOURCES = [
+      { id:'fonct',    label:'Fonctionnement État PSLSH', banque:'Banque CBT',       icon:'fas fa-university', color:'#1b3a6b',
+        match: r => /fonctionnement/i.test(r.libelle) && /état|etat|budget.état/i.test(r.libelle) },
+      { id:'contrep',  label:'Contrepartie État PSLSH',   banque:'Banque CBT',       icon:'fas fa-handshake',  color:'#0f766e',
+        match: r => /contrepartie/i.test(r.libelle) },
+      { id:'salaires', label:'Salaires Personnel PSLSH',  banque:'Compte Trésor',    icon:'fas fa-users',      color:'#7e22ce',
+        match: r => /salaire/i.test(r.libelle) },
+      { id:'fm',       label:'Subvention FM/GC7',         banque:'Ecobank',          icon:'fas fa-globe-africa',color:'#b45309',
+        match: r => /mondial|FM|GC7/i.test(r.libelle) },
+    ];
+
+    let fdTotal = 0;
+    const fdItems = FD_SOURCES.map(src => {
+      const found = RECETTES.find(r => src.match(r));
+      const prev  = found ? (found.prev  || 0) : 0;
+      const real  = found ? (found.real  || 0) : 0;
+      const pct   = prev > 0 ? Math.min((real / prev) * 100, 100) : 0;
+      fdTotal += real;
+      return { ...src, prev, real, pct };
+    });
+
+    document.getElementById('fdGrid').innerHTML = fdItems.map(s => `
+      <div class="fd-item">
+        <div class="fd-source-name"><i class="${s.icon} me-1" style="color:${s.color}"></i>${s.label}</div>
+        <div class="fd-bank"><i class="fas fa-landmark me-1"></i>${s.banque}</div>
+        <div class="fd-amount${s.real === 0 ? ' zero' : ''}">${s.real === 0 ? '- FCFA' : fmt(s.real) + ' FCFA'}</div>
+        <div class="fd-prev">Prévu : ${s.prev > 0 ? fmt(s.prev) + ' FCFA' : '-'}</div>
+        <div class="fd-bar-wrap"><div class="fd-bar-fill" style="width:${s.pct}%;background:linear-gradient(90deg,${s.color},${s.color}99)"></div></div>
+        <div class="fd-taux">${s.prev > 0 ? s.pct.toFixed(1) + '% mobilisé' : 'Non prévu'}</div>
+      </div>`).join('');
+
+    const fdFmt = fmtM(fdTotal) + ' FCFA';
+    document.getElementById('fdTotalHead').textContent = fdFmt;
+    document.getElementById('fdTotalVal').textContent  = fdFmt;
+
+    /* Mettre à jour le KPI "Fonds disponibles" avec la somme des 4 sources */
+    const kd = document.getElementById('kDispo');
+    kd.textContent = fdFmt;
+    kd.style.color = fdTotal > 0 ? '#0f766e' : '#94a3b8';
+
+    /* ── Jauges par titre ── */
+    DEP_SECTIONS.forEach(d => {
+      const pct = d.credit > 0 ? (d.engage / d.credit) * 100 : 0;
+      const el_val = document.getElementById('g' + d.cat + 'val');
+      const el_bar = document.getElementById('g' + d.cat + 'bar');
+      const el_pct = document.getElementById('g' + d.cat + 'pct');
+      if (el_val) el_val.textContent = fmt(d.engage) + ' FCFA';
+      if (el_bar) el_bar.style.width = Math.min(pct, 100) + '%';
+      if (el_pct) el_pct.textContent = pct.toFixed(1) + '% engagé sur ' + fmt(d.credit) + ' FCFA';
+    });
+    document.getElementById('gTotval').textContent = fmt(totEngage) + ' FCFA engagés';
+    document.getElementById('gTotbar').style.width = Math.min(txDep, 100) + '%';
+    document.getElementById('gTotpct').textContent = txDep.toFixed(1) + '% du budget total dépenses - ' + fmt(totCredit) + ' FCFA crédits ouverts';
+
+    /* ── Tableau dépenses ── */
+    document.getElementById('tbodyDep').innerHTML = DEP_SECTIONS.map(d => `<tr>
+      <td style="font-weight:600">${d.libelle}</td>
+      <td class="te mono">${fmt(d.credit)}</td>
+      <td class="te mono" style="color:#b45309">${fmt(d.engage)}</td>
+      <td class="te">${txBadge(d.engage, d.credit)}</td>
+    </tr>`).join('');
+    document.getElementById('tfootDep').innerHTML = `<tr>
+      <td>TOTAL</td>
+      <td class="te mono">${fmt(totCredit)}</td>
+      <td class="te mono">${fmt(totEngage)}</td>
+      <td class="te">${txBadge(totEngage, totCredit)}</td>
+    </tr>`;
+
+    /* ── Tableau recettes : colonnes Prévisionnel / Mobilisé / Taux mobilisation ── */
+    document.getElementById('tbodyRec').innerHTML = RECETTES.map(r => `<tr>
+      <td style="font-weight:600">${r.libelle}</td>
+      <td class="te mono">${fmt(r.prev||0)}</td>
+      <td class="te mono" style="color:#15803d">${fmt(r.real||0)}</td>
+      <td class="te">${txBadge(r.real||0, r.prev||0)}</td>
+    </tr>`).join('');
+
+    /* Synthèse équilibre sous le tableau recettes */
+    document.getElementById('tfootRec').innerHTML = `
+      <tr>
+        <td style="font-weight:800">TOTAL RECETTES PRÉVISIONNELLES</td>
+        <td class="te mono" style="font-weight:800">${fmt(totRecPrev)}</td>
+        <td class="te mono" style="color:#15803d;font-weight:800">${fmt(totMobilise)}</td>
+        <td class="te">${txBadge(totMobilise, totRecPrev)}<br><span style="font-size:.6rem;color:#94a3b8">${txMobilise.toFixed(1)}% mobilisé</span></td>
+      </tr>
+      <tr style="background:#eff6ff">
+        <td style="font-weight:700;color:#1b2f52"><i class="fas fa-receipt me-1"></i>Budget total à couvrir (Σ dépenses prévues)</td>
+        <td class="te mono" style="font-weight:800;color:#1b2f52">${fmt(totCredit)}</td>
+        <td class="te mono text-muted">-</td><td></td>
+      </tr>
+      <tr style="background:${gap>0?'#fef2f2':'#f0fdf4'}">
+        <td style="font-weight:800;color:${gap>0?'#b91c1c':'#15803d'}">
+          <i class="fas fa-${gap>0?'exclamation-triangle':'check-circle'} me-1"></i>
+          ${gap>0?'GAP À RECHERCHER (recettes prév. < budget)':'ÉQUILIBRE - Recettes ≥ Budget'}
+        </td>
+        <td class="te mono" style="font-weight:800;color:${gap>0?'#b91c1c':'#15803d'}">${gap>0?'- ':'+ '}${fmt(Math.abs(gap))}</td>
+        <td></td><td></td>
+      </tr>`;
+
+    /* ── Alertes dynamiques ── */
+    const alertes = [];
+
+    /* 1. Équilibre prévisionnels Rec / Dep */
+    if (gap > 0) {
+      alertes.push({ col:'#b91c1c', tag:'Gap à rechercher', msg:`Les recettes prévisionnelles (<strong>${fmtM(totRecPrev)} FCFA</strong>) sont inférieures au budget de dépenses (<strong>${fmtM(totCredit)} FCFA</strong>). Gap de <strong>${fmtM(gap)} FCFA</strong> à identifier et mobiliser auprès de l'État ou des PTF.` });
+    } else if (gap < 0) {
+      alertes.push({ col:'#15803d', tag:'Excédent', msg:`Recettes prévisionnelles supérieures au budget de dépenses - excédent de <strong>${fmtM(Math.abs(gap))} FCFA</strong>.` });
+    } else {
+      alertes.push({ col:'#15803d', tag:'Équilibré', msg:`Budget équilibré : recettes prévisionnelles = dépenses prévues = <strong>${fmtM(totCredit)} FCFA</strong>.` });
+    }
+
+    /* 2. Mobilisation des recettes prévisionnelles */
+    if (totMobilise === 0) {
+      alertes.push({ col:'#94a3b8', tag:'Aucun encaissement', msg:'Aucune recette encaissée (fonds disponibles = 0). Suivi des décaissements État et PTF à activer.' });
+    } else if (txMobilise < 30) {
+      alertes.push({ col:'#b45309', tag:'Mobilisation faible', msg:`Seulement <strong>${txMobilise.toFixed(1)}%</strong> des recettes prévisionnelles ont été encaissées (<strong>${fmtM(totMobilise)} FCFA</strong>). Relances nécessaires.` });
+    } else {
+      alertes.push({ col:'#15803d', tag:'Encaissement', msg:`<strong>${fmtM(totMobilise)} FCFA</strong> encaissés - soit <strong>${txMobilise.toFixed(1)}%</strong> des recettes prévisionnelles.` });
+    }
+
+    /* 3. Taux d'exécution dépenses */
+    if (totEngage === 0) {
+      alertes.push({ col:'#94a3b8', tag:'Aucun engagement', msg:'Aucune dépense engagée à ce jour.' });
+    } else if (txDep < 15) {
+      alertes.push({ col:'#b45309', tag:'Exécution lente', msg:`Taux d'exécution des dépenses à <strong>${txDep.toFixed(1)}%</strong> - rythme à accélérer.` });
+    }
+
+    /* 4. Dépassements de crédit */
+    if (depass > 0) alertes.push({ col:'#b91c1c', tag:'Dépassement', msg:`<strong>${depass} ligne(s)</strong> de dépenses en dépassement de crédit. Amendement budgétaire requis.` });
+
+    if (!alertes.length) alertes.push({ col:'#15803d', tag:'OK', msg:'Aucune alerte budgétaire critique détectée à ce stade.' });
+
+    document.getElementById('alertPanel').innerHTML = alertes.map(a => `
+      <div class="alert-item">
+        <div class="ai-dot" style="background:${a.col}"></div>
+        <div class="ai-msg">${a.msg}</div>
+        <span class="ai-tag" style="background:${a.col}20;color:${a.col}">${a.tag}</span>
+      </div>`).join('');
+  }
+
+  renderAll();
+</script>
+</body>
+</html>

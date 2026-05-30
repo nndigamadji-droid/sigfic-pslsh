@@ -1,0 +1,754 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Passation des marchés</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo"
+         onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+        <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <!-- ═══ CONTENU PRINCIPAL ═══ -->
+  <div class="main-content">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/dossiers/index.html">Opérations</a></li>
+            <li class="breadcrumb-item active">Passation des marchés</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong>2026</strong>
+      </div>
+
+      <div class="topbar-right">
+        <button class="topbar-btn" title="Notifications" style="position:relative"><i class="fas fa-bell"></i></button>
+        <div class="dropdown">
+          <div class="user-pill dropdown-toggle" data-bs-toggle="dropdown" style="cursor:pointer">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div>
+              <div class="user-name" id="userName">—</div>
+              <div class="user-role" id="userRole">—</div>
+            </div>
+            <i class="fas fa-chevron-down ms-1" style="font-size:.6rem;color:rgba(255,255,255,.4)"></i>
+          </div>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+            <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- En-tête -->
+      <div class="section-header mb-3">
+        <div class="section-header-left">
+          <h1 class="section-title"><i class="fas fa-gavel me-2"></i>Passation des marchés</h1>
+          <p class="section-sub">Demandes de cotation, réception des offres, analyse comparative et attribution, conformément au Manuel PSLSH/IST</p>
+        </div>
+      </div>
+
+      <!-- Processus de passation (flow horizontal) -->
+      <div class="process-flow">
+        <div class="pf-step pf-done">
+          <div class="pf-icon"><i class="fas fa-file-alt"></i></div>
+          <div class="pf-label">Expression de besoin</div>
+        </div>
+        <div class="pf-step pf-active">
+          <div class="pf-icon"><i class="fas fa-envelope-open-text"></i></div>
+          <div class="pf-label">Demande de cotation</div>
+        </div>
+        <div class="pf-step pf-next">
+          <div class="pf-icon"><i class="fas fa-inbox"></i></div>
+          <div class="pf-label">Réception des offres</div>
+        </div>
+        <div class="pf-step">
+          <div class="pf-icon"><i class="fas fa-balance-scale"></i></div>
+          <div class="pf-label">Analyse comparative</div>
+        </div>
+        <div class="pf-step">
+          <div class="pf-icon"><i class="fas fa-trophy"></i></div>
+          <div class="pf-label">Attribution</div>
+        </div>
+        <div class="pf-step">
+          <div class="pf-icon"><i class="fas fa-file-signature"></i></div>
+          <div class="pf-label">Bon de commande / Contrat</div>
+        </div>
+      </div>
+
+      <!-- Notice règle -->
+      <div class="context-panel mb-3">
+        <div class="cp-title"><i class="fas fa-info-circle me-2"></i>Règle de passation PSLSH/IST</div>
+        <ul class="cp-list mb-0">
+          <li>Minimum <strong>3 fournisseurs</strong> consultés par demande de cotation</li>
+          <li>Délai de remise des offres : <strong>minimum 7 jours ouvrables</strong></li>
+          <li>Analyse comparative obligatoire avant toute attribution</li>
+          <li>Le mieux-disant conforme est retenu sauf dérogation justifiée</li>
+        </ul>
+      </div>
+
+      <!-- Onglets -->
+      <ul class="nav nav-tabs mb-3" id="tabs">
+        <li class="nav-item">
+          <a class="nav-link active" href="#" onclick="switchTab('cotations',this)">
+            <i class="fas fa-envelope-open-text me-1"></i>Demandes de cotation
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" onclick="switchTab('offres',this)">
+            <i class="fas fa-inbox me-1"></i>Offres reçues
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" onclick="switchTab('analyses',this)">
+            <i class="fas fa-balance-scale me-1"></i>Tableau comparatif
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" onclick="switchTab('fournisseurs',this)">
+            <i class="fas fa-store me-1"></i>Fournisseurs agréés
+          </a>
+        </li>
+      </ul>
+
+      <!-- ─── TAB : Demandes de cotation ─── -->
+      <div id="tabCotations">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex gap-2">
+            <select class="form-select form-select-sm" id="cotStatut" onchange="loadCotations()" style="width:160px">
+              <option value="">Tous statuts</option>
+              <option value="ouverte">Ouverte</option>
+              <option value="cloturee">Clôturée</option>
+              <option value="annulee">Annulée</option>
+            </select>
+            <div class="search-box" style="min-width:220px">
+              <i class="fas fa-search"></i>
+              <input type="text" class="form-control form-control-sm" id="cotSearch" placeholder="Référence ou objet..." oninput="loadCotations()">
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCotation" onclick="openCotation()">
+            <i class="fas fa-plus me-1"></i>Nouvelle demande de cotation
+          </button>
+        </div>
+        <div class="table-container">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Référence DC</th>
+                  <th>Dossier lié</th>
+                  <th>Objet de la cotation</th>
+                  <th>Date limite remise</th>
+                  <th>Offres reçues</th>
+                  <th>Budget estimé</th>
+                  <th>Statut</th>
+                  <th class="actions-cell">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodyCotations">
+                <tr><td colspan="8" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── TAB : Offres reçues ─── -->
+      <div id="tabOffres" class="d-none">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <label class="form-label mb-1" style="font-size:.72rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.4px">Demande de cotation</label>
+            <select class="form-select form-select-sm" id="offreCotation" onchange="loadOffres()" style="width:320px">
+              <option value="">Sélectionner une demande de cotation...</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalOffre" onclick="openOffre()">
+            <i class="fas fa-plus me-1"></i>Enregistrer une offre
+          </button>
+        </div>
+        <div class="table-container">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Fournisseur</th>
+                  <th>Demande de cotation</th>
+                  <th class="text-end">Montant HT (FCFA)</th>
+                  <th>Délai livraison</th>
+                  <th>Date réception</th>
+                  <th>Conformité</th>
+                  <th>Sélection</th>
+                  <th class="actions-cell">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodyOffres">
+                <tr><td colspan="8" class="text-center py-4 text-muted">Sélectionnez une demande de cotation pour afficher les offres</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── TAB : Analyses comparatives ─── -->
+      <div id="tabAnalyses" class="d-none">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <label class="form-label mb-1" style="font-size:.72rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.4px">Demande de cotation à analyser</label>
+            <select class="form-select form-select-sm" id="analyseCotation" onchange="loadAnalyse()" style="width:340px">
+              <option value="">Sélectionner une demande de cotation...</option>
+            </select>
+          </div>
+          <button class="btn btn-outline-primary btn-sm" onclick="genererAnalyse()">
+            <i class="fas fa-sync me-1"></i>Actualiser le tableau
+          </button>
+        </div>
+        <div id="analyseContainer">
+          <div class="empty-state">
+            <i class="fas fa-balance-scale"></i>
+            <p>Sélectionnez une demande de cotation pour afficher le tableau comparatif des offres</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── TAB : Fournisseurs ─── -->
+      <div id="tabFournisseurs" class="d-none">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="search-box" style="min-width:260px">
+            <i class="fas fa-search"></i>
+            <input type="text" class="form-control form-control-sm" id="fSearch" placeholder="Raison sociale, NIF, spécialité..." oninput="loadFournisseurs()">
+          </div>
+          <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalFournisseur" onclick="openFournisseur()">
+            <i class="fas fa-plus me-1"></i>Nouveau fournisseur
+          </button>
+        </div>
+        <div class="table-container">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Raison sociale</th>
+                  <th>NIF / RCCM</th>
+                  <th>Contact</th>
+                  <th>Domaine de spécialité</th>
+                  <th>Offres soumises</th>
+                  <th>Marchés attribués</th>
+                  <th class="actions-cell">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodyFournisseurs">
+                <tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+    <footer class="page-footer">
+      &copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp; Programme Sectoriel de Lutte contre le Sida, les H&eacute;patites Virales et les IST &nbsp;&middot;&nbsp; R&eacute;publique du Tchad &nbsp;&middot;&nbsp; Version 1
+    </footer>
+
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ═══ MODALE : Demande de cotation ═══ -->
+<div class="modal fade" id="modalCotation" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-envelope-open-text me-2"></i>Nouvelle demande de cotation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="cotId">
+        <div class="form-section">
+          <div class="form-section-header"><i class="fas fa-link me-2"></i>Rattachement au dossier</div>
+          <div class="form-section-body">
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label">Dossier d'opération <span class="req">*</span></label>
+                <select class="form-select" id="cotDossier">
+                  <option value="">Sélectionner le dossier concerné...</option>
+                </select>
+                <div class="form-text">Seuls les dossiers au statut "Validé" ou "En cotation" sont listés</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Statut de la demande</label>
+                <select class="form-select" id="cotStatutM">
+                  <option value="ouverte">Ouverte</option>
+                  <option value="cloturee">Clôturée</option>
+                  <option value="annulee">Annulée</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-header"><i class="fas fa-file-alt me-2"></i>Détail de la cotation</div>
+          <div class="form-section-body">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label">Objet de la demande de cotation <span class="req">*</span></label>
+                <input type="text" class="form-control" id="cotObjet" placeholder="Ex : Fourniture de médicaments ARV pour le trimestre Q2...">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Spécifications techniques et quantités</label>
+                <textarea class="form-control" id="cotSpecs" rows="3" placeholder="Décrire les caractéristiques, quantités, unités, normes requises..."></textarea>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Budget estimé (FCFA)</label>
+                <input type="number" class="form-control" id="cotBudget" min="0" placeholder="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Nb. fournisseurs minimum</label>
+                <input type="number" class="form-control" id="cotNbFourn" value="3" min="1">
+                <div class="form-text">Minimum 3 (Manuel PSLSH/IST)</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Date limite de remise</label>
+                <input type="date" class="form-control" id="cotDateLimite">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" onclick="saveCotation()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODALE : Offre fournisseur ═══ -->
+<div class="modal fade" id="modalOffre" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-inbox me-2"></i>Enregistrer une offre fournisseur</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="offreId">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Demande de cotation <span class="req">*</span></label>
+            <select class="form-select" id="offreCotId"></select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Fournisseur <span class="req">*</span></label>
+            <select class="form-select" id="offreFourn"></select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Montant HT (FCFA) <span class="req">*</span></label>
+            <input type="number" class="form-control" id="offreMontant" min="0">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Délai de livraison (jours)</label>
+            <input type="number" class="form-control" id="offreDelai" min="0">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Observations techniques</label>
+            <textarea class="form-control" id="offreObs" rows="2" placeholder="Réserves, conditions particulières..."></textarea>
+          </div>
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="offreConforme">
+              <label class="form-check-label fw-semibold" for="offreConforme">Offre techniquement conforme</label>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="offreRetenu">
+              <label class="form-check-label fw-semibold" for="offreRetenu">Fournisseur retenu</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" onclick="saveOffre()"><i class="fas fa-save me-1"></i>Enregistrer l'offre</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODALE : Fournisseur ═══ -->
+<div class="modal fade" id="modalFournisseur" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-store me-2"></i>Enregistrement d'un fournisseur</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="fournId">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Raison sociale <span class="req">*</span></label>
+            <input type="text" class="form-control" id="fournNom" placeholder="Dénomination légale de l'entreprise">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">NIF (Numéro d'Identification Fiscale)</label>
+            <input type="text" class="form-control font-monospace" id="fournNif" placeholder="Ex : 123456789">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Téléphone</label>
+            <input type="text" class="form-control" id="fournTel">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Adresse électronique</label>
+            <input type="email" class="form-control" id="fournEmail">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Adresse physique / Localisation</label>
+            <input type="text" class="form-control" id="fournAdresse">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Domaine de spécialité</label>
+            <input type="text" class="form-control" id="fournSpecialite" placeholder="Ex : Fournitures médicales, Équipements informatiques, BTP...">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" onclick="saveFournisseur()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+requireAuth();
+const _u = getUser();
+if (_u) {
+  const initials = ((_u.prenom||'?')[0] + (_u.nom||'?')[0]).toUpperCase();
+  document.getElementById('userAvatar').textContent = initials;
+  document.getElementById('userName').textContent = `${_u.prenom} ${_u.nom}`;
+  document.getElementById('userRole').textContent = _u.role || 'Utilisateur';
+}
+
+let cotationsData = [], fournisseursData = [];
+
+function switchTab(tab, el) {
+  document.querySelectorAll('#tabs .nav-link').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+  ['Cotations','Offres','Analyses','Fournisseurs'].forEach(t => {
+    document.getElementById('tab'+t).classList.toggle('d-none', t.toLowerCase() !== tab);
+  });
+  if (tab === 'fournisseurs') loadFournisseurs();
+  if (tab === 'analyses') loadCotationsSelect();
+}
+
+async function loadCotations() {
+  const st = document.getElementById('cotStatut').value;
+  const q  = document.getElementById('cotSearch').value;
+  const params = new URLSearchParams();
+  if (st) params.append('statut', st);
+  if (q)  params.append('q', q);
+  try {
+    const r = await api.get('/passation/cotations?' + params);
+    cotationsData = r.data || [];
+    document.getElementById('bodyCotations').innerHTML = cotationsData.length
+      ? cotationsData.map(c => {
+          const stBadge = c.statut === 'ouverte'
+            ? '<span class="badge-statut statut-valide">Ouverte</span>'
+            : c.statut === 'cloturee'
+              ? '<span class="badge-statut statut-archive">Clôturée</span>'
+              : '<span class="badge-statut statut-rejete">Annulée</span>';
+          return `<tr>
+            <td><span class="cell-ref">${c.reference || `DC-${c.id}`}</span></td>
+            <td class="cell-muted">${c.Dossier?.reference || '—'}</td>
+            <td>${c.objet}</td>
+            <td class="cell-muted">${formatDate(c.date_limite)}</td>
+            <td><span class="badge-statut statut-soumis">${c.offres_count || 0} offre(s)</span></td>
+            <td class="text-end cell-amount">${c.budget_estime ? formatXOF(c.budget_estime) : '—'}</td>
+            <td>${stBadge}</td>
+            <td class="actions-cell">
+              <button class="btn btn-action btn-outline-primary me-1" title="Voir les offres" onclick="voirOffres(${c.id})"><i class="fas fa-eye"></i></button>
+              <button class="btn btn-action btn-outline-secondary" onclick='editCotation(${JSON.stringify(c).replace(/"/g,"&quot;")})'><i class="fas fa-edit"></i></button>
+            </td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="8" class="empty-state"><i class="fas fa-envelope-open-text"></i><p>Aucune demande de cotation</p></td></tr>';
+  } catch(e) { console.error(e); }
+}
+
+function voirOffres(cotId) {
+  document.getElementById('offreCotation').value = cotId;
+  switchTab('offres', document.querySelectorAll('#tabs .nav-link')[1]);
+  loadOffres();
+}
+
+async function loadOffres() {
+  const cotId = document.getElementById('offreCotation').value;
+  const params = cotId ? '?demande_cotation_id=' + cotId : '';
+  try {
+    const r = await api.get('/passation/offres' + params);
+    const items = r.data || [];
+    document.getElementById('bodyOffres').innerHTML = items.length
+      ? items.map(o => `
+          <tr class="${o.retenu ? 'offre-retenu' : ''}">
+            <td><strong>${o.Fournisseur?.nom || o.Fournisseur?.raison_sociale || '—'}</strong></td>
+            <td class="cell-muted">${o.DemandeCotation?.objet || '—'}</td>
+            <td class="text-end cell-amount">${formatXOF(o.montant_ht)}</td>
+            <td class="cell-muted">${o.delai_livraison ? o.delai_livraison + ' j' : '—'}</td>
+            <td class="cell-muted">${formatDate(o.date_reception)}</td>
+            <td>${o.conforme ? '<span class="badge-statut statut-valide">Conforme</span>' : '<span class="badge-statut statut-rejete">Non conforme</span>'}</td>
+            <td>${o.retenu ? '<span class="badge-statut statut-paye"><i class="fas fa-trophy me-1"></i>Retenu</span>' : '<span class="text-muted">—</span>'}</td>
+            <td class="actions-cell"><button class="btn btn-action btn-outline-primary"><i class="fas fa-edit"></i></button></td>
+          </tr>`)
+        .join('')
+      : '<tr><td colspan="8" class="text-center py-4 text-muted">Aucune offre enregistrée</td></tr>';
+  } catch(e) {}
+}
+
+async function loadFournisseurs() {
+  const q = document.getElementById('fSearch').value;
+  try {
+    const r = await api.get('/passation/fournisseurs?q=' + q);
+    fournisseursData = r.data || [];
+    document.getElementById('bodyFournisseurs').innerHTML = fournisseursData.length
+      ? fournisseursData.map(f => `
+          <tr>
+            <td>
+              <div class="fw-semibold">${f.nom || f.raison_sociale}</div>
+              <div class="cell-muted">${f.adresse || ''}</div>
+            </td>
+            <td><code class="cell-ref">${f.nif || '—'}</code></td>
+            <td class="cell-muted">${f.telephone || f.email || '—'}</td>
+            <td>${f.specialite ? `<span class="chip">${f.specialite}</span>` : '—'}</td>
+            <td class="text-center">${f.offres_count || 0}</td>
+            <td class="text-center">${f.retenu_count > 0 ? `<span class="badge-statut statut-valide">${f.retenu_count}</span>` : '—'}</td>
+            <td class="actions-cell">
+              <button class="btn btn-action btn-outline-secondary" onclick='editFournisseur(${JSON.stringify(f).replace(/"/g,"&quot;")})'><i class="fas fa-edit"></i></button>
+            </td>
+          </tr>`)
+        .join('')
+      : '<tr><td colspan="7" class="empty-state"><i class="fas fa-store"></i><p>Aucun fournisseur enregistré</p></td></tr>';
+  } catch(e) {}
+}
+
+async function loadCotationsSelect() {
+  const sel1 = document.getElementById('analyseCotation');
+  const sel2 = document.getElementById('offreCotation');
+  sel1.innerHTML = '<option value="">Sélectionner une demande...</option>';
+  sel2.innerHTML = '<option value="">Toutes les demandes de cotation</option>';
+  cotationsData.forEach(c => {
+    [sel1, sel2].forEach(sel => {
+      const o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = `${c.reference || 'DC-'+c.id} — ${c.objet}`;
+      sel.appendChild(o);
+    });
+  });
+}
+
+async function loadAnalyse() {
+  const cotId = document.getElementById('analyseCotation').value;
+  if (!cotId) return;
+  try {
+    const r = await api.get('/passation/offres?demande_cotation_id=' + cotId);
+    const offres = r.data || [];
+    if (!offres.length) {
+      document.getElementById('analyseContainer').innerHTML =
+        '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Aucune offre enregistrée pour cette demande de cotation.</div>';
+      return;
+    }
+    const conformes = offres.filter(o => o.conforme).sort((a,b) => a.montant_ht - b.montant_ht);
+    const best = conformes[0];
+    document.getElementById('analyseContainer').innerHTML = `
+      <div class="card">
+        <div class="card-header" style="background:var(--c-primary);color:#fff">
+          <i class="fas fa-balance-scale me-2"></i>
+          Tableau comparatif des offres — ${offres[0]?.DemandeCotation?.objet || ''}
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>Rang</th>
+                  <th>Fournisseur</th>
+                  <th class="text-end">Montant HT (FCFA)</th>
+                  <th>Délai</th>
+                  <th>Conformité</th>
+                  <th>Sélection</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${offres.map((o, i) => {
+                  const rang = conformes.findIndex(x => x.id === o.id) + 1;
+                  return `<tr class="${o.retenu ? 'offre-retenu' : o === best ? 'offre-best' : ''}">
+                    <td><strong>${o.conforme ? rang || '—' : '—'}</strong></td>
+                    <td class="fw-semibold">${o.Fournisseur?.nom || o.Fournisseur?.raison_sociale || '—'}</td>
+                    <td class="text-end cell-amount">${formatXOF(o.montant_ht)}</td>
+                    <td class="cell-muted">${o.delai_livraison ? o.delai_livraison + ' jours' : '—'}</td>
+                    <td>${o.conforme ? '<span class="badge-statut statut-valide">Conforme</span>' : '<span class="badge-statut statut-rejete">Non conforme</span>'}</td>
+                    <td>${o.retenu ? '<span class="badge-statut statut-paye"><i class="fas fa-trophy me-1"></i>Retenu</span>' : '—'}</td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        ${best ? `
+        <div class="card-footer" style="background:var(--c-success-bg);border-color:#86efac">
+          <i class="fas fa-trophy me-2" style="color:var(--c-success)"></i>
+          <strong style="color:var(--c-success)">Mieux-disant conforme :</strong>
+          ${best.Fournisseur?.nom || best.Fournisseur?.raison_sociale} — ${formatXOF(best.montant_ht)}
+        </div>` : ''}
+      </div>`;
+  } catch(e) {}
+}
+
+async function genererAnalyse() { loadAnalyse(); }
+
+function openCotation() { document.getElementById('cotId').value = ''; }
+function openOffre() {}
+function openFournisseur() { document.getElementById('fournId').value = ''; }
+
+async function saveCotation() {
+  const data = {
+    dossier_id: document.getElementById('cotDossier').value,
+    objet: document.getElementById('cotObjet').value,
+    date_limite: document.getElementById('cotDateLimite').value,
+    specifications: document.getElementById('cotSpecs').value,
+    budget_estime: document.getElementById('cotBudget').value,
+    nb_fournisseurs_min: document.getElementById('cotNbFourn').value,
+    statut: document.getElementById('cotStatutM').value
+  };
+  if (!data.objet) { toast('L\'objet de la cotation est obligatoire', 'warning'); return; }
+  try {
+    await api.post('/passation/cotations', data);
+    toast('Demande de cotation créée avec succès');
+    bootstrap.Modal.getInstance(document.getElementById('modalCotation'))?.hide();
+    loadCotations();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+async function saveOffre() {
+  const data = {
+    demande_cotation_id: document.getElementById('offreCotId').value,
+    fournisseur_id: document.getElementById('offreFourn').value,
+    montant_ht: document.getElementById('offreMontant').value,
+    delai_livraison: document.getElementById('offreDelai').value,
+    observations: document.getElementById('offreObs').value,
+    conforme: document.getElementById('offreConforme').checked,
+    retenu: document.getElementById('offreRetenu').checked
+  };
+  try {
+    await api.post('/passation/offres', data);
+    toast('Offre enregistrée');
+    bootstrap.Modal.getInstance(document.getElementById('modalOffre'))?.hide();
+    loadOffres();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+async function saveFournisseur() {
+  const data = {
+    nom: document.getElementById('fournNom').value,
+    nif: document.getElementById('fournNif').value,
+    telephone: document.getElementById('fournTel').value,
+    email: document.getElementById('fournEmail').value,
+    adresse: document.getElementById('fournAdresse').value,
+    specialite: document.getElementById('fournSpecialite').value
+  };
+  if (!data.nom) { toast('La raison sociale est obligatoire', 'warning'); return; }
+  try {
+    await api.post('/passation/fournisseurs', data);
+    toast('Fournisseur enregistré');
+    bootstrap.Modal.getInstance(document.getElementById('modalFournisseur'))?.hide();
+    loadFournisseurs();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+function editCotation(c) {
+  document.getElementById('cotId').value = c.id;
+  document.getElementById('cotObjet').value = c.objet;
+  document.getElementById('cotDateLimite').value = c.date_limite?.substring(0,10) || '';
+  document.getElementById('cotSpecs').value = c.specifications || '';
+  document.getElementById('cotBudget').value = c.budget_estime || '';
+  document.getElementById('cotNbFourn').value = c.nb_fournisseurs_min || 3;
+  document.getElementById('cotStatutM').value = c.statut;
+  new bootstrap.Modal(document.getElementById('modalCotation')).show();
+}
+
+function editFournisseur(f) {
+  document.getElementById('fournId').value = f.id;
+  document.getElementById('fournNom').value = f.nom || f.raison_sociale || '';
+  document.getElementById('fournNif').value = f.nif || '';
+  document.getElementById('fournTel').value = f.telephone || '';
+  document.getElementById('fournEmail').value = f.email || '';
+  document.getElementById('fournAdresse').value = f.adresse || '';
+  document.getElementById('fournSpecialite').value = f.specialite || '';
+  new bootstrap.Modal(document.getElementById('modalFournisseur')).show();
+}
+
+async function init() {
+  try {
+    const dossiersR = await api.get('/dossiers?statut=en_cotation');
+    const dossiers = dossiersR.data || [];
+    const sel = document.getElementById('cotDossier');
+    dossiers.forEach(d => {
+      const o = document.createElement('option');
+      o.value = d.id; o.textContent = `${d.reference} — ${d.objet}`;
+      sel.appendChild(o);
+    });
+    const [fR, cotR] = await Promise.all([
+      api.get('/passation/fournisseurs'),
+      api.get('/passation/cotations'),
+    ]);
+    fournisseursData = fR.data || [];
+    cotationsData = cotR.data || [];
+    ['offreFourn'].forEach(id => {
+      const sel = document.getElementById(id);
+      fournisseursData.forEach(f => {
+        const o = document.createElement('option');
+        o.value = f.id; o.textContent = f.nom || f.raison_sociale;
+        sel.appendChild(o);
+      });
+    });
+    loadCotationsSelect();
+  } catch(e) {}
+  loadCotations();
+}
+init();
+</script>
+<script src="../../src/js/roles.js"></script>
+</body>
+</html>

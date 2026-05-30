@@ -1,0 +1,1599 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Dépenses</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .page-body { padding:22px 28px 48px; }
+
+    /* KPI */
+    .kpi-bar { display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px; }
+    .kpi-card { background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:13px 15px;position:relative;overflow:hidden; }
+    .kpi-card::before { content:'';position:absolute;top:0;left:0;right:0;height:3px;background:#1b2f52; }
+    .kpi-card.kc-alert::before { background:#64748b; }
+    .kpi-lbl { font-size:.63rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em; }
+    .kpi-val { font-size:.9rem;font-weight:800;color:#1b2f52;font-family:monospace;margin-top:3px; }
+    .kpi-sub { font-size:.63rem;color:#94a3b8;margin-top:2px; }
+
+    /* Onglets */
+    .cat-tabs { display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap; }
+    .cat-tab  { font-size:.74rem;font-weight:600;padding:6px 14px;border-radius:6px;border:1px solid #e2e8f0;
+      background:#fff;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s; }
+    .cat-tab.active { border-color:#1b2f52;background:#1b2f52;color:#fff; }
+    .cat-tab:hover:not(.active) { border-color:#94a3b8;color:#1b2f52; }
+    .ct-badge { font-size:.6rem;border-radius:10px;padding:1px 6px;font-weight:700; }
+    .cat-tab.active .ct-badge    { background:rgba(255,255,255,.2); }
+    .cat-tab:not(.active) .ct-badge { background:#f1f5f9;color:#64748b; }
+
+    /* Section card */
+    .sec-card  { background:#fff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:18px; }
+    .sec-head  { display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #e2e8f0;flex-wrap:wrap; }
+    .sec-icon  { width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:.78rem;flex-shrink:0;background:#1b2f52; }
+    .sec-title { font-size:.83rem;font-weight:800;color:#1b2f52;flex:1; }
+    .sec-sub   { font-size:.68rem;color:#94a3b8;margin-top:1px; }
+    .sec-actions { display:flex;gap:6px;flex-wrap:wrap; }
+
+    /* Toolbar */
+    .toolbar { display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid #f1f5f9;flex-wrap:wrap; }
+    .toolbar input, .toolbar select { font-size:.75rem;padding:4px 9px;border:1px solid #d1d5db;border-radius:5px;background:#f8fafc;height:29px; }
+
+    /* Table */
+    .tbl { width:100%;border-collapse:collapse;font-size:.75rem; }
+    .tbl thead th { background:#f8fafc;color:#475569;font-size:.6rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:.04em;padding:8px 10px;border-bottom:1px solid #e2e8f0;white-space:nowrap; }
+    .tbl tbody td { padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle;color:#1e293b; }
+    .tbl .te { text-align:right; }
+    .tbl .tc { text-align:center; }
+    .mono { font-family:'Cascadia Code','Consolas',monospace;font-size:.71rem; }
+
+    /* Niveaux hiérarchiques - palette neutre */
+    .row-titre td { background:#1e293b !important;color:#f1f5f9 !important;font-weight:700;font-size:.75rem;letter-spacing:.01em; }
+    .row-titre .mono { color:#cbd5e1 !important; }
+    .row-titre .code-pill { background:rgba(255,255,255,.1);color:#cbd5e1;border-color:transparent; }
+    .row-titre .act-toggle { background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff; }
+    .row-chap td { background:#f1f5f9 !important;color:#1e293b !important;font-weight:700;font-size:.74rem; }
+    .row-chap .mono { color:#334155 !important; }
+    .row-chap .code-pill { background:#e2e8f0;color:#475569;border-color:#cbd5e1; }
+    .row-detail td { background:#fff;font-size:.74rem; }
+    .row-detail td:first-child { padding-left:32px; }
+    .row-total td { background:#f1f5f9;color:#1e293b;font-weight:800;font-size:.75rem;border-top:2px solid #cbd5e1; }
+
+    /* Taux - texte simple, rouge seulement si dépassement */
+    .taux-val { font-family:monospace;font-size:.72rem;font-weight:700;color:#334155; }
+    .taux-val.over { color:#b91c1c; }
+    .taux-val.na { color:#94a3b8; }
+
+    /* Colonne Révisé */
+    .rev-val { font-family:monospace;font-size:.71rem;font-weight:600;color:#1e293b; }
+    .rev-badge { font-size:.62rem;font-weight:700;margin-left:4px;vertical-align:middle;color:#64748b; }
+    .rev-badge.up { color:#1e293b; }
+    .rev-badge.dn { color:#b91c1c; }
+
+    /* Source - texte sobre, pas de fond coloré */
+    .src-label { font-size:.68rem;font-weight:600;color:#475569;white-space:nowrap; }
+
+    /* Code nomenclature */
+    .code-pill { font-size:.6rem;font-weight:600;font-family:'Cascadia Code','Consolas',monospace;
+      background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:3px;padding:2px 6px;white-space:nowrap; }
+
+    /* Disponible */
+    .neg { color:#b91c1c;font-weight:700; }
+    .pos { color:#334155; }
+    .dep-alert { font-size:.61rem;font-weight:600;color:#b91c1c;margin-left:5px; }
+    .note-tag  { font-size:.61rem;font-style:italic;color:#94a3b8;margin-left:5px; }
+
+    /* Boutons toolbar - 2 tons max */
+    .btn-primary-action { font-size:.72rem;font-weight:700;padding:5px 13px;border-radius:6px;border:none;
+      background:#1b2f52;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px; }
+    .btn-primary-action:hover { background:#1e3a6e; }
+    .btn-outline-action { font-size:.72rem;font-weight:700;padding:5px 13px;border-radius:6px;
+      border:1px solid #cbd5e1;background:#fff;color:#334155;cursor:pointer;display:flex;align-items:center;gap:6px; }
+    .btn-outline-action:hover { background:#f1f5f9;border-color:#94a3b8; }
+    /* aliases pour compatibilité */
+    .btn-add  { font-size:.72rem;font-weight:700;padding:5px 13px;border-radius:6px;border:none;
+      background:#1b2f52;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px; }
+    .btn-add:hover { background:#1e3a6e; }
+    .btn-rev-toolbar { font-size:.72rem;font-weight:700;padding:5px 13px;border-radius:6px;
+      border:1px solid #cbd5e1;background:#fff;color:#334155;cursor:pointer;display:flex;align-items:center;gap:6px; }
+    .btn-rev-toolbar:hover { background:#f1f5f9; }
+    .btn-imput { font-size:.72rem;font-weight:700;padding:5px 13px;border-radius:6px;
+      border:1px solid #cbd5e1;background:#fff;color:#334155;cursor:pointer;display:flex;align-items:center;gap:6px; }
+    .btn-imput:hover { background:#f1f5f9; }
+    .btn-exp  { font-size:.71rem;font-weight:600;padding:5px 11px;border-radius:6px;
+      border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:5px; }
+    .btn-exp:hover { background:#f8fafc; }
+
+    /* Menu déroulant d'actions par ligne */
+    .act-menu-wrap { position:relative;display:inline-block; }
+    .act-toggle { background:transparent;border:1px solid #e2e8f0;border-radius:5px;
+      width:24px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+      color:#94a3b8;font-size:.7rem;padding:0;transition:all .12s; }
+    .act-toggle:hover { background:#f1f5f9;color:#1e293b;border-color:#cbd5e1; }
+    .row-titre .act-toggle { border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.6); }
+    .row-titre .act-toggle:hover { background:rgba(255,255,255,.12);color:#fff; }
+    .act-dropdown { display:none;position:absolute;right:0;top:28px;z-index:999;
+      background:#fff;border:1px solid #e2e8f0;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.1);
+      min-width:148px;overflow:hidden; }
+    .act-dropdown.open { display:block; }
+    .act-dropdown button { display:flex;align-items:center;gap:8px;width:100%;padding:7px 13px;
+      border:none;background:none;font-size:.74rem;font-weight:600;color:#374151;cursor:pointer;text-align:left; }
+    .act-dropdown button:hover { background:#f8fafc;color:#1e293b; }
+    .act-dropdown button i { width:13px;text-align:center;color:#94a3b8; }
+    .act-dropdown button.danger { color:#b91c1c; }
+    .act-dropdown button.danger i { color:#fca5a5; }
+    .act-dropdown button.danger:hover { background:#fff5f5; }
+    .act-dropdown button:not(:last-child) { border-bottom:1px solid #f8fafc; }
+
+    /* Bouton PAO */
+    .btn-pao { font-size:.72rem;font-weight:700;padding:5px 13px;border-radius:6px;
+      border:1px solid #cbd5e1;background:#f8fafc;color:#334155;cursor:pointer;display:flex;align-items:center;gap:6px; }
+    .btn-pao:hover { background:#e2e8f0;border-color:#94a3b8; }
+
+    /* Modal import PAO */
+    .pao-titre-bar { font-size:.73rem;font-weight:800;color:#fff;background:#1e293b;padding:7px 14px;border-radius:4px;margin-top:10px;letter-spacing:.02em; }
+    .pao-chap-bar  { font-size:.7rem;font-weight:700;color:#334155;background:#f1f5f9;padding:5px 14px;border-left:3px solid #94a3b8;margin-top:4px; }
+    .pao-art-block { margin:5px 0 8px 0;border:1px solid #e2e8f0;border-radius:5px;overflow:hidden; }
+    .pao-art-head  { display:flex;align-items:center;gap:10px;padding:7px 12px;background:#f8fafc;border-bottom:1px solid #f1f5f9;flex-wrap:wrap; }
+    .pao-art-total { font-family:monospace;font-weight:800;color:#1e293b;font-size:.78rem;margin-left:auto; }
+    .pao-act-list  { padding:4px 8px 6px 12px; }
+    .pao-act-row   { display:grid;grid-template-columns:88px 1fr 120px 90px 80px;gap:6px;padding:4px 0;border-bottom:1px solid #f8fafc;font-size:.71rem;align-items:center; }
+    .pao-act-row:last-child { border-bottom:none; }
+    .pao-act-code  { font-family:monospace;font-size:.64rem;color:#64748b;font-weight:700; }
+    .pao-act-lbl   { color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .pao-act-cout  { text-align:right;font-family:monospace;font-weight:700;color:#1e293b;font-size:.7rem; }
+    .pao-act-bail  { font-size:.63rem;color:#94a3b8; }
+    .pao-act-st    { font-size:.6rem;font-weight:700;border-radius:3px;padding:1px 5px;text-align:center;white-space:nowrap; }
+    .pao-st-Acquis        { background:#f0fdf4;color:#15803d; }
+    .pao-st-AConfirmer    { background:#fef3c7;color:#92400e; }
+    .pao-st-ARechercher   { background:#fdf4ff;color:#7e22ce; }
+    .pao-no-act    { font-size:.72rem;color:#94a3b8;padding:8px 12px;font-style:italic; }
+
+    /* Statut ligne */
+    .sl-badge { display:inline-block;font-size:.6rem;font-weight:700;border-radius:3px;padding:2px 7px;letter-spacing:.02em;white-space:nowrap; }
+    .sl-ok     { background:#f1f5f9;color:#64748b; }
+    .sl-warn   { background:#fef3c7;color:#92400e; }
+    .sl-full   { background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5; }
+    .sl-pend   { background:#fffbeb;color:#92400e;border:1px solid #fcd34d;font-style:italic; }
+
+    /* Révisions en attente */
+    .rev-pending-item { display:flex;align-items:center;gap:10px;padding:9px 14px;
+      border-bottom:1px solid #f1f5f9;font-size:.75rem; }
+    .rev-pending-item:last-child { border-bottom:none; }
+    .rev-pending-item:hover { background:#fffbeb; }
+    .rp-code { font-family:monospace;font-size:.68rem;color:#64748b;min-width:160px; }
+    .rp-type { font-size:.65rem;font-weight:700;background:#fef3c7;color:#92400e;border-radius:3px;padding:1px 6px; }
+    .rp-montant { font-family:monospace;font-weight:700;color:#1e293b;flex:1; }
+    .rp-motif { font-size:.68rem;color:#94a3b8;flex:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .btn-val  { font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:4px;border:1px solid #6ee7b7;background:#f0fdf4;color:#15803d;cursor:pointer; }
+    .btn-val:hover { background:#dcfce7; }
+    .btn-rej  { font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:4px;border:1px solid #fca5a5;background:#fff5f5;color:#b91c1c;cursor:pointer; }
+    .btn-rej:hover { background:#fee2e2; }
+
+    /* Légende */
+    .legende { display:flex;gap:10px;flex-wrap:wrap;padding:8px 16px;border-top:1px solid #f1f5f9;
+      background:#f8fafc;font-size:.67rem;color:#94a3b8;align-items:center; }
+
+    /* Imputations list */
+    .imput-list { max-height:180px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:6px;font-size:.74rem; }
+    .imput-item { display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid #f1f5f9; }
+    .imput-item:last-child { border-bottom:none; }
+    .imput-item:hover { background:#f8fafc; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/budget/synthese.html">Budget</a></li>
+            <li class="breadcrumb-item active">Dépenses</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i> Exercice :
+        <select id="selEx" class="form-select form-select-sm d-inline-block w-auto ms-1">
+          <option value="2026">2026</option><option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+
+    <div class="page-content page-body">
+
+      <!-- Titre -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-file-invoice-dollar text-warning me-2"></i>Dépenses</h4>
+          <small class="text-muted">PSLSH/IST, exercice 2026 : nomenclature officielle Tchad, prévisions, révisions, imputations et engagements</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-exp" onclick="exportCSV()"><i class="fas fa-file-csv"></i> Exporter</button>
+          <button class="btn-exp" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+        </div>
+      </div>
+
+      <!-- Liens rapides -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
+        <a href="synthese.html" style="font-size:.71rem;font-weight:700;padding:6px 14px;border-radius:7px;background:#1b3a6b;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 6px rgba(27,58,107,.25);">
+          <i class="fas fa-chart-pie"></i> Voir dans la Synthèse globale
+          <span id="synth-badge-dep" style="background:rgba(255,255,255,.25);border-radius:10px;padding:1px 7px;font-size:.65rem;font-family:monospace;margin-left:2px">-</span>
+        </a>
+        <a href="recettes.html" style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#dcfce7;color:#15803d;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-arrow-trend-up"></i> Recettes</a>
+        <span style="font-size:.65rem;color:#94a3b8;font-style:italic">
+          <i class="fas fa-circle" style="font-size:.45rem;color:#22c55e;vertical-align:middle"></i>
+          Les modifications sont instantanément reflétées dans la Synthèse
+        </span>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-bar mb-3">
+        <div class="kpi-card kc-blue">
+          <div class="kpi-lbl">Crédits initiaux</div>
+          <div class="kpi-val" id="kCredits">-</div>
+          <div class="kpi-sub">Prévisions ouvertes</div>
+        </div>
+        <div class="kpi-card kc-green">
+          <div class="kpi-lbl">Crédits révisés</div>
+          <div class="kpi-val" id="kRevise">-</div>
+          <div class="kpi-sub" id="kRevSub">-</div>
+        </div>
+        <div class="kpi-card kc-orange">
+          <div class="kpi-lbl">Engagé (imputations)</div>
+          <div class="kpi-val" id="kEngage">-</div>
+          <div class="kpi-sub" id="kEngRate">-</div>
+        </div>
+        <div class="kpi-card kc-teal">
+          <div class="kpi-lbl">Disponible</div>
+          <div class="kpi-val" id="kDispo">-</div>
+          <div class="kpi-sub">Révisé - Engagé</div>
+        </div>
+        <div class="kpi-card kc-red">
+          <div class="kpi-lbl">Lignes épuisées</div>
+          <div class="kpi-val" id="kDepass">-</div>
+          <div class="kpi-sub">Disponible &le; 0</div>
+        </div>
+      </div>
+
+      <!-- Onglets -->
+      <div class="cat-tabs">
+        <button class="cat-tab active" id="tab-all" onclick="setTab('all')">
+          <i class="fas fa-layer-group"></i> Toutes catégories <span class="ct-badge" id="cnt-all">-</span>
+        </button>
+        <button class="cat-tab" id="tab-I" onclick="setTab('I')">
+          <i class="fas fa-cogs"></i> Titre I - Fonctionnement <span class="ct-badge" id="cnt-I">-</span>
+        </button>
+        <button class="cat-tab" id="tab-II" onclick="setTab('II')">
+          <i class="fas fa-building"></i> Titre II - Investissement <span class="ct-badge" id="cnt-II">-</span>
+        </button>
+        <button class="cat-tab" id="tab-III" onclick="setTab('III')">
+          <i class="fas fa-pills"></i> Titre III - Médicaments <span class="ct-badge" id="cnt-III">-</span>
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="sec-card">
+        <div class="sec-head">
+          <div class="sec-icon" style="background:#b45309"><i class="fas fa-file-invoice-dollar"></i></div>
+          <div style="flex:1">
+            <div class="sec-title" id="secTitle">État des dépenses, nomenclature officielle PSLSH/IST, exercice 2026</div>
+            <div class="sec-sub">Nomenclature Tchad (Titres/Chapitres/Articles), SYSCOHADA, prévisions, révisions et engagements par imputation</div>
+          </div>
+          <div class="sec-actions">
+            <button class="btn-exp" onclick="exportCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+            <button class="btn-pao" onclick="openModalImportPAO()">
+              <i class="fas fa-file-import"></i> Intégrer PAO
+            </button>
+            <button class="btn-add" style="background:#15803d;border-color:#15803d" onclick="sauvegarder()" title="Enregistrer les modifications">
+              <i class="fas fa-save"></i> Enregistrer
+            </button>
+            <button class="btn-exp" style="color:#b91c1c;border-color:#fca5a5" onclick="reinitialiserDonnees()" title="Annuler toutes les modifications non enregistrées">
+              <i class="fas fa-arrow-rotate-left"></i> Annuler
+            </button>
+            <button class="btn-add" onclick="openModalAdd()">
+              <i class="fas fa-plus"></i> Ajouter ligne
+            </button>
+            <button class="btn-rev-toolbar" onclick="openModalReviseToolbar()">
+              <i class="fas fa-pen-ruler"></i> Réviser
+            </button>
+            <button class="btn-imput" onclick="openModalImput(null)">
+              <i class="fas fa-stamp"></i> Imputer
+            </button>
+          </div>
+        </div>
+        <div class="toolbar">
+          <select id="filtSrc" onchange="render()">
+            <option value="">Toutes sources</option>
+            <option value="RI">État (RI)</option>
+            <option value="RE-FM">Fonds Mondial</option>
+            <option value="RE-OMS">OMS</option>
+            <option value="RE-UNICEF">UNICEF</option>
+            <option value="CO">Conjoint</option>
+          </select>
+          <input type="text" id="filtSearch" placeholder="Rechercher libellé ou code..." oninput="render()" style="min-width:200px">
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:120px">Code budgétaire</th>
+                <th style="min-width:240px">Libellé</th>
+                <th style="width:110px">Source</th>
+                <th class="te">Crédit initial</th>
+                <th class="te">Crédit révisé</th>
+                <th class="te">Engagé</th>
+                <th class="te">Disponible</th>
+                <th class="tc" style="width:80px">Taux</th>
+                <th class="tc" style="width:90px">Statut ligne</th>
+                <th class="tc" style="width:50px">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyDep"></tbody>
+            <tfoot id="tfootDep"></tfoot>
+          </table>
+        </div>
+        <div class="legende">
+          <strong>Sources :</strong>
+          <span>État (RI)</span><span>Fonds Mondial (FM)</span><span>OMS</span><span>UNICEF</span><span>Conjoint (CO)</span>
+          <span style="margin-left:8px"><strong>Révision :</strong></span>
+          <span>▲ Augmentation</span><span>▼ Réduction</span>
+          <span style="margin-left:8px"><strong>Disponible :</strong></span>
+          <span style="color:#b91c1c">Rouge = dépassement</span>
+        </div>
+      </div>
+
+      <!-- Révisions en attente de validation -->
+      <div class="sec-card" id="revPendingSection" style="display:none;border-left:3px solid #f59e0b">
+        <div class="sec-head">
+          <div class="sec-icon" style="background:#92400e"><i class="fas fa-clock"></i></div>
+          <div style="flex:1">
+            <div class="sec-title">Révisions en attente de validation <span id="revPendingCount" style="background:#fef3c7;color:#92400e;font-size:.65rem;border-radius:10px;padding:1px 8px;margin-left:6px;font-weight:700"></span></div>
+            <div class="sec-sub">Ces révisions ont été soumises et doivent être validées avant application. Aucune modification du crédit révisé n'est appliquée sans validation.</div>
+          </div>
+        </div>
+        <div id="revPendingList"></div>
+      </div>
+
+      <!-- Historique imputations -->
+      <div class="sec-card">
+        <div class="sec-head">
+          <div class="sec-icon" style="background:#0f766e"><i class="fas fa-stamp"></i></div>
+          <div style="flex:1">
+            <div class="sec-title">Historique des imputations budgétaires</div>
+            <div class="sec-sub">Engagements enregistrés sur les lignes budgétaires. Les imputations déterminent les montants engagés.</div>
+          </div>
+          <button class="btn-imput" onclick="openModalImput(null)"><i class="fas fa-plus"></i> Nouvelle imputation</button>
+        </div>
+        <div id="imputList">
+          <div class="imput-item text-muted" style="justify-content:center;font-size:.75rem">
+            Aucune imputation enregistrée.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL - AJOUTER LIGNE (prévision uniquement) ═══ -->
+<div class="modal fade" id="modalAdd" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1b2f52;color:#fff;padding:12px 20px">
+        <h5 class="modal-title" style="font-size:.9rem">
+          <i class="fas fa-plus me-2"></i>Nouvelle ligne budgétaire - Prévision
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:20px">
+        <div class="alert alert-info py-2 px-3 mb-3" style="font-size:.77rem">
+          <i class="fas fa-info-circle me-2"></i>
+          <strong>Prévision uniquement.</strong> Cette action crée la ligne budgétaire avec son crédit initial.
+          Les engagements sont saisis via le bouton <strong>Imputation</strong>.
+          Les révisions de crédit se font via le bouton <strong>Réviser</strong> sur chaque ligne.
+        </div>
+        <input type="hidden" id="aId">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Titre budgétaire <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="aTitre" onchange="autoCodeAdd()">
+              <option value="I">Titre I - Fonctionnement</option>
+              <option value="II">Titre II - Investissement</option>
+              <option value="III">Titre III - Médicaments</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small">Chapitre <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="aChap" onchange="autoCodeAdd()">
+              <option value="10">Chap.10 - Personnel</option>
+              <option value="20">Chap.20 - Fournitures</option>
+              <option value="21">Chap.21 - Entretien</option>
+              <option value="22">Chap.22 - Services</option>
+              <option value="23">Chap.23 - Formation</option>
+              <option value="24">Chap.24 - Communication</option>
+              <option value="25">Chap.25 - Appuis</option>
+              <option value="30">Chap.30 - Infrastructure</option>
+              <option value="31">Chap.31 - Équipements</option>
+              <option value="40">Chap.40 - Médicaments</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small">Article</label>
+            <input type="text" class="form-control form-control-sm" id="aArt" placeholder="Ex: 101" oninput="autoCodeAdd()">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small">Niveau</label>
+            <select class="form-select form-select-sm" id="aNiv" onchange="autoCodeAdd()">
+              <option value="0">Titre</option>
+              <option value="1">Chapitre</option>
+              <option value="2" selected>Article / Ligne</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Code généré (nomenclature)</label>
+            <input type="text" class="form-control form-control-sm" id="aCode" readonly
+              style="background:#f0fdf4;font-family:monospace;font-weight:700;color:#15803d">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Libellé <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="aLibelle" placeholder="Description complète de la ligne budgétaire">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Source de financement <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="aSrc">
+              <option value="RI">RI - État / Ressources intérieures</option>
+              <option value="RE-FM">RE/FM - Fonds Mondial</option>
+              <option value="RE-OMS">RE/OMS - OMS</option>
+              <option value="RE-UNICEF">RE/UNICEF - UNICEF</option>
+              <option value="CO">CO - Cofinancement conjoint</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Crédit initial - Prévision (FCFA) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control form-control-sm" id="aCredit" min="0">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Observation</label>
+            <input type="text" class="form-control form-control-sm" id="aNote" placeholder="Facultatif">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="background:#f8fafc;padding:10px 18px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-sm" style="background:#1b2f52;color:#fff;border:none;border-radius:7px;padding:6px 18px;font-size:.78rem;font-weight:700" onclick="saveLigne()">
+          <i class="fas fa-save me-1"></i>Enregistrer la prévision
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL - RÉVISER crédit ═══ -->
+<div class="modal fade" id="modalRevise" tabindex="-1">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#b45309;color:#fff;padding:12px 20px">
+        <h5 class="modal-title" style="font-size:.9rem">
+          <i class="fas fa-pen-ruler me-2"></i>Révision budgétaire
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:20px">
+        <input type="hidden" id="rId">
+        <!-- Sélecteur affiché uniquement depuis le bouton toolbar -->
+        <div class="mb-3" id="rSelectLigneRow" style="display:none">
+          <label class="form-label fw-bold small">Sélectionner la ligne à réviser <span class="text-danger">*</span></label>
+          <select class="form-select form-select-sm" id="rSelectLigne" onchange="onSelectRevLigne()">
+            <option value="">- Sélectionner une ligne budgétaire -</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-bold small">Ligne concernée</label>
+          <input type="text" class="form-control form-control-sm" id="rLigne" readonly style="background:#f8fafc;font-family:monospace;font-size:.8rem">
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Crédit initial (FCFA)</label>
+            <input type="text" class="form-control form-control-sm" id="rCreditInit" readonly style="background:#f8fafc;font-family:monospace">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Crédit révisé actuel (FCFA)</label>
+            <input type="text" class="form-control form-control-sm" id="rCreditRevActuel" readonly style="background:#f8fafc;font-family:monospace">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Nouveau crédit révisé (FCFA) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control form-control-sm" id="rNouveauCredit" min="0" placeholder="Montant après révision">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Type de révision <span class="text-danger">*</span></label>
+          <select class="form-select form-select-sm" id="rType">
+            <option value="Augmentation">Augmentation de crédit</option>
+            <option value="Réduction">Réduction de crédit</option>
+            <option value="Virement">Virement de crédit (entre lignes)</option>
+            <option value="Amendement">Amendement budgétaire</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label fw-bold small">Motif de la révision <span class="text-danger">*</span></label>
+          <textarea class="form-control form-control-sm" id="rMotif" rows="3"
+            placeholder="Justification : dépassement constaté, nouvelle activité, redéploiement de crédits..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="background:#f8fafc;padding:10px 18px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-sm" style="background:#b45309;color:#fff;border:none;border-radius:7px;padding:6px 18px;font-size:.78rem;font-weight:700" onclick="saveRevision()">
+          <i class="fas fa-check me-1"></i>Valider la révision
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL - IMPUTATION ═══ -->
+<div class="modal fade" id="modalImput" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#0f766e;color:#fff;padding:12px 20px">
+        <h5 class="modal-title" style="font-size:.9rem">
+          <i class="fas fa-stamp me-2"></i>Imputation budgétaire - Enregistrement d'engagement
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:20px">
+        <div class="alert alert-success py-2 px-3 mb-3" style="font-size:.77rem">
+          <i class="fas fa-info-circle me-2"></i>
+          L'imputation détermine le <strong>montant engagé</strong> sur la ligne budgétaire choisie.
+          Elle doit correspondre à un dossier, bon de commande ou contrat validé.
+        </div>
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label fw-bold small">Ligne budgétaire à imputer <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="iLigne" onchange="updateImputDisponible()">
+              <option value="">- Sélectionner une ligne -</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Crédit révisé disponible</label>
+            <input type="text" class="form-control form-control-sm" id="iDispo" readonly style="background:#f0fdf4;font-family:monospace;font-weight:700;color:#15803d">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Déjà engagé</label>
+            <input type="text" class="form-control form-control-sm" id="iEngage" readonly style="background:#fff8f0;font-family:monospace;font-weight:700;color:#b45309">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Solde disponible</label>
+            <input type="text" class="form-control form-control-sm" id="iSolde" readonly style="background:#f8fafc;font-family:monospace;font-weight:700">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Montant à imputer (FCFA) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control form-control-sm" id="iMontant" min="1" oninput="checkSolde()">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Date d'imputation <span class="text-danger">*</span></label>
+            <input type="date" class="form-control form-control-sm" id="iDate">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Référence dossier / BC / Contrat <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="iRef" placeholder="Ex : BC-2026-042, DOS-2026-018">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Bénéficiaire / Fournisseur</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Nom du prestataire ou fournisseur" id="iBenef">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Objet de l'imputation <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="iObjet" placeholder="Description de la dépense imputée">
+          </div>
+          <div id="iWarnEpuise" class="col-12" style="display:none">
+            <div class="alert alert-danger py-2 px-3 mb-0" style="font-size:.77rem;border-left:3px solid #b91c1c">
+              <i class="fas fa-ban me-2"></i>
+              <strong>Ligne épuisée.</strong> Le solde disponible est nul ou négatif. Vous devez d'abord soumettre une révision de crédit et la faire valider avant toute nouvelle imputation.
+            </div>
+          </div>
+          <div id="iWarnDepass" class="col-12" style="display:none">
+            <div class="alert alert-danger py-2 px-3 mb-0" style="font-size:.77rem">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Dépassement refusé.</strong> Le montant saisi ({{m}}) dépasse le solde disponible. Aucun dépassement n'est toléré.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="background:#f8fafc;padding:10px 18px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-sm" id="btnSaveImput" style="background:#1b2f52;color:#fff;border:none;border-radius:7px;padding:6px 18px;font-size:.78rem;font-weight:700" onclick="saveImputation()">
+          <i class="fas fa-stamp me-1"></i>Enregistrer l'imputation
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL - IMPORT PAO ═══ -->
+<div class="modal fade" id="modalImportPAO" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1e293b;color:#fff;padding:12px 20px">
+        <h5 class="modal-title" style="font-size:.9rem">
+          <i class="fas fa-file-import me-2"></i>Intégration PAO Global 2026 → Crédits initiaux
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:18px">
+        <div class="alert py-2 px-3 mb-3" style="font-size:.76rem;background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid #1e293b">
+          <i class="fas fa-info-circle me-2 text-muted"></i>
+          Les <strong>55 activités du PAO Global 2026</strong> sont classées ci-dessous selon la nomenclature officielle Tchad (Titres / Chapitres / Articles).
+          Le total par article remplacera le <strong>crédit initial</strong>.
+          Les agrégats (chapitres et titres) sont recalculés automatiquement.
+          Les engagements et révisions existants ne sont <strong>pas modifiés</strong>.
+        </div>
+        <div id="paoPreview"></div>
+      </div>
+      <div class="modal-footer" style="background:#f8fafc;padding:10px 18px;gap:8px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-sm" style="background:#1e293b;color:#fff;border:none;border-radius:6px;padding:6px 18px;font-size:.78rem;font-weight:700" onclick="confirmImportPAO()">
+          <i class="fas fa-check me-1"></i>Confirmer l'intégration
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL - SUPPRESSION ═══ -->
+<div class="modal fade" id="modalDel" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#b91c1c;color:#fff;padding:10px 16px">
+        <h6 class="modal-title" style="font-size:.85rem"><i class="fas fa-exclamation-triangle me-2"></i>Confirmer</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center" style="padding:18px">
+        <p style="font-size:.82rem;color:#1b2f52;margin:0" id="delMsg"></p>
+      </div>
+      <div class="modal-footer" style="padding:8px 16px;gap:8px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Non</button>
+        <button class="btn btn-sm btn-danger" id="btnDel"><i class="fas fa-trash-alt me-1"></i>Supprimer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user')||'{}');
+  document.getElementById('userName').textContent = _u.nom||_u.name||_u.email||'';
+  function logout(){ localStorage.removeItem('pslsh_token'); localStorage.removeItem('pslsh_user'); location.href='/pages/auth/login.html'; }
+
+  /* ══ MENUS DÉROULANTS D'ACTIONS ══ */
+  function toggleActMenu(e, id){
+    e.stopPropagation();
+    const menu = document.getElementById(id);
+    const isOpen = menu.classList.contains('open');
+    closeActMenus();
+    if(!isOpen) menu.classList.add('open');
+  }
+  function closeActMenus(){
+    document.querySelectorAll('.act-dropdown.open').forEach(m=>m.classList.remove('open'));
+  }
+  document.addEventListener('click', closeActMenus);
+
+  /* ══════════════════════════════════════════════════════
+     DONNÉES - Chaque ligne a :
+       credit       = crédit initial (prévision)
+       creditRevise = crédit après révision (= credit au départ)
+       engage       = montant engagé via imputations
+  ══════════════════════════════════════════════════════ */
+  let _nid = 100;
+  let _tab  = 'all';
+
+  function cr(c){ return c; } // creditRevise initial = credit
+
+  const DEFAULT_DATA = [
+    { id:'T1',   titre:'I',   niv:0, code:'PSLSH/I',          src:'CO',       credit:2641566828, creditRevise:2641566828, engage:0, note:'' },
+    { id:'C10',  titre:'I',   niv:1, code:'PSLSH/I/10',       src:'RI',       credit:691656636,  creditRevise:691656636,  engage:0, note:'' },
+    { id:'A101', titre:'I',   niv:2, code:'PSLSH/I/10-101',   src:'RI',       credit:205580035,  creditRevise:205580035,  engage:0, note:'', libelle:'Art.101 - Traitements de base et salaires' },
+    { id:'A102', titre:'I',   niv:2, code:'PSLSH/I/10-102',   src:'RI',       credit:315996601,  creditRevise:315996601,  engage:0, note:'', libelle:'Art.102 - Indemnités de résidence et de sujétion' },
+    { id:'A103', titre:'I',   niv:2, code:'PSLSH/I/10-103',   src:'RI',       credit:153580000,  creditRevise:153580000,  engage:0, note:'', libelle:'Art.103 - Primes de performance et indemnités diverses' },
+    { id:'A104', titre:'I',   niv:2, code:'PSLSH/I/10-104',   src:'RI',       credit:16500000,   creditRevise:16500000,   engage:0, note:'', libelle:'Art.104 - Assurances maladie et charges sociales' },
+    { id:'C20',  titre:'I',   niv:1, code:'PSLSH/I/20',       src:'RE-FM',    credit:67746000,   creditRevise:67746000,   engage:0, note:'' },
+    { id:'A201', titre:'I',   niv:2, code:'PSLSH/I/20-201',   src:'RE-FM',    credit:12470000,   creditRevise:12470000,   engage:0, note:'', libelle:'Art.201 - Fournitures et consommables de bureau' },
+    { id:'A202', titre:'I',   niv:2, code:'PSLSH/I/20-202',   src:'RE-FM',    credit:10476000,   creditRevise:10476000,   engage:0, note:'', libelle:'Art.202 - Produits d\'entretien et de subsistance' },
+    { id:'A203', titre:'I',   niv:2, code:'PSLSH/I/20-203',   src:'RI',       credit:44800000,   creditRevise:44800000,   engage:0, note:'', libelle:'Art.203 - Carburants, lubrifiants et gaz' },
+    { id:'C21',  titre:'I',   niv:1, code:'PSLSH/I/21',       src:'RI',       credit:406583392,  creditRevise:406583392,  engage:0, note:'' },
+    { id:'A211', titre:'I',   niv:2, code:'PSLSH/I/21-211',   src:'RI',       credit:59369642,   creditRevise:59369642,   engage:0, note:'', libelle:'Art.211 - Entretien des locaux et équipements' },
+    { id:'A212', titre:'I',   niv:2, code:'PSLSH/I/21-212',   src:'RE-FM',    credit:347213750,  creditRevise:347213750,  engage:0, note:'', libelle:'Art.212 - Prestations de services et études diverses' },
+    { id:'C23',  titre:'I',   niv:1, code:'PSLSH/I/23',       src:'CO',       credit:777323900,  creditRevise:777323900,  engage:0, note:'' },
+    { id:'A231', titre:'I',   niv:2, code:'PSLSH/I/23-231',   src:'RE-FM',    credit:223951850,  creditRevise:223951850,  engage:0, note:'', libelle:'Art.231 - Missions et supervisions sur le terrain' },
+    { id:'A232', titre:'I',   niv:2, code:'PSLSH/I/23-232',   src:'RE-OMS',   credit:108812550,  creditRevise:108812550,  engage:0, note:'', libelle:'Art.232 - Ateliers et séminaires de coordination' },
+    { id:'A233', titre:'I',   niv:2, code:'PSLSH/I/23-233',   src:'RE-OMS',   credit:444559500,  creditRevise:444559500,  engage:0, note:'', libelle:'Art.233 - Formations et renforcement des capacités' },
+    { id:'C24',  titre:'I',   niv:1, code:'PSLSH/I/24',       src:'RE-UNICEF',credit:579389500,  creditRevise:579389500,  engage:0, note:'' },
+    { id:'A241', titre:'I',   niv:2, code:'PSLSH/I/24-241',   src:'RE-UNICEF',credit:420000000,  creditRevise:420000000,  engage:0, note:'', libelle:'Art.241 - Campagnes de sensibilisation IEC/CCC' },
+    { id:'A242', titre:'I',   niv:2, code:'PSLSH/I/24-242',   src:'RE-UNICEF',credit:159389500,  creditRevise:159389500,  engage:0, note:'', libelle:'Art.242 - Reproduction et distribution de supports' },
+    { id:'C25',  titre:'I',   niv:1, code:'PSLSH/I/25',       src:'RE-FM',    credit:118867400,  creditRevise:118867400,  engage:0, note:'' },
+    { id:'A251', titre:'I',   niv:2, code:'PSLSH/I/25-251',   src:'RE-FM',    credit:118867400,  creditRevise:118867400,  engage:0, note:'', libelle:'Art.251 - Subventions et appuis aux structures partenaires' },
+    { id:'T2',   titre:'II',  niv:0, code:'PSLSH/II',         src:'CO',       credit:514485600,  creditRevise:514485600,  engage:0, note:'' },
+    { id:'C30',  titre:'II',  niv:1, code:'PSLSH/II/30',      src:'RI',       credit:181925600,  creditRevise:181925600,  engage:0, note:'' },
+    { id:'A301', titre:'II',  niv:2, code:'PSLSH/II/30-301',  src:'RI',       credit:119325600,  creditRevise:119325600,  engage:0, note:'', libelle:'Art.301 - Constructions et réhabilitations de locaux' },
+    { id:'A302', titre:'II',  niv:2, code:'PSLSH/II/30-302',  src:'RI',       credit:62600000,   creditRevise:62600000,   engage:0, note:'', libelle:'Art.302 - Aménagements intérieurs et génie civil' },
+    { id:'C31',  titre:'II',  niv:1, code:'PSLSH/II/31',      src:'CO',       credit:332560000,  creditRevise:332560000,  engage:0, note:'' },
+    { id:'A311', titre:'II',  niv:2, code:'PSLSH/II/31-311',  src:'RI',       credit:35840000,   creditRevise:35840000,   engage:0, note:'', libelle:'Art.311 - Mobilier et matériel de bureau' },
+    { id:'A312', titre:'II',  niv:2, code:'PSLSH/II/31-312',  src:'RE-FM',    credit:89320000,   creditRevise:89320000,   engage:0, note:'', libelle:'Art.312 - Matériel informatique et équipements techniques' },
+    { id:'A313', titre:'II',  niv:2, code:'PSLSH/II/31-313',  src:'RI',       credit:207400000,  creditRevise:207400000,  engage:0, note:'', libelle:'Art.313 - Moyens roulants - acquisition de véhicules' },
+    { id:'T3',   titre:'III', niv:0, code:'PSLSH/III',        src:'CO',       credit:6228832023, creditRevise:6228832023, engage:0, note:'' },
+    { id:'C40',  titre:'III', niv:1, code:'PSLSH/III/40',     src:'CO',       credit:6228832023, creditRevise:6228832023, engage:0, note:'' },
+    { id:'A401', titre:'III', niv:2, code:'PSLSH/III/40-401', src:'RE-FM',    credit:2940448670, creditRevise:2940448670, engage:0, note:'', libelle:'Art.401 - Médicaments essentiels ARV - liste nationale' },
+    { id:'A402', titre:'III', niv:2, code:'PSLSH/III/40-402', src:'RE-FM',    credit:3040843353, creditRevise:3040843353, engage:0, note:'', libelle:'Art.402 - Intrants médicaux consommables (réactifs, kits)' },
+    { id:'A403', titre:'III', niv:2, code:'PSLSH/III/40-403', src:'RE-OMS',   credit:47540000,   creditRevise:47540000,   engage:0, note:'', libelle:'Art.403 - Matériels médicaux et équipements de laboratoire' },
+    { id:'A404', titre:'III', niv:2, code:'PSLSH/III/40-404', src:'RI',       credit:200000000,  creditRevise:200000000,  engage:0, note:'', libelle:'Art.404 - Redevances Centrale Pharmaceutique (CPN)' },
+  ];
+  /* libellé pour titres et chapitres */
+  const LIBELLES = {
+    'T1':'TITRE I - DÉPENSES DE FONCTIONNEMENT', 'C10':'Chapitre 10 - Rémunérations et charges du personnel',
+    'C20':'Chapitre 20 - Fournitures et petits équipements','C21':'Chapitre 21 - Entretien, maintenance et locations',
+    'C23':'Chapitre 23 - Formations, missions et ateliers','C24':'Chapitre 24 - Sensibilisation et communication',
+    'C25':'Chapitre 25 - Appuis institutionnels','T2':'TITRE II - INVESTISSEMENTS ET ÉQUIPEMENTS',
+    'C30':'Chapitre 30 - Constructions et aménagements','C31':'Chapitre 31 - Mobilier, équipements et moyens roulants',
+    'T3':'TITRE III - MÉDICAMENTS, INTRANTS ET ÉQUIPEMENTS MÉDICAUX','C40':'Chapitre 40 - Médicaments essentiels, intrants et équipements',
+  };
+  DEFAULT_DATA.forEach(d=>{ if(!d.libelle) d.libelle = LIBELLES[d.id]||d.code; });
+
+  /* ══ DONNÉES ACTIVES (remplies depuis localStorage ou DEFAULT_DATA) ══ */
+  let DATA        = [];
+  let IMPUTATIONS = [];
+  let _iid        = 1;
+  let REVISIONS   = [];
+  let _rid        = 1;
+
+  /* ══ PERSISTENCE localStorage ══ */
+  const STORAGE_KEY = 'pslsh_depenses_v1';
+  const SAVED_KEY   = 'pslsh_depenses_saved';
+
+  function _payload(){
+    return JSON.stringify({ _ok:true, data:DATA, imputations:IMPUTATIONS, revisions:REVISIONS, nid:_nid, iid:_iid, rid:_rid });
+  }
+  function saveStorage(){
+    localStorage.setItem(STORAGE_KEY, _payload());
+    localStorage.setItem('pslsh_depenses_ts', Date.now().toString());
+  }
+
+  function sauvegarder(){
+    const p = _payload();
+    localStorage.setItem(STORAGE_KEY, p);
+    localStorage.setItem(SAVED_KEY, p);
+    toast('✓ Modifications enregistrées.');
+  }
+
+  /* Chargement : session → référence sauvegardée → DEFAULT */
+  (function(){
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(SAVED_KEY);
+    if(raw){
+      try {
+        const s = JSON.parse(raw);
+        if(s && s._ok){
+          DATA.splice(0, DATA.length, ...(s.data || []));
+          IMPUTATIONS.splice(0, IMPUTATIONS.length, ...(s.imputations || []));
+          REVISIONS.splice(0, REVISIONS.length, ...(s.revisions || []));
+          _nid = s.nid || 100; _iid = s.iid || 1; _rid = s.rid || 1;
+          return;
+        }
+      } catch(e){ console.warn('localStorage corrompu.', e); }
+    }
+    DATA.splice(0, DATA.length, ...DEFAULT_DATA);
+    saveStorage();
+  })();
+
+  /* ══ HELPERS ══ */
+  function fmt(n){ if(n===null||n===undefined) return '-'; return Math.round(n).toLocaleString('fr-FR'); }
+  function tauxBadge(e,c){
+    /* Taux affiché uniquement si engagement effectif */
+    if(!c||e===0) return `<span class="taux-val na">-</span>`;
+    const t=(e/c)*100;
+    return `<span class="taux-val${t>100?' over':''}">${t.toFixed(1)} %</span>`;
+  }
+  function engageHtml(e){
+    /* Engagement affiché uniquement si > 0 (imputation effective) */
+    if(!e||e===0) return `<span class="mono" style="color:#cbd5e1">-</span>`;
+    return `<span class="mono">${fmt(e)}</span>`;
+  }
+  function dispoHtml(e,cr){
+    /* Disponible : affiché seulement si engagement ou révision effectifs */
+    const d=cr-e;
+    if(e===0&&d===cr) return `<span class="mono" style="color:#cbd5e1">-</span>`;
+    if(d<0) return `<span class="mono neg">${fmt(d)}</span>`;
+    return `<span class="mono">${fmt(d)}</span>`;
+  }
+  function revHtml(init, rev){
+    /* Crédit révisé affiché uniquement si révision effective (≠ crédit initial) */
+    if(rev===init) return `<span class="mono" style="color:#cbd5e1">-</span>`;
+    if(rev>init)   return `<span class="mono rev-val">${fmt(rev)}</span><span class="rev-badge up">▲</span>`;
+    return             `<span class="mono rev-val">${fmt(rev)}</span><span class="rev-badge dn">▼</span>`;
+  }
+  function srcBadge(s){
+    const lbl={'RI':'État','RE-FM':'FM','RE-OMS':'OMS','RE-UNICEF':'UNICEF','CO':'Conjoint'};
+    return `<span class="src-label">${lbl[s]||s}</span>`;
+  }
+  function statutLigne(d){
+    if(d.niv!==2) return ''; // pas de statut pour titres/chapitres
+    // Révision en attente - toujours visible même sans engagement
+    const hasPending = REVISIONS.some(r=>r.ligneId===d.id && r.statut==='en_attente');
+    // Aucune activité réelle (engage=0 et aucune révision appliquée ni en attente) → cellule vide
+    if(d.engage===0 && d.creditRevise===d.credit && !hasPending) return '';
+    const dispo = d.creditRevise - d.engage;
+    const taux  = d.creditRevise > 0 ? d.engage / d.creditRevise : 0;
+    if(dispo <= 0)      return `<span class="sl-badge sl-full">Épuisée</span>`;
+    if(taux >= 0.90)    return `<span class="sl-badge sl-warn">Critique</span>`;
+    if(hasPending)      return `<span class="sl-badge sl-pend">Révision ⏳</span>`;
+    return `<span class="sl-badge sl-ok">Disponible</span>`;
+  }
+  function toast(msg,ok=true){
+    const t=document.createElement('div');
+    t.style.cssText=`position:fixed;bottom:24px;right:24px;background:${ok?'#15803d':'#b91c1c'};color:#fff;border-radius:10px;
+      padding:11px 18px;font-size:.8rem;font-weight:700;z-index:9999;display:flex;align-items:center;gap:9px;box-shadow:0 4px 20px rgba(0,0,0,.25)`;
+    t.innerHTML=`<i class="fas fa-${ok?'check':'times'}-circle"></i><span>${msg}</span>`;
+    document.body.appendChild(t);
+    setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},3200);
+  }
+
+  /* ══ ONGLETS ══ */
+  function setTab(t){
+    _tab=t;
+    ['all','I','II','III'].forEach(id=>document.getElementById('tab-'+id).classList.toggle('active',id===t));
+    const lbl={all:'État des dépenses, nomenclature officielle PSLSH/IST, exercice 2026',
+      I:'Titre I, dépenses de fonctionnement, exercice 2026',
+      II:'Titre II, investissements et équipements, exercice 2026',
+      III:'Titre III, médicaments et intrants, exercice 2026'};
+    document.getElementById('secTitle').textContent=lbl[t];
+    render();
+  }
+
+  /* ══ RENDU ══ */
+  function getFiltered(){
+    const src=document.getElementById('filtSrc').value;
+    const s=document.getElementById('filtSearch').value.toLowerCase();
+    return DATA.filter(d=>{
+      if(_tab!=='all'&&d.titre!==_tab) return false;
+      if(src&&d.src!==src) return false;
+      if(s&&!d.libelle.toLowerCase().includes(s)&&!d.code.toLowerCase().includes(s)) return false;
+      return true;
+    });
+  }
+
+  function render(){
+    ['I','II','III'].forEach(t=>document.getElementById('cnt-'+t).textContent=DATA.filter(d=>d.titre===t&&d.niv===2).length);
+    document.getElementById('cnt-all').textContent=DATA.filter(d=>d.niv===2).length;
+
+    const data=getFiltered();
+    const tbody=document.getElementById('tbodyDep');
+    const tfoot=document.getElementById('tfootDep');
+
+    tbody.innerHTML=data.map(d=>{
+      const dispo=d.creditRevise-d.engage;
+      const rowCls=d.niv===0?'row-titre':d.niv===1?'row-chap':'row-detail';
+      const alertTag=dispo<0?`<span class="dep-alert">⚠ Dépassement</span>`:'';
+      const noteTag=d.note&&dispo>=0?`<span class="note-tag">${d.note}</span>`:'';
+      return `<tr class="${rowCls}">
+        <td><span class="code-pill">${d.code}</span></td>
+        <td>${d.libelle}${alertTag}${noteTag}</td>
+        <td>${srcBadge(d.src)}</td>
+        <td class="te mono">${fmt(d.credit)}</td>
+        <td class="te">${revHtml(d.credit,d.creditRevise)}</td>
+        <td class="te">${engageHtml(d.engage)}</td>
+        <td class="te">${dispoHtml(d.engage,d.creditRevise)}</td>
+        <td class="tc">${tauxBadge(d.engage,d.creditRevise)}</td>
+        <td class="tc">${statutLigne(d)}</td>
+        <td class="tc">
+          <div class="act-menu-wrap">
+            <button class="act-toggle" onclick="toggleActMenu(event,'actm-${d.id}')"><i class="fas fa-ellipsis-v"></i></button>
+            <div class="act-dropdown" id="actm-${d.id}">
+              <button onclick="closeActMenus();openModalEdit('${d.id}')"><i class="fas fa-pencil-alt"></i> Modifier</button>
+              <button onclick="closeActMenus();openModalRevise('${d.id}')"><i class="fas fa-pen-ruler"></i> Réviser</button>
+              <button onclick="closeActMenus();openModalImput('${d.id}')"><i class="fas fa-stamp"></i> Imputer</button>
+              <button class="danger" onclick="closeActMenus();confirmDel('${d.id}','${d.code}')"><i class="fas fa-trash-alt"></i> Supprimer</button>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    const scope   = _tab==='all' ? DATA : DATA.filter(d=>d.titre===_tab);
+    const titres  = scope.filter(d=>d.niv===0);
+    const articles= scope.filter(d=>d.niv===2);
+    const totC  = titres.reduce((s,d)=>s+d.credit,0);
+    const totCR = titres.reduce((s,d)=>s+d.creditRevise,0);
+    /* engage toujours calculé depuis les articles (niv=2), source de vérité */
+    const totE  = articles.reduce((s,d)=>s+d.engage,0);
+    const totRevise = totCR!==totC ? fmt(totCR) : '-';
+    const totEngage  = totE>0 ? fmt(totE) : '-';
+    const totDispo   = totE>0 ? fmt(totCR-totE) : '-';
+    const totTaux    = totE>0&&totCR>0 ? `${((totE/totCR)*100).toFixed(1)} %` : '-';
+    tfoot.innerHTML=`<tr class="row-total">
+      <td colspan="3">TOTAL GÉNÉRAL</td>
+      <td class="te mono">${fmt(totC)}</td>
+      <td class="te mono">${totRevise}</td>
+      <td class="te mono">${totEngage}</td>
+      <td class="te mono">${totDispo}</td>
+      <td class="tc"><span class="taux-val">${totTaux}</span></td>
+      <td></td><td></td>
+    </tr>`;
+
+    updateKPIs();
+    renderImputations();
+  }
+
+  function updateKPIs(){
+    const titres =DATA.filter(d=>d.niv===0);
+    const lignes =DATA.filter(d=>d.niv===2);
+    const totC  = titres.reduce((s,d)=>s+d.credit,0);
+    const totCR = titres.reduce((s,d)=>s+d.creditRevise,0);
+    /* engage depuis articles (niv=2) - les titres ne reçoivent pas les imputations */
+    const totE  = lignes.reduce((s,d)=>s+d.engage,0);
+    const depass=lignes.filter(d=>d.engage>0&&(d.creditRevise-d.engage)<=0).length;
+    const txE=totCR>0?((totE/totCR)*100).toFixed(1):0;
+    const diffRev=totCR-totC;
+
+    document.getElementById('kCredits').textContent = fmt(totC)+' FCFA';
+    document.getElementById('kRevise').textContent  = fmt(totCR)+' FCFA';
+    document.getElementById('kRevSub').textContent  = diffRev===0?'Aucune révision':(diffRev>0?'▲ +'+fmt(diffRev):'▼ '+fmt(diffRev));
+    document.getElementById('kEngage').textContent  = fmt(totE)+' FCFA';
+    document.getElementById('kEngRate').textContent = txE+'% du crédit révisé';
+    document.getElementById('kDispo').textContent   = fmt(totCR-totE)+' FCFA';
+    document.getElementById('kDepass').textContent  = depass+' ligne(s)';
+    document.getElementById('kDepass').style.color  = depass>0?'#b91c1c':'#15803d';
+  }
+
+  /* ══ IMPUTATIONS ══ */
+  function renderImputations(){
+    const div=document.getElementById('imputList');
+    if(!IMPUTATIONS.length){
+      div.innerHTML='<div class="imput-item text-muted" style="justify-content:center;font-size:.75rem;padding:14px">Aucune imputation enregistrée. Utilisez le bouton <strong>Imputation</strong> pour enregistrer un engagement.</div>';
+      return;
+    }
+    div.innerHTML=IMPUTATIONS.map(imp=>{
+      const d=DATA.find(x=>x.id===imp.ligneId);
+      return `<div class="imput-item">
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:.75rem;color:#1b2f52">
+            <span class="code-pill" style="margin-right:6px">${d?d.code:'?'}</span>${imp.objet}
+          </div>
+          <div style="font-size:.67rem;color:#64748b;margin-top:2px">
+            <i class="fas fa-calendar me-1"></i>${imp.date}
+            &nbsp;·&nbsp;<i class="fas fa-file me-1"></i>${imp.ref}
+            ${imp.benef?`&nbsp;·&nbsp;<i class="fas fa-building me-1"></i>${imp.benef}`:''}
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:12px">
+          <div style="font-weight:800;font-family:monospace;font-size:.8rem;color:#b45309">${fmt(imp.montant)} FCFA</div>
+          <div style="font-size:.65rem;color:#94a3b8">${srcBadge(d?d.src:'RI')}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  /* ══ MODAL - AJOUTER LIGNE (prévision) ══ */
+  function openModalAdd(){
+    ['aId','aArt','aLibelle','aCredit','aNote'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});
+    document.getElementById('aNiv').value='2';
+    document.getElementById('aTitre').value=_tab!=='all'?_tab:'I';
+    document.getElementById('aChap').value='10';
+    document.getElementById('aSrc').value='RI';
+    autoCodeAdd();
+    new bootstrap.Modal(document.getElementById('modalAdd')).show();
+  }
+  function autoCodeAdd(){
+    const t=document.getElementById('aTitre').value;
+    const c=document.getElementById('aChap').value;
+    const a=document.getElementById('aArt').value.trim();
+    const n=parseInt(document.getElementById('aNiv').value);
+    let code='PSLSH/'+t;
+    if(n>=1) code+='/'+c;
+    if(n===2&&a) code+='-'+a;
+    document.getElementById('aCode').value=code;
+  }
+  function saveLigne(){
+    const code=document.getElementById('aCode').value.trim();
+    const libelle=document.getElementById('aLibelle').value.trim();
+    const credit=parseFloat(document.getElementById('aCredit').value)||0;
+    if(!code||!libelle){alert('Code et libellé sont obligatoires.');return;}
+    if(!credit){alert('Le crédit initial est obligatoire.');return;}
+    DATA.push({
+      id:'D'+(_nid++),
+      titre:document.getElementById('aTitre').value,
+      niv:parseInt(document.getElementById('aNiv').value),
+      code, libelle,
+      src:document.getElementById('aSrc').value,
+      credit, creditRevise:credit, engage:0,
+      note:document.getElementById('aNote').value.trim()
+    });
+    bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide();
+    render(); saveStorage();
+    toast('Ligne budgétaire ajoutée (prévision enregistrée).');
+  }
+
+  /* ══ MODAL - MODIFIER LIGNE ══ */
+  function openModalEdit(id){
+    const d=DATA.find(x=>x.id===id); if(!d) return;
+    // réutilise modalAdd pour l'édition
+    document.getElementById('aId').value     = d.id;
+    document.getElementById('aTitre').value  = d.titre;
+    document.getElementById('aNiv').value    = d.niv;
+    document.getElementById('aCode').value   = d.code;
+    document.getElementById('aLibelle').value= d.libelle;
+    document.getElementById('aSrc').value    = d.src;
+    document.getElementById('aCredit').value = d.credit;
+    document.getElementById('aNote').value   = d.note||'';
+    // extraire chap/art du code
+    const p=d.code.replace('PSLSH/'+d.titre+'/','').split('-');
+    document.getElementById('aChap').value=p[0]||'10';
+    document.getElementById('aArt').value =p[1]||'';
+    document.querySelector('#modalAdd .modal-title').innerHTML=
+      '<i class="fas fa-pencil-alt me-2"></i>Modifier la ligne budgétaire';
+    document.querySelector('#modalAdd button[onclick="saveLigne()"]').innerHTML=
+      '<i class="fas fa-save me-1"></i>Enregistrer les modifications';
+    new bootstrap.Modal(document.getElementById('modalAdd')).show();
+    // override save pour édition
+    document.querySelector('#modalAdd button[onclick="saveLigne()"]').onclick=()=>{
+      const libelle=document.getElementById('aLibelle').value.trim();
+      const credit=parseFloat(document.getElementById('aCredit').value)||0;
+      if(!libelle||!credit){alert('Libellé et crédit obligatoires.');return;}
+      const idx=DATA.findIndex(x=>x.id===d.id);
+      if(idx!==-1) DATA[idx]={...DATA[idx],
+        libelle, credit,
+        src:document.getElementById('aSrc').value,
+        note:document.getElementById('aNote').value.trim()
+      };
+      bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide();
+      document.querySelector('#modalAdd button').onclick=saveLigne;
+      render(); saveStorage(); toast('Ligne modifiée.');
+    };
+  }
+
+  /* ══ RÉVISION - depuis toolbar (sélecteur de ligne) ══ */
+  function openModalReviseToolbar(){
+    // Construire un select avec toutes les lignes de niveau 2 (articles)
+    const lignes = DATA.filter(x=>x.niv===2);
+    let opts = '<option value="">- Sélectionner une ligne budgétaire -</option>';
+    lignes.forEach(d=>{
+      opts += `<option value="${d.id}">[${d.code}] ${d.libelle}</option>`;
+    });
+    document.getElementById('rSelectLigne').innerHTML = opts;
+    document.getElementById('rSelectLigne').value = '';
+    document.getElementById('rSelectLigneRow').style.display = '';
+    document.getElementById('rLigne').closest('.mb-2').style.display = 'none';
+    document.getElementById('rId').value = '';
+    document.getElementById('rCreditInit').value = '';
+    document.getElementById('rCreditRevActuel').value = '';
+    document.getElementById('rNouveauCredit').value = '';
+    document.getElementById('rMotif').value = '';
+    document.getElementById('rType').value = 'Augmentation';
+    new bootstrap.Modal(document.getElementById('modalRevise')).show();
+  }
+  function onSelectRevLigne(){
+    const id = document.getElementById('rSelectLigne').value;
+    if(!id) return;
+    const d = DATA.find(x=>x.id===id); if(!d) return;
+    document.getElementById('rId').value = id;
+    document.getElementById('rLigne').value = '['+d.code+'] '+d.libelle;
+    document.getElementById('rCreditInit').value = fmt(d.credit)+' FCFA';
+    document.getElementById('rCreditRevActuel').value = fmt(d.creditRevise)+' FCFA';
+  }
+
+  /* ══ MODAL - RÉVISION ══ */
+  function openModalRevise(id){
+    document.getElementById('rSelectLigneRow').style.display = 'none';
+    document.getElementById('rLigne').closest('.mb-2').style.display = '';
+
+    const d=DATA.find(x=>x.id===id); if(!d) return;
+    document.getElementById('rId').value             = id;
+    document.getElementById('rLigne').value          = '['+d.code+'] '+d.libelle;
+    document.getElementById('rCreditInit').value     = fmt(d.credit)+' FCFA';
+    document.getElementById('rCreditRevActuel').value= fmt(d.creditRevise)+' FCFA';
+    document.getElementById('rNouveauCredit').value  = '';
+    document.getElementById('rMotif').value          = '';
+    document.getElementById('rType').value           = 'Augmentation';
+    new bootstrap.Modal(document.getElementById('modalRevise')).show();
+  }
+  function saveRevision(){
+    const id=document.getElementById('rId').value;
+    const nvMontant=parseFloat(document.getElementById('rNouveauCredit').value);
+    const motif=document.getElementById('rMotif').value.trim();
+    const type=document.getElementById('rType').value;
+    if(!id){alert('Sélectionner une ligne budgétaire.');return;}
+    if(!nvMontant||nvMontant<=0){alert('Le nouveau crédit révisé est obligatoire.');return;}
+    if(!motif){alert('Le motif est obligatoire.');return;}
+    const d=DATA.find(x=>x.id===id); if(!d) return;
+    /* Vérifier qu'une révision n'est pas déjà en attente sur cette ligne */
+    if(REVISIONS.some(r=>r.ligneId===id&&r.statut==='en_attente')){
+      alert('Une révision est déjà en attente de validation sur cette ligne.\nValidez ou rejetez-la avant d\'en soumettre une nouvelle.');
+      return;
+    }
+    REVISIONS.unshift({
+      id:'REV-'+String(_rid++).padStart(4,'0'),
+      ligneId:id, code:d.code, libelle:d.libelle,
+      creditActuel:d.creditRevise, nvMontant, type, motif,
+      date:new Date().toISOString().split('T')[0],
+      statut:'en_attente'
+    });
+    bootstrap.Modal.getInstance(document.getElementById('modalRevise')).hide();
+    render(); renderRevisions(); saveStorage();
+    toast('Révision soumise - en attente de validation.', true);
+  }
+
+  /* ══ VALIDATION DES RÉVISIONS ══ */
+  function validerRevision(rid){
+    const rev=REVISIONS.find(r=>r.id===rid); if(!rev) return;
+    const idx=DATA.findIndex(x=>x.id===rev.ligneId);
+    if(idx!==-1){
+      DATA[idx].creditRevise=rev.nvMontant;
+      DATA[idx].note=rev.type+' - '+rev.motif.substring(0,60);
+    }
+    rev.statut='validé';
+    render(); renderRevisions(); saveStorage();
+    toast('Révision validée - crédit mis à jour.');
+  }
+  function rejeterRevision(rid){
+    const rev=REVISIONS.find(r=>r.id===rid); if(!rev) return;
+    rev.statut='rejeté';
+    render(); renderRevisions(); saveStorage();
+    toast('Révision rejetée.', false);
+  }
+
+  function renderRevisions(){
+    const el=document.getElementById('revPendingList'); if(!el) return;
+    const pending=REVISIONS.filter(r=>r.statut==='en_attente');
+    document.getElementById('revPendingCount').textContent=pending.length||'';
+    document.getElementById('revPendingSection').style.display=pending.length?'':'none';
+    if(!pending.length){ el.innerHTML=''; return; }
+    el.innerHTML=pending.map(r=>`
+      <div class="rev-pending-item">
+        <span class="rp-code">${r.code}</span>
+        <span class="rp-type">${r.type}</span>
+        <span class="rp-montant">${fmt(r.nvMontant)} FCFA</span>
+        <span class="rp-motif">${r.motif}</span>
+        <small class="text-muted me-2">${r.date}</small>
+        <button class="btn-val me-1" onclick="validerRevision('${r.id}')"><i class="fas fa-check me-1"></i>Valider</button>
+        <button class="btn-rej" onclick="rejeterRevision('${r.id}')"><i class="fas fa-times me-1"></i>Rejeter</button>
+      </div>`).join('');
+  }
+
+  /* ══ MODAL - IMPUTATION ══ */
+  function openModalImput(preselId){
+    const sel=document.getElementById('iLigne');
+    sel.innerHTML='<option value="">- Sélectionner une ligne -</option>';
+    DATA.filter(d=>d.niv===2).forEach(d=>{
+      const dispo=d.creditRevise-d.engage;
+      const epuise=dispo<=0;
+      const opt=document.createElement('option');
+      opt.value=d.id;
+      opt.textContent=epuise
+        ? `⛔ ÉPUISÉE - [${d.code}] ${d.libelle.substring(0,45)}`
+        : `[${d.code}] ${d.libelle.substring(0,45)} - Solde: ${fmt(dispo)} FCFA`;
+      if(epuise) opt.disabled=true;
+      if(preselId&&d.id===preselId) opt.selected=true;
+      sel.appendChild(opt);
+    });
+    document.getElementById('iDate').value=new Date().toISOString().split('T')[0];
+    ['iMontant','iRef','iBenef','iObjet'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});
+    document.getElementById('iWarnDepass').style.display='none';
+    document.getElementById('iWarnEpuise').style.display='none';
+    document.getElementById('btnSaveImput').disabled=false;
+    updateImputDisponible();
+    new bootstrap.Modal(document.getElementById('modalImput')).show();
+  }
+  function updateImputDisponible(){
+    const id=document.getElementById('iLigne').value;
+    const d=DATA.find(x=>x.id===id);
+    const warnEp=document.getElementById('iWarnEpuise');
+    const btnSave=document.getElementById('btnSaveImput');
+    if(!d){
+      document.getElementById('iDispo').value='';
+      document.getElementById('iEngage').value='';
+      document.getElementById('iSolde').value='';
+      warnEp.style.display='none';
+      btnSave.disabled=false;
+      return;
+    }
+    const solde=d.creditRevise-d.engage;
+    document.getElementById('iDispo').value  = fmt(d.creditRevise)+' FCFA';
+    document.getElementById('iEngage').value = fmt(d.engage)+' FCFA';
+    document.getElementById('iSolde').value  = fmt(solde)+' FCFA';
+    document.getElementById('iSolde').style.color=solde<=0?'#b91c1c':'#15803d';
+    if(solde<=0){
+      warnEp.style.display='';
+      btnSave.disabled=true;
+    } else {
+      warnEp.style.display='none';
+      btnSave.disabled=false;
+      checkSolde();
+    }
+  }
+  function checkSolde(){
+    const id=document.getElementById('iLigne').value;
+    const d=DATA.find(x=>x.id===id); if(!d) return;
+    const montant=parseFloat(document.getElementById('iMontant').value)||0;
+    const solde=d.creditRevise-d.engage;
+    const over=montant>solde&&solde>0;
+    document.getElementById('iWarnDepass').style.display=over?'':'none';
+    document.getElementById('btnSaveImput').disabled=over;
+  }
+  function saveImputation(){
+    const ligneId=document.getElementById('iLigne').value;
+    const montant=parseFloat(document.getElementById('iMontant').value)||0;
+    const date=document.getElementById('iDate').value;
+    const ref=document.getElementById('iRef').value.trim();
+    const objet=document.getElementById('iObjet').value.trim();
+    if(!ligneId){alert('Sélectionner une ligne budgétaire.');return;}
+    if(!montant||montant<=0){alert('Le montant est obligatoire.');return;}
+    if(!date){alert('La date est obligatoire.');return;}
+    if(!ref){alert('La référence dossier/BC est obligatoire.');return;}
+    if(!objet){alert('L\'objet est obligatoire.');return;}
+    const idx=DATA.findIndex(x=>x.id===ligneId); if(idx===-1) return;
+    const solde=DATA[idx].creditRevise-DATA[idx].engage;
+    /* Blocage strict - aucun dépassement toléré */
+    if(montant>solde){
+      toast('Imputation refusée - le montant dépasse le solde disponible ('+fmt(solde)+' FCFA). Révisez le crédit d\'abord.', false);
+      return;
+    }
+    DATA[idx].engage+=montant;
+    IMPUTATIONS.unshift({
+      id:'IMP-'+String(_iid++).padStart(4,'0'),
+      ligneId, montant, date, ref, objet,
+      benef:document.getElementById('iBenef').value.trim()
+    });
+    bootstrap.Modal.getInstance(document.getElementById('modalImput')).hide();
+    render(); saveStorage();
+    toast('Imputation enregistrée - engagement mis à jour.');
+  }
+
+  /* ══════════════════════════════════════════════════════
+     IMPORT PAO GLOBAL → CRÉDITS INITIAUX
+  ══════════════════════════════════════════════════════ */
+  const PAO_GLOBAL = [
+    {code:'PSLSH-001',libelle:'Supervisions trimestrielles intégrées sites PEC VIH/IST/Hépatites',cout:30000000,bailleur:'ETAT/FM',statut:'Acquis'},
+    {code:'PSLSH-002',libelle:'Reproduire outils de collecte données VIH et Hépatites (1000)',cout:45000000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-003',libelle:'Atelier évaluation PAO 2026 et validation PAO 2027 (3 jours hors Ndjamena)',cout:7880000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-004',libelle:'Formation à l\'étranger 02 personnes suivi évaluation et statistiques',cout:14200000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-005',libelle:'Connexion internet mensuelle pour tracker VIH (100 acteurs)',cout:10000000,bailleur:'ETAT/FM',statut:'Acquis'},
+    {code:'PSLSH-006',libelle:'Recruter consultant assistance technique nationale (1 an)',cout:24000000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-007',libelle:'Réunions trimestrielles monitorage validation données sites PEC Ndjamena',cout:9192000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-008',libelle:'Atelier évaluation mi-parcours PAO 2026 (3 jours Ndjamena)',cout:7880000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-009',libelle:'Réunions semestrielles monitorage validation données DPSP 4 pools',cout:23000000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-010',libelle:'Révision directives nationales prise en charge VIH',cout:5000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-011',libelle:'Validation directives nationales révisées PEC VIH à Mandalia',cout:5000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-012',libelle:'Formation/Recyclage 80 médecins sites PEC IST/VIH/Hépatites (3 sessions)',cout:30000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-013',libelle:'Confectionner/reproduire 1000 dépliants algorithmes thérapeutiques VIH/IST/Hépatites',cout:10000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-014',libelle:'Reproduire et diffuser 500 directives nationales VIH/IST/Hépatites/Nutrition',cout:20000000,bailleur:'Etat',statut:'À Rechercher'},
+    {code:'PSLSH-015',libelle:'Atelier formation formateurs modules PEC Nutrition et protection sociale (40 participants)',cout:7000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-016',libelle:'Formation en cascade 80 paramedics/points focaux délégation de tâches PEC VIH/IST/Hépatites',cout:35000000,bailleur:'OMS',statut:'À Rechercher'},
+    {code:'PSLSH-017',libelle:'Validation algorithme national PEC hépatites virales à Mandalia',cout:6000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-018',libelle:'Former 100 adolescents-jeunes traitement literacy Ndjamena (2 sessions, 3 jours)',cout:5000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-019',libelle:'Campagne dépistage systématique 10 districts Ndjamena (UNA + dépistage index)',cout:14000000,bailleur:'OMS',statut:'À Rechercher'},
+    {code:'PSLSH-020',libelle:'Former 50 sages-femmes dépistage hépatites virales',cout:10000000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-021',libelle:'Journée Mondiale lutte contre SIDA Édition 2026',cout:15000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-022',libelle:'Journée Mondiale lutte contre les Hépatites Édition 2026',cout:15000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-023',libelle:'Participation Semaine Nationale Femme Tchadienne (SENAFET) 2026',cout:14000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-024',libelle:'Achat matériel collectif éducation prévention VIH méthode Ruban Rouge',cout:8500000,bailleur:'ETAT/UNICEF',statut:'À Rechercher'},
+    {code:'PSLSH-025',libelle:'Atelier formation points focaux méthode Ruban Rouge',cout:4000000,bailleur:'Etat',statut:'À Rechercher'},
+    {code:'PSLSH-026',libelle:'Missions supervisions semestrielles conjointes clubs ados/jeunes (10 villes, 3 axes)',cout:13000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-027',libelle:'3 campagnes intégrées prévention/lutte stigmatisation/dépistage VIH/Hépatites avec OSC',cout:12000000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-028',libelle:'Appui 5 associations/OSC films documentaires prévention IST/VIH/Hépatites/TB',cout:15000000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-029',libelle:'Supervision trimestrielle CDV chefs-lieux provinces (3 axes × 4 trimestres) APMS',cout:21960000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-030',libelle:'Acquisition incinérateur moderne gestion déchets APMS',cout:26240000,bailleur:'FM',statut:'À Rechercher'},
+    {code:'PSLSH-031',libelle:'Construction entrepôt stockage intrants + Extension laboratoire APMS',cout:35000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-032',libelle:'Achat 35% ARV adultes/pédiatriques/PTME/PrEP + réactifs + médicaments IO',cout:2514664083,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-033',libelle:'Achats traitement hépatite B&C + réactifs + consommables + préservatifs + micronutriments',cout:753934430,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-034',libelle:'Formation/Recyclage 85 acteurs gestion produits/dispensation (1 pool, 2 sessions, 3 jours)',cout:19224345,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-035',libelle:'2 Spot Check GAS dans 6 provinces (2 axes, 10 jours)',cout:4070000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-036',libelle:'Formation 39 techniciens labo système gestion données charge virale (3 jours)',cout:6000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-037',libelle:'Formation en cascade 53 techniciens labo/prestataires VISITEC CD4 (23 provinces)',cout:8000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-038',libelle:'Achat de performance cible Charge Virale supprimée',cout:30000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-039',libelle:'Paramétrage appareils GeneXpert charge virale hépatites B&C (23 provinces)',cout:4000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-040',libelle:'Formation 32 techniciens labo contrôle qualité charge virale/diagnostic précoce',cout:6000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-041',libelle:'Recrutement consultant national services LNR et Suivi Biologique',cout:2400000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-042',libelle:'Formation CPS/Prestataires stigmatisation, dépistage et counseling Ndjamena',cout:3900000,bailleur:'Collectivites locales',statut:'Acquis'},
+    {code:'PSLSH-043',libelle:'Mission suivi réalisation charge virale site haut volume via RNTAP+',cout:8000000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-044',libelle:'Achats carburants véhicules + groupe électrogène + entretien véhicules',cout:25000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-045',libelle:'Achats fournitures bureau + matériels informatiques (encres, ordinateurs, imprimantes)',cout:30280000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-046',libelle:'Achat matériels entretien (Ajax, Omo, désinfectants, balais, etc.)',cout:17000000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-047',libelle:'Contrat gardiennage + nettoyage + ramassage ordures',cout:6900000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-049',libelle:'Formation à l\'étranger 04 personnes gestion programmes (planification budgétaire, comptabilité)',cout:17400000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-050',libelle:'Participation 7 personnes conférences internationales (ICASA, AFRA VIH, etc.)',cout:25000000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-051',libelle:'Atelier processus demande financement hors Ndjamena (2 sessions)',cout:9000000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-052',libelle:'Atelier suivi Plan Conjoint National TB/VIH/HÉPATITES à Bakara',cout:4000000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-053',libelle:'Recrutement consultant national formation équipe programme intelligence artificielle',cout:4200000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-054',libelle:'Appui trimestriel fonctionnement Centre Espoir de Vie',cout:2400000,bailleur:'Etat',statut:'Acquis'},
+    {code:'PSLSH-055',libelle:'Transport échantillons sites prélèvement vers sites Genexpert (trimestriel)',cout:5200000,bailleur:'Etat',statut:'À Confirmer'},
+    {code:'PSLSH-056',libelle:'Transport intrants et réactifs vers les PPA (semestriel)',cout:5000000,bailleur:'Etat',statut:'À Confirmer'},
+  ];
+
+  /* Mapping PAO code → Chapitre (niv=1) - chaque activité devient son propre article */
+  const PAO_CHAP_MAP = {
+    'PSLSH-001':'C23', /* Supervisions intégrées → Chap.23 Formations/missions */
+    'PSLSH-002':'C20', /* Outils de collecte → Chap.20 Fournitures */
+    'PSLSH-003':'C23', /* Atelier évaluation PAO → Chap.23 Ateliers */
+    'PSLSH-004':'C23', /* Formation étranger → Chap.23 Formations */
+    'PSLSH-005':'C20', /* Connexion internet → Chap.20 Fournitures */
+    'PSLSH-006':'C10', /* Consultant AT → Chap.10 Personnel/consultants */
+    'PSLSH-007':'C23', /* Réunions monitorage → Chap.23 Ateliers */
+    'PSLSH-008':'C23', /* Atelier mi-parcours → Chap.23 Ateliers */
+    'PSLSH-009':'C23', /* Réunions semestrielles → Chap.23 Ateliers */
+    'PSLSH-010':'C20', /* Révision directives → Chap.20 Fournitures/doc */
+    'PSLSH-011':'C23', /* Validation directives → Chap.23 Ateliers */
+    'PSLSH-012':'C23', /* Formation 80 médecins → Chap.23 Formations */
+    'PSLSH-013':'C24', /* Dépliants algorith. → Chap.24 Sensibilisation */
+    'PSLSH-014':'C24', /* Directives nationales → Chap.24 Communication */
+    'PSLSH-015':'C23', /* Atelier formateurs → Chap.23 Formations */
+    'PSLSH-016':'C23', /* Formation paramedics (OMS) → Chap.23 Formations */
+    'PSLSH-017':'C23', /* Validation algo hépatites → Chap.23 Ateliers */
+    'PSLSH-018':'C23', /* Former ados literacy → Chap.23 Formations */
+    'PSLSH-019':'C24', /* Campagne dépistage → Chap.24 Sensibilisation */
+    'PSLSH-020':'C23', /* Former sages-femmes → Chap.23 Formations */
+    'PSLSH-021':'C24', /* JMS SIDA → Chap.24 Sensibilisation */
+    'PSLSH-022':'C24', /* JM Hépatites → Chap.24 Sensibilisation */
+    'PSLSH-023':'C24', /* SENAFET → Chap.24 Sensibilisation */
+    'PSLSH-024':'C24', /* Matériel Ruban Rouge → Chap.24 Comm./supports */
+    'PSLSH-025':'C23', /* Formation Ruban Rouge → Chap.23 Formations */
+    'PSLSH-026':'C23', /* Missions clubs ados → Chap.23 Missions */
+    'PSLSH-027':'C24', /* Campagnes prévention → Chap.24 Sensibilisation */
+    'PSLSH-028':'C25', /* Appui 5 OSC/assoc. → Chap.25 Appuis institutionnels */
+    'PSLSH-029':'C23', /* Supervision CDV → Chap.23 Missions terrain */
+    'PSLSH-030':'C31', /* Incinérateur APMS → Chap.31 Équipements */
+    'PSLSH-031':'C30', /* Construction entrepôt+labo → Chap.30 Constructions */
+    'PSLSH-032':'C40', /* ARV + réactifs + IO → Chap.40 Médicaments */
+    'PSLSH-033':'C40', /* Hépatites + consommables → Chap.40 Intrants */
+    'PSLSH-034':'C23', /* Formation gestion produits → Chap.23 Formations */
+    'PSLSH-035':'C23', /* Spot Check GAS → Chap.23 Missions */
+    'PSLSH-036':'C23', /* Formation labo CV → Chap.23 Formations */
+    'PSLSH-037':'C23', /* Formation labo VISITEC → Chap.23 Formations */
+    'PSLSH-038':'C25', /* Achat perf. CV → Chap.25 Appuis institutionnels */
+    'PSLSH-039':'C21', /* Paramétrage GeneXpert → Chap.21 Prestations */
+    'PSLSH-040':'C23', /* Formation qualité labo → Chap.23 Formations */
+    'PSLSH-041':'C10', /* Consultant LNR → Chap.10 Personnel/consultants */
+    'PSLSH-042':'C23', /* Formation CPS → Chap.23 Formations */
+    'PSLSH-043':'C23', /* Mission suivi CV → Chap.23 Missions */
+    'PSLSH-044':'C20', /* Carburants+entretien → Chap.20 Fournitures */
+    'PSLSH-045':'C20', /* Fournitures bureau+info → Chap.20 Fournitures */
+    'PSLSH-046':'C20', /* Matériels entretien → Chap.20 Fournitures */
+    'PSLSH-047':'C21', /* Gardiennage/nettoyage → Chap.21 Prestations */
+    'PSLSH-049':'C23', /* Formation étranger gestion → Chap.23 Formations */
+    'PSLSH-050':'C23', /* Conférences internationales → Chap.23 Missions */
+    'PSLSH-051':'C23', /* Atelier financement → Chap.23 Ateliers */
+    'PSLSH-052':'C23', /* Atelier TB/VIH → Chap.23 Ateliers */
+    'PSLSH-053':'C10', /* Consultant IA → Chap.10 Personnel/consultants */
+    'PSLSH-054':'C25', /* Appui CEV → Chap.25 Appuis institutionnels */
+    'PSLSH-055':'C20', /* Transport échantillons → Chap.20 Fournitures/transport */
+    'PSLSH-056':'C20', /* Transport intrants PPA → Chap.20 Fournitures/transport */
+  };
+
+  function paoToSrc(bailleur){
+    if(!bailleur||bailleur==='-') return 'CO';
+    const b=bailleur.toUpperCase();
+    if(b.includes('FM')&&b.includes('ETAT')) return 'CO';
+    if(b.includes('UNICEF')&&b.includes('ETAT')) return 'CO';
+    if(b.includes('FM'))     return 'RE-FM';
+    if(b.includes('OMS'))    return 'RE-OMS';
+    if(b.includes('UNICEF')) return 'RE-UNICEF';
+    if(b.includes('COLLECTIVITES')||b.includes('COLLECTIVITÉS')) return 'CO';
+    return 'RI';
+  }
+
+  function openModalImportPAO(){
+    document.getElementById('paoPreview').innerHTML = buildPAOPreview();
+    new bootstrap.Modal(document.getElementById('modalImportPAO')).show();
+  }
+
+  function buildPAOPreview(){
+    /* Grouper par chapitre */
+    const byChap={};
+    PAO_GLOBAL.forEach(p=>{
+      if(!p.cout) return;
+      const chapId=PAO_CHAP_MAP[p.code]; if(!chapId) return;
+      if(!byChap[chapId]) byChap[chapId]=[];
+      byChap[chapId].push(p);
+    });
+
+    const titres=DATA.filter(d=>d.niv===0);
+    let html='', grandTotal=0, nbActs=0;
+    const stCls=s=>s==='Acquis'?'pao-st-Acquis':s==='À Confirmer'?'pao-st-AConfirmer':'pao-st-ARechercher';
+
+    titres.forEach(t=>{
+      const chaps=DATA.filter(d=>d.niv===1&&d.titre===t.titre);
+      let titreHtml='', titreTotal=0;
+      chaps.forEach(c=>{
+        const acts=byChap[c.id]||[]; if(!acts.length) return;
+        const chapTotal=acts.reduce((s,p)=>s+p.cout,0);
+        titreTotal+=chapTotal; grandTotal+=chapTotal; nbActs+=acts.length;
+        const seq=p=>p.code.split('-')[1];
+        titreHtml+=`
+          <div class="pao-chap-bar">${c.libelle} - <span style="font-family:monospace">${fmt(chapTotal)} FCFA</span> · ${acts.length} article${acts.length>1?'s':''}</div>
+          <div class="pao-art-block">
+            <div class="pao-act-list">
+              ${acts.map(p=>`
+                <div class="pao-act-row">
+                  <span class="pao-act-code">${p.code}</span>
+                  <span class="pao-act-lbl" title="${p.libelle}">${p.libelle}</span>
+                  <span class="pao-act-cout">${fmt(p.cout)}</span>
+                  <span class="pao-act-bail">${p.bailleur}</span>
+                  <span class="pao-act-st ${stCls(p.statut)}">${p.statut}</span>
+                </div>`).join('')}
+            </div>
+          </div>`;
+      });
+      if(titreTotal>0) html+=`<div class="pao-titre-bar">${t.libelle} - ${fmt(titreTotal)} FCFA</div>${titreHtml}`;
+    });
+
+    const banner=`<div style="display:flex;gap:16px;align-items:center;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:12px;font-size:.75rem">
+      <i class="fas fa-info-circle text-muted"></i>
+      <span><strong>${nbActs}</strong> activités PAO → <strong>${nbActs}</strong> articles budgétaires (1 activité = 1 article)</span>
+      <span style="margin-left:auto;font-family:monospace;font-weight:800;color:#1e293b">Total : ${fmt(grandTotal)} FCFA</span>
+    </div>`;
+    return banner+html;
+  }
+
+  function confirmImportPAO(){
+    if(!confirm('Cette opération remplace tous les articles existants par les activités du PAO Global.\nLes imputations et révisions en attente seront effacées.\n\nConfirmer ?')) return;
+
+    /* 1. Supprimer tous les articles niv=2 existants */
+    for(let i=DATA.length-1;i>=0;i--){ if(DATA[i].niv===2) DATA.splice(i,1); }
+    IMPUTATIONS=[]; REVISIONS=[]; _iid=1; _rid=1;
+
+    /* 2. Créer un article par activité PAO */
+    PAO_GLOBAL.forEach(p=>{
+      if(!p.cout) return; // Non chiffré → skip
+      const chapId=PAO_CHAP_MAP[p.code]; if(!chapId) return;
+      const chap=DATA.find(d=>d.id===chapId); if(!chap) return;
+      const seq=p.code.split('-')[1]; // '001'…'056'
+      DATA.push({
+        id   : 'PAO-'+p.code,
+        titre: chap.titre,
+        niv  : 2,
+        code : chap.code+'-'+seq,         // ex: PSLSH/I/23-001
+        src  : paoToSrc(p.bailleur),
+        credit      : p.cout,
+        creditRevise: p.cout,
+        engage      : 0,
+        note : p.statut!=='Acquis'?p.statut:'',
+        libelle: p.code+' - '+p.libelle,
+        fromPAO: true,
+        paoCode: p.code,
+      });
+    });
+
+    /* 3. Trier : Titre → Chapitre → Articles (par numéro séquentiel) */
+    sortData();
+
+    /* 4. Recalculer les totaux chapitres et titres */
+    recalcAgregats();
+
+    bootstrap.Modal.getInstance(document.getElementById('modalImportPAO')).hide();
+    render(); renderRevisions(); saveStorage();
+    toast('Import PAO : '+DATA.filter(d=>d.fromPAO).length+' activités importées comme articles budgétaires.');
+  }
+
+  function sortData(){
+    const newData=[];
+    DATA.filter(d=>d.niv===0).sort((a,b)=>a.titre<b.titre?-1:1).forEach(t=>{
+      newData.push(t);
+      DATA.filter(d=>d.niv===1&&d.titre===t.titre)
+        .sort((a,b)=>parseInt(a.code.split('/')[2]||0)-parseInt(b.code.split('/')[2]||0))
+        .forEach(c=>{
+          newData.push(c);
+          DATA.filter(d=>d.niv===2&&d.code.startsWith(c.code+'-'))
+            .sort((a,b)=>parseInt(a.code.split('-').pop()||0)-parseInt(b.code.split('-').pop()||0))
+            .forEach(a=>newData.push(a));
+        });
+    });
+    DATA.splice(0,DATA.length,...newData);
+  }
+
+  function recalcAgregats(){
+    DATA.filter(d=>d.niv===1).forEach(d=>{
+      const s=DATA.filter(x=>x.niv===2&&x.code.startsWith(d.code+'-')).reduce((a,x)=>a+x.credit,0);
+      if(s>0){d.credit=s;d.creditRevise=s;}
+    });
+    DATA.filter(d=>d.niv===0).forEach(d=>{
+      const s=DATA.filter(x=>x.niv===1&&x.titre===d.titre).reduce((a,x)=>a+x.credit,0);
+      if(s>0){d.credit=s;d.creditRevise=s;}
+    });
+  }
+
+  /* ══ SUPPRESSION ══ */
+  /* ══ RÉINITIALISATION ══ */
+  function reinitialiserDonnees(){
+    if(!confirm('Annuler les modifications ?\n\nLes données seront restaurées à la dernière version enregistrée.')) return;
+    const raw = localStorage.getItem(SAVED_KEY);
+    let ref = null;
+    if(raw){ try{ const s=JSON.parse(raw); if(s&&s._ok) ref=s; }catch(e){} }
+    if(ref){
+      DATA.splice(0, DATA.length, ...(ref.data||[]));
+      IMPUTATIONS.splice(0, IMPUTATIONS.length, ...(ref.imputations||[]));
+      REVISIONS.splice(0, REVISIONS.length, ...(ref.revisions||[]));
+      _nid=ref.nid||100; _iid=ref.iid||1; _rid=ref.rid||1;
+    } else {
+      DATA.splice(0, DATA.length, ...DEFAULT_DATA);
+      IMPUTATIONS.splice(0, IMPUTATIONS.length);
+      REVISIONS.splice(0, REVISIONS.length);
+      _nid=100; _iid=1; _rid=1;
+    }
+    saveStorage(); render(); renderRevisions();
+    toast('Modifications annulées - données restaurées.');
+  }
+
+  let _did=null;
+  function confirmDel(id,label){
+    _did=id;
+    document.getElementById('delMsg').innerHTML=`Supprimer <strong>"${label}"</strong> ?<br><small class="text-muted">Les imputations associées restent dans l\'historique.</small>`;
+    document.getElementById('btnDel').onclick=()=>{
+      DATA=DATA.filter(x=>x.id!==_did);
+      bootstrap.Modal.getInstance(document.getElementById('modalDel')).hide();
+      render(); saveStorage(); toast('Ligne supprimée.');
+    };
+    new bootstrap.Modal(document.getElementById('modalDel')).show();
+  }
+
+  /* ══ EXPORT ══ */
+  function exportCSV(){
+    const data=_tab==='all'?DATA:DATA.filter(d=>d.titre===_tab);
+    const h=['Code','Libellé','Source','Titre','Niveau','Crédit initial','Crédit révisé','Engagé','Disponible','Taux (%)'];
+    const rows=data.map(d=>{
+      const dispo=d.creditRevise-d.engage;
+      const t=d.creditRevise>0?((d.engage/d.creditRevise)*100).toFixed(2):0;
+      return [d.code,`"${d.libelle}"`,d.src,d.titre,d.niv,d.credit,d.creditRevise,d.engage,dispo,t];
+    });
+    const csv=[h,...rows].map(r=>r.join(';')).join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+    a.download=`Depenses-PSLSH-2026.csv`; a.click();
+  }
+
+  render();
+  renderRevisions();
+
+  /* ── Badge "Voir dans la Synthèse" : affiche le nombre de lignes articles ── */
+  function updateSynthBadgeDep() {
+    const b = document.getElementById('synth-badge-dep');
+    if (!b) return;
+    const n = DATA.filter(d => d.niv === 2).length;
+    b.textContent = n + ' ligne' + (n > 1 ? 's' : '');
+  }
+  updateSynthBadgeDep();
+
+  /* Patch : chaque sauvegarde met aussi à jour le badge */
+  const _saveStorageOrigDep = saveStorage;
+  saveStorage = function() { _saveStorageOrigDep(); updateSynthBadgeDep(); };
+</script>
+</body>
+</html>

@@ -1,0 +1,957 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SIGFIC-PSLSH | Tableau de bord</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    /* ════════════════════════════════════════════
+       TABLEAU DE BORD — Design sobre & professionnel
+    ════════════════════════════════════════════ */
+
+    /* ── Barre filtre ── */
+    .db-filter {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+      padding: 8px 16px; margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .db-filter-label { font-size: .68rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; white-space:nowrap }
+    .db-filter select {
+      font-size: .82rem; border: 1px solid #e2e8f0; border-radius: 7px;
+      padding: 5px 12px; color: #1e293b; background: #f8fafc; cursor: pointer;
+    }
+    .db-filter-date { font-size: .73rem; color: #94a3b8; margin-left: auto; white-space:nowrap }
+
+    /* ── KPI Bubble row ── */
+    .kpi-bubbles {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    @media(max-width:1200px){ .kpi-bubbles { grid-template-columns: repeat(3,1fr) } }
+    @media(max-width:768px) { .kpi-bubbles { grid-template-columns: repeat(2,1fr) } }
+
+    .kpi-bubble {
+      background: #fff;
+      border: 1px solid #e8edf3;
+      border-radius: 14px;
+      padding: 18px 14px 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+      position: relative; overflow: hidden;
+      transition: box-shadow .15s, transform .15s;
+    }
+    .kpi-bubble:hover { box-shadow: 0 4px 12px rgba(0,0,0,.09); transform: translateY(-1px); }
+    .kpi-bubble::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    }
+    .kb-blue::after   { background: #3b72c7; }
+    .kb-green::after  { background: #22c55e; }
+    .kb-orange::after { background: #f59e0b; }
+    .kb-teal::after   { background: #14b8a6; }
+    .kb-purple::after { background: #8b5cf6; }
+    .kb-red::after    { background: #ef4444; }
+
+    .kpi-bubble-icon {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; flex-shrink: 0;
+    }
+    .kb-blue   .kpi-bubble-icon { background: #dbeafe; color: #1d4ed8; }
+    .kb-green  .kpi-bubble-icon { background: #dcfce7; color: #15803d; }
+    .kb-orange .kpi-bubble-icon { background: #fef3c7; color: #b45309; }
+    .kb-teal   .kpi-bubble-icon { background: #ccfbf1; color: #0d9488; }
+    .kb-purple .kpi-bubble-icon { background: #ede9fe; color: #6d28d9; }
+    .kb-red    .kpi-bubble-icon { background: #fee2e2; color: #b91c1c; }
+
+    .kpi-bubble-val {
+      font-size: 1.3rem; font-weight: 800; line-height: 1; text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+    }
+    .kb-blue   .kpi-bubble-val { color: #1d4ed8; }
+    .kb-green  .kpi-bubble-val { color: #15803d; }
+    .kb-orange .kpi-bubble-val { color: #b45309; }
+    .kb-teal   .kpi-bubble-val { color: #0d9488; }
+    .kb-purple .kpi-bubble-val { color: #6d28d9; }
+    .kb-red    .kpi-bubble-val { color: #b91c1c; }
+
+    .kpi-bubble-lbl {
+      font-size: .72rem; color: #64748b; font-weight: 500; text-align: center; line-height: 1.3;
+    }
+
+    /* ── Section card ── */
+    .db-card {
+      background: #fff; border: 1px solid #e8edf3; border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05); overflow: hidden; margin-bottom: 16px;
+    }
+    .db-card-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 16px; border-bottom: 1px solid #f1f5f9;
+      background: #fafbfd;
+    }
+    .db-card-head-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-size: .75rem;
+    }
+    .dchi-blue   { background: #dbeafe; color: #1d4ed8; }
+    .dchi-green  { background: #dcfce7; color: #15803d; }
+    .dchi-orange { background: #fef3c7; color: #b45309; }
+    .dchi-teal   { background: #ccfbf1; color: #0d9488; }
+    .dchi-purple { background: #ede9fe; color: #6d28d9; }
+    .dchi-red    { background: #fee2e2; color: #b91c1c; }
+    .dchi-slate  { background: #f1f5f9; color: #475569; }
+
+    .db-card-title {
+      font-size: .78rem; font-weight: 700; color: #1e293b; text-transform: uppercase;
+      letter-spacing: .3px; flex: 1;
+    }
+    .db-card-link {
+      font-size: .71rem; color: #1a6fc4; font-weight: 600; text-decoration: none; white-space: nowrap;
+    }
+    .db-card-link:hover { color: #1b3a6b; text-decoration: underline; }
+    .db-card-body { padding: 16px; }
+    .db-card-body-sm { padding: 12px 16px; }
+
+    /* ── Étapes budgétaires ── */
+    .budget-step {
+      display: flex; align-items: center; gap: 12px; padding: 11px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .budget-step:last-child { border-bottom: none; padding-bottom: 0; }
+    .budget-step:first-child { padding-top: 0; }
+    .bs-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .bs-label { font-size: .8rem; font-weight: 600; color: #334155; min-width: 130px; }
+    .bs-track {
+      flex: 1; height: 7px; background: #e8edf3; border-radius: 5px; overflow: hidden;
+    }
+    .bs-fill { height: 100%; border-radius: 5px; transition: width .6s ease; }
+    .bs-pct { font-size: .78rem; font-weight: 800; min-width: 36px; text-align: right; }
+    .bs-amount { font-size: .72rem; color: #64748b; white-space: nowrap; }
+    .bs-blue  .bs-dot { background: #3b72c7; }
+    .bs-blue  .bs-fill { background: linear-gradient(90deg,#1b3a6b,#3b72c7); }
+    .bs-blue  .bs-pct { color: #1d4ed8; }
+    .bs-orange .bs-dot { background: #f59e0b; }
+    .bs-orange .bs-fill { background: linear-gradient(90deg,#b45309,#f59e0b); }
+    .bs-orange .bs-pct { color: #b45309; }
+    .bs-green .bs-dot { background: #22c55e; }
+    .bs-green .bs-fill { background: linear-gradient(90deg,#15803d,#22c55e); }
+    .bs-green .bs-pct { color: #15803d; }
+    .bs-purple .bs-dot { background: #8b5cf6; }
+    .bs-purple .bs-fill { background: linear-gradient(90deg,#6d28d9,#8b5cf6); }
+    .bs-purple .bs-pct { color: #6d28d9; }
+
+    /* ── Budget summary totals ── */
+    .bud-totals {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+    }
+    .bud-total-item {
+      background: #f8fafc; border-radius: 9px; padding: 10px 14px;
+      border: 1px solid #e8edf3;
+    }
+    .bud-total-val { font-size: 1rem; font-weight: 800; color: #1e293b; }
+    .bud-total-lbl { font-size: .67rem; color: #64748b; font-weight: 500; margin-top: 2px; }
+
+    /* ── Recettes sources ── */
+    .rec-source {
+      display: flex; align-items: center; gap: 10px; padding: 9px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .rec-source:last-child { border-bottom: none; padding-bottom: 0; }
+    .rec-source:first-child { padding-top: 0; }
+    .rec-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .rec-name { font-size: .78rem; color: #334155; font-weight: 600; flex: 1; min-width: 0; }
+    .rec-track { width: 80px; height: 6px; background: #e8edf3; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+    .rec-fill  { height: 100%; border-radius: 4px; }
+    .rec-pct   { font-size: .73rem; font-weight: 700; min-width: 32px; text-align: right; }
+
+    /* ── Alertes ── */
+    .db-alert {
+      display: flex; align-items: flex-start; gap: 9px; padding: 10px 12px;
+      border-radius: 8px; font-size: .78rem; margin-bottom: 7px;
+    }
+    .db-alert:last-child { margin-bottom: 0; }
+    .db-alert i { margin-top: 1px; flex-shrink: 0; }
+    .db-alert-danger  { background: #fef2f2; border-left: 3px solid #ef4444; color: #991b1b; }
+    .db-alert-warning { background: #fffbeb; border-left: 3px solid #f59e0b; color: #78350f; }
+    .db-alert-info    { background: #eff6ff; border-left: 3px solid #3b82f6; color: #1e40af; }
+    .db-alert-success { background: #f0fdf4; border-left: 3px solid #22c55e; color: #14532d; }
+    .db-alert a { font-size: .73rem; font-weight: 700; color: inherit; margin-left: 4px; }
+
+    /* ── Statuts dossiers ── */
+    .statut-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 0; border-bottom: 1px solid #f1f5f9;
+    }
+    .statut-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .statut-row:first-child { padding-top: 0; }
+    .statut-cnt { font-weight: 800; font-size: .85rem; color: #1e293b; }
+
+    /* ── Modules navigateurs ── */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    @media(max-width:1100px){ .modules-grid { grid-template-columns: repeat(4,1fr) } }
+    @media(max-width:768px)  { .modules-grid { grid-template-columns: repeat(3,1fr) } }
+
+    .mod-card {
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
+      padding: 14px 8px 12px;
+      background: #fff; border: 1px solid #e8edf3; border-radius: 11px;
+      text-decoration: none; color: #334155;
+      transition: all .15s ease;
+      text-align: center;
+    }
+    .mod-card:hover {
+      border-color: #93c5fd; background: #eff6ff; color: #1d4ed8;
+      box-shadow: 0 3px 10px rgba(59,130,246,.12); transform: translateY(-2px);
+    }
+    .mod-icon {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: .85rem;
+    }
+    .mi-blue   { background: #dbeafe; color: #1d4ed8; }
+    .mi-green  { background: #dcfce7; color: #15803d; }
+    .mi-orange { background: #fef3c7; color: #b45309; }
+    .mi-teal   { background: #ccfbf1; color: #0d9488; }
+    .mi-purple { background: #ede9fe; color: #6d28d9; }
+    .mi-red    { background: #fee2e2; color: #b91c1c; }
+    .mi-slate  { background: #f1f5f9; color: #475569; }
+    .mi-indigo { background: #e0e7ff; color: #3730a3; }
+    .mi-pink   { background: #fce7f3; color: #9d174d; }
+    .mi-navy   { background: #e8f0fb; color: #1b3a6b; }
+    .mod-card:hover .mod-icon { filter: brightness(.95); }
+    .mod-label { font-size: .75rem; font-weight: 700; line-height: 1.3; } /* Augmenté : 11.25px → lisible */
+    .mod-stat  { font-size: .65rem; color: #64748b; font-weight: 500; } /* Corrigé : 4.6:1 sur fond blanc */
+    .mod-card:hover .mod-stat { color: #3b82f6; }
+
+    /* ── Section header inline ── */
+    .db-section-head {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    }
+    .db-section-dot {
+      width: 4px; height: 16px; border-radius: 2px; flex-shrink: 0;
+    }
+    .db-section-title {
+      font-size: .78rem; font-weight: 700; color: #1e293b; text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .db-section-line { flex: 1; height: 1px; background: #f1f5f9; }
+
+    /* ── Piliers PAO mini ── */
+    .pao-item {
+      display: flex; align-items: center; gap: 10px; padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .pao-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .pao-item:first-child { padding-top: 0; }
+    .pao-code {
+      min-width: 28px; height: 22px; border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .68rem; font-weight: 800; flex-shrink: 0;
+    }
+    .pao-name { font-size: .76rem; color: #334155; flex: 1; min-width: 0; }
+    .pao-acts { font-size: .7rem; color: #64748b; white-space: nowrap; }
+    .pao-track { width: 60px; height: 6px; background: #e8edf3; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+    .pao-fill  { height: 100%; border-radius: 4px; }
+    .pao-pct   { font-size: .72rem; font-weight: 700; min-width: 30px; text-align: right; }
+
+    /* Responsive main layout */
+    @media(max-width:991px) {
+      .db-main-row > [class*="col-"] { margin-bottom: 12px; }
+    }
+    @media(max-width:767px) {
+      .kpi-bubble-val { font-size: 1rem; }
+    }
+
+    /* ── Layout "Excel" plein-écran ── */
+    html, body          { height: 100%; overflow: hidden; }
+    .app-layout         { height: 100vh; overflow: hidden; }
+    .main-content       { height: 100vh; overflow: hidden; }
+    .page-content {
+      flex: 1; overflow: hidden;
+      display: flex; flex-direction: column;
+      padding: 0; gap: 0;
+    }
+
+    /* Filtre + KPI : figés */
+    .db-fixed-top { flex-shrink: 0; padding: 14px 24px 0; }
+
+    /* Barre d'onglets style Excel */
+    .db-tabs {
+      flex-shrink: 0;
+      display: flex; align-items: flex-end; gap: 2px;
+      padding: 0 24px;
+      border-bottom: 2px solid #d1d5db;
+      background: #f8fafc;
+      margin-top: 12px;
+    }
+    .db-tab {
+      display: flex; align-items: center; gap: 7px;
+      padding: 8px 20px;
+      font-size: .78rem; font-weight: 600; color: #64748b;
+      cursor: pointer; user-select: none;
+      border: 1px solid transparent; border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      background: transparent;
+      transition: color .12s, background .12s;
+      position: relative; bottom: -2px;
+    }
+    .db-tab:hover { color: #1b3a6b; background: #eef2ff; }
+    .db-tab.active {
+      color: #1b3a6b; background: #fff;
+      border-color: #d1d5db; border-bottom-color: #fff;
+      font-weight: 700;
+    }
+    .db-tab i { font-size: .72rem; opacity: .7; }
+    .db-tab.active i { opacity: 1; color: #2563eb; }
+
+    /* Zone scrollable */
+    .db-body {
+      flex: 1; overflow-y: auto;
+      padding: 18px 24px 20px;
+      background: #eef2f7;
+    }
+
+    /* Panels */
+    .db-panel { display: none; }
+    .db-panel.active { display: block; }
+
+    .db-filter { margin-bottom: 12px; }
+    .kpi-bubbles { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo"
+         onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <!-- ═══ CONTENU PRINCIPAL ═══ -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item active"><a href="/pages/dashboard/index.html">Tableau de bord</a></li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong id="topbarExercice">2026</strong>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" title="Notifications" aria-label="Notifications">
+          <i class="fas fa-bell" aria-hidden="true"></i>
+          <span class="notif-dot" id="notifDot" style="display:none"></span>
+        </button>
+        <div class="dropdown">
+          <div class="user-pill dropdown-toggle" data-bs-toggle="dropdown" style="cursor:pointer">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div>
+              <div class="user-name" id="userName">—</div>
+              <div class="user-role" id="userRole">—</div>
+            </div>
+            <i class="fas fa-chevron-down ms-1" style="font-size:.6rem;color:rgba(255,255,255,.4)"></i>
+          </div>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><h6 class="dropdown-header">Mon compte</h6></li>
+            <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle me-2"></i>Mon profil</a></li>
+            <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Changer mot de passe</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══ PAGE CONTENT ═══ -->
+    <div class="page-content">
+
+      <!-- IDs utilitaires cachés (compatibilité JS) -->
+      <div style="display:none" aria-hidden="true">
+        <span id="fr-initial">—</span><span id="fr-engage">—</span>
+        <span id="fr-liquide">—</span><span id="fr-paye">—</span>
+        <span id="fr-tx-eng">—</span><span id="fr-tx-liq">—</span><span id="fr-tx-pay">—</span>
+        <div id="bar-eng"></div><div id="bar-liq"></div><div id="bar-pay"></div>
+        <span id="pct-eng">0%</span><span id="pct-liq">0%</span><span id="pct-pay">0%</span>
+        <span id="kpi-budget">—</span><span id="kpi-engage">—</span>
+        <span id="kpi-liquide">—</span><span id="kpi-paye">—</span>
+        <span id="kpi-anomalies">0</span><span id="kpi-dossiers">0</span>
+        <span id="rec-prevision">—</span><span id="rec-recouvre">—</span>
+        <span id="rec-ecart">—</span><span id="rec-taux">—</span>
+        <span id="int-prevision">—</span><span id="int-execute">—</span>
+        <span id="int-ecart">—</span><span id="int-taux">—</span>
+        <span id="bnk-credit">—</span><span id="bnk-debit">—</span><span id="bnk-solde">—</span>
+        <span id="cte-budget">—</span><span id="cte-paye">—</span><span id="cte-taux">—</span>
+        <span id="wbDate">—</span><span id="wbExercice">—</span>
+        <tbody id="rec-table-body"></tbody><tfoot id="rec-table-foot"></tfoot>
+      </div>
+
+      <!-- ── Zone figée : filtre + KPI ── -->
+      <div class="db-fixed-top">
+
+        <!-- Filtre période -->
+        <div class="db-filter">
+          <span class="db-filter-label"><i class="fas fa-filter me-1"></i>Exercice</span>
+          <select id="selExercice" onchange="loadKPIs()">
+            <option value="">Tous les exercices</option>
+          </select>
+          <span class="db-filter-date" id="filterDate">—</span>
+        </div>
+
+        <!-- KPI Bubbles -->
+        <div class="kpi-bubbles">
+          <div class="kpi-bubble kb-blue">
+            <div class="kpi-bubble-icon"><i class="fas fa-coins"></i></div>
+            <div class="kpi-bubble-val" id="bubble-budget">—</div>
+            <div class="kpi-bubble-lbl">Budget de l'exercice</div>
+          </div>
+          <div class="kpi-bubble kb-orange">
+            <div class="kpi-bubble-icon"><i class="fas fa-file-signature"></i></div>
+            <div class="kpi-bubble-val" id="bubble-engage">—</div>
+            <div class="kpi-bubble-lbl">Engagé (FCFA)</div>
+          </div>
+          <div class="kpi-bubble kb-purple">
+            <div class="kpi-bubble-icon"><i class="fas fa-check-double"></i></div>
+            <div class="kpi-bubble-val" id="bubble-liquide">—</div>
+            <div class="kpi-bubble-lbl">Liquidé (FCFA)</div>
+          </div>
+          <div class="kpi-bubble kb-green">
+            <div class="kpi-bubble-icon"><i class="fas fa-money-check-alt"></i></div>
+            <div class="kpi-bubble-val" id="bubble-paye">—</div>
+            <div class="kpi-bubble-lbl">Décaissé</div>
+          </div>
+          <div class="kpi-bubble kb-teal">
+            <div class="kpi-bubble-icon"><i class="fas fa-folder-open"></i></div>
+            <div class="kpi-bubble-val" id="bubble-dossiers">—</div>
+            <div class="kpi-bubble-lbl">Dossiers en cours</div>
+          </div>
+          <div class="kpi-bubble kb-red">
+            <div class="kpi-bubble-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="kpi-bubble-val" id="bubble-anomalies">—</div>
+            <div class="kpi-bubble-lbl">Anomalies ouvertes</div>
+          </div>
+        </div>
+
+      </div><!-- /db-fixed-top -->
+
+      <!-- ── Onglets style Excel ── -->
+      <div class="db-tabs">
+        <div class="db-tab active" id="dbtab-synthese"   onclick="dbSwitchTab('synthese')">
+          <i class="fas fa-chart-bar"></i>Vue d'ensemble
+        </div>
+        <div class="db-tab" id="dbtab-pao"        onclick="dbSwitchTab('pao')">
+          <i class="fas fa-tasks"></i>PAO &amp; Activités
+        </div>
+        <div class="db-tab" id="dbtab-modules"    onclick="dbSwitchTab('modules')">
+          <i class="fas fa-th-large"></i>Modules
+        </div>
+        <div class="db-tab" id="dbtab-tresorerie" onclick="dbSwitchTab('tresorerie')">
+          <i class="fas fa-university"></i>Trésorerie
+        </div>
+      </div>
+
+      <!-- ── Corps scrollable ── -->
+      <div class="db-body">
+
+        <!-- ══ Onglet 1 : Vue d'ensemble ══ -->
+        <div class="db-panel active" id="dbpanel-synthese">
+          <div class="row g-3 db-main-row">
+
+            <!-- Col 1 : Exécution budgétaire -->
+            <div class="col-lg-5">
+              <div class="db-card h-100">
+                <div class="db-card-head">
+                  <div class="db-card-head-icon dchi-blue"><i class="fas fa-chart-bar"></i></div>
+                  <span class="db-card-title">Exécution budgétaire</span>
+                  <a href="../budget/suivi.html" class="db-card-link">Détail →</a>
+                </div>
+                <div class="db-card-body">
+                  <div class="bud-totals">
+                    <div class="bud-total-item">
+                      <div class="bud-total-val" id="bud-prevision">—</div>
+                      <div class="bud-total-lbl">Prévision totale (FCFA)</div>
+                    </div>
+                    <div class="bud-total-item" style="border-color:#dcfce7">
+                      <div class="bud-total-val" style="color:#15803d" id="bud-paye">—</div>
+                      <div class="bud-total-lbl">Décaissé (FCFA)</div>
+                    </div>
+                  </div>
+                  <div class="budget-step bs-blue">
+                    <div class="bs-dot"></div>
+                    <span class="bs-label">Engagement</span>
+                    <div class="bs-track"><div class="bs-fill" id="bar-eng2" style="width:0%"></div></div>
+                    <span class="bs-pct" id="bud-tx-eng">—</span>
+                    <span class="bs-amount" id="bud-engage">—</span>
+                  </div>
+                  <div class="budget-step bs-purple">
+                    <div class="bs-dot"></div>
+                    <span class="bs-label">Liquidation</span>
+                    <div class="bs-track"><div class="bs-fill" id="bar-liq2" style="width:0%"></div></div>
+                    <span class="bs-pct" id="bud-tx-liq">—</span>
+                    <span class="bs-amount" id="bud-liquide">—</span>
+                  </div>
+                  <div class="budget-step bs-green">
+                    <div class="bs-dot"></div>
+                    <span class="bs-label">Paiement</span>
+                    <div class="bs-track"><div class="bs-fill" id="bar-pay2" style="width:0%"></div></div>
+                    <span class="bs-pct" id="bud-tx-pay">—</span>
+                    <span class="bs-amount" id="bud-ecart">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Col 2 : Recettes par source -->
+            <div class="col-lg-4">
+              <div class="db-card h-100">
+                <div class="db-card-head">
+                  <div class="db-card-head-icon dchi-teal"><i class="fas fa-hand-holding-usd"></i></div>
+                  <span class="db-card-title">Recettes par source</span>
+                  <a href="../budget/recettes.html" class="db-card-link">Détail →</a>
+                </div>
+                <div class="db-card-body">
+                  <div style="text-align:center;padding:8px 0 14px;border-bottom:1px solid #f1f5f9;margin-bottom:12px">
+                    <div style="font-size:1.8rem;font-weight:800;color:#0d9488" id="rec-taux-bubble">—</div>
+                    <div style="font-size:.7rem;color:#64748b;font-weight:500">Taux de recouvrement</div>
+                    <div style="font-size:.76rem;color:#334155;font-weight:600;margin-top:4px">
+                      <span style="color:#15803d" id="rec-recouvre-bubble">—</span>
+                      <span style="color:#94a3b8"> / </span>
+                      <span id="rec-prevision-bubble">—</span> FCFA
+                    </div>
+                  </div>
+                  <div id="rec-sources-list"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Col 3 : Alertes + Dossiers -->
+            <div class="col-lg-3">
+              <div class="db-card mb-3">
+                <div class="db-card-head">
+                  <div class="db-card-head-icon dchi-orange"><i class="fas fa-bell"></i></div>
+                  <span class="db-card-title">Alertes</span>
+                </div>
+                <div class="db-card-body-sm" id="alertesBody">
+                  <div class="db-alert db-alert-info" style="color:#64748b;font-size:.77rem">
+                    <i class="fas fa-info-circle me-1"></i><span>Aucune alerte en cours.</span>
+                  </div>
+                </div>
+              </div>
+              <div class="db-card">
+                <div class="db-card-head">
+                  <div class="db-card-head-icon dchi-slate"><i class="fas fa-folder-open"></i></div>
+                  <span class="db-card-title">Dossiers par statut</span>
+                  <a href="../dossiers/index.html" class="db-card-link">Voir →</a>
+                </div>
+                <div class="db-card-body-sm" id="statuts-table">
+                  <div class="statut-row" style="justify-content:center;color:#94a3b8;font-size:.78rem">
+                    <i class="fas fa-folder me-2"></i>Aucun dossier enregistré.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ══ Onglet 2 : PAO & Activités ══ -->
+        <div class="db-panel" id="dbpanel-pao">
+          <div class="row g-3">
+
+            <div class="col-lg-8">
+              <div class="db-card">
+                <div class="db-card-head">
+                  <div class="db-card-head-icon dchi-indigo" style="background:#e0e7ff;color:#3730a3"><i class="fas fa-tasks"></i></div>
+                  <span class="db-card-title">Réalisation du PAO par pilier</span>
+                  <a href="../planification/pao-global.html" class="db-card-link">PAO complet →</a>
+                </div>
+                <div class="db-card-body">
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+                    <div style="text-align:center;padding:10px;background:#f8fafc;border-radius:9px;border:1px solid #e8edf3"><div id="pao-cnt-plan" style="font-size:1.2rem;font-weight:800;color:#1b3a6b">—</div><div style="font-size:.65rem;color:#64748b;font-weight:500">Planifiées</div></div>
+                    <div style="text-align:center;padding:10px;background:#f0fdf4;border-radius:9px;border:1px solid #dcfce7"><div id="pao-cnt-real" style="font-size:1.2rem;font-weight:800;color:#15803d">—</div><div style="font-size:.65rem;color:#15803d;font-weight:500">Réalisées</div></div>
+                    <div style="text-align:center;padding:10px;background:#fef3c7;border-radius:9px;border:1px solid #fde68a"><div id="pao-cnt-cours" style="font-size:1.2rem;font-weight:800;color:#b45309">—</div><div style="font-size:.65rem;color:#b45309;font-weight:500">En cours</div></div>
+                    <div style="text-align:center;padding:10px;background:#fef2f2;border-radius:9px;border:1px solid #fecaca"><div id="pao-cnt-non" style="font-size:1.2rem;font-weight:800;color:#b91c1c">—</div><div style="font-size:.65rem;color:#b91c1c;font-weight:500">Non réalisées</div></div>
+                  </div>
+                  <div class="pao-item"><div class="pao-code" style="background:#e0e7ff;color:#3730a3">P1</div><div class="pao-name">Gouvernance, leadership et coordination</div><div class="pao-acts" id="pao-acts-p1" style="color:#64748b">— act.</div><div class="pao-track"><div class="pao-fill" id="pao-bar-p1" style="width:0%;background:#6366f1"></div></div><div class="pao-pct" id="pao-pct-p1" style="color:#4338ca">—</div></div>
+                  <div class="pao-item"><div class="pao-code" style="background:#dcfce7;color:#15803d">P3</div><div class="pao-name">Ressources humaines de la santé</div><div class="pao-acts" id="pao-acts-p3" style="color:#64748b">— act.</div><div class="pao-track"><div class="pao-fill" id="pao-bar-p3" style="width:0%;background:#22c55e"></div></div><div class="pao-pct" id="pao-pct-p3" style="color:#15803d">—</div></div>
+                  <div class="pao-item"><div class="pao-code" style="background:#fef3c7;color:#92400e">P7</div><div class="pao-name">Prestations de services de santé</div><div class="pao-acts" id="pao-acts-p7" style="color:#64748b">— act.</div><div class="pao-track"><div class="pao-fill" id="pao-bar-p7" style="width:0%;background:#f59e0b"></div></div><div class="pao-pct" id="pao-pct-p7" style="color:#b45309">—</div></div>
+                  <div class="pao-item"><div class="pao-code" style="background:#fee2e2;color:#b91c1c">P6</div><div class="pao-name">Médicaments et autres produits de santé</div><div class="pao-acts" id="pao-acts-p6" style="color:#64748b">— act.</div><div class="pao-track"><div class="pao-fill" id="pao-bar-p6" style="width:0%;background:#ef4444"></div></div><div class="pao-pct" id="pao-pct-p6" style="color:#b91c1c">—</div></div>
+                  <div class="pao-item"><div class="pao-code" style="background:#dbeafe;color:#1e40af">P2</div><div class="pao-name">Financement de la santé</div><div class="pao-acts" id="pao-acts-p2" style="color:#64748b">— act.</div><div class="pao-track"><div class="pao-fill" id="pao-bar-p2" style="width:0%;background:#3b82f6"></div></div><div class="pao-pct" id="pao-pct-p2" style="color:#94a3b8">—</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="db-card h-100">
+                <div class="db-card-head">
+                  <div class="db-card-head-icon" style="background:#fce7f3;color:#9d174d;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.75rem"><i class="fas fa-pills"></i></div>
+                  <span class="db-card-title">Achats intrants &amp; médicaments</span>
+                  <a href="../stock/index.html" class="db-card-link">Stock →</a>
+                </div>
+                <div class="db-card-body">
+                  <div style="text-align:center;padding:8px 0 14px;border-bottom:1px solid #f1f5f9;margin-bottom:12px">
+                    <div id="ach-taux" style="font-size:1.8rem;font-weight:800;color:#9d174d">—</div>
+                    <div style="font-size:.7rem;color:#64748b;font-weight:500">Taux d'exécution achats</div>
+                    <div style="font-size:.73rem;color:#334155;margin-top:4px"><span id="ach-paye" style="color:#15803d;font-weight:700">—</span><span style="color:#94a3b8"> / </span><span id="ach-prevu">—</span> FCFA</div>
+                  </div>
+                  <div class="rec-source"><div class="rec-dot" style="background:#ef4444"></div><div class="rec-name">ARV / Antirétroviraux</div><div class="rec-track"><div class="rec-fill" id="af-arv" style="width:0%;background:#ef4444"></div></div><div class="rec-pct" id="ap-arv" style="color:#b91c1c">—</div></div>
+                  <div class="rec-source"><div class="rec-dot" style="background:#3b82f6"></div><div class="rec-name">Réactifs laboratoire</div><div class="rec-track"><div class="rec-fill" id="af-reac" style="width:0%;background:#3b82f6"></div></div><div class="rec-pct" id="ap-reac" style="color:#1d4ed8">—</div></div>
+                  <div class="rec-source"><div class="rec-dot" style="background:#22c55e"></div><div class="rec-name">Intrants IST / Hépatites</div><div class="rec-track"><div class="rec-fill" id="af-ist" style="width:0%;background:#22c55e"></div></div><div class="rec-pct" id="ap-ist" style="color:#15803d">—</div></div>
+                  <div class="rec-source"><div class="rec-dot" style="background:#0d9488"></div><div class="rec-name">Équipements médicaux</div><div class="rec-track"><div class="rec-fill" id="af-equip" style="width:0%;background:#0d9488"></div></div><div class="rec-pct" id="ap-equip" style="color:#0d9488">—</div></div>
+                  <div class="rec-source"><div class="rec-dot" style="background:#f59e0b"></div><div class="rec-name">Médicaments généraux</div><div class="rec-track"><div class="rec-fill" id="af-meds" style="width:0%;background:#f59e0b"></div></div><div class="rec-pct" id="ap-meds" style="color:#b45309">—</div></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ══ Onglet 3 : Modules ══ -->
+        <div class="db-panel" id="dbpanel-modules">
+          <div class="db-card">
+            <div class="db-card-head">
+              <div class="db-card-head-icon dchi-slate"><i class="fas fa-th-large"></i></div>
+              <span class="db-card-title">Modules</span>
+            </div>
+            <div style="padding:14px">
+              <div class="modules-grid">
+                <a href="../planification/pao-global.html" class="mod-card"><div class="mod-icon mi-indigo"><i class="fas fa-calendar-check"></i></div><div class="mod-label">Planification</div><div class="mod-stat">Plans, activités, calendrier</div></a>
+                <a href="../budget/suivi.html" class="mod-card"><div class="mod-icon mi-blue"><i class="fas fa-chart-bar"></i></div><div class="mod-label">Budget</div><div class="mod-stat">Crédits, engagements, révisions</div></a>
+                <a href="../dossiers/index.html" class="mod-card"><div class="mod-icon mi-orange"><i class="fas fa-folder-open"></i></div><div class="mod-label">Dossiers</div><div class="mod-stat">Dépenses et pièces jointes</div></a>
+                <a href="../passation/index.html" class="mod-card"><div class="mod-icon mi-teal"><i class="fas fa-gavel"></i></div><div class="mod-label">Passation</div><div class="mod-stat">Cotations, offres, attribution</div></a>
+                <a href="../commandes/index.html" class="mod-card"><div class="mod-icon mi-green"><i class="fas fa-file-contract"></i></div><div class="mod-label">Commandes</div><div class="mod-stat">Bons de commande, contrats</div></a>
+                <a href="../reception/index.html" class="mod-card"><div class="mod-icon mi-navy"><i class="fas fa-truck-loading"></i></div><div class="mod-label">Réception</div><div class="mod-stat">PV de réception, service fait</div></a>
+                <a href="../stock/index.html" class="mod-card"><div class="mod-icon mi-pink"><i class="fas fa-boxes"></i></div><div class="mod-label">Stock</div><div class="mod-stat">Inventaire et mouvements</div></a>
+                <a href="../comptabilite/index.html" class="mod-card"><div class="mod-icon mi-purple"><i class="fas fa-book"></i></div><div class="mod-label">Comptabilité</div><div class="mod-stat">Journaux, grand livre, balance</div></a>
+                <a href="../paiement/index.html" class="mod-card"><div class="mod-icon mi-green"><i class="fas fa-money-check-alt"></i></div><div class="mod-label">Paiement</div><div class="mod-stat">Ordres de paiement, virements</div></a>
+                <a href="../controle/index.html" class="mod-card"><div class="mod-icon mi-red"><i class="fas fa-search-dollar"></i></div><div class="mod-label">Contrôle</div><div class="mod-stat">Anomalies, piste d'audit</div></a>
+                <a href="../archivage/index.html" class="mod-card"><div class="mod-icon mi-slate"><i class="fas fa-archive"></i></div><div class="mod-label">Archivage</div><div class="mod-stat">Classement et consultation</div></a>
+                <a href="../reporting/index.html" class="mod-card"><div class="mod-icon mi-teal"><i class="fas fa-file-pdf"></i></div><div class="mod-label">Reporting</div><div class="mod-stat">États financiers, exports</div></a>
+                <a href="../validation/index.html" class="mod-card"><div class="mod-icon mi-orange"><i class="fas fa-stamp"></i></div><div class="mod-label">Validation</div><div class="mod-stat">Approbations en attente</div></a>
+                <a href="../admin/index.html" class="mod-card"><div class="mod-icon mi-navy"><i class="fas fa-user-shield"></i></div><div class="mod-label">Administration</div><div class="mod-stat">Comptes, rôles, paramètres</div></a>
+                <a href="../manuel/index.html" class="mod-card"><div class="mod-icon mi-indigo"><i class="fas fa-book-open"></i></div><div class="mod-label">Manuel des procédures</div><div class="mod-stat">Édition 2025</div></a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ Onglet 4 : Trésorerie ══ -->
+        <div class="db-panel" id="dbpanel-tresorerie">
+          <div class="db-card">
+            <div class="db-card-head">
+              <div class="db-card-head-icon dchi-purple"><i class="fas fa-university"></i></div>
+              <span class="db-card-title">Situation bancaire</span>
+              <a href="../comptabilite/tresorerie.html" class="db-card-link">Trésorerie →</a>
+            </div>
+            <div style="padding:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+              <div style="text-align:center;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e8edf3"><div style="font-size:.65rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Comptes</div><div id="bnk-comptes-v" style="font-size:1.4rem;font-weight:800;color:#1b3a6b">—</div><div style="font-size:.65rem;color:#94a3b8">actifs</div></div>
+              <div style="text-align:center;padding:12px;background:#f0fdf4;border-radius:10px;border:1px solid #dcfce7"><div style="font-size:.65rem;color:#15803d;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Total crédits</div><div style="font-size:1rem;font-weight:800;color:#15803d" id="bnk-credit-v">—</div><div style="font-size:.65rem;color:#94a3b8">FCFA</div></div>
+              <div style="text-align:center;padding:12px;background:#fef2f2;border-radius:10px;border:1px solid #fecaca"><div style="font-size:.65rem;color:#b91c1c;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Total débits</div><div style="font-size:1rem;font-weight:800;color:#b91c1c" id="bnk-debit-v">—</div><div style="font-size:.65rem;color:#94a3b8">FCFA</div></div>
+              <div style="text-align:center;padding:12px;background:#eff6ff;border-radius:10px;border:1px solid #bfdbfe"><div style="font-size:.65rem;color:#1d4ed8;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Solde net</div><div style="font-size:1rem;font-weight:800;color:#1d4ed8" id="bnk-solde-v">—</div><div style="font-size:.65rem;color:#94a3b8">FCFA</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /db-body -->
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<div id="toast-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+if (!requireAuth()) throw new Error('Non authentifié');
+
+const _u = getUser();
+if (_u) {
+  const initials = ((_u.prenom||'?')[0] + (_u.nom||'?')[0]).toUpperCase();
+  document.getElementById('userAvatar').textContent = initials;
+  document.getElementById('userName').textContent   = `${_u.prenom} ${_u.nom}`;
+  document.getElementById('userRole').textContent   = _u.role || 'Utilisateur';
+}
+
+const now = new Date();
+const dateStr = now.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+document.getElementById('wbDate').textContent = dateStr;
+const fd = document.getElementById('filterDate');
+if (fd) fd.textContent = dateStr;
+
+/* ── Formater les grands nombres ── */
+function fmtShort(n) {
+  if (!n || isNaN(n)) return '—';
+  if (n >= 1e9) return (n/1e9).toFixed(1).replace('.',',') + ' Md';
+  if (n >= 1e6) return (n/1e6).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,' ') + ' M';
+  return formatXOF ? formatXOF(n) : n.toLocaleString('fr-FR');
+}
+
+async function loadExercices() {
+  try {
+    const r = await api.exercices.list();
+    const sel = document.getElementById('selExercice');
+    if (!sel) return;
+    (r.data||[]).forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = e.id;
+      opt.textContent = `Exercice ${e.annee}`;
+      if (e.statut === 'en_cours') {
+        opt.selected = true;
+        document.getElementById('wbExercice').textContent = e.annee;
+        document.getElementById('topbarExercice').textContent = e.annee;
+      }
+      sel.appendChild(opt);
+    });
+  } catch(e) {}
+}
+
+async function loadKPIs() {
+  const sel = document.getElementById('selExercice');
+  const exerciceId = sel ? sel.value : null;
+  try {
+    const r = await api.dashboard.kpis(exerciceId);
+    const d = r.data || {};
+
+    const b = d.budget || {};
+    const initial = parseFloat(b.total_initial) || 0;
+    const engage  = parseFloat(b.total_engage)  || 0;
+    const liquide = parseFloat(b.total_liquide) || 0;
+    const paye    = parseFloat(b.total_paye)    || 0;
+
+    const txEng = initial > 0 ? Math.min(Math.round(engage  / initial * 100), 100) : 0;
+    const txLiq = initial > 0 ? Math.min(Math.round(liquide / initial * 100), 100) : 0;
+    const txPay = initial > 0 ? Math.min(Math.round(paye    / initial * 100), 100) : 0;
+
+    /* ── Bulles KPI ── */
+    const fmt = (v) => fmtShort(v);
+    document.getElementById('bubble-budget').textContent    = fmt(initial);
+    document.getElementById('bubble-engage').textContent    = fmt(engage);
+    document.getElementById('bubble-liquide').textContent   = fmt(liquide);
+    document.getElementById('bubble-paye').textContent      = fmt(paye);
+    document.getElementById('bubble-anomalies').textContent = d.anomaliesOuvertes || 0;
+
+    /* ── IDs cachés compat ── */
+    document.getElementById('kpi-budget').textContent   = formatXOF(initial);
+    document.getElementById('kpi-engage').textContent   = formatXOF(engage);
+    document.getElementById('kpi-liquide').textContent  = formatXOF(liquide);
+    document.getElementById('kpi-paye').textContent     = formatXOF(paye);
+    document.getElementById('kpi-anomalies').textContent = d.anomaliesOuvertes || 0;
+    document.getElementById('fr-initial').textContent  = formatXOF(initial);
+    document.getElementById('fr-engage').textContent   = formatXOF(engage);
+    document.getElementById('fr-liquide').textContent  = formatXOF(liquide);
+    document.getElementById('fr-paye').textContent     = formatXOF(paye);
+    document.getElementById('fr-tx-eng').textContent   = txEng + '%';
+    document.getElementById('fr-tx-liq').textContent   = txLiq + '%';
+    document.getElementById('fr-tx-pay').textContent   = txPay + '%';
+
+    /* ── Section budget ── */
+    if (initial > 0) {
+      document.getElementById('bud-prevision').textContent = formatXOF(initial);
+      document.getElementById('bud-engage').textContent    = formatXOF(engage);
+      document.getElementById('bud-liquide').textContent   = formatXOF(liquide);
+      document.getElementById('bud-paye').textContent      = formatXOF(paye);
+      document.getElementById('bud-ecart').textContent     = formatXOF(paye);
+      document.getElementById('bud-tx-eng').textContent    = txEng + '%';
+      document.getElementById('bud-tx-liq').textContent    = txLiq + '%';
+      document.getElementById('bud-tx-pay').textContent    = txPay + '%';
+      document.getElementById('bar-eng2').style.width  = txEng + '%';
+      document.getElementById('bar-liq2').style.width  = txLiq + '%';
+      document.getElementById('bar-pay2').style.width  = txPay + '%';
+    }
+
+    /* ── Dossiers ── */
+    const dossiers = d.dossiers || [];
+    let dossiersActifs = 0;
+    const termines = ['paye','archive'];
+    let html = '';
+    dossiers.forEach(s => {
+      const cnt = parseInt(s.count);
+      if (!termines.includes(s.statut)) dossiersActifs += cnt;
+      html += `<div class="statut-row">
+        <span>${statutBadge(s.statut)}</span>
+        <span class="statut-cnt">${cnt}</span>
+      </div>`;
+    });
+    document.getElementById('statuts-table').innerHTML = html ||
+      '<div class="statut-row" style="justify-content:center;color:#94a3b8;font-size:.78rem">Aucun dossier</div>';
+    document.getElementById('kpi-dossiers').textContent = dossiersActifs;
+    document.getElementById('bubble-dossiers').textContent = dossiersActifs;
+
+    buildAlertes(d, txPay, paye);
+    if ((d.anomaliesOuvertes || 0) > 0) document.getElementById('notifDot').style.display = 'block';
+
+  } catch(err) {
+    console.error(err);
+    if (typeof toast === 'function') toast('Erreur de chargement des indicateurs', 'error');
+  }
+}
+
+function buildAlertes(d, txPay, paye) {
+  const anomalies = d.anomaliesOuvertes || 0;
+  const alertes = [];
+  if (anomalies > 0) alertes.push({
+    cls:'db-alert-danger', icon:'fas fa-exclamation-circle',
+    msg:`<strong>${anomalies} anomalie(s) non traitée(s)</strong> — Contrôleur à mobiliser.`,
+    lien:'../controle/index.html', lienTxt:'Voir les anomalies'
+  });
+  if (txPay < 20) alertes.push({
+    cls:'db-alert-warning', icon:'fas fa-tachometer-alt',
+    msg:`<strong>Taux d'exécution faible : ${txPay}%</strong> — Vérifier le pipeline de dossiers.`,
+    lien:'../dossiers/index.html', lienTxt:'Dossiers en cours'
+  });
+  if ((d.paiementsRecents || 0) === 0) alertes.push({
+    cls:'db-alert-info', icon:'fas fa-money-check-alt',
+    msg:`<strong>Aucun paiement effectué ce mois-ci.</strong>`,
+    lien:'../paiement/index.html', lienTxt:'Gestion paiements'
+  });
+  const body = document.getElementById('alertesBody');
+  if (!alertes.length) {
+    body.innerHTML = `<div class="db-alert db-alert-success">
+      <i class="fas fa-check-circle"></i><span>Aucune alerte — situation normale.</span>
+    </div>`;
+  } else {
+    body.innerHTML = alertes.map(a => `
+      <div class="db-alert ${a.cls}">
+        <i class="${a.icon}"></i>
+        <span>${a.msg} <a href="${a.lien}">${a.lienTxt} →</a></span>
+      </div>`).join('');
+  }
+}
+
+loadExercices().then(loadKPIs);
+
+function loadRecettesPanel() {
+  const COLOR_MAP = {
+    'État':          '#3b72c7',
+    'Fonds Mondial': '#8b5cf6',
+    'OMS':           '#22c55e',
+    'UNICEF':        '#0d9488',
+    'Autre':         '#f59e0b',
+    'Report':        '#94a3b8'
+  };
+  const TEXT_COLOR_MAP = {
+    'État':          '#1d4ed8',
+    'Fonds Mondial': '#6d28d9',
+    'OMS':           '#15803d',
+    'UNICEF':        '#0f766e',
+    'Autre':         '#b45309',
+    'Report':        '#64748b'
+  };
+
+  const raw = localStorage.getItem('pslsh_recettes_v1');
+  const list = document.getElementById('rec-sources-list');
+  if (!list) return;
+
+  if (!raw) {
+    list.innerHTML = '<div style="color:#94a3b8;font-size:.77rem;text-align:center;padding:10px 0"><i class="fas fa-info-circle me-1"></i>Aucune donnée de recette disponible.</div>';
+    return;
+  }
+
+  let parsed;
+  try { parsed = JSON.parse(raw); } catch(e) { return; }
+  const rows = Array.isArray(parsed.data) ? parsed.data : [];
+
+  // Grouper par origine
+  const groups = {};
+  rows.forEach(r => {
+    const key = r.origine || 'Autre';
+    if (!groups[key]) groups[key] = { prev: 0, real: 0 };
+    groups[key].prev += Number(r.prev) || 0;
+    groups[key].real += Number(r.real) || 0;
+  });
+
+  // Totaux globaux
+  const totalPrev = Object.values(groups).reduce((s, g) => s + g.prev, 0);
+  const totalReal = Object.values(groups).reduce((s, g) => s + g.real, 0);
+  const tauxGlobal = totalPrev > 0 ? Math.round(totalReal / totalPrev * 100) : 0;
+
+  // Mise à jour des bulles résumé
+  const fmt = v => v >= 1e9
+    ? (v/1e9).toFixed(2).replace('.',',') + ' Md'
+    : v >= 1e6
+      ? (v/1e6).toFixed(1).replace('.',',') + ' M'
+      : v.toLocaleString('fr-FR');
+
+  const elTaux  = document.getElementById('rec-taux-bubble');
+  const elReal  = document.getElementById('rec-recouvre-bubble');
+  const elPrev  = document.getElementById('rec-prevision-bubble');
+  if (elTaux)  elTaux.textContent  = tauxGlobal + '%';
+  if (elReal)  elReal.textContent  = fmt(totalReal);
+  if (elPrev)  elPrev.textContent  = fmt(totalPrev);
+
+  // Rendre les lignes dynamiques
+  const maxReal = Math.max(...Object.values(groups).map(g => g.real), 1);
+  const ORDER = ['État','Fonds Mondial','OMS','UNICEF','Autre','Report'];
+  const sortedKeys = ORDER.filter(k => groups[k]).concat(
+    Object.keys(groups).filter(k => !ORDER.includes(k))
+  );
+
+  list.innerHTML = sortedKeys.map(key => {
+    const g = groups[key];
+    const pct = g.prev > 0 ? Math.round(g.real / g.prev * 100) : 0;
+    const barW = maxReal > 0 ? Math.round(g.real / maxReal * 100) : 0;
+    const color = COLOR_MAP[key] || '#94a3b8';
+    const tcolor = TEXT_COLOR_MAP[key] || '#475569';
+    return `<div class="rec-source">
+      <div class="rec-dot" style="background:${color}"></div>
+      <div class="rec-name">${key}</div>
+      <div class="rec-track"><div class="rec-fill" style="width:${barW}%;background:${color}"></div></div>
+      <div class="rec-pct" style="color:${tcolor}">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+function dbSwitchTab(tab) {
+  document.querySelectorAll('.db-tab').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.db-panel').forEach(el => el.classList.remove('active'));
+  document.getElementById('dbtab-' + tab).classList.add('active');
+  document.getElementById('dbpanel-' + tab).classList.add('active');
+}
+</script>
+<script src="../../src/js/roles.js"></script>
+<script src="../../src/js/fonds-data.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof fondsRenderDashboard === 'function') fondsRenderDashboard();
+    loadRecettesPanel();
+  });
+  if (document.readyState !== 'loading') {
+    if (typeof fondsRenderDashboard === 'function') fondsRenderDashboard();
+    loadRecettesPanel();
+  }
+</script>
+</body>
+</html>

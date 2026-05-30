@@ -1,0 +1,587 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SIGFIC-PSLSH | Administration</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../admin/index.html">Administration</a></li>
+            <li class="breadcrumb-item active">Vue système</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong>2026</strong>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" title="Notifications"><i class="fas fa-bell"></i></button>
+        <div class="dropdown">
+          <div class="user-pill dropdown-toggle" data-bs-toggle="dropdown" style="cursor:pointer">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div>
+              <div class="user-name" id="userName">—</div>
+              <div class="user-role" id="userRole">—</div>
+            </div>
+            <i class="fas fa-chevron-down ms-1" style="font-size:.6rem;color:rgba(255,255,255,.4)"></i>
+          </div>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- En-tête de page -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title"><i class="fas fa-shield-alt me-2" style="color:var(--c-primary)"></i>Administration</h1>
+          <p class="page-subtitle">Supervision générale du SIGFIC-PSLSH</p>
+        </div>
+        <div class="page-actions">
+          <a href="users.html" class="btn btn-sm btn-outline-primary"><i class="fas fa-users-cog me-1"></i>Utilisateurs</a>
+          <a href="audit-log.html" class="btn btn-sm btn-outline-secondary"><i class="fas fa-history me-1"></i>Journal d'audit</a>
+        </div>
+      </div>
+
+      <!-- KPI grid — 8 cartes -->
+      <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
+
+        <div class="kpi-card kpi-blue">
+          <div class="kpi-top">
+            <div class="kpi-icon-wrap"><i class="fas fa-users"></i></div>
+          </div>
+          <div class="kpi-value" id="kpi-users-actifs">44</div>
+          <div class="kpi-label">Utilisateurs actifs</div>
+          <div class="kpi-trend neutral"><i class="fas fa-minus-circle"></i> Tous rôles confondus</div>
+        </div>
+
+        <div class="kpi-card kpi-green">
+          <div class="kpi-top">
+            <div class="kpi-icon-wrap"><i class="fas fa-user-check"></i></div>
+          </div>
+          <div class="kpi-value" id="kpi-users-enabled">38</div>
+          <div class="kpi-label">Comptes activés</div>
+          <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> 86% des comptes</div>
+        </div>
+
+        <div class="kpi-card kpi-red">
+          <div class="kpi-top">
+            <div class="kpi-icon-wrap"><i class="fas fa-user-slash"></i></div>
+          </div>
+          <div class="kpi-value" id="kpi-users-disabled">6</div>
+          <div class="kpi-label">Comptes désactivés</div>
+          <div class="kpi-trend down"><i class="fas fa-exclamation-circle"></i> À vérifier</div>
+        </div>
+
+        <div class="kpi-card kpi-orange">
+          <div class="kpi-top">
+            <div class="kpi-icon-wrap"><i class="fas fa-sitemap"></i></div>
+          </div>
+          <div class="kpi-value">12</div>
+          <div class="kpi-label">Services enregistrés</div>
+          <div class="kpi-trend neutral"><i class="fas fa-building"></i> Organigramme PSLSH</div>
+        </div>
+
+        <div class="kpi-card kpi-teal">
+          <div class="kpi-top">
+            <div class="kpi-icon-wrap"><i class="fas fa-tasks"></i></div>
+          </div>
+          <div class="kpi-value" id="kpi-pao-actions">87</div>
+          <div class="kpi-label">Actions PAO</div>
+          <div class="kpi-trend neutral"><i class="fas fa-calendar-alt"></i> Exercice 2026</div>
+        </div>
+
+        <div class="kpi-card kpi-purple">
+          <div class="kpi-top">
+            <div class="kpi-icon-wrap"><i class="fas fa-folder-open"></i></div>
+          </div>
+          <div class="kpi-value" id="kpi-dossiers">134</div>
+          <div class="kpi-label">Dossiers actifs</div>
+          <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> En cours de traitement</div>
+        </div>
+
+        <div class="kpi-card kpi-blue">
+          <div class="kpi-top">
+            <div class="kpi-icon-wrap"><i class="fas fa-sign-in-alt"></i></div>
+          </div>
+          <div class="kpi-value" id="kpi-connexions">23</div>
+          <div class="kpi-label">Connexions aujourd'hui</div>
+          <div class="kpi-trend neutral"><i class="fas fa-clock"></i> Depuis 06h00</div>
+        </div>
+
+        <div class="kpi-card kpi-red">
+          <div class="kpi-top">
+            <div class="kpi-icon-wrap"><i class="fas fa-exclamation-triangle"></i></div>
+          </div>
+          <div class="kpi-value" id="kpi-alertes">3</div>
+          <div class="kpi-label">Alertes système</div>
+          <div class="kpi-trend down"><i class="fas fa-bell"></i> Requièrent attention</div>
+        </div>
+
+      </div>
+      <!-- /KPI grid -->
+
+      <!-- Ligne 1 : connexions + alertes -->
+      <div class="row g-3 mb-3">
+
+        <!-- Dernières connexions -->
+        <div class="col-lg-7">
+          <div class="card h-100">
+            <div class="card-header">
+              <div class="card-icon"><i class="fas fa-sign-in-alt"></i></div>
+              Dernières connexions
+              <div class="card-header-actions">
+                <span class="badge bg-light text-muted" style="font-size:.7rem">Aujourd'hui : 04 avril 2026</span>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <table class="table table-hover table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Utilisateur</th>
+                    <th>Service</th>
+                    <th>Rôle</th>
+                    <th>Date / Heure</th>
+                    <th>IP</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:28px;height:28px;font-size:.7rem;background:#1b3a6b;flex-shrink:0">AN</div>
+                        <span class="fw-semibold">NAKOUR Adoum</span>
+                      </div>
+                    </td>
+                    <td><span class="badge bg-dark">COORD</span></td>
+                    <td><span class="badge" style="background:#1b3a6b;color:#fff;font-size:.68rem">Admin</span></td>
+                    <td class="cell-muted">04/04/2026 08:32</td>
+                    <td class="cell-muted" style="font-family:monospace">192.168.1.10</td>
+                    <td><span class="badge bg-success">Succès</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:28px;height:28px;font-size:.7rem;background:#1b4fa8;flex-shrink:0">MA</div>
+                        <span class="fw-semibold">MAHAMAT Ali</span>
+                      </div>
+                    </td>
+                    <td><span class="badge" style="background:#1b4fa8;color:#fff">COORD</span></td>
+                    <td><span class="badge bg-primary" style="font-size:.68rem">Coordination</span></td>
+                    <td class="cell-muted">04/04/2026 09:15</td>
+                    <td class="cell-muted" style="font-family:monospace">192.168.1.12</td>
+                    <td><span class="badge bg-success">Succès</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:28px;height:28px;font-size:.7rem;background:#2d7a2d;flex-shrink:0">FH</div>
+                        <span class="fw-semibold">FATIMA Hassan</span>
+                      </div>
+                    </td>
+                    <td><span class="badge" style="background:#2d7a2d;color:#fff">SGAS</span></td>
+                    <td><span class="badge bg-warning text-dark" style="font-size:.68rem">Chef service</span></td>
+                    <td class="cell-muted">04/04/2026 07:50</td>
+                    <td class="cell-muted" style="font-family:monospace">192.168.1.21</td>
+                    <td><span class="badge bg-success">Succès</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:28px;height:28px;font-size:.7rem;background:#1b4fa8;flex-shrink:0">MD</div>
+                        <span class="fw-semibold">DUPONT Marie</span>
+                      </div>
+                    </td>
+                    <td><span class="badge" style="background:#1b4fa8;color:#fff">SAF</span></td>
+                    <td><span class="badge bg-secondary" style="font-size:.68rem">Agent</span></td>
+                    <td class="cell-muted">04/04/2026 08:05</td>
+                    <td class="cell-muted" style="font-family:monospace">192.168.1.33</td>
+                    <td><span class="badge bg-success">Succès</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:28px;height:28px;font-size:.7rem;background:#8b0000;flex-shrink:0">PJ</div>
+                        <span class="fw-semibold">PIERRE Jean</span>
+                      </div>
+                    </td>
+                    <td><span class="badge" style="background:#8b0000;color:#fff">SPCG</span></td>
+                    <td><span class="badge bg-warning text-dark" style="font-size:.68rem">Chef service</span></td>
+                    <td class="cell-muted">04/04/2026 10:22</td>
+                    <td class="cell-muted" style="font-family:monospace">192.168.1.44</td>
+                    <td><span class="badge bg-success">Succès</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:28px;height:28px;font-size:.7rem;background:#b91c1c;flex-shrink:0">JD</div>
+                        <span class="fw-semibold">jdupont</span>
+                      </div>
+                    </td>
+                    <td><span class="badge bg-secondary">SAF</span></td>
+                    <td><span class="badge bg-secondary" style="font-size:.68rem">Agent</span></td>
+                    <td class="cell-muted">04/04/2026 11:48</td>
+                    <td class="cell-muted" style="font-family:monospace">185.220.101.45</td>
+                    <td><span class="badge bg-danger">Échec</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-footer">
+              <a href="audit-log.html" class="text-primary" style="font-size:.78rem"><i class="fas fa-external-link-alt me-1"></i>Voir tout le journal d'audit</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alertes système -->
+        <div class="col-lg-5">
+          <div class="card h-100">
+            <div class="card-header">
+              <div class="card-icon" style="background:#fee2e2;color:#b91c1c"><i class="fas fa-bell"></i></div>
+              Alertes &amp; événements système
+              <div class="card-header-actions">
+                <span class="badge bg-danger">3 alertes</span>
+              </div>
+            </div>
+            <div class="card-body" style="padding:12px 16px">
+              <div class="list-group list-group-flush" style="gap:4px">
+
+                <div class="d-flex align-items-start gap-3 p-2 rounded" style="background:#fee2e220;border-left:3px solid #b91c1c">
+                  <div style="width:28px;height:28px;background:#fee2e2;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#b91c1c;font-size:.8rem">
+                    <i class="fas fa-shield-alt"></i>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.8rem;font-weight:600;color:#7f1d1d">3 tentatives de connexion échouées, compte : jdupont</div>
+                    <div style="font-size:.72rem;color:var(--c-muted)"><i class="fas fa-clock me-1"></i>il y a 12 min</div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3 p-2 rounded mt-1" style="background:#fef3c720;border-left:3px solid #b45309">
+                  <div style="width:28px;height:28px;background:#fef3c7;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#b45309;font-size:.8rem">
+                    <i class="fas fa-user-clock"></i>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.8rem;font-weight:600;color:#78350f">Compte inactif depuis 30 jours : m.pierre@pslsh.org</div>
+                    <div style="font-size:.72rem;color:var(--c-muted)"><i class="fas fa-clock me-1"></i>hier</div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3 p-2 rounded mt-1" style="background:#e0f2fe20;border-left:3px solid #0369a1">
+                  <div style="width:28px;height:28px;background:#e0f2fe;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#0369a1;font-size:.8rem">
+                    <i class="fas fa-user-plus"></i>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.8rem;font-weight:600;color:#0c4a6e">Nouveau compte créé : asanchez (SAF)</div>
+                    <div style="font-size:.72rem;color:var(--c-muted)"><i class="fas fa-clock me-1"></i>aujourd'hui 09:14</div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3 p-2 rounded mt-1" style="background:#fef3c720;border-left:3px solid #b45309">
+                  <div style="width:28px;height:28px;background:#fef3c7;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#b45309;font-size:.8rem">
+                    <i class="fas fa-key"></i>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.8rem;font-weight:600;color:#78350f">Mot de passe expiré — 2 comptes</div>
+                    <div style="font-size:.72rem;color:var(--c-muted)"><i class="fas fa-clock me-1"></i>aujourd'hui</div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3 p-2 rounded mt-1" style="background:#e0f2fe20;border-left:3px solid #0369a1">
+                  <div style="width:28px;height:28px;background:#e0f2fe;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#0369a1;font-size:.8rem">
+                    <i class="fas fa-database"></i>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.8rem;font-weight:600;color:#0c4a6e">Sauvegarde automatique effectuée</div>
+                    <div style="font-size:.72rem;color:var(--c-muted)"><i class="fas fa-clock me-1"></i>aujourd'hui 03:00</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!-- /Ligne 1 -->
+
+      <!-- Ligne 2 : 3 petites cartes -->
+      <div class="row g-3">
+
+        <!-- Répartition par rôle -->
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-header">
+              <div class="card-icon"><i class="fas fa-user-tag"></i></div>
+              Répartition par rôle
+            </div>
+            <div class="card-body p-0">
+              <table class="table table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Rôle</th>
+                    <th class="text-end">Comptes</th>
+                    <th class="text-end">%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="badge" style="background:#0d1b2a;color:#fff;font-size:.68rem">Administrateur</span></td>
+                    <td class="text-end fw-semibold">1</td>
+                    <td class="text-end cell-muted">2%</td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-primary" style="font-size:.68rem">Coordination</span></td>
+                    <td class="text-end fw-semibold">3</td>
+                    <td class="text-end cell-muted">7%</td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-warning text-dark" style="font-size:.68rem">Chef de service</span></td>
+                    <td class="text-end fw-semibold">12</td>
+                    <td class="text-end cell-muted">27%</td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge bg-secondary" style="font-size:.68rem">Agent</span></td>
+                    <td class="text-end fw-semibold">28</td>
+                    <td class="text-end cell-muted">64%</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td class="fw-bold">Total</td>
+                    <td class="text-end fw-bold">44</td>
+                    <td class="text-end fw-bold">100%</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Répartition par service -->
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-header">
+              <div class="card-icon"><i class="fas fa-sitemap"></i></div>
+              Répartition par service
+            </div>
+            <div class="card-body p-0">
+              <table class="table table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Service</th>
+                    <th class="text-end">Utilisateurs</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <span class="badge me-1" style="background:#1b2a4a;color:#fff;font-size:.65rem">COORD</span>
+                      Coordination
+                    </td>
+                    <td class="text-end fw-semibold">4</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="badge me-1" style="background:#1b4fa8;color:#fff;font-size:.65rem">SAF</span>
+                      Service Administratif et Financier
+                    </td>
+                    <td class="text-end fw-semibold">9</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="badge me-1" style="background:#2d7a2d;color:#fff;font-size:.65rem">SGAS</span>
+                      Gestion Approvisionnements
+                    </td>
+                    <td class="text-end fw-semibold">7</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="badge me-1" style="background:#8b0000;color:#fff;font-size:.65rem">SPCG</span>
+                      Prise en Charge Globale
+                    </td>
+                    <td class="text-end fw-semibold">6</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="badge me-1" style="background:#4b0082;color:#fff;font-size:.65rem">SESRO</span>
+                      Suivi-Évaluation &amp; Recherche
+                    </td>
+                    <td class="text-end fw-semibold">5</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td class="fw-bold">Autres services (7)</td>
+                    <td class="text-end fw-bold">13</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opérations récentes -->
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-header">
+              <div class="card-icon"><i class="fas fa-history"></i></div>
+              Opérations récentes
+            </div>
+            <div class="card-body" style="padding:12px 16px">
+              <div style="display:flex;flex-direction:column;gap:8px">
+
+                <div class="d-flex align-items-center gap-2">
+                  <div style="width:26px;height:26px;background:#d1fae5;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#15803d;font-size:.75rem;flex-shrink:0">
+                    <i class="fas fa-folder-plus"></i>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.78rem;font-weight:600">Création dossier DOS-2026-0134</div>
+                    <div style="font-size:.7rem;color:var(--c-muted)">IBRAHIM Moussa · SAF · 09:40</div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <div style="width:26px;height:26px;background:#dcfce7;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#15803d;font-size:.75rem;flex-shrink:0">
+                    <i class="fas fa-check-double"></i>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.78rem;font-weight:600">Validation dossier DOS-2026-0131</div>
+                    <div style="font-size:.7rem;color:var(--c-muted)">MAHAMAT Ali · COORD · 09:22</div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <div style="width:26px;height:26px;background:#fce7f3;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#9d174d;font-size:.75rem;flex-shrink:0">
+                    <i class="fas fa-money-check-alt"></i>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.78rem;font-weight:600">Paiement OP-2026-0087 : 1 250 000 FCFA</div>
+                    <div style="font-size:.7rem;color:var(--c-muted)">DUPONT Marie · SAF · 08:55</div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <div style="width:26px;height:26px;background:#e0f2fe;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#0369a1;font-size:.75rem;flex-shrink:0">
+                    <i class="fas fa-file-upload"></i>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.78rem;font-weight:600">Dépôt pièce justificative : Facture n°1547</div>
+                    <div style="font-size:.7rem;color:var(--c-muted)">SANOGO Kader · SESRO · 08:30</div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <div style="width:26px;height:26px;background:#fef3c7;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#b45309;font-size:.75rem;flex-shrink:0">
+                    <i class="fas fa-exclamation-circle"></i>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.78rem;font-weight:600">Anomalie signalée : DOS-2026-0128</div>
+                    <div style="font-size:.7rem;color:var(--c-muted)">FATIMA Hassan · SGAS · 08:10</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            <div class="card-footer">
+              <a href="audit-log.html" class="text-primary" style="font-size:.78rem"><i class="fas fa-external-link-alt me-1"></i>Journal d'audit complet</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!-- /Ligne 2 -->
+
+    </div>
+    <!-- /page-content -->
+
+    <footer class="page-footer">
+      &copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp; Programme Sectoriel de Lutte contre le Sida &nbsp;&middot;&nbsp; République du Tchad &nbsp;&middot;&nbsp; Version 1
+    </footer>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+// ── Initialisation de la page ────────────────────────────────────────────────
+(function () {
+  'use strict';
+
+  // Remplir le pill utilisateur dans la topbar
+  function populateUserPill() {
+    const u = (typeof SIGFIC !== 'undefined' && SIGFIC.getUser) ? SIGFIC.getUser() : (typeof getUser === 'function' ? getUser() : null);
+    if (!u) {
+      document.getElementById('userName').textContent = 'Administrateur';
+      document.getElementById('userRole').textContent = 'Système';
+      document.getElementById('userAvatar').textContent = 'A';
+      return;
+    }
+    const nom    = ((u.prenom || '') + ' ' + (u.nom || '')).trim() || u.email || 'Utilisateur';
+    const role   = u.role || u.profil || 'administrateur';
+    const initials = ((u.prenom?.[0] || '') + (u.nom?.[0] || '')).toUpperCase() || 'U';
+    document.getElementById('userName').textContent = nom;
+    document.getElementById('userRole').textContent = role.charAt(0).toUpperCase() + role.slice(1).replace(/_/g, ' ');
+    document.getElementById('userAvatar').textContent = initials;
+  }
+
+  // KPIs — valeurs de démonstration
+  function populateKPIs() {
+    const kpis = {
+      'kpi-users-actifs':  44,
+      'kpi-users-enabled': 38,
+      'kpi-users-disabled': 6,
+      'kpi-pao-actions':   87,
+      'kpi-dossiers':     134,
+      'kpi-connexions':    23,
+      'kpi-alertes':        3,
+    };
+    Object.entries(kpis).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    populateUserPill();
+    populateKPIs();
+    // La sidebar est gérée par roles.js (SIGFIC.init())
+  });
+
+})();
+</script>
+</body>
+</html>

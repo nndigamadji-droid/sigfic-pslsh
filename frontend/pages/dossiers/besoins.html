@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Expressions de besoin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/dossiers/index.html">Opérations</a></li>
+            <li class="breadcrumb-item active">Expressions de besoin</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong id="exLabel">—</strong>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- En-tête -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-list-check text-primary me-2"></i>Expressions de besoin validées</h4>
+          <small class="text-muted">Expressions ayant passé la Validation 1 — prêtes à déclencher la procédure</small>
+        </div>
+        <a href="/pages/validation/besoins.html" class="btn btn-outline-warning">
+          <i class="fas fa-tasks me-1"></i> Centre de validation
+        </a>
+      </div>
+
+      <!-- Filtres -->
+      <div class="card mb-3">
+        <div class="card-body py-2">
+          <div class="row g-2 align-items-center">
+            <div class="col-md-3">
+              <select class="form-select form-select-sm" id="fStatut" onchange="load()">
+                <option value="">Tous les statuts</option>
+                <option value="valide" selected>Validées</option>
+                <option value="brouillon">Brouillon</option>
+                <option value="soumis">Soumises</option>
+                <option value="a_revoir">À revoir</option>
+                <option value="rejete">Rejetées</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select form-select-sm" id="fExercice" onchange="load()">
+                <option value="">Tous les exercices</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <input type="text" class="form-control form-control-sm" id="fSearch" placeholder="Rechercher…" oninput="filterLocal()">
+            </div>
+            <div class="col-md-2 text-end">
+              <a href="besoins-create.html" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus me-1"></i> Nouvelle expression
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tableau -->
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0" id="mainTable">
+              <thead class="table-light">
+                <tr>
+                  <th>Référence</th>
+                  <th>Titre / Objet</th>
+                  <th>Type</th>
+                  <th>Exercice</th>
+                  <th>Montant estimé</th>
+                  <th>Budget</th>
+                  <th>Statut</th>
+                  <th>Dossier généré</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <tr><td colspan="9" class="text-center py-4 text-muted">
+                  <i class="fas fa-spinner fa-spin me-2"></i>Chargement…
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ── Modal : Déclencher la procédure ───────────────────────────────────── -->
+<div class="modal fade" id="modalDeclencher" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="fas fa-rocket me-2"></i>Déclencher la procédure</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="declencherBody">
+        <!-- rempli dynamiquement -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" id="btnConfirmDeclencher" onclick="confirmerDeclencher()">
+          <i class="fas fa-rocket me-1"></i> Générer le dossier automatiquement
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+requireAuth();
+document.getElementById('userName').textContent = (getUser()?.prenom || '') + ' ' + (getUser()?.nom || '');
+
+let allItems = [];
+let selectedBesoinId = null;
+
+// ── Badges statuts expression de besoin ──────────────────────────────────────
+const statutEB = {
+  brouillon: '<span class="badge bg-secondary">Brouillon</span>',
+  soumis:    '<span class="badge bg-warning text-dark">Soumis</span>',
+  a_revoir:  '<span class="badge bg-warning text-dark">À revoir</span>',
+  rejete:    '<span class="badge bg-danger">Rejeté</span>',
+  valide:    '<span class="badge bg-success">Validé</span>',
+};
+
+// ── Badges lecture budgétaire ─────────────────────────────────────────────────
+function budgetBadge(item) {
+  if (!item.ligne_budgetaire) return '<span class="badge bg-secondary">Non rattaché</span>';
+  if (!item.budget_info)     return '<span class="badge bg-secondary">–</span>';
+  const { disponible, suffisant } = item.budget_info;
+  const fmt = v => Number(v).toLocaleString('fr-FR');
+  if (suffisant) {
+    return `<span class="badge bg-success" title="Disponible : ${fmt(disponible)} XOF"><i class="fas fa-check-circle me-1"></i>Budget disponible</span>`;
+  }
+  return `<span class="badge bg-danger" title="Disponible : ${fmt(disponible)} XOF"><i class="fas fa-times-circle me-1"></i>Budget insuffisant</span>`;
+}
+
+const typeLabels = {
+  fournitures: 'Fournitures', services: 'Services', travaux: 'Travaux',
+  immobilisations: 'Immobilisations', frais_mission: 'Frais de mission', autres: 'Autres',
+};
+
+// ── Chargement des exercices ──────────────────────────────────────────────────
+async function loadExercices() {
+  try {
+    const r = await api.get('/planification/exercices');
+    const sel = document.getElementById('fExercice');
+    (r.data || []).forEach(e => {
+      const o = document.createElement('option');
+      o.value = e.id; o.textContent = `Exercice ${e.annee}`;
+      sel.appendChild(o);
+    });
+    if (r.data?.[0]) {
+      sel.value = r.data[0].id;
+      document.getElementById('exLabel').textContent = r.data[0].annee;
+    }
+  } catch { /* ignore */ }
+}
+
+// ── Chargement principal ──────────────────────────────────────────────────────
+async function load() {
+  document.getElementById('tbody').innerHTML =
+    '<tr><td colspan="9" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Chargement…</td></tr>';
+
+  try {
+    const params = new URLSearchParams();
+    const s = document.getElementById('fStatut').value;
+    const e = document.getElementById('fExercice').value;
+    if (s) params.set('statut', s);
+    if (e) params.set('exercice_id', e);
+
+    const r = await api.get('/passation/besoins?' + params.toString());
+    allItems = r.data || [];
+    renderTable(allItems);
+  } catch(err) {
+    document.getElementById('tbody').innerHTML =
+      `<tr><td colspan="9" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>${err.message || 'Erreur de chargement'}</td></tr>`;
+  }
+}
+
+// ── Rendu du tableau ──────────────────────────────────────────────────────────
+function renderTable(items) {
+  if (!items.length) {
+    document.getElementById('tbody').innerHTML =
+      '<tr><td colspan="9" class="text-center py-5 text-muted"><i class="fas fa-list-check d-block mb-2" style="font-size:1.8rem;opacity:.3"></i>Aucune expression de besoin trouvée</td></tr>';
+    return;
+  }
+
+  document.getElementById('tbody').innerHTML = items.map(item => {
+    const montant = Number(item.montant_total_estime || 0).toLocaleString('fr-FR');
+    const dossierBadge = item.dossier
+      ? `<a href="/pages/dossiers/detail.html?id=${item.dossier.id}" class="badge bg-primary text-decoration-none">
+           <i class="fas fa-folder me-1"></i>${item.dossier.reference}
+         </a>`
+      : '<span class="text-muted small">—</span>';
+
+    const canDeclencher = item.statut === 'valide' && !item.dossier_id;
+    const btnDeclencher = canDeclencher
+      ? `<button class="btn btn-sm btn-primary" onclick="ouvrirDeclencher(${item.id})" title="Déclencher la procédure">
+           <i class="fas fa-rocket me-1"></i>Déclencher
+         </button>`
+      : '';
+
+    return `
+      <tr>
+        <td><code class="text-primary">${item.reference || '—'}</code></td>
+        <td>
+          <strong>${item.titre}</strong>
+          ${item.activite ? `<br><small class="text-muted">${item.activite.libelle}</small>` : ''}
+        </td>
+        <td><span class="badge bg-light text-dark">${typeLabels[item.type_depense] || item.type_depense}</span></td>
+        <td>${item.exercice ? item.exercice.annee : '—'}</td>
+        <td class="text-end"><strong>${montant} XOF</strong></td>
+        <td>${budgetBadge(item)}</td>
+        <td>${statutEB[item.statut] || item.statut}</td>
+        <td>${dossierBadge}</td>
+        <td class="text-end">
+          <div class="d-flex gap-1 justify-content-end">
+            ${btnDeclencher}
+            <button class="btn btn-sm btn-outline-secondary" onclick="voirDetail(${item.id})" title="Voir le détail">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+// ── Filtre local (recherche texte) ────────────────────────────────────────────
+function filterLocal() {
+  const q = document.getElementById('fSearch').value.toLowerCase();
+  if (!q) { renderTable(allItems); return; }
+  renderTable(allItems.filter(i =>
+    (i.titre || '').toLowerCase().includes(q) ||
+    (i.reference || '').toLowerCase().includes(q) ||
+    (i.activite?.libelle || '').toLowerCase().includes(q)
+  ));
+}
+
+// ── Déclencher la procédure ───────────────────────────────────────────────────
+function ouvrirDeclencher(id) {
+  selectedBesoinId = id;
+  const item = allItems.find(i => i.id === id);
+  if (!item) return;
+
+  const montant = Number(item.montant_total_estime || 0).toLocaleString('fr-FR');
+  const budgetInfo = item.budget_info;
+  let budgetHtml = '';
+
+  if (budgetInfo) {
+    const dispo = Number(budgetInfo.disponible || 0).toLocaleString('fr-FR');
+    const cls   = budgetInfo.suffisant ? 'success' : 'danger';
+    const icon  = budgetInfo.suffisant ? 'check-circle' : 'exclamation-triangle';
+    budgetHtml = `
+      <div class="alert alert-${cls} py-2 mb-3">
+        <i class="fas fa-${icon} me-2"></i>
+        <strong>Lecture budgétaire :</strong>
+        Disponible sur la ligne : <strong>${dispo} XOF</strong>
+        ${!budgetInfo.suffisant ? ' — <em>Ligne insuffisante. L\'imputation sera bloquée à l\'étape correspondante et renvoyée au centre de validation.</em>' : ''}
+      </div>`;
+  } else {
+    budgetHtml = `
+      <div class="alert alert-warning py-2 mb-3">
+        <i class="fas fa-info-circle me-2"></i>
+        Aucune ligne budgétaire rattachée. L'imputation se fera à l'étape dédiée.
+      </div>`;
+  }
+
+  document.getElementById('declencherBody').innerHTML = `
+    <div class="mb-3">
+      <p>Vous êtes sur le point de <strong>déclencher la procédure</strong> pour :</p>
+      <table class="table table-sm table-bordered mb-0">
+        <tr><th>Référence</th><td><code>${item.reference}</code></td></tr>
+        <tr><th>Objet</th><td>${item.titre}</td></tr>
+        <tr><th>Type de dépense</th><td>${typeLabels[item.type_depense] || item.type_depense}</td></tr>
+        <tr><th>Montant estimé</th><td><strong>${montant} XOF</strong></td></tr>
+        <tr><th>Exercice</th><td>${item.exercice?.annee || '—'}</td></tr>
+        <tr><th>Activité</th><td>${item.activite?.libelle || '—'}</td></tr>
+      </table>
+    </div>
+    ${budgetHtml}
+    <div class="alert alert-info py-2">
+      <i class="fas fa-info-circle me-2"></i>
+      Un <strong>dossier d'opération</strong> sera généré automatiquement et envoyé au
+      <strong>centre de validation</strong> pour la validation administrative et financière (SAF).
+    </div>`;
+
+  new bootstrap.Modal(document.getElementById('modalDeclencher')).show();
+}
+
+async function confirmerDeclencher() {
+  if (!selectedBesoinId) return;
+  const btn = document.getElementById('btnConfirmDeclencher');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Génération en cours…';
+
+  try {
+    const r = await api.post(`/passation/besoins/${selectedBesoinId}/declencher`, {});
+    bootstrap.Modal.getInstance(document.getElementById('modalDeclencher'))?.hide();
+    toast(`Dossier ${r.data.dossier.reference} généré avec succès. Envoyé au centre de validation.`, 'success');
+    load();
+  } catch (err) {
+    toast(err.message || 'Erreur lors du déclenchement', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-rocket me-1"></i> Générer le dossier automatiquement';
+  }
+}
+
+function voirDetail(id) {
+  const item = allItems.find(i => i.id === id);
+  if (item?.dossier_id) {
+    window.location.href = `/pages/dossiers/detail.html?id=${item.dossier_id}`;
+  }
+  // TODO: page de détail de l'expression si pas encore de dossier
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadExercices().then(() => load());
+</script>
+
+<footer class="page-footer">
+  &copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp;
+  Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les IST
+  &nbsp;&middot;&nbsp; République du Tchad &nbsp;&middot;&nbsp; Version 1
+</footer>
+<script src="../../src/js/roles.js"></script>
+</body>
+</html>

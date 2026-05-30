@@ -1,0 +1,245 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Ordres de virement</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .page-body { padding:22px 28px 48px; }
+    .filter-bar { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:14px 18px; margin-bottom:18px; display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; }
+    .filter-bar label { font-size:.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; margin-bottom:0; display:block; }
+    .filter-bar .form-select, .filter-bar .form-control { font-size:.78rem; border-radius:7px; border:1px solid #d1d5db; padding:5px 10px; min-width:130px; }
+    .filter-btn { font-size:.72rem; font-weight:700; padding:6px 14px; border-radius:7px; background:#1b3a6b; color:#fff; border:none; cursor:pointer; display:flex; align-items:center; gap:5px; }
+    .filter-btn:hover { background:#1b2f52; }
+    .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+    .kpi-box { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:12px; }
+    .kpi-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+    .kpi-lbl { font-size:.63rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
+    .kpi-val { font-size:.95rem; font-weight:800; color:#1b2f52; font-family:monospace; }
+    .data-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; }
+    .data-card-head { display:flex; align-items:center; gap:10px; padding:12px 18px; border-bottom:1px solid #e2e8f0; background:linear-gradient(90deg,#0f2944,#1b3a6b); }
+    .dc-icon { width:32px; height:32px; border-radius:8px; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; color:#7dd3fc; font-size:.9rem; }
+    .dc-title { color:#fff; font-size:.85rem; font-weight:800; flex:1; }
+    .dc-count { font-size:.72rem; font-weight:700; color:#a5f3fc; background:rgba(255,255,255,.1); border-radius:20px; padding:2px 10px; }
+    .data-table { width:100%; border-collapse:collapse; font-size:.78rem; }
+    .data-table thead th { background:#f8fafc; color:#64748b; font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:9px 14px; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+    .data-table tbody td { padding:10px 14px; border-bottom:1px solid #f1f5f9; vertical-align:middle; color:#1b2f52; }
+    .data-table tbody tr:last-child td { border-bottom:none; }
+    .data-table tbody tr:hover td { background:#f8fafc; }
+    .data-table tfoot td { background:#f1f5f9; font-weight:800; padding:9px 14px; font-size:.76rem; color:#1b2f52; }
+    .ref-code { font-family:'Cascadia Code','Consolas',monospace; font-size:.72rem; font-weight:700; color:#1b3a6b; }
+    .mono { font-family:'Cascadia Code','Consolas',monospace; font-size:.73rem; }
+    .s-exec { background:#dcfce7; color:#15803d; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
+    .s-att  { background:#fef3c7; color:#b45309; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
+    .s-rej  { background:#fee2e2; color:#b91c1c; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
+    .s-sig  { background:#dbeafe; color:#1d4ed8; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
+    .bank-badge { font-size:.63rem; font-weight:700; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:4px; padding:2px 7px; }
+    .btn-act  { font-size:.67rem; font-weight:700; padding:4px 10px; border-radius:6px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:4px; text-decoration:none; }
+    .btn-voir { background:#dbeafe; color:#1d4ed8; } .btn-voir:hover { background:#bfdbfe; }
+    .btn-imp  { background:#f8fafc; color:#475569; border:1px solid #e2e8f0; } .btn-imp:hover { background:#e2e8f0; }
+    .btn-exp  { font-size:.71rem; font-weight:600; padding:5px 11px; border-radius:7px; border:1px solid #d1d5db; background:#fff; color:#374151; cursor:pointer; display:flex; align-items:center; gap:5px; }
+    .btn-exp:hover { background:#f8fafc; }
+    .btn-new  { font-size:.75rem; font-weight:700; padding:7px 15px; border-radius:8px; background:#1b3a6b; color:#fff; border:none; cursor:pointer; display:flex; align-items:center; gap:6px; }
+    .btn-new:hover { background:#1b2f52; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Gestion Financière</div></div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/comptabilite/index.html">Finances</a></li>
+            <li class="breadcrumb-item active">Virements</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center"><i class="fas fa-calendar-alt"></i> Exercice : <select class="form-select form-select-sm d-inline-block w-auto ms-1"><option>2026</option><option>2025</option></select></div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+    <div class="page-content page-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-exchange-alt text-primary me-2"></i>Ordres de Virement</h4>
+          <small class="text-muted">Finances, virements bancaires, exercice 2026</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-exp"><i class="fas fa-file-excel"></i> Exporter</button>
+          <button class="btn-exp" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+          <button class="btn-new" onclick="window.open('ordre-virement.html','_blank')"><i class="fas fa-plus"></i> Nouvel OV</button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-box">
+          <div class="kpi-icon" style="background:#fef3c7;color:#b45309"><i class="fas fa-clock"></i></div>
+          <div><div class="kpi-lbl">En attente</div><div class="kpi-val">5</div></div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-icon" style="background:#dcfce7;color:#15803d"><i class="fas fa-check-circle"></i></div>
+          <div><div class="kpi-lbl">Exécutés</div><div class="kpi-val">28</div></div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-icon" style="background:#dbeafe;color:#1d4ed8"><i class="fas fa-coins"></i></div>
+          <div><div class="kpi-lbl">Montant viré (mois)</div><div class="kpi-val">32 400 000</div></div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-icon" style="background:#fee2e2;color:#b91c1c"><i class="fas fa-times-circle"></i></div>
+          <div><div class="kpi-lbl">Rejetés</div><div class="kpi-val">1</div></div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div><label>Statut</label>
+          <select class="form-select">
+            <option value="">Tous</option><option>En attente</option><option>Exécuté</option><option>Rejeté</option><option>En cours de signature</option>
+          </select>
+        </div>
+        <div><label>Banque</label>
+          <select class="form-select">
+            <option value="">Toutes</option><option>ECOBANK</option><option>BCC</option><option>CBMT</option><option>SGT</option>
+          </select>
+        </div>
+        <div><label>Date début</label><input type="date" class="form-control"></div>
+        <div><label>Date fin</label><input type="date" class="form-control"></div>
+        <button class="filter-btn"><i class="fas fa-search"></i> Filtrer</button>
+      </div>
+
+      <div class="data-card">
+        <div class="data-card-head">
+          <div class="dc-icon"><i class="fas fa-exchange-alt"></i></div>
+          <div class="dc-title">Liste des Ordres de Virement, Exercice 2026</div>
+          <div class="dc-count">34 OV enregistrés</div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>N° OV</th>
+                <th>Dossier</th>
+                <th>Bénéficiaire</th>
+                <th>Banque bénéficiaire</th>
+                <th class="text-end">Montant (FCFA)</th>
+                <th>Préparé par</th>
+                <th>Date</th>
+                <th class="text-center">Statut</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="ref-code">OV-2026-021</span></td>
+                <td><span class="ref-code">DOS-011</span></td>
+                <td>SODEMEL</td>
+                <td><span class="bank-badge">ECOBANK</span></td>
+                <td class="text-end mono">4 200 000</td>
+                <td>KONE Ali</td>
+                <td>01/03/2026</td>
+                <td class="text-center"><span class="s-exec">Exécuté</span></td>
+                <td class="text-center">
+                  <a class="btn-act btn-voir" href="ordre-virement.html?dossier_id=DOS-011" target="_blank"><i class="fas fa-eye"></i> Voir</a>
+                  <a class="btn-act btn-imp ms-1" href="ordre-virement.html?dossier_id=DOS-011" target="_blank"><i class="fas fa-print"></i> Imprimer</a>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">OV-2026-022</span></td>
+                <td><span class="ref-code">DOS-012</span></td>
+                <td>ETS MARIAM TCHAM</td>
+                <td><span class="bank-badge">BCC</span></td>
+                <td class="text-end mono">850 000</td>
+                <td>BRAHIM Daouda</td>
+                <td>05/03/2026</td>
+                <td class="text-center"><span class="s-att">En attente</span></td>
+                <td class="text-center">
+                  <a class="btn-act btn-voir" href="ordre-virement.html?dossier_id=DOS-012" target="_blank"><i class="fas fa-eye"></i> Voir</a>
+                  <a class="btn-act btn-imp ms-1" href="ordre-virement.html?dossier_id=DOS-012" target="_blank"><i class="fas fa-print"></i> Imprimer</a>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">OV-2026-023</span></td>
+                <td><span class="ref-code">DOS-013</span></td>
+                <td>SOUHAB SERVICE</td>
+                <td><span class="bank-badge">CBMT</span></td>
+                <td class="text-end mono">1 100 000</td>
+                <td>ADAM Moussa</td>
+                <td>10/03/2026</td>
+                <td class="text-center"><span class="s-exec">Exécuté</span></td>
+                <td class="text-center">
+                  <a class="btn-act btn-voir" href="ordre-virement.html?dossier_id=DOS-013" target="_blank"><i class="fas fa-eye"></i> Voir</a>
+                  <a class="btn-act btn-imp ms-1" href="ordre-virement.html?dossier_id=DOS-013" target="_blank"><i class="fas fa-print"></i> Imprimer</a>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">OV-2026-024</span></td>
+                <td><span class="ref-code">DOS-014</span></td>
+                <td>ETS BIOTECH INTL</td>
+                <td><span class="bank-badge">SGT</span></td>
+                <td class="text-end mono">2 800 000</td>
+                <td>KONE Ali</td>
+                <td>15/03/2026</td>
+                <td class="text-center"><span class="s-rej">Rejeté</span></td>
+                <td class="text-center">
+                  <a class="btn-act btn-voir" href="ordre-virement.html?dossier_id=DOS-014" target="_blank"><i class="fas fa-eye"></i> Voir</a>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">OV-2026-025</span></td>
+                <td><span class="ref-code">DOS-015</span></td>
+                <td>MAHAMAT Kader</td>
+                <td><span class="bank-badge">ECOBANK</span></td>
+                <td class="text-end mono">1 200 000</td>
+                <td>IBRAHIM Saleh</td>
+                <td>20/03/2026</td>
+                <td class="text-center"><span class="s-sig">En cours signature</span></td>
+                <td class="text-center">
+                  <a class="btn-act btn-voir" href="ordre-virement.html?dossier_id=DOS-015" target="_blank"><i class="fas fa-eye"></i> Voir</a>
+                  <a class="btn-act btn-imp ms-1" href="ordre-virement.html?dossier_id=DOS-015" target="_blank"><i class="fas fa-print"></i> Imprimer</a>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" class="text-end">Total exécuté :</td>
+                <td class="text-end mono">32 400 000 FCFA</td>
+                <td colspan="4"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+  document.getElementById('userName').textContent = _u.nom || _u.name || _u.email || '';
+</script>
+</body>
+</html>

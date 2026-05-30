@@ -1,0 +1,732 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Comptabilité</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo"
+         onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+        <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <!-- ═══ CONTENU PRINCIPAL ═══ -->
+  <div class="main-content">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/comptabilite/index.html">Finances</a></li>
+            <li class="breadcrumb-item active">Comptabilité SYSCOHADA</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong>2026</strong>
+      </div>
+
+      <div class="topbar-right">
+        <button class="topbar-btn" onclick="window.print()" title="Imprimer"><i class="fas fa-print"></i></button>
+        <button class="topbar-btn" title="Notifications" style="position:relative"><i class="fas fa-bell"></i></button>
+        <div class="dropdown">
+          <div class="user-pill dropdown-toggle" data-bs-toggle="dropdown" style="cursor:pointer">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div>
+              <div class="user-name" id="userName">—</div>
+              <div class="user-role" id="userRole">—</div>
+            </div>
+            <i class="fas fa-chevron-down ms-1" style="font-size:.6rem;color:rgba(255,255,255,.4)"></i>
+          </div>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+            <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- En-tête -->
+      <div class="section-header mb-3">
+        <div class="section-header-left">
+          <h1 class="section-title"><i class="fas fa-book me-2"></i>Comptabilité SYSCOHADA</h1>
+          <p class="section-sub">Journaux, écritures comptables, grand livre, balance générale et plan comptable. Norme OHADA.</p>
+        </div>
+      </div>
+
+      <!-- Notice SYSCOHADA -->
+      <div class="context-panel mb-3">
+        <div class="cp-title"><i class="fas fa-balance-scale me-2"></i>Principes comptables SYSCOHADA applicables</div>
+        <ul class="cp-list mb-0">
+          <li><strong>Équilibre débit/crédit obligatoire :</strong> toute écriture doit être équilibrée</li>
+          <li><strong>Journaux obligatoires :</strong> Journal Caisse, Journal Banque, Journal Opérations Diverses (OD)</li>
+          <li><strong>Imputation analytique</strong> recommandée par source de financement et activité</li>
+          <li>Les écritures validées sont <strong>irréversibles</strong> : seule une contre-passation est autorisée</li>
+        </ul>
+      </div>
+
+      <!-- Onglets -->
+      <ul class="nav nav-tabs mb-3" id="tabs">
+        <li class="nav-item">
+          <a class="nav-link active" href="#" onclick="switchTab('ecritures',this)">
+            <i class="fas fa-pen me-1"></i>Écritures comptables
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" onclick="switchTab('grandlivre',this)">
+            <i class="fas fa-book-open me-1"></i>Grand livre
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" onclick="switchTab('balance',this)">
+            <i class="fas fa-balance-scale me-1"></i>Balance générale
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" onclick="switchTab('planccomptable',this)">
+            <i class="fas fa-sitemap me-1"></i>Plan comptable
+          </a>
+        </li>
+      </ul>
+
+      <!-- ─── TAB : Écritures comptables ─── -->
+      <div id="tabEcritures">
+        <div class="adv-filter-bar mb-3">
+          <div class="adv-filter-row">
+            <div class="afb-group">
+              <label>Journal</label>
+              <select class="form-select form-select-sm" id="ecrJournal" onchange="loadEcritures()" style="min-width:170px">
+                <option value="">Tous les journaux</option>
+              </select>
+            </div>
+            <div class="afb-group">
+              <label>Statut</label>
+              <select class="form-select form-select-sm" id="ecrStatut" onchange="loadEcritures()">
+                <option value="">Tous</option>
+                <option value="brouillon">Brouillon</option>
+                <option value="validee">Validée</option>
+              </select>
+            </div>
+            <div class="afb-group">
+              <label>Du</label>
+              <input type="date" class="form-control form-control-sm" id="ecrDateDe" onchange="loadEcritures()">
+            </div>
+            <div class="afb-group">
+              <label>Au</label>
+              <input type="date" class="form-control form-control-sm" id="ecrDateA" onchange="loadEcritures()">
+            </div>
+            <div class="afb-group" style="flex-direction:row;gap:6px;align-items:flex-end">
+              <button class="btn btn-sm btn-outline-secondary" onclick="loadEcritures()"><i class="fas fa-sync me-1"></i>Actualiser</button>
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalEcriture" onclick="openEcriture()">
+                <i class="fas fa-plus me-1"></i>Nouvelle écriture
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Date opération</th>
+                  <th>Journal</th>
+                  <th>N° Pièce</th>
+                  <th>Libellé de l'opération</th>
+                  <th class="text-end">Total débit (FCFA)</th>
+                  <th class="text-end">Total crédit (FCFA)</th>
+                  <th>Statut</th>
+                  <th class="actions-cell">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodyEcritures">
+                <tr><td colspan="8" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── TAB : Grand livre ─── -->
+      <div id="tabGrandlivre" class="d-none">
+        <div class="adv-filter-bar mb-3">
+          <div class="adv-filter-row">
+            <div class="afb-group" style="flex:2;min-width:250px">
+              <label>Compte comptable</label>
+              <select class="form-select form-select-sm" id="glCompte" onchange="loadGrandLivre()">
+                <option value="">Sélectionner un compte...</option>
+              </select>
+            </div>
+            <div class="afb-group">
+              <label>Du</label>
+              <input type="date" class="form-control form-control-sm" id="glDateDe" onchange="loadGrandLivre()">
+            </div>
+            <div class="afb-group">
+              <label>Au</label>
+              <input type="date" class="form-control form-control-sm" id="glDateA" onchange="loadGrandLivre()">
+            </div>
+            <div class="afb-group" style="flex-direction:row;gap:6px;align-items:flex-end">
+              <button class="btn btn-sm btn-primary" onclick="loadGrandLivre()"><i class="fas fa-search me-1"></i>Afficher</button>
+            </div>
+          </div>
+        </div>
+        <div id="glContainer">
+          <div class="empty-state">
+            <i class="fas fa-book-open"></i>
+            <p>Sélectionnez un compte pour afficher son grand livre</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── TAB : Balance générale ─── -->
+      <div id="tabBalance" class="d-none">
+        <div class="adv-filter-bar mb-3">
+          <div class="adv-filter-row">
+            <div class="afb-group" style="min-width:200px">
+              <label>Exercice</label>
+              <select class="form-select form-select-sm" id="balExercice" onchange="loadBalance()">
+                <option value="">Tous les exercices</option>
+              </select>
+            </div>
+            <div class="afb-group">
+              <label>Du</label>
+              <input type="date" class="form-control form-control-sm" id="balDateDe" onchange="loadBalance()">
+            </div>
+            <div class="afb-group">
+              <label>Au</label>
+              <input type="date" class="form-control form-control-sm" id="balDateA" onchange="loadBalance()">
+            </div>
+            <div class="afb-group" style="flex-direction:row;gap:6px;align-items:flex-end">
+              <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="fas fa-print me-1"></i>Imprimer</button>
+              <button class="btn btn-sm btn-primary" onclick="loadBalance()"><i class="fas fa-sync me-1"></i>Actualiser</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header" style="background:var(--c-primary);color:#fff;border-radius:var(--r-lg) var(--r-lg) 0 0">
+            <i class="fas fa-balance-scale me-2"></i>Balance générale des comptes, SYSCOHADA
+          </div>
+          <div class="card-body p-0">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th style="width:120px">N° Compte</th>
+                  <th>Intitulé du compte</th>
+                  <th class="text-end">Débit cumulé</th>
+                  <th class="text-end">Crédit cumulé</th>
+                  <th class="text-end">Solde débiteur</th>
+                  <th class="text-end">Solde créditeur</th>
+                </tr>
+              </thead>
+              <tbody id="balContainer">
+                <tr><td colspan="6" class="text-center py-4 text-muted">Chargement...</td></tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2" class="fw-700 text-end" style="font-size:.8rem;text-transform:uppercase;letter-spacing:.4px">TOTAUX GÉNÉRAUX</td>
+                  <td class="text-end fw-700 debit-col" id="balTotalDebit">—</td>
+                  <td class="text-end fw-700 credit-col" id="balTotalCredit">—</td>
+                  <td class="text-end fw-700" id="balTotalSoldeD">—</td>
+                  <td class="text-end fw-700" id="balTotalSoldeC">—</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── TAB : Plan comptable ─── -->
+      <div id="tabPlanccomptable" class="d-none">
+        <div class="adv-filter-bar mb-3">
+          <div class="adv-filter-row">
+            <div class="afb-group">
+              <label>Classe</label>
+              <select class="form-select form-select-sm" id="pcClasse" onchange="loadPlanComptable()" style="min-width:200px">
+                <option value="">Toutes les classes</option>
+                <option value="1">Classe 1 : Ressources durables</option>
+                <option value="2">Classe 2 : Immobilisations</option>
+                <option value="3">Classe 3 : Stocks</option>
+                <option value="4">Classe 4 : Tiers</option>
+                <option value="5">Classe 5 : Trésorerie</option>
+                <option value="6">Classe 6 : Charges des activités</option>
+                <option value="7">Classe 7 : Produits des activités</option>
+              </select>
+            </div>
+            <div class="afb-group" style="flex:1;min-width:200px">
+              <label>Recherche</label>
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" class="form-control form-control-sm" id="pcSearch" placeholder="N° ou intitulé du compte..." oninput="loadPlanComptable()">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="table-container">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>N° Compte</th>
+                  <th>Intitulé SYSCOHADA</th>
+                  <th>Classe</th>
+                  <th>Nature</th>
+                  <th>Solde normal</th>
+                </tr>
+              </thead>
+              <tbody id="bodyPC">
+                <tr><td colspan="5" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+    <footer class="page-footer">
+      &copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp; Programme Sectoriel de Lutte contre le Sida, les H&eacute;patites Virales et les IST &nbsp;&middot;&nbsp; R&eacute;publique du Tchad &nbsp;&middot;&nbsp; Version 1
+    </footer>
+
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ═══ MODALE : Nouvelle écriture comptable ═══ -->
+<div class="modal fade" id="modalEcriture" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-pen me-2"></i>Nouvelle écriture comptable</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-section">
+          <div class="form-section-header"><i class="fas fa-info me-2"></i>Entête de l'écriture</div>
+          <div class="form-section-body">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Journal <span class="req">*</span></label>
+                <select class="form-select" id="ecrJournalM"></select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Date de l'opération <span class="req">*</span></label>
+                <input type="date" class="form-control" id="ecrDate">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">N° Pièce justificative</label>
+                <input type="text" class="form-control font-monospace" id="ecrPiece" placeholder="Auto-généré si vide">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Dossier lié (optionnel)</label>
+                <select class="form-select" id="ecrDossier">
+                  <option value="">Aucun dossier lié</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Libellé général de l'opération</label>
+                <input type="text" class="form-control" id="ecrLibelle" placeholder="Ex : Règlement facture fournitures ARV — Dossier DOS-2025-042">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-header">
+            <i class="fas fa-table me-2"></i>Lignes d'écriture (Débit / Crédit)
+            <button class="btn btn-sm btn-outline-primary ms-auto" onclick="addLigne()"><i class="fas fa-plus me-1"></i>Ajouter une ligne</button>
+          </div>
+          <div class="form-section-body p-0">
+            <div class="alert alert-info mb-0" style="border-radius:0;font-size:.78rem;padding:10px 20px">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Règle SYSCOHADA :</strong> La somme des débits doit être strictement égale à la somme des crédits. Toute écriture déséquilibrée sera rejetée.
+            </div>
+            <div class="table-responsive">
+              <table class="table table-sm mb-0" id="lignesTable">
+                <thead>
+                  <tr>
+                    <th style="width:32%">Compte comptable</th>
+                    <th>Libellé de la ligne</th>
+                    <th class="text-end" style="width:15%">Débit (FCFA)</th>
+                    <th class="text-end" style="width:15%">Crédit (FCFA)</th>
+                    <th style="width:40px"></th>
+                  </tr>
+                </thead>
+                <tbody id="lignesBody"></tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2" class="text-end fw-700" style="font-size:.78rem;text-transform:uppercase;letter-spacing:.4px">Totaux</td>
+                    <td class="text-end fw-700 debit-col" id="totalDebit">0 FCFA</td>
+                    <td class="text-end fw-700 credit-col" id="totalCredit">0 FCFA</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <div id="balanceAlert" class="alert alert-danger mb-0 d-none" style="border-radius:0;font-size:.78rem;padding:10px 20px">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Déséquilibre détecté :</strong> La somme des débits ne correspond pas à la somme des crédits. Corrigez avant de valider.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-warning" onclick="saveEcriture('brouillon')"><i class="fas fa-save me-1"></i>Enregistrer en brouillon</button>
+        <button class="btn btn-success" onclick="saveEcriture('validee')"><i class="fas fa-check me-1"></i>Valider l'écriture</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+requireAuth();
+const _u = getUser();
+if (_u) {
+  const initials = ((_u.prenom||'?')[0] + (_u.nom||'?')[0]).toUpperCase();
+  document.getElementById('userAvatar').textContent = initials;
+  document.getElementById('userName').textContent = `${_u.prenom} ${_u.nom}`;
+  document.getElementById('userRole').textContent = _u.role || 'Utilisateur';
+}
+
+let journauxData = [], comptesData = [], ligneCount = 0;
+
+const classeLabels = {'1':'Ressources durables','2':'Immobilisations','3':'Stocks','4':'Tiers','5':'Trésorerie','6':'Charges','7':'Produits'};
+
+function switchTab(tab, el) {
+  document.querySelectorAll('#tabs .nav-link').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+  ['Ecritures','Grandlivre','Balance','Planccomptable'].forEach(t =>
+    document.getElementById('tab'+t).classList.toggle('d-none', t.toLowerCase() !== tab)
+  );
+  if (tab === 'grandlivre')    loadGrandLivre();
+  if (tab === 'balance')       loadBalance();
+  if (tab === 'planccomptable') loadPlanComptable();
+}
+
+async function init() {
+  try {
+    const [jR, cR, exR] = await Promise.all([
+      api.get('/comptabilite/journaux'),
+      api.get('/comptabilite/comptes'),
+      api.get('/planification/exercices'),
+    ]);
+    journauxData = jR.data || [];
+    comptesData  = cR.data || [];
+    const exercices = exR.data || [];
+
+    ['ecrJournal','ecrJournalM'].forEach(id => {
+      const sel = document.getElementById(id);
+      journauxData.forEach(j => {
+        const o = document.createElement('option');
+        o.value = j.id;
+        o.textContent = `${j.code} — ${j.libelle}`;
+        sel.appendChild(o);
+      });
+    });
+
+    const glSel = document.getElementById('glCompte');
+    comptesData.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = `${c.numero} — ${c.libelle}`;
+      glSel.appendChild(o);
+    });
+
+    const balSel = document.getElementById('balExercice');
+    exercices.forEach(e => {
+      const o = document.createElement('option');
+      o.value = e.id;
+      o.textContent = `Exercice ${e.annee}`;
+      if (e.statut === 'en_cours') o.selected = true;
+      balSel.appendChild(o);
+    });
+  } catch(e) { console.error(e); }
+  loadEcritures();
+  loadBalance();
+}
+
+async function loadEcritures() {
+  const params = new URLSearchParams();
+  const j  = document.getElementById('ecrJournal').value;
+  const st = document.getElementById('ecrStatut').value;
+  const de = document.getElementById('ecrDateDe').value;
+  const a  = document.getElementById('ecrDateA').value;
+  if (j)  params.append('journal_id', j);
+  if (st) params.append('statut', st);
+  if (de) params.append('date_de', de);
+  if (a)  params.append('date_a', a);
+  try {
+    const r = await api.get('/comptabilite/ecritures?' + params);
+    const items = r.data || [];
+    document.getElementById('bodyEcritures').innerHTML = items.length
+      ? items.map(e => {
+          const totalD = (e.lignes || []).reduce((s,l) => s + parseFloat(l.debit  || 0), 0);
+          const totalC = (e.lignes || []).reduce((s,l) => s + parseFloat(l.credit || 0), 0);
+          const balanced = Math.abs(totalD - totalC) < 0.01;
+          return `<tr>
+            <td class="cell-muted">${formatDate(e.date_ecriture)}</td>
+            <td><span class="journal-badge">${e.Journal?.code || '—'}</span></td>
+            <td><code class="cell-ref">${e.numero_piece || '—'}</code></td>
+            <td>${e.libelle}</td>
+            <td class="text-end debit-col fw-700">${formatXOF(totalD)}</td>
+            <td class="text-end credit-col fw-700">${formatXOF(totalC)}</td>
+            <td>
+              ${e.statut === 'validee'
+                ? '<span class="badge-statut statut-paye">Validée</span>'
+                : '<span class="badge-statut statut-brouillon">Brouillon</span>'}
+              ${!balanced ? '<span class="badge-statut statut-rejete ms-1">Déséquilibrée</span>' : ''}
+            </td>
+            <td class="actions-cell">
+              ${e.statut === 'brouillon' ? `
+              <button class="btn btn-action btn-outline-success me-1" onclick="validerEcriture(${e.id})" title="Valider l'écriture">
+                <i class="fas fa-check"></i>
+              </button>` : ''}
+              <button class="btn btn-action btn-outline-secondary" onclick="voirEcriture(${e.id})" title="Détail">
+                <i class="fas fa-eye"></i>
+              </button>
+            </td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="8" class="empty-state"><i class="fas fa-book"></i><p>Aucune écriture comptable</p></td></tr>';
+  } catch(e) {}
+}
+
+async function loadGrandLivre() {
+  const compteId = document.getElementById('glCompte').value;
+  if (!compteId) return;
+  const params = new URLSearchParams({ compte_id: compteId });
+  const de = document.getElementById('glDateDe').value;
+  const a  = document.getElementById('glDateA').value;
+  if (de) params.append('date_de', de);
+  if (a)  params.append('date_a', a);
+  try {
+    const r = await api.get('/comptabilite/grand-livre?' + params);
+    const items = r.data || [];
+    const compte = comptesData.find(c => c.id == compteId);
+    let solde = 0;
+    document.getElementById('glContainer').innerHTML = `
+      <div class="card">
+        <div class="card-header" style="background:var(--c-primary);color:#fff">
+          <i class="fas fa-book-open me-2"></i>
+          Grand livre — Compte <strong>${compte?.numero}</strong> : ${compte?.libelle}
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Journal</th>
+                  <th>N° Pièce</th>
+                  <th>Libellé</th>
+                  <th class="text-end">Débit</th>
+                  <th class="text-end">Crédit</th>
+                  <th class="text-end">Solde progressif</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${items.length ? items.map(l => {
+                  solde += parseFloat(l.debit || 0) - parseFloat(l.credit || 0);
+                  return `<tr>
+                    <td class="cell-muted">${formatDate(l.Ecriture?.date_ecriture)}</td>
+                    <td><span class="journal-badge">${l.Ecriture?.Journal?.code || '—'}</span></td>
+                    <td><code class="cell-ref">${l.Ecriture?.numero_piece || '—'}</code></td>
+                    <td>${l.libelle || l.Ecriture?.libelle || '—'}</td>
+                    <td class="text-end debit-col">${l.debit > 0 ? formatXOF(l.debit) : ''}</td>
+                    <td class="text-end credit-col">${l.credit > 0 ? formatXOF(l.credit) : ''}</td>
+                    <td class="text-end fw-700 ${solde < 0 ? 'credit-col' : 'debit-col'}">
+                      ${formatXOF(Math.abs(solde))} <small>${solde < 0 ? 'Cr' : 'Dr'}</small>
+                    </td>
+                  </tr>`;
+                }).join('') : '<tr><td colspan="7" class="empty-state"><i class="fas fa-book-open"></i><p>Aucun mouvement sur ce compte</p></td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+  } catch(e) {}
+}
+
+async function loadBalance() {
+  const exId = document.getElementById('balExercice').value;
+  const params = new URLSearchParams();
+  if (exId) params.append('exercice_id', exId);
+  const de = document.getElementById('balDateDe').value;
+  const a  = document.getElementById('balDateA').value;
+  if (de) params.append('date_de', de);
+  if (a)  params.append('date_a', a);
+  try {
+    const r = await api.get('/comptabilite/balance?' + params);
+    const items = r.data || [];
+    let totD = 0, totC = 0, totSD = 0, totSC = 0;
+    document.getElementById('balContainer').innerHTML = items.length
+      ? items.map(b => {
+          const solde = parseFloat(b.total_debit || 0) - parseFloat(b.total_credit || 0);
+          totD  += parseFloat(b.total_debit  || 0);
+          totC  += parseFloat(b.total_credit || 0);
+          if (solde > 0) totSD += solde;
+          else           totSC += Math.abs(solde);
+          return `<tr>
+            <td><code class="cell-ref">${b.numero}</code></td>
+            <td style="font-size:.8rem">${b.libelle}</td>
+            <td class="text-end debit-col">${formatXOF(b.total_debit)}</td>
+            <td class="text-end credit-col">${formatXOF(b.total_credit)}</td>
+            <td class="text-end ${solde > 0 ? 'debit-col' : ''} fw-600">${solde > 0 ? formatXOF(solde) : ''}</td>
+            <td class="text-end ${solde < 0 ? 'credit-col' : ''} fw-600">${solde < 0 ? formatXOF(Math.abs(solde)) : ''}</td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="6" class="empty-state"><i class="fas fa-balance-scale"></i><p>Aucune écriture pour cette période</p></td></tr>';
+    document.getElementById('balTotalDebit').textContent  = formatXOF(totD);
+    document.getElementById('balTotalCredit').textContent = formatXOF(totC);
+    document.getElementById('balTotalSoldeD').textContent = formatXOF(totSD);
+    document.getElementById('balTotalSoldeC').textContent = formatXOF(totSC);
+  } catch(e) {}
+}
+
+async function loadPlanComptable() {
+  const classe = document.getElementById('pcClasse').value;
+  const q      = document.getElementById('pcSearch').value;
+  const params = new URLSearchParams();
+  if (classe) params.append('classe', classe);
+  if (q)      params.append('q', q);
+  try {
+    const r = await api.get('/comptabilite/comptes?' + params);
+    const items = r.data || [];
+    document.getElementById('bodyPC').innerHTML = items.length
+      ? items.map(c => `
+          <tr>
+            <td><code class="cell-ref">${c.numero}</code></td>
+            <td>${c.libelle}</td>
+            <td><span class="chip">Classe ${c.classe} — ${classeLabels[c.classe] || ''}</span></td>
+            <td class="cell-muted">${c.type || '—'}</td>
+            <td>${c.solde_normal === 'debiteur'
+              ? '<span class="badge-statut statut-soumis">Débiteur</span>'
+              : '<span class="badge-statut statut-liquide">Créditeur</span>'}</td>
+          </tr>`).join('')
+      : '<tr><td colspan="5" class="empty-state"><i class="fas fa-sitemap"></i><p>Aucun compte</p></td></tr>';
+  } catch(e) {}
+}
+
+function openEcriture() {
+  ligneCount = 0;
+  document.getElementById('lignesBody').innerHTML = '';
+  document.getElementById('ecrDate').value = new Date().toISOString().substring(0,10);
+  document.getElementById('ecrLibelle').value = '';
+  document.getElementById('ecrPiece').value = '';
+  addLigne(); addLigne();
+  updateTotals();
+}
+
+function addLigne() {
+  ligneCount++;
+  const idx = ligneCount;
+  const opts = comptesData.map(c => `<option value="${c.id}">${c.numero} — ${c.libelle}</option>`).join('');
+  const tr = document.createElement('tr');
+  tr.id = 'ligne_' + idx;
+  tr.innerHTML = `
+    <td><select class="form-select form-select-sm" id="lgCompte_${idx}" onchange="updateTotals()">${opts}</select></td>
+    <td><input type="text" class="form-control form-control-sm" id="lgLib_${idx}" placeholder="Libellé de cette ligne"></td>
+    <td><input type="number" class="form-control form-control-sm text-end debit-col" id="lgDebit_${idx}" min="0" value="0" oninput="updateTotals()"></td>
+    <td><input type="number" class="form-control form-control-sm text-end credit-col" id="lgCredit_${idx}" min="0" value="0" oninput="updateTotals()"></td>
+    <td>
+      <button class="btn btn-action btn-outline-danger" onclick="removeLigne(${idx})" title="Supprimer">
+        <i class="fas fa-times"></i>
+      </button>
+    </td>`;
+  document.getElementById('lignesBody').appendChild(tr);
+}
+
+function removeLigne(idx) {
+  document.getElementById('ligne_'+idx)?.remove();
+  updateTotals();
+}
+
+function updateTotals() {
+  let totD = 0, totC = 0;
+  document.querySelectorAll('[id^="lgDebit_"]').forEach(el  => totD += parseFloat(el.value  || 0));
+  document.querySelectorAll('[id^="lgCredit_"]').forEach(el => totC += parseFloat(el.value || 0));
+  document.getElementById('totalDebit').textContent  = formatXOF(totD);
+  document.getElementById('totalCredit').textContent = formatXOF(totC);
+  document.getElementById('balanceAlert').classList.toggle('d-none', Math.abs(totD - totC) < 0.01);
+}
+
+async function saveEcriture(statut) {
+  const lignes = [];
+  document.querySelectorAll('[id^="lgCompte_"]').forEach(el => {
+    const idx    = el.id.split('_')[1];
+    const debit  = parseFloat(document.getElementById('lgDebit_'+idx)?.value  || 0);
+    const credit = parseFloat(document.getElementById('lgCredit_'+idx)?.value || 0);
+    if (debit > 0 || credit > 0) {
+      lignes.push({ compte_id: el.value, libelle: document.getElementById('lgLib_'+idx)?.value || '', debit, credit });
+    }
+  });
+  const totD = lignes.reduce((s,l) => s + l.debit,  0);
+  const totC = lignes.reduce((s,l) => s + l.credit, 0);
+  if (Math.abs(totD - totC) > 0.01) {
+    toast('Déséquilibre débit/crédit — écriture non conforme SYSCOHADA', 'error');
+    return;
+  }
+  const data = {
+    journal_id:    document.getElementById('ecrJournalM').value,
+    date_ecriture: document.getElementById('ecrDate').value,
+    numero_piece:  document.getElementById('ecrPiece').value,
+    dossier_id:    document.getElementById('ecrDossier').value || null,
+    libelle:       document.getElementById('ecrLibelle').value,
+    statut, lignes
+  };
+  if (!data.journal_id || !data.date_ecriture || !lignes.length) {
+    toast('Journal et date obligatoires — au moins deux lignes requises', 'warning');
+    return;
+  }
+  try {
+    await api.post('/comptabilite/ecritures', data);
+    toast(statut === 'validee' ? 'Écriture validée et enregistrée' : 'Écriture sauvegardée en brouillon');
+    bootstrap.Modal.getInstance(document.getElementById('modalEcriture'))?.hide();
+    loadEcritures();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+async function validerEcriture(id) {
+  if (!confirm('Confirmer la validation de cette écriture ? Cette action est irréversible.')) return;
+  try {
+    await api.put('/comptabilite/ecritures/' + id + '/valider', {});
+    toast('Écriture validée avec succès');
+    loadEcritures();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+function voirEcriture(id) { toast('Détail écriture #' + id + ' — Fonctionnalité en développement', 'info'); }
+
+init();
+</script>
+<script src="../../src/js/roles.js"></script>
+</body>
+</html>

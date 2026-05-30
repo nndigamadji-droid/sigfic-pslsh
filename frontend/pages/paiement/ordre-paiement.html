@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Ordre de paiement</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #d5dbe4; font-family: 'Times New Roman', Times, serif; font-size: 10pt; }
+
+    .toolbar {
+      background: #1b3a6b; color: #fff; padding: 7px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 200; font-family: Arial, sans-serif;
+    }
+    .toolbar-title { font-size: .8rem; font-weight: 700; }
+    .toolbar .btn  { font-size: .75rem; }
+
+    .doc-frame {
+      max-width: 794px; margin: 20px auto 50px;
+      background: #fff; box-shadow: 0 6px 28px rgba(0,0,0,.25);
+      position: relative;
+    }
+    .doc-frame::before {
+      content: 'PSLSH/IST';
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-40deg);
+      font-size: 6rem; font-weight: 900;
+      color: rgba(27,58,107,0.055);
+      white-space: nowrap; pointer-events: none;
+      font-family: Arial, sans-serif; letter-spacing: .15em; z-index: 0;
+    }
+
+    .op { position: relative; z-index: 1; padding: 14px 26px 16px; }
+
+    .country-bar {
+      text-align: center; font-family: Arial, sans-serif;
+      font-size: 7pt; font-weight: 700; color: #1b3a6b;
+      text-transform: uppercase; letter-spacing: .08em;
+      border-bottom: 1px solid #1b3a6b; padding-bottom: 4px; margin-bottom: 8px;
+    }
+
+    /* ── En-tête ── */
+    .op-header {
+      display: grid; grid-template-columns: 72px 1fr 130px;
+      gap: 10px; align-items: center;
+      border-bottom: 2.5px double #1b3a6b;
+      padding-bottom: 8px; margin-bottom: 10px;
+    }
+    .op-logo { width: 68px; height: 68px; object-fit: contain; }
+    .op-header-center { text-align: center; }
+    .op-ministry { font-family: Arial, sans-serif; font-size: 6.5pt; color: #475569; text-transform: uppercase; letter-spacing: .05em; }
+    .op-program  { font-family: Arial, sans-serif; font-size: 7pt; font-weight: 700; color: #334155; margin: 2px 0; text-transform: uppercase; letter-spacing: .03em; }
+    .op-title {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 18pt; font-weight: 900; color: #1b3a6b;
+      text-transform: uppercase; letter-spacing: .08em; line-height: 1.15; margin: 5px 0 2px;
+    }
+
+    .ref-panel {
+      border: 1.5px solid #1b3a6b; border-radius: 3px;
+      padding: 5px 8px; font-family: Arial, sans-serif; background: #f0f4fa;
+    }
+    .ref-panel .rl { font-size: 6pt; color: #64748b; text-transform: uppercase; letter-spacing: .07em; margin-top: 4px; }
+    .ref-panel .rl:first-child { margin-top: 0; }
+    .ref-panel .rv {
+      font-size: 8pt; font-weight: 800; color: #1b3a6b;
+      border: none; border-bottom: 1.5px solid #1b3a6b; display: block;
+      width: 100%; min-height: 16px; padding: 0 2px;
+      background: transparent; outline: none; font-family: Arial, sans-serif;
+    }
+    .ref-panel input.rv::placeholder { color: #94a3b8; font-weight: 400; font-size: 7pt; }
+
+    .sect {
+      background: #1b3a6b; color: #fff;
+      font-family: Arial, sans-serif; font-size: 7pt; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .09em;
+      padding: 3px 8px; margin: 8px 0 6px;
+    }
+
+    .fl { display: flex; align-items: flex-end; gap: 4px; margin-bottom: 5px; }
+    .fl-lbl { white-space: nowrap; font-family: Arial, sans-serif; font-size: 7.5pt; font-weight: 600; color: #334155; flex-shrink: 0; }
+    .fl-val {
+      flex: 1; border: none; border-bottom: 1px solid #64748b;
+      font-family: 'Times New Roman', Times, serif; font-size: 8.5pt;
+      color: #0f172a; background: transparent; outline: none; padding: 0 3px;
+    }
+    .fl-val:focus { border-bottom-color: #1b3a6b; }
+    .fl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 5px; }
+
+    /* ── Bloc objet / montant ── */
+    .op-top-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+      border: 1.5px solid #1b3a6b; margin-bottom: 8px;
+    }
+    .op-col { padding: 8px 10px; }
+    .op-col:first-child { border-right: 1px solid #1b3a6b; }
+    .op-col-title {
+      font-family: Arial, sans-serif; font-size: 7pt; font-weight: 800;
+      color: #1b3a6b; text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 6px; padding-bottom: 3px; border-bottom: 1px solid #e2e8f0;
+    }
+
+    /* Checkboxes nature dépense */
+    .nature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; }
+    .nat-item { display: flex; align-items: center; gap: 5px; font-size: 8pt; }
+    .nat-item input[type=checkbox] { width: 13px; height: 13px; accent-color: #1b3a6b; flex-shrink: 0; }
+
+    /* Bloc montant */
+    .amount-box {
+      border: 2px solid #1b3a6b; border-radius: 3px;
+      padding: 7px 10px; background: #f8fafc; margin-bottom: 0;
+    }
+    .amount-box .fl-val { font-size: 9pt; font-weight: 700; color: #1b3a6b; border-bottom-color: #1b3a6b; }
+    .amount-total { font-size: 10pt; font-weight: 800; color: #1b3a6b; }
+
+    /* ── Bénéficiaire ── */
+    .benef-bar {
+      background: #f0f4fa; border: 1.5px solid #1b3a6b;
+      padding: 7px 12px; margin-bottom: 8px;
+      display: flex; align-items: flex-end; gap: 8px;
+    }
+    .benef-bar .fl-lbl { font-size: 8pt; font-weight: 800; color: #1b3a6b; }
+    .benef-bar .fl-val { font-size: 9.5pt; font-weight: 700; border-bottom-color: #1b3a6b; }
+
+    /* ── Tableau ventilation ── */
+    .op-table-wrap { border: 1.5px solid #1b3a6b; margin-bottom: 8px; overflow: hidden; }
+    .op-tbl { width: 100%; border-collapse: collapse; font-size: 8pt; }
+    .op-tbl thead th {
+      background: #1b3a6b; color: #fff;
+      font-family: Arial, sans-serif; font-size: 7pt; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .05em;
+      padding: 5px 8px; text-align: center;
+      border-right: 1px solid rgba(255,255,255,.2);
+    }
+    .op-tbl thead th:last-child { border-right: none; }
+    .op-tbl tbody td {
+      padding: 5px 8px; border-bottom: 1px solid #e2e8f0;
+      border-right: 1px solid #e2e8f0; vertical-align: middle;
+    }
+    .op-tbl tbody td:last-child { border-right: none; }
+    .op-tbl tbody tr:last-child td { border-bottom: none; }
+    .op-tbl tfoot td {
+      padding: 5px 8px; font-family: Arial, sans-serif; font-size: 8pt;
+      border-top: 2px solid #1b3a6b; font-weight: 800; color: #1b3a6b;
+      background: #f0f4fa;
+    }
+    .op-tbl input {
+      width: 100%; border: none; outline: none; background: transparent;
+      font-family: 'Times New Roman', Times, serif; font-size: 8pt; color: #0f172a; padding: 0;
+    }
+    .op-tbl input[type=text] { text-align: inherit; }
+
+    /* ── Mode de paiement ── */
+    .mode-paiement {
+      border: 1.5px solid #1b3a6b; border-radius: 3px;
+      padding: 8px 12px; margin-bottom: 8px; background: #fafafa;
+    }
+    .mode-title {
+      font-family: Arial, sans-serif; font-size: 7.5pt; font-weight: 800;
+      color: #1b3a6b; text-transform: uppercase; margin-bottom: 6px;
+    }
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    .mode-item { display: flex; align-items: center; gap: 6px; font-size: 8pt; }
+    .mode-item input[type=radio] { accent-color: #1b3a6b; }
+    .mode-ref { display: flex; align-items: flex-end; gap: 4px; margin-top: 6px; }
+    .mode-ref .fl-lbl { font-size: 7.5pt; }
+    .mode-ref .fl-val { font-size: 8.5pt; }
+
+    /* ── Zone bénéficiaire signature ── */
+    .benef-sig {
+      border: 1.5px dashed #94a3b8; border-radius: 3px;
+      padding: 8px 12px; margin-bottom: 8px; min-height: 60px;
+    }
+    .benef-sig-title {
+      font-family: Arial, sans-serif; font-size: 7pt; font-weight: 700;
+      color: #64748b; text-transform: uppercase; margin-bottom: 4px;
+    }
+
+    /* ── Lieu & date ── */
+    .date-line {
+      text-align: right; font-size: 8pt; font-family: Arial, sans-serif;
+      color: #334155; margin: 8px 0 6px;
+      display: flex; justify-content: flex-end; align-items: flex-end; gap: 4px;
+    }
+    .date-line input {
+      border: none; border-bottom: 1px solid #334155;
+      font-family: inherit; font-size: 8pt; color: #0f172a;
+      background: transparent; outline: none; width: 110px; text-align: center; padding: 0 2px;
+    }
+
+    /* ── Signatures ── */
+    .sig-wrap { margin-top: 10px; border-top: 2px solid #1b3a6b; padding-top: 10px; }
+    .sig-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+    .sig-cell { text-align: center; padding: 0 8px; border-right: 1px dashed #cbd5e1; }
+    .sig-cell:last-child { border-right: none; }
+    .sig-role {
+      font-family: Arial, sans-serif; font-size: 6.5pt; font-weight: 800;
+      color: #1b3a6b; text-transform: uppercase; letter-spacing: .04em;
+      line-height: 1.3; margin-bottom: 2px;
+    }
+    .sig-name { font-size: 6.5pt; color: #475569; font-style: italic; border-bottom: 1px dotted #94a3b8; min-height: 14px; }
+    .sig-space { height: 44px; }
+    .sig-line { border-bottom: 1px solid #334155; margin: 0 6px 2px; }
+    .sig-label { font-size: 6pt; color: #94a3b8; font-family: Arial, sans-serif; }
+
+    /* ── Pied ── */
+    .doc-footer {
+      display: grid; grid-template-columns: 64px 1fr 64px;
+      align-items: center; gap: 8px;
+      margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0;
+    }
+    .footer-text { text-align: center; font-family: Arial, sans-serif; font-size: 6pt; color: #94a3b8; line-height: 1.6; }
+    .footer-text strong { color: #475569; }
+    .footer-text .warn { color: #dc2626; font-weight: 700; }
+    #qrBox { display: flex; justify-content: flex-end; }
+
+    .btn-add-line {
+      font-size: 7pt; font-family: Arial, sans-serif;
+      background: none; border: 1px dashed #94a3b8; color: #64748b;
+      padding: 2px 10px; border-radius: 3px; cursor: pointer; margin-top: 3px;
+    }
+    .btn-add-line:hover { background: #f8fafc; color: #1b3a6b; border-color: #1b3a6b; }
+
+    /* ══ IMPRESSION ══ */
+    @media print {
+      body { background: #fff !important; }
+      .toolbar, .btn-add-line { display: none !important; }
+      .doc-frame { max-width: 100% !important; margin: 0 !important; box-shadow: none !important; }
+      .doc-frame::before { color: rgba(27,58,107,0.05) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .guilloche-bg { opacity: 0.06 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .guilloche-bg svg { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .op { padding: 10px 18px 12px !important; }
+      .sect { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .op-tbl thead { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .op-tbl tfoot { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .ref-panel, .benef-bar, .amount-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      input, textarea { color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @page { size: A4 portrait; margin: 8mm 10mm 8mm; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ TOOLBAR ═══ -->
+<div class="toolbar">
+  <div class="d-flex align-items-center gap-3">
+    <a href="index.html" class="btn btn-sm btn-outline-light">
+      <i class="fas fa-arrow-left me-1"></i>Retour
+    </a>
+    <span class="toolbar-title">
+      <i class="fas fa-money-check-alt me-2"></i>Ordre de Paiement, PSLSH/IST
+    </span>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-sm btn-outline-light" onclick="effacer()">
+      <i class="fas fa-eraser me-1"></i>Effacer
+    </button>
+    <button class="btn btn-sm btn-warning fw-bold" onclick="window.print()">
+      <i class="fas fa-print me-1"></i>Imprimer / PDF
+    </button>
+  </div>
+</div>
+
+<!-- ═══ DOCUMENT ═══ -->
+<div class="doc-frame">
+
+  <!-- Guilloche -->
+  <div class="guilloche-bg" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 40" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:40px;opacity:.045">
+      <defs>
+        <pattern id="g1" x="0" y="0" width="80" height="40" patternUnits="userSpaceOnUse">
+          <ellipse cx="40" cy="20" rx="36" ry="16" fill="none" stroke="#1b3a6b" stroke-width="0.5"/>
+          <ellipse cx="40" cy="20" rx="28" ry="11" fill="none" stroke="#1b3a6b" stroke-width="0.4"/>
+          <ellipse cx="40" cy="20" rx="20" ry="7"  fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <line x1="0" y1="4"  x2="80" y2="4"  stroke="#1b3a6b" stroke-width="0.4"/>
+          <line x1="0" y1="36" x2="80" y2="36" stroke="#1b3a6b" stroke-width="0.4"/>
+          <path d="M0,20 Q10,4 20,20 Q30,36 40,20 Q50,4 60,20 Q70,36 80,20" fill="none" stroke="#1b3a6b" stroke-width="0.35"/>
+          <path d="M0,20 Q10,36 20,20 Q30,4 40,20 Q50,36 60,20 Q70,4 80,20" fill="none" stroke="#1b3a6b" stroke-width="0.35"/>
+        </pattern>
+      </defs>
+      <rect width="800" height="40" fill="url(#g1)"/>
+    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 40" preserveAspectRatio="none" style="position:absolute;bottom:0;left:0;width:100%;height:40px;opacity:.045">
+      <defs>
+        <pattern id="g2" x="0" y="0" width="60" height="40" patternUnits="userSpaceOnUse">
+          <circle cx="30" cy="20" r="16" fill="none" stroke="#1b3a6b" stroke-width="0.5"/>
+          <circle cx="30" cy="20" r="11" fill="none" stroke="#1b3a6b" stroke-width="0.4"/>
+          <circle cx="30" cy="20" r="6"  fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <line x1="0" y1="2"  x2="60" y2="2"  stroke="#1b3a6b" stroke-width="0.5"/>
+          <line x1="0" y1="38" x2="60" y2="38" stroke="#1b3a6b" stroke-width="0.5"/>
+          <path d="M0,20 Q15,5 30,20 Q45,35 60,20" fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <path d="M0,20 Q15,35 30,20 Q45,5 60,20" fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+        </pattern>
+      </defs>
+      <rect width="800" height="40" fill="url(#g2)"/>
+    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:40px;left:0;width:100%;height:calc(100% - 80px);opacity:.025" preserveAspectRatio="none">
+      <defs>
+        <pattern id="g3" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#1b3a6b" stroke-width="0.3"/>
+          <circle cx="60" cy="60" r="38" fill="none" stroke="#1b3a6b" stroke-width="0.25"/>
+          <circle cx="60" cy="60" r="26" fill="none" stroke="#1b3a6b" stroke-width="0.2"/>
+          <path d="M10,60 Q35,10 60,60 Q85,110 110,60" fill="none" stroke="#1b3a6b" stroke-width="0.2"/>
+          <path d="M10,60 Q35,110 60,60 Q85,10 110,60" fill="none" stroke="#1b3a6b" stroke-width="0.2"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#g3)"/>
+    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:16px;height:100%;opacity:.045" preserveAspectRatio="none">
+      <defs>
+        <pattern id="gl" x="0" y="0" width="16" height="32" patternUnits="userSpaceOnUse">
+          <ellipse cx="8" cy="16" rx="6" ry="12" fill="none" stroke="#1b3a6b" stroke-width="0.5"/>
+          <ellipse cx="8" cy="16" rx="3" ry="7"  fill="none" stroke="#1b3a6b" stroke-width="0.35"/>
+          <line x1="2" y1="0" x2="2" y2="32" stroke="#1b3a6b" stroke-width="0.4"/>
+          <line x1="14" y1="0" x2="14" y2="32" stroke="#1b3a6b" stroke-width="0.4"/>
+        </pattern>
+      </defs>
+      <rect width="16" height="100%" fill="url(#gl)"/>
+    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;right:0;width:16px;height:100%;opacity:.045" preserveAspectRatio="none">
+      <defs>
+        <pattern id="gr" x="0" y="0" width="16" height="32" patternUnits="userSpaceOnUse">
+          <ellipse cx="8" cy="16" rx="6" ry="12" fill="none" stroke="#1b3a6b" stroke-width="0.5"/>
+          <ellipse cx="8" cy="16" rx="3" ry="7"  fill="none" stroke="#1b3a6b" stroke-width="0.35"/>
+          <line x1="2" y1="0" x2="2" y2="32" stroke="#1b3a6b" stroke-width="0.4"/>
+          <line x1="14" y1="0" x2="14" y2="32" stroke="#1b3a6b" stroke-width="0.4"/>
+        </pattern>
+      </defs>
+      <rect width="16" height="100%" fill="url(#gr)"/>
+    </svg>
+  </div>
+
+<div class="op" id="opDoc">
+
+  <!-- Bandeau pays -->
+  <div class="country-bar">
+    République du Tchad &nbsp;·&nbsp; Unité &nbsp;·&nbsp; Travail &nbsp;·&nbsp; Progrès
+  </div>
+
+  <!-- EN-TÊTE -->
+  <div class="op-header">
+    <div>
+      <img src="../../assets/logo/logo-pslsh.png" alt="PSLSH/IST" class="op-logo"
+           onerror="this.style.display='none'">
+    </div>
+    <div class="op-header-center">
+      <div class="op-ministry">Ministère de la Santé Publique et de la Solidarité Nationale</div>
+      <div class="op-program">Programme Sectoriel de Lutte contre le Sida,<br>les Hépatites Virales et les Infections Sexuellement Transmissibles (PSLSH/IST)</div>
+      <div class="op-title">Ordre de Paiement</div>
+    </div>
+    <div class="ref-panel">
+      <div class="rl">N° OP</div>
+      <input class="rv" id="fNumOP" autocomplete="off" placeholder="N°…">
+      <div class="rl">Date</div>
+      <input class="rv" id="fDate" autocomplete="off" placeholder="jj/mm/aaaa">
+      <div class="rl">Exercice</div>
+      <span class="rv" id="dispExercice">&nbsp;</span>
+    </div>
+  </div>
+
+  <!-- ── IDENTIFICATION ── -->
+  <div class="sect">Identification</div>
+  <div class="fl-row">
+    <div class="fl">
+      <span class="fl-lbl">Réf. dossier :</span>
+      <input class="fl-val" id="fRefDossier" autocomplete="off">
+    </div>
+    <div class="fl">
+      <span class="fl-lbl">Réf. engagement SIGFP :</span>
+      <input class="fl-val" id="fRefSIGFP" autocomplete="off">
+    </div>
+  </div>
+  <div class="fl-row">
+    <div class="fl">
+      <span class="fl-lbl">Imputation budgétaire :</span>
+      <input class="fl-val" id="fImputation" autocomplete="off">
+    </div>
+    <div class="fl">
+      <span class="fl-lbl">Période :</span>
+      <input class="fl-val" id="fPeriode" autocomplete="off" placeholder="mois/année">
+    </div>
+  </div>
+
+  <!-- ── OBJET / MONTANT ── -->
+  <div class="sect">Objet de la dépense et montant</div>
+  <div class="op-top-grid">
+
+    <!-- Colonne gauche : objet -->
+    <div class="op-col">
+      <div class="op-col-title"><i class="fas fa-tag me-1"></i>Nature de la dépense</div>
+      <div class="nature-grid">
+        <label class="nat-item"><input type="checkbox" id="cbSalaire"> Salaire / Indemnité</label>
+        <label class="nat-item"><input type="checkbox" id="cbReparation"> Réparation / Entretien</label>
+        <label class="nat-item"><input type="checkbox" id="cbManuel"> Manuel / Publication</label>
+        <label class="nat-item"><input type="checkbox" id="cbMobilier"> Mobilier / Équipement</label>
+        <label class="nat-item"><input type="checkbox" id="cbReunion"> Réunion / Atelier</label>
+        <label class="nat-item"><input type="checkbox" id="cbMission"> Mission / Déplacement</label>
+        <label class="nat-item"><input type="checkbox" id="cbFourniture"> Fournitures / Réactifs</label>
+        <label class="nat-item"><input type="checkbox" id="cbAutre"> Autre</label>
+      </div>
+      <div class="fl" style="margin-top:8px">
+        <span class="fl-lbl">Détail / Objet :</span>
+        <input class="fl-val" id="fObjet" autocomplete="off">
+      </div>
+    </div>
+
+    <!-- Colonne droite : montant -->
+    <div class="op-col">
+      <div class="op-col-title"><i class="fas fa-calculator me-1"></i>Montant</div>
+      <div class="amount-box">
+        <div class="fl">
+          <span class="fl-lbl">Montant en chiffres :</span>
+          <input class="fl-val amount-total" id="fMontantChiffres" autocomplete="off" oninput="autoLettres()">
+          <span style="font-family:Arial,sans-serif;font-size:7.5pt;font-weight:700;padding-bottom:1px">FCFA</span>
+        </div>
+        <div class="fl" style="margin-top:4px">
+          <span class="fl-lbl">En lettres :</span>
+          <input class="fl-val" id="fMontantLettres" autocomplete="off">
+        </div>
+      </div>
+      <div class="fl" style="margin-top:6px">
+        <span class="fl-lbl">Avance reçue :</span>
+        <input class="fl-val" id="fAvance" autocomplete="off" placeholder="0 FCFA">
+      </div>
+      <div class="fl">
+        <span class="fl-lbl">Pénalités :</span>
+        <input class="fl-val" id="fPenalites" autocomplete="off" placeholder="0 FCFA">
+      </div>
+      <div class="fl" style="border-top:1.5px solid #1b3a6b; padding-top:4px; margin-top:4px">
+        <span class="fl-lbl" style="font-weight:800;color:#1b3a6b;font-size:8pt">Net à payer :</span>
+        <input class="fl-val" id="fNetPayer" autocomplete="off" style="font-weight:800;color:#1b3a6b;font-size:9pt;border-bottom-color:#1b3a6b">
+        <span style="font-family:Arial,sans-serif;font-size:7.5pt;font-weight:700;color:#1b3a6b;padding-bottom:1px">FCFA</span>
+      </div>
+      <div class="fl">
+        <span class="fl-lbl">Reste à payer :</span>
+        <input class="fl-val" id="fRestePayer" autocomplete="off" placeholder="0 FCFA">
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BÉNÉFICIAIRE ── -->
+  <div class="benef-bar">
+    <span class="fl-lbl">Bénéficiaire :</span>
+    <input class="fl-val" id="fBeneficiaire" autocomplete="off">
+  </div>
+
+  <!-- ── VENTILATION ── -->
+  <div class="sect">Ventilation de la dépense</div>
+  <div class="op-table-wrap">
+    <table class="op-tbl">
+      <thead>
+        <tr>
+          <th style="width:35%">Motif / Objet détaillé</th>
+          <th style="width:22%">N° Compte bancaire</th>
+          <th style="width:15%;text-align:right">Montant (FCFA)</th>
+          <th style="width:13%;text-align:center">Source des fonds</th>
+          <th style="width:15%">Justificatifs</th>
+        </tr>
+      </thead>
+      <tbody id="ventTable">
+        <tr>
+          <td><input type="text" style="width:100%"></td>
+          <td><input type="text" style="width:100%"></td>
+          <td><input type="text" style="width:100%;text-align:right" oninput="calcTotal()"></td>
+          <td><input type="text" style="width:100%;text-align:center"></td>
+          <td><input type="text" style="width:100%"></td>
+        </tr>
+        <tr>
+          <td><input type="text" style="width:100%"></td>
+          <td><input type="text" style="width:100%"></td>
+          <td><input type="text" style="width:100%;text-align:right" oninput="calcTotal()"></td>
+          <td><input type="text" style="width:100%;text-align:center"></td>
+          <td><input type="text" style="width:100%"></td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2" style="text-align:right;font-family:Arial,sans-serif">TOTAL</td>
+          <td style="text-align:right" id="totalVent">—</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <button class="btn-add-line" onclick="ajouterLigne()">
+    <i class="fas fa-plus me-1"></i>Ajouter une ligne
+  </button>
+
+  <!-- ── MODE DE PAIEMENT ── -->
+  <div class="sect">Mode de paiement</div>
+  <div class="mode-paiement">
+    <div class="mode-grid">
+      <label class="mode-item">
+        <input type="radio" name="modePaie" value="cheque" onchange="toggleRef()"> Chèque
+      </label>
+      <label class="mode-item">
+        <input type="radio" name="modePaie" value="espece" onchange="toggleRef()"> Espèces
+      </label>
+      <label class="mode-item">
+        <input type="radio" name="modePaie" value="virement" onchange="toggleRef()" checked> Ordre de virement
+      </label>
+    </div>
+    <div class="mode-ref fl" style="margin-top:8px">
+      <span class="fl-lbl" id="modeRefLabel">N° Ordre de virement :</span>
+      <input class="fl-val" id="fModeRef" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- Zone signature bénéficiaire -->
+  <div class="benef-sig">
+    <div class="benef-sig-title">Le bénéficiaire : Signature &amp; Téléphone</div>
+    <div class="fl">
+      <span class="fl-lbl">Nom :</span>
+      <input class="fl-val" id="fBenefSig" autocomplete="off">
+      <span class="fl-lbl" style="margin-left:12px">Tél. :</span>
+      <input class="fl-val" id="fBenefTel" autocomplete="off" style="max-width:120px">
+    </div>
+  </div>
+
+  <!-- Fait à -->
+  <div class="date-line">
+    <span>Fait à N'Djamena, le</span>
+    <input id="fDateLieu" autocomplete="off">
+  </div>
+
+  <!-- ── SIGNATURES ── -->
+  <div class="sig-wrap">
+    <div class="sig-grid">
+      <div class="sig-cell">
+        <div class="sig-role">Chef Unité Ressources<br>Financières (URF)</div>
+        <div class="sig-name">&nbsp;</div>
+        <div class="sig-space"></div>
+        <div class="sig-line"></div>
+        <div class="sig-label">Signature &amp; Date</div>
+      </div>
+      <div class="sig-cell">
+        <div class="sig-role">Le Coordonnateur Adjoint<br>du PSLSH/IST</div>
+        <div class="sig-name">&nbsp;</div>
+        <div class="sig-space"></div>
+        <div class="sig-line"></div>
+        <div class="sig-label">Signature &amp; Date</div>
+      </div>
+      <div class="sig-cell">
+        <div class="sig-role">Le Coordonnateur<br>du PSLSH/IST</div>
+        <div class="sig-name">&nbsp;</div>
+        <div class="sig-space"></div>
+        <div class="sig-line"></div>
+        <div class="sig-label">Signature &amp; Date</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PIED ── -->
+  <div class="doc-footer">
+    <img src="../../assets/logo/cachet-pslsh.png" alt="Cachet officiel PSLSH"
+         style="width:62px;height:62px;object-fit:contain"
+         onerror="this.style.display='none'">
+    <div class="footer-text">
+      <strong>Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les Infections Sexuellement Transmissibles (PSLSH/IST)</strong><br>
+      Ministère de la Santé Publique, République du Tchad, N'Djamena<br>
+      <span class="warn">Document officiel. Toute falsification est passible de poursuites judiciaires.</span><br>
+      <span id="footerRef" style="font-size:5.5pt"></span>
+    </div>
+    <div id="qrBox"></div>
+  </div>
+
+</div><!-- .op -->
+</div><!-- .doc-frame -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+/* ── Montant en lettres ── */
+function nombreEnLettres(n) {
+  if (!n || isNaN(n)) return '';
+  n = Math.round(n);
+  const u  = ['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+  const dz = ['','','vingt','trente','quarante','cinquante','soixante','soixante','quatre-vingt','quatre-vingt'];
+  function dix(n){ if(n<20)return u[n]; const x=Math.floor(n/10),r=n%10; if(x===7)return dz[x]+(r===1?'-et-':'-')+u[10+r]; if(x===9)return dz[x]+(r>0?'-'+u[10+r]:'s'); return dz[x]+(r===1&&x!==8?'-et-':r>0?'-':(x===8?'s':''))+(r?u[r]:''); }
+  function cent(n){ if(n===0)return''; const c=Math.floor(n/100),r=n%100; return(c>1?u[c]+'-cent'+(r?'':'s'):(c===1?'cent':''))+(r?(c>=1?' ':'')+dix(r):''); }
+  if(n===0)return'Zéro';
+  let s=''; const G=Math.floor(n/1e9);n%=1e9; const M=Math.floor(n/1e6);n%=1e6; const K=Math.floor(n/1e3);n%=1e3;
+  if(G)s+=(G===1?'un milliard':cent(G)+' milliards')+' ';
+  if(M)s+=(M===1?'un million':cent(M)+' millions')+' ';
+  if(K)s+=(K===1?'mille':cent(K)+' mille')+' ';
+  if(n)s+=cent(n); s=s.trim();
+  return s.charAt(0).toUpperCase()+s.slice(1);
+}
+
+function autoLettres() {
+  const raw = document.getElementById('fMontantChiffres').value.replace(/[^0-9]/g,'');
+  const n = parseInt(raw, 10);
+  if (!isNaN(n) && n > 0)
+    document.getElementById('fMontantLettres').value = nombreEnLettres(n) + ' francs CFA';
+}
+
+function parseMt(s) { return parseFloat((s||'').replace(/\s/g,'').replace(/[^0-9.]/g,''))||0; }
+function fmtMt(n) { return n ? n.toLocaleString('fr-FR') : ''; }
+
+function calcTotal() {
+  let total = 0;
+  document.querySelectorAll('#ventTable tr').forEach(tr => {
+    const inputs = tr.querySelectorAll('input');
+    if (inputs[2]) total += parseMt(inputs[2].value);
+  });
+  document.getElementById('totalVent').textContent = total ? fmtMt(total) + ' FCFA' : '—';
+}
+
+function ajouterLigne() {
+  const tbody = document.getElementById('ventTable');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" style="width:100%"></td>
+    <td><input type="text" style="width:100%"></td>
+    <td><input type="text" style="width:100%;text-align:right" oninput="calcTotal()"></td>
+    <td><input type="text" style="width:100%;text-align:center"></td>
+    <td><input type="text" style="width:100%"></td>`;
+  tbody.appendChild(tr);
+}
+
+function toggleRef() {
+  const mode = document.querySelector('input[name="modePaie"]:checked')?.value;
+  const labels = { cheque: 'N° Chèque :', espece: 'Référence :', virement: 'N° Ordre de virement :' };
+  document.getElementById('modeRefLabel').textContent = labels[mode] || 'Référence :';
+}
+
+/* ── QR Code ── */
+function genererQR() {
+  const ref = document.getElementById('fNumOP').value;
+  const dos = document.getElementById('fRefDossier').value;
+  const dat = document.getElementById('fDate').value;
+  const el  = document.getElementById('qrBox');
+  el.innerHTML = '';
+  const txt = ['PSLSH-OP', ref, dos, dat].filter(Boolean).join(' | ');
+  try { new QRCode(el, { text: txt||'PSLSH-OP', width:62, height:62, colorDark:'#1b3a6b', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch(e){}
+}
+
+function effacer() {
+  if (!confirm('Effacer tous les champs ?')) return;
+  document.querySelectorAll('#opDoc input[type=text], #opDoc input[type=number]').forEach(el => el.value = '');
+  document.querySelectorAll('#opDoc input[type=checkbox]').forEach(el => el.checked = false);
+  document.getElementById('dispExercice').textContent = new Date().getFullYear();
+  document.getElementById('footerRef').textContent = '';
+  document.getElementById('totalVent').textContent = '—';
+  document.getElementById('qrBox').innerHTML = '';
+  genererQR();
+}
+
+document.getElementById('fNumOP').addEventListener('input', function() {
+  document.getElementById('footerRef').textContent = this.value ? 'OP N° : ' + this.value : '';
+  genererQR();
+});
+document.getElementById('fDate').addEventListener('input', genererQR);
+
+/* ── INIT ── */
+(function() {
+  document.getElementById('dispExercice').textContent = new Date().getFullYear();
+  genererQR();
+
+  const params = new URLSearchParams(window.location.search);
+  const dosId  = params.get('dossier_id');
+  if (!dosId) return;
+  try {
+    const raw  = localStorage.getItem('pslsh_dossiers_v1');
+    if (!raw) return;
+    const store = JSON.parse(raw);
+    const list  = Array.isArray(store) ? store : (store.data || []);
+    const dos   = list.find(d => d.id === dosId || d.reference === dosId);
+    if (!dos) return;
+    const s = (id, v) => { if (v && document.getElementById(id)) document.getElementById(id).value = v; };
+    s('fRefDossier',  dos.reference || dos.id);
+    s('fImputation',  dos.ligneBudgetaire);
+    s('fBeneficiaire', dos.beneficiaire);
+    s('fObjet',       dos.objet);
+    const pOP = (dos.pieces || []).find(p => p.typeId === 'OP');
+    if (pOP && pOP.data) {
+      const d = pOP.data;
+      s('fNumOP',            d.numOP);
+      s('fDate',             d.dateOP);
+      s('fMontantChiffres',  d.montant);
+      s('fMontantLettres',   d.montantLettres);
+      s('fNetPayer',         d.netPayer);
+      s('fBeneficiaire',     d.beneficiaire);
+      s('fPeriode',          d.periode);
+      s('fObjet',            d.objet);
+      if (d.montant) autoLettres();
+    }
+    genererQR();
+  } catch(e) { console.warn(e); }
+})();
+</script>
+<script src="../../src/js/roles.js"></script>
+</body>
+</html>

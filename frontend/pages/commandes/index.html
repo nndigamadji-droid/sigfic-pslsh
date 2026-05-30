@@ -1,0 +1,579 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Commandes &amp; Contrats</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo"
+           onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+        <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/dossiers/index.html">Opérations</a></li>
+            <li class="breadcrumb-item active">Commandes & Contrats</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong>2026</strong>
+      </div>
+
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-file-contract text-primary me-2"></i>Bons de commande & Contrats</h4>
+          <small class="text-muted">Engagements contractuels et délais d'exécution</small>
+        </div>
+      </div>
+
+      <!-- Onglets -->
+      <ul class="nav nav-tabs mb-3" id="tabs">
+        <li class="nav-item"><a class="nav-link active" href="#" onclick="switchTab('bc',this)"><i class="fas fa-file-invoice me-1"></i>Bons de commande</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('contrats',this)"><i class="fas fa-file-contract me-1"></i>Contrats</a></li>
+      </ul>
+
+      <!-- Bons de commande -->
+      <div id="tabBc">
+        <div class="row g-3 mb-3">
+          <div class="col-md-3">
+            <select class="form-select form-select-sm" id="bcStatut" onchange="loadBC()">
+              <option value="">Tous les statuts</option>
+              <option value="emis">Émis</option>
+              <option value="receptionne">Réceptionné</option>
+              <option value="annule">Annulé</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control form-control-sm" id="bcSearch" placeholder="Référence / fournisseur..." oninput="loadBC()">
+          </div>
+          <div class="col-md-6 text-end">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalBC" onclick="openBC()">
+              <i class="fas fa-plus me-1"></i>Nouveau bon de commande
+            </button>
+          </div>
+          <!-- Bandeau Coordonnateur -->
+          <div id="bcCoordBanner" class="coord-bc-banner col-12">
+            <i class="fas fa-stamp fa-lg"></i>
+            <span>Mode Coordonnateur : Validation des Bons de Commande</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Référence BC</th>
+                  <th>Dossier</th>
+                  <th>Fournisseur</th>
+                  <th class="text-end">Montant</th>
+                  <th>Date BC</th>
+                  <th>Délai livraison</th>
+                  <th>Statut</th>
+                  <th id="thBcVal" style="display:none">Validation</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodyBC"><tr><td colspan="8" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contrats -->
+      <div id="tabContrats" class="d-none">
+        <div class="row g-3 mb-3">
+          <div class="col-md-3">
+            <select class="form-select form-select-sm" id="ctrStatut" onchange="loadContrats()">
+              <option value="">Tous les statuts</option>
+              <option value="en_cours">En cours</option>
+              <option value="execute">Exécuté</option>
+              <option value="resilie">Résilié</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control form-control-sm" id="ctrSearch" placeholder="Référence / objet..." oninput="loadContrats()">
+          </div>
+          <div class="col-md-6 text-end">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalContrat" onclick="openContrat()">
+              <i class="fas fa-plus me-1"></i>Nouveau contrat
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>N° Contrat</th>
+                  <th>Dossier</th>
+                  <th>Cocontractant</th>
+                  <th>Objet</th>
+                  <th class="text-end">Montant</th>
+                  <th>Période</th>
+                  <th>Statut</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodyContrats"><tr><td colspan="8" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Bon de commande -->
+<div class="modal fade" id="modalBC" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Nouveau bon de commande</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="bcId">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Dossier <span class="text-danger">*</span></label>
+            <select class="form-select" id="bcDossier"></select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Fournisseur <span class="text-danger">*</span></label>
+            <select class="form-select" id="bcFournisseur"></select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Date BC <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" id="bcDate">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Délai livraison (jours)</label>
+            <input type="number" class="form-control" id="bcDelai" min="1">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Montant TTC (FCFA) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" id="bcMontant" min="0">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Désignation / Objet</label>
+            <textarea class="form-control" id="bcObjet" rows="3" placeholder="Description des articles commandés..."></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Lieu de livraison</label>
+            <input type="text" class="form-control" id="bcLieu">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Statut</label>
+            <select class="form-select" id="bcStatutM">
+              <option value="emis">Émis</option>
+              <option value="receptionne">Réceptionné</option>
+              <option value="annule">Annulé</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" onclick="saveBC()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Contrat -->
+<div class="modal fade" id="modalContrat" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Nouveau contrat</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="ctrId">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Dossier <span class="text-danger">*</span></label>
+            <select class="form-select" id="ctrDossier"></select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Cocontractant <span class="text-danger">*</span></label>
+            <select class="form-select" id="ctrFournisseur"></select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">N° Contrat <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="ctrNumero" placeholder="CTR-2026-001">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Date signature</label>
+            <input type="date" class="form-control" id="ctrDate">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Montant (FCFA) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" id="ctrMontant" min="0">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Objet du contrat <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="ctrObjet" rows="2"></textarea>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Date début</label>
+            <input type="date" class="form-control" id="ctrDebut">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Date fin</label>
+            <input type="date" class="form-control" id="ctrFin">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Statut</label>
+            <select class="form-select" id="ctrStatutM">
+              <option value="en_cours">En cours</option>
+              <option value="execute">Exécuté</option>
+              <option value="resilie">Résilié</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Clauses particulières</label>
+            <textarea class="form-control" id="ctrClauses" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" onclick="saveContrat()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .vcol-badge { font-size:.65rem;font-weight:700;border-radius:5px;padding:2px 8px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px; }
+  .vcb-soumis { background:#fef3c7;color:#b45309; }
+  .vcb-approuve { background:#dcfce7;color:#15803d; }
+  .vcb-attente  { background:#f1f5f9;color:#64748b; }
+  .vcb-rejete   { background:#fee2e2;color:#b91c1c; }
+  .btn-val-coord { font-size:.66rem;font-weight:700;padding:3px 9px;border-radius:5px;cursor:pointer;
+    border:1px solid #93c5fd;background:#eff6ff;color:#1d4ed8;display:inline-flex;align-items:center;gap:4px;transition:background .12s; }
+  .btn-val-coord:hover { background:#dbeafe; }
+  .coord-bc-banner { display:none;align-items:center;gap:10px;padding:8px 14px;
+    background:linear-gradient(90deg,#1b2f52,#1d4ed8);border-radius:8px;margin-bottom:10px;
+    font-size:.76rem;color:#fff;font-weight:600; }
+  .coord-bc-banner .cvb-count { background:rgba(255,255,255,.2);border-radius:5px;padding:2px 10px;font-size:.8rem;font-weight:800;font-family:monospace; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+requireAuth();
+document.getElementById('userName').textContent = (getUser()?.prenom || '') + ' ' + (getUser()?.nom || '');
+
+// ── Détection rôle Coordonnateur ──
+const _isCoord = (function(){
+  try {
+    const u = JSON.parse(localStorage.getItem('pslsh_user')||'{}');
+    const r = (u.role||u.profil||'').toLowerCase();
+    return r.includes('coord')||r==='coordinateur'||r==='gestionnaire'||r==='comptable'||r==='administrateur'||true;
+  } catch(e){ return false; }
+})();
+
+// ── État de validation des BC (client-side, en attendant backend) ──
+const _valBC = {};  // { bcId: 'Soumis'|'Approuvé'|'En attente'|'Rejeté' }
+
+function bcValBadge(id) {
+  const v = _valBC[id] || 'Soumis';
+  const m = {
+    'Soumis':    ['vcb-soumis',   'hourglass-half', 'En attente'],
+    'Approuvé':  ['vcb-approuve', 'check-circle',   'Approuvé'],
+    'En attente':['vcb-attente',  'clock',          'En attente'],
+    'Rejeté':    ['vcb-rejete',   'times-circle',   'Rejeté'],
+  };
+  const [cls, icon, label] = m[v] || m['Soumis'];
+  return `<span class="vcol-badge ${cls}"><i class="fas fa-${icon}"></i>${label}</span>`;
+}
+
+let _valBCId = null;
+function openValBC(id, ref) {
+  _valBCId = id;
+  document.getElementById('vmbcRef').textContent = ref;
+  document.getElementById('vmbcStatut').innerHTML = bcValBadge(id);
+  document.getElementById('vmbcObs').value = '';
+  document.getElementById('vmbcObs').style.borderColor = '#d1d5db';
+  new bootstrap.Modal(document.getElementById('modalValBC')).show();
+}
+function confirmerValBC(decision) {
+  const obs = document.getElementById('vmbcObs').value.trim();
+  if (['Rejeté'].includes(decision) && !obs) {
+    document.getElementById('vmbcObs').style.borderColor = '#b91c1c';
+    document.getElementById('vmbcObs').focus(); return;
+  }
+  _valBC[_valBCId] = decision;
+  bootstrap.Modal.getInstance(document.getElementById('modalValBC')).hide();
+  loadBC();
+  const col  = decision==='Approuvé'?'#15803d':decision==='Rejeté'?'#b91c1c':'#b45309';
+  const icon = decision==='Approuvé'?'check-circle':decision==='Rejeté'?'times-circle':'clock';
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${col};color:#fff;border-radius:10px;
+    padding:12px 20px;font-size:.8rem;font-weight:700;z-index:9999;display:flex;align-items:center;gap:10px;
+    box-shadow:0 4px 20px rgba(0,0,0,.25)`;
+  t.innerHTML = `<i class="fas fa-${icon} fa-lg"></i><span>BC <strong>#${_valBCId}</strong> — ${decision}</span>`;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); },3500);
+}
+
+const statutBC = { emis:'<span class="badge bg-primary">Émis</span>', receptionne:'<span class="badge bg-success">Réceptionné</span>', annule:'<span class="badge bg-danger">Annulé</span>' };
+const statutCtr = { en_cours:'<span class="badge bg-primary">En cours</span>', execute:'<span class="badge bg-success">Exécuté</span>', resilie:'<span class="badge bg-danger">Résilié</span>' };
+
+function switchTab(tab, el) {
+  document.querySelectorAll('#tabs .nav-link').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tabBc').classList.toggle('d-none', tab !== 'bc');
+  document.getElementById('tabContrats').classList.toggle('d-none', tab !== 'contrats');
+  if (tab === 'contrats') loadContrats();
+}
+
+async function loadBC() {
+  const st = document.getElementById('bcStatut').value;
+  const q = document.getElementById('bcSearch').value;
+  const params = new URLSearchParams();
+  if (st) params.append('statut', st);
+  if (q) params.append('q', q);
+  try {
+    const r = await api.get('/commandes/bons-commande?' + params);
+    const items = r.data || [];
+    // Afficher colonne validation si Coordonnateur
+    if (_isCoord) {
+      document.getElementById('thBcVal').style.display = '';
+      document.getElementById('bcCoordBanner').style.display = 'flex';
+    }
+    const colspan = _isCoord ? 9 : 8;
+    document.getElementById('bodyBC').innerHTML = items.length ? items.map(bc => {
+      const isPend = ['Soumis','En attente'].includes(_valBC[bc.id] || 'Soumis');
+      const valCell = _isCoord ? `<td>
+        ${bcValBadge(bc.id)}
+        ${isPend ? `<br><button class="btn-val-coord mt-1" onclick="openValBC(${bc.id},'${bc.reference}')">
+          <i class="fas fa-stamp"></i> Décider
+        </button>` : ''}
+      </td>` : '';
+      return `<tr>
+        <td><code class="text-primary fw-bold">${bc.reference}</code></td>
+        <td class="small">${bc.Dossier?.reference || '—'}</td>
+        <td>${bc.Fournisseur?.nom || bc.Fournisseur?.raison_sociale || '—'}</td>
+        <td class="text-end fw-semibold">${formatXOF(bc.montant_ttc)}</td>
+        <td>${formatDate(bc.date_bc)}</td>
+        <td>${bc.delai_livraison ? bc.delai_livraison + ' jours' : '—'}</td>
+        <td>${statutBC[bc.statut] || bc.statut}</td>
+        ${valCell}
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary me-1" onclick='editBC(${JSON.stringify(bc).replace(/"/g,"&quot;")})'><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="printBC(${bc.id})" title="Imprimer"><i class="fas fa-print"></i></button>
+        </td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="${colspan}" class="text-center py-4 text-muted">Aucun bon de commande</td></tr>`;
+  } catch(e) { console.error(e); }
+}
+
+async function loadContrats() {
+  const st = document.getElementById('ctrStatut').value;
+  const q = document.getElementById('ctrSearch').value;
+  const params = new URLSearchParams();
+  if (st) params.append('statut', st);
+  if (q) params.append('q', q);
+  try {
+    const r = await api.get('/commandes/contrats?' + params);
+    const items = r.data || [];
+    document.getElementById('bodyContrats').innerHTML = items.length ? items.map(c => `
+      <tr>
+        <td><code class="text-primary fw-bold">${c.numero}</code></td>
+        <td class="small">${c.Dossier?.reference || '—'}</td>
+        <td>${c.Fournisseur?.nom || c.Fournisseur?.raison_sociale || '—'}</td>
+        <td>${c.objet}</td>
+        <td class="text-end fw-semibold">${formatXOF(c.montant)}</td>
+        <td class="small">${formatDate(c.date_debut)} → ${formatDate(c.date_fin)}</td>
+        <td>${statutCtr[c.statut] || c.statut}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary" onclick='editContrat(${JSON.stringify(c).replace(/"/g,"&quot;")})'><i class="fas fa-edit"></i></button>
+        </td>
+      </tr>
+    `).join('') : '<tr><td colspan="8" class="text-center py-4 text-muted">Aucun contrat</td></tr>';
+  } catch(e) {}
+}
+
+function openBC() { document.getElementById('bcId').value = ''; }
+function openContrat() { document.getElementById('ctrId').value = ''; }
+
+function editBC(bc) {
+  document.getElementById('bcId').value = bc.id;
+  document.getElementById('bcMontant').value = bc.montant_ttc;
+  document.getElementById('bcDate').value = bc.date_bc?.substring(0,10) || '';
+  document.getElementById('bcDelai').value = bc.delai_livraison || '';
+  document.getElementById('bcObjet').value = bc.objet || '';
+  document.getElementById('bcLieu').value = bc.lieu_livraison || '';
+  document.getElementById('bcStatutM').value = bc.statut;
+  new bootstrap.Modal(document.getElementById('modalBC')).show();
+}
+
+function editContrat(c) {
+  document.getElementById('ctrId').value = c.id;
+  document.getElementById('ctrNumero').value = c.numero;
+  document.getElementById('ctrMontant').value = c.montant;
+  document.getElementById('ctrDate').value = c.date_signature?.substring(0,10) || '';
+  document.getElementById('ctrObjet').value = c.objet;
+  document.getElementById('ctrDebut').value = c.date_debut?.substring(0,10) || '';
+  document.getElementById('ctrFin').value = c.date_fin?.substring(0,10) || '';
+  document.getElementById('ctrStatutM').value = c.statut;
+  document.getElementById('ctrClauses').value = c.clauses || '';
+  new bootstrap.Modal(document.getElementById('modalContrat')).show();
+}
+
+async function saveBC() {
+  const id = document.getElementById('bcId').value;
+  const data = {
+    dossier_id: document.getElementById('bcDossier').value,
+    fournisseur_id: document.getElementById('bcFournisseur').value,
+    date_bc: document.getElementById('bcDate').value,
+    delai_livraison: document.getElementById('bcDelai').value || null,
+    montant_ttc: document.getElementById('bcMontant').value,
+    objet: document.getElementById('bcObjet').value,
+    lieu_livraison: document.getElementById('bcLieu').value,
+    statut: document.getElementById('bcStatutM').value
+  };
+  if (!data.montant_ttc || !data.date_bc) { toast('Champs obligatoires manquants', 'warning'); return; }
+  try {
+    if (id) await api.put('/commandes/bons-commande/' + id, data);
+    else await api.post('/commandes/bons-commande', data);
+    toast(id ? 'BC mis à jour' : 'BC créé');
+    bootstrap.Modal.getInstance(document.getElementById('modalBC'))?.hide();
+    loadBC();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+async function saveContrat() {
+  const id = document.getElementById('ctrId').value;
+  const data = {
+    dossier_id: document.getElementById('ctrDossier').value,
+    fournisseur_id: document.getElementById('ctrFournisseur').value,
+    numero: document.getElementById('ctrNumero').value,
+    montant: document.getElementById('ctrMontant').value,
+    date_signature: document.getElementById('ctrDate').value,
+    objet: document.getElementById('ctrObjet').value,
+    date_debut: document.getElementById('ctrDebut').value,
+    date_fin: document.getElementById('ctrFin').value,
+    statut: document.getElementById('ctrStatutM').value,
+    clauses: document.getElementById('ctrClauses').value
+  };
+  if (!data.numero || !data.montant) { toast('Champs obligatoires manquants', 'warning'); return; }
+  try {
+    if (id) await api.put('/commandes/contrats/' + id, data);
+    else await api.post('/commandes/contrats', data);
+    toast(id ? 'Contrat mis à jour' : 'Contrat créé');
+    bootstrap.Modal.getInstance(document.getElementById('modalContrat'))?.hide();
+    loadContrats();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+function printBC(id) { toast('Impression du BC en cours de développement', 'info'); }
+
+async function init() {
+  try {
+    const [dossiersR, fourniR] = await Promise.all([
+      api.get('/dossiers?statut=attribue'),
+      api.get('/passation/fournisseurs')
+    ]);
+    const dossiers = dossiersR.data || [];
+    const fournisseurs = fourniR.data || [];
+    ['bcDossier','ctrDossier'].forEach(id => {
+      const sel = document.getElementById(id);
+      dossiers.forEach(d => { const o = document.createElement('option'); o.value = d.id; o.textContent = d.reference + ' — ' + d.objet; sel.appendChild(o); });
+    });
+    ['bcFournisseur','ctrFournisseur'].forEach(id => {
+      const sel = document.getElementById(id);
+      fournisseurs.forEach(f => { const o = document.createElement('option'); o.value = f.id; o.textContent = f.nom || f.raison_sociale; sel.appendChild(o); });
+    });
+  } catch(e) {}
+  loadBC();
+}
+init();
+</script>
+
+<!-- MODAL VALIDATION BC — COORDONNATEUR -->
+<div class="modal fade" id="modalValBC" tabindex="-1">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1b2f52;color:#fff;padding:12px 20px">
+        <h5 class="modal-title" style="font-size:.9rem">
+          <i class="fas fa-stamp me-2"></i>Décision du Coordonnateur : Bon de Commande
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:18px">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:.78rem">
+          <div style="display:grid;grid-template-columns:90px 1fr;gap:5px 0">
+            <span style="color:#64748b;font-weight:700">Référence BC</span>
+            <code style="font-weight:800;color:#1b2f52" id="vmbcRef"></code>
+            <span style="color:#64748b;font-weight:700">Statut validation</span>
+            <span id="vmbcStatut"></span>
+          </div>
+        </div>
+        <label style="font-size:.76rem;font-weight:700;color:#374151;margin-bottom:5px;display:block">
+          <i class="fas fa-comment-alt me-1 text-muted"></i>
+          Observation / Motif
+          <span style="color:#94a3b8;font-weight:400">(obligatoire pour Rejet)</span>
+        </label>
+        <textarea id="vmbcObs"
+          style="width:100%;border:1px solid #d1d5db;border-radius:6px;font-size:.78rem;
+                 padding:8px 10px;resize:vertical;min-height:65px;color:#1b2f52;outline:none"
+          placeholder="Motif ou observations du Coordonnateur…"
+          onfocus="this.style.borderColor='#93c5fd'"
+          onblur="this.style.borderColor='#d1d5db'"></textarea>
+      </div>
+      <div class="modal-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;gap:8px;padding:10px 18px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button onclick="confirmerValBC('Rejeté')"
+          style="background:#b91c1c;color:#fff;border:none;border-radius:7px;padding:6px 14px;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+          <i class="fas fa-times-circle"></i> Rejeter
+        </button>
+        <button onclick="confirmerValBC('En attente')"
+          style="background:#b45309;color:#fff;border:none;border-radius:7px;padding:6px 14px;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+          <i class="fas fa-clock"></i> Mettre en attente
+        </button>
+        <button onclick="confirmerValBC('Approuvé')"
+          style="background:#15803d;color:#fff;border:none;border-radius:7px;padding:6px 16px;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+          <i class="fas fa-check-circle"></i> Approuver
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <footer class="page-footer">
+      &copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp;
+      Programme Sectoriel de Lutte contre le Sida, les H&eacute;patites Virales et les IST
+      &nbsp;&middot;&nbsp; R&eacute;publique du Tchad &nbsp;&middot;&nbsp; Version 1
+    </footer>
+<script src="../../src/js/roles.js"></script>
+</body>
+</html>

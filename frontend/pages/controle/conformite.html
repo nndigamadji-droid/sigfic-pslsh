@@ -1,0 +1,356 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Conformité</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .page-body { padding: 22px 28px 48px; }
+
+    /* KPI cards */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+    @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    .kpi-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .kpi-green::before  { background: #15803d; }
+    .kpi-red::before    { background: #b91c1c; }
+    .kpi-orange::before { background: #b45309; }
+    .kpi-blue::before   { background: #1b3a6b; }
+    .kpi-icon {
+      width: 46px; height: 46px;
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .kpi-icon-green  { background: #dcfce7; color: #15803d; }
+    .kpi-icon-red    { background: #fee2e2; color: #b91c1c; }
+    .kpi-icon-orange { background: #fef3c7; color: #b45309; }
+    .kpi-icon-blue   { background: #dbeafe; color: #1b3a6b; }
+    .kpi-lbl { font-size: .63rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+    .kpi-val { font-size: 1.5rem; font-weight: 800; color: #1b2f52; font-family: monospace; margin-top: 2px; }
+    .kpi-sub { font-size: .63rem; color: #94a3b8; margin-top: 2px; }
+
+    /* Panel card */
+    .panel-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .panel-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 13px 18px;
+      border-bottom: 1px solid #e2e8f0;
+      background: linear-gradient(90deg, #0f2944, #1b3a6b);
+    }
+    .panel-head-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center;
+      color: #7dd3fc; font-size: .9rem;
+    }
+    .panel-head-title { color: #fff; font-size: .88rem; font-weight: 800; flex: 1; }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 18px;
+      border-bottom: 1px solid #f1f5f9;
+      background: #f8fafc;
+      flex-wrap: wrap;
+    }
+    .filter-bar label { font-size: .72rem; font-weight: 700; color: #64748b; white-space: nowrap; }
+
+    /* Table */
+    .data-tbl { width: 100%; border-collapse: collapse; font-size: .78rem; }
+    .data-tbl thead th {
+      background: #f8fafc;
+      color: #64748b;
+      font-size: .63rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding: 9px 14px;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .data-tbl tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+      color: #1b2f52;
+    }
+    .data-tbl tbody tr:last-child td { border-bottom: none; }
+    .data-tbl tbody tr:hover td { background: #f8fafc; }
+
+    /* Badges */
+    .badge-conforme     { background: #dcfce7; color: #15803d; padding: 3px 10px; border-radius: 20px; font-size: .67rem; font-weight: 700; }
+    .badge-non-conforme { background: #fee2e2; color: #b91c1c; padding: 3px 10px; border-radius: 20px; font-size: .67rem; font-weight: 700; }
+    .badge-en-cours     { background: #fef3c7; color: #b45309; padding: 3px 10px; border-radius: 20px; font-size: .67rem; font-weight: 700; }
+
+    /* Action buttons */
+    .btn-act { font-size: .68rem; padding: 3px 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+    .btn-act-view   { background: #dbeafe; color: #1b3a6b; }
+    .btn-act-view:hover { background: #bfdbfe; }
+    .btn-act-edit   { background: #fef3c7; color: #b45309; }
+    .btn-act-edit:hover { background: #fde68a; }
+
+    /* Pieces pill */
+    .pieces-ok  { font-family: monospace; font-weight: 700; color: #15803d; }
+    .pieces-bad { font-family: monospace; font-weight: 700; color: #b91c1c; }
+
+    .btn-exp {
+      font-size: .71rem; font-weight: 600; padding: 5px 11px;
+      border-radius: 7px; border: 1px solid #d1d5db;
+      background: #fff; color: #374151; cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .btn-exp:hover { background: #f8fafc; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/controle/index.html">Contrôle &amp; audit</a></li>
+            <li class="breadcrumb-item active">Conformité</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i> Exercice :
+        <select class="form-select form-select-sm d-inline-block w-auto ms-1">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+
+    <div class="page-content page-body">
+
+      <!-- Titre -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-clipboard-check text-primary me-2"></i>Contrôle de Conformité</h4>
+          <small class="text-muted">Vérification documentaire et procédurale, dossiers d'opération</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-exp"><i class="fas fa-file-excel"></i> Exporter</button>
+          <button class="btn-exp"><i class="fas fa-print"></i> Imprimer</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-green">
+          <div class="kpi-icon kpi-icon-green"><i class="fas fa-check-circle"></i></div>
+          <div>
+            <div class="kpi-lbl">Dossiers conformes</div>
+            <div class="kpi-val">38</div>
+            <div class="kpi-sub">Tous documents présents</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi-red">
+          <div class="kpi-icon kpi-icon-red"><i class="fas fa-times-circle"></i></div>
+          <div>
+            <div class="kpi-lbl">Dossiers non conformes</div>
+            <div class="kpi-val">7</div>
+            <div class="kpi-sub">Pièces manquantes ou anomalies</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi-orange">
+          <div class="kpi-icon kpi-icon-orange"><i class="fas fa-hourglass-half"></i></div>
+          <div>
+            <div class="kpi-lbl">En cours de contrôle</div>
+            <div class="kpi-val">4</div>
+            <div class="kpi-sub">Vérification en attente</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi-blue">
+          <div class="kpi-icon kpi-icon-blue"><i class="fas fa-percentage"></i></div>
+          <div>
+            <div class="kpi-lbl">Taux de conformité</div>
+            <div class="kpi-val">84%</div>
+            <div class="kpi-sub">Sur dossiers contrôlés</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tableau des contrôles -->
+      <div class="panel-card">
+        <div class="panel-head">
+          <div class="panel-head-icon"><i class="fas fa-table"></i></div>
+          <span class="panel-head-title">Liste des contrôles de conformité</span>
+        </div>
+        <div class="filter-bar">
+          <label>Service :</label>
+          <select class="form-select form-select-sm w-auto">
+            <option value="">Tous</option>
+            <option>SGAS</option>
+            <option>SAF</option>
+            <option>UI</option>
+            <option>SESRO</option>
+          </select>
+          <label class="ms-2">Résultat :</label>
+          <select class="form-select form-select-sm w-auto">
+            <option value="">Tous</option>
+            <option>Conforme</option>
+            <option>Non conforme</option>
+            <option>En cours</option>
+          </select>
+          <label class="ms-2">Période :</label>
+          <input type="date" class="form-control form-control-sm w-auto" value="2026-04-01">
+          <span class="text-muted small">au</span>
+          <input type="date" class="form-control form-control-sm w-auto" value="2026-04-09">
+          <button class="btn btn-sm ms-1" style="background:#1b3a6b;color:#fff;font-size:.72rem;">
+            <i class="fas fa-search"></i> Filtrer
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-tbl">
+            <thead>
+              <tr>
+                <th>N° Dossier</th>
+                <th>Objet</th>
+                <th>Service</th>
+                <th class="text-center">Pièces présentes</th>
+                <th class="text-center">Pièces manquantes</th>
+                <th>Contrôlé par</th>
+                <th>Date contrôle</th>
+                <th class="text-center">Résultat</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>DOS-011</strong></td>
+                <td>Réactifs VIH</td>
+                <td><span class="badge bg-secondary bg-opacity-25 text-dark" style="font-size:.67rem;">SGAS</span></td>
+                <td class="text-center"><span class="pieces-ok">8 / 8</span></td>
+                <td class="text-center"><span class="text-muted">0</span></td>
+                <td>INSPECTEUR A</td>
+                <td>01/04/2026</td>
+                <td class="text-center"><span class="badge-conforme"><i class="fas fa-check me-1"></i>Conforme</span></td>
+                <td class="text-center">
+                  <button class="btn-act btn-act-view me-1"><i class="fas fa-eye"></i> Voir</button>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>DOS-012</strong></td>
+                <td>Fournitures bureau</td>
+                <td><span class="badge bg-secondary bg-opacity-25 text-dark" style="font-size:.67rem;">SAF</span></td>
+                <td class="text-center"><span class="pieces-ok">6 / 8</span></td>
+                <td class="text-center"><span class="pieces-bad">2</span></td>
+                <td>INSPECTEUR A</td>
+                <td>02/04/2026</td>
+                <td class="text-center"><span class="badge-non-conforme"><i class="fas fa-times me-1"></i>Non conforme</span></td>
+                <td class="text-center">
+                  <button class="btn-act btn-act-view me-1"><i class="fas fa-eye"></i> Voir</button>
+                  <button class="btn-act btn-act-edit"><i class="fas fa-flag"></i> Anomalie</button>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>DOS-013</strong></td>
+                <td>Matériel informatique</td>
+                <td><span class="badge bg-secondary bg-opacity-25 text-dark" style="font-size:.67rem;">UI</span></td>
+                <td class="text-center"><span class="pieces-ok">7 / 8</span></td>
+                <td class="text-center"><span class="pieces-bad">1</span></td>
+                <td>INSPECTEUR B</td>
+                <td>03/04/2026</td>
+                <td class="text-center"><span class="badge-non-conforme"><i class="fas fa-times me-1"></i>Non conforme</span></td>
+                <td class="text-center">
+                  <button class="btn-act btn-act-view me-1"><i class="fas fa-eye"></i> Voir</button>
+                  <button class="btn-act btn-act-edit"><i class="fas fa-flag"></i> Anomalie</button>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>DOS-014</strong></td>
+                <td>Mission terrain SESRO</td>
+                <td><span class="badge bg-secondary bg-opacity-25 text-dark" style="font-size:.67rem;">SESRO</span></td>
+                <td class="text-center"><span class="pieces-ok">8 / 8</span></td>
+                <td class="text-center"><span class="text-muted">0</span></td>
+                <td>INSPECTEUR B</td>
+                <td>04/04/2026</td>
+                <td class="text-center"><span class="badge-conforme"><i class="fas fa-check me-1"></i>Conforme</span></td>
+                <td class="text-center">
+                  <button class="btn-act btn-act-view me-1"><i class="fas fa-eye"></i> Voir</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="d-flex align-items-center justify-content-between px-3 py-2" style="background:#f8fafc;border-top:1px solid #e2e8f0;">
+          <small class="text-muted">4 résultats affichés, page 1 / 1</small>
+          <nav>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>
+              <li class="page-item active"><a class="page-link" href="#" style="background:#1b3a6b;border-color:#1b3a6b;">1</a></li>
+              <li class="page-item disabled"><a class="page-link" href="#">&raquo;</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+  document.getElementById('userName').textContent = _u.nom || _u.name || _u.email || '';
+</script>
+</body>
+</html>

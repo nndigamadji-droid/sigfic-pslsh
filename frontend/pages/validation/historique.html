@@ -1,0 +1,231 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Historique des décisions</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .page-body { padding:22px 28px 48px; }
+    .filter-bar { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:14px 18px; margin-bottom:18px; display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; }
+    .filter-bar label { font-size:.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; margin-bottom:0; display:block; }
+    .filter-bar .form-select, .filter-bar .form-control { font-size:.78rem; border-radius:7px; border:1px solid #d1d5db; padding:5px 10px; min-width:130px; }
+    .filter-btn { font-size:.72rem; font-weight:700; padding:6px 14px; border-radius:7px; background:#1b3a6b; color:#fff; border:none; cursor:pointer; display:flex; align-items:center; gap:5px; }
+    .filter-btn:hover { background:#1b2f52; }
+    .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+    .kpi-box { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:12px; }
+    .kpi-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+    .kpi-lbl { font-size:.63rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
+    .kpi-val { font-size:.95rem; font-weight:800; color:#1b2f52; }
+    .data-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; }
+    .data-card-head { display:flex; align-items:center; gap:10px; padding:12px 18px; border-bottom:1px solid #e2e8f0; background:linear-gradient(90deg,#0f2944,#1b3a6b); }
+    .dc-icon { width:32px; height:32px; border-radius:8px; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; color:#7dd3fc; font-size:.9rem; }
+    .dc-title { color:#fff; font-size:.85rem; font-weight:800; flex:1; }
+    .data-table { width:100%; border-collapse:collapse; font-size:.78rem; }
+    .data-table thead th { background:#f8fafc; color:#64748b; font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:9px 14px; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+    .data-table tbody td { padding:10px 14px; border-bottom:1px solid #f1f5f9; vertical-align:middle; color:#1b2f52; }
+    .data-table tbody tr:last-child td { border-bottom:none; }
+    .data-table tbody tr:hover td { background:#f8fafc; }
+    .ref-code { font-family:'Cascadia Code','Consolas',monospace; font-size:.72rem; font-weight:700; color:#1b3a6b; }
+    .mono { font-family:'Cascadia Code','Consolas',monospace; font-size:.72rem; }
+    .d-approuve { background:#dcfce7; color:#15803d; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
+    .d-rejete   { background:#fee2e2; color:#b91c1c; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
+    .d-arevoir  { background:#ede9fe; color:#6d28d9; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
+    .type-pao { background:#dbeafe; color:#1d4ed8; font-size:.63rem; font-weight:700; border-radius:4px; padding:2px 7px; }
+    .type-eb  { background:#dcfce7; color:#15803d; font-size:.63rem; font-weight:700; border-radius:4px; padding:2px 7px; }
+    .type-bc  { background:#fef3c7; color:#b45309; font-size:.63rem; font-weight:700; border-radius:4px; padding:2px 7px; }
+    .type-op  { background:#f0fdf4; color:#166534; font-size:.63rem; font-weight:700; border-radius:4px; padding:2px 7px; }
+    .type-rpt { background:#fdf4ff; color:#86198f; font-size:.63rem; font-weight:700; border-radius:4px; padding:2px 7px; }
+    .duree { font-size:.7rem; color:#64748b; font-style:italic; }
+    .btn-exp { font-size:.71rem; font-weight:600; padding:5px 11px; border-radius:7px; border:1px solid #d1d5db; background:#fff; color:#374151; cursor:pointer; display:flex; align-items:center; gap:5px; }
+    .btn-exp:hover { background:#f8fafc; }
+    .comment-cell { max-width:180px; font-size:.72rem; color:#475569; font-style:italic; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Gestion Financière</div></div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/validation/index.html">Centre de validation</a></li>
+            <li class="breadcrumb-item active">Historique</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center"><i class="fas fa-calendar-alt"></i> Exercice : <select class="form-select form-select-sm d-inline-block w-auto ms-1"><option>2026</option><option>2025</option></select></div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+    <div class="page-content page-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-history text-primary me-2"></i>Historique des Décisions de Validation</h4>
+          <small class="text-muted">Traçabilité des décisions de validation, Exercice 2026</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-exp"><i class="fas fa-file-excel"></i> Exporter CSV</button>
+          <button class="btn-exp" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-box">
+          <div class="kpi-icon" style="background:#dcfce7;color:#15803d"><i class="fas fa-check-double"></i></div>
+          <div><div class="kpi-lbl">Approuvés</div><div class="kpi-val">54</div></div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-icon" style="background:#fee2e2;color:#b91c1c"><i class="fas fa-times-circle"></i></div>
+          <div><div class="kpi-lbl">Rejetés</div><div class="kpi-val">7</div></div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-icon" style="background:#ede9fe;color:#6d28d9"><i class="fas fa-redo"></i></div>
+          <div><div class="kpi-lbl">Retournés</div><div class="kpi-val">9</div></div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-icon" style="background:#dbeafe;color:#1d4ed8"><i class="fas fa-stopwatch"></i></div>
+          <div><div class="kpi-lbl">Délai moyen</div><div class="kpi-val">2.4 j</div></div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div><label>Type d'objet</label>
+          <select class="form-select">
+            <option value="">Tous</option><option>PAO</option><option>Expression de besoin</option><option>Bon de commande</option><option>Ordre de paiement</option><option>Rapport</option>
+          </select>
+        </div>
+        <div><label>Décision</label>
+          <select class="form-select">
+            <option value="">Toutes</option><option>Approuvé</option><option>Rejeté</option><option>À revoir</option>
+          </select>
+        </div>
+        <div><label>Valideur</label>
+          <select class="form-select">
+            <option value="">Tous</option><option>KONE Ali</option><option>BRAHIM Daouda</option>
+          </select>
+        </div>
+        <div><label>Date début</label><input type="date" class="form-control" value="2026-01-01"></div>
+        <div><label>Date fin</label><input type="date" class="form-control" value="2026-04-11"></div>
+        <button class="filter-btn"><i class="fas fa-search"></i> Filtrer</button>
+      </div>
+
+      <div class="data-card">
+        <div class="data-card-head">
+          <div class="dc-icon"><i class="fas fa-history"></i></div>
+          <div class="dc-title">Journal des décisions, 70 entrées, Exercice 2026</div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date &amp; Heure</th>
+                <th>Type</th>
+                <th>Référence</th>
+                <th>Valideur</th>
+                <th>Décision</th>
+                <th>Commentaire</th>
+                <th>Délai traitement</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">09/04/2026 08:32</td>
+                <td><span class="type-op">Ordre paiement</span></td>
+                <td><span class="ref-code">OP-2026-031</span></td>
+                <td>KONE Ali</td>
+                <td><span class="d-approuve"><i class="fas fa-check me-1"></i>Approuvé</span></td>
+                <td class="comment-cell">Dossier complet, montant conforme au BC.</td>
+                <td class="duree">1 jour</td>
+              </tr>
+              <tr>
+                <td class="mono">08/04/2026 14:15</td>
+                <td><span class="type-bc">Bon de commande</span></td>
+                <td><span class="ref-code">BC-2026-013</span></td>
+                <td>KONE Ali</td>
+                <td><span class="d-rejete"><i class="fas fa-times me-1"></i>Rejeté</span></td>
+                <td class="comment-cell">Fournisseur non référencé. Relancer cotation.</td>
+                <td class="duree">2 jours</td>
+              </tr>
+              <tr>
+                <td class="mono">07/04/2026 11:00</td>
+                <td><span class="type-rpt">Rapport</span></td>
+                <td><span class="ref-code">RPT-2026-03</span></td>
+                <td>BRAHIM Daouda</td>
+                <td><span class="d-arevoir"><i class="fas fa-redo me-1"></i>À revoir</span></td>
+                <td class="comment-cell">Balance non jointe. Comptes 5312 non soldés.</td>
+                <td class="duree">1 jour</td>
+              </tr>
+              <tr>
+                <td class="mono">05/04/2026 09:45</td>
+                <td><span class="type-pao">PAO</span></td>
+                <td><span class="ref-code">PAO-SESRO-2026</span></td>
+                <td>KONE Ali</td>
+                <td><span class="d-arevoir"><i class="fas fa-redo me-1"></i>À revoir</span></td>
+                <td class="comment-cell">Indicateurs non renseignés pour Q2.</td>
+                <td class="duree">3 jours</td>
+              </tr>
+              <tr>
+                <td class="mono">02/04/2026 16:20</td>
+                <td><span class="type-eb">Expr. besoin</span></td>
+                <td><span class="ref-code">EB-002</span></td>
+                <td>KONE Ali</td>
+                <td><span class="d-approuve"><i class="fas fa-check me-1"></i>Approuvé</span></td>
+                <td class="comment-cell">Besoin justifié, ligne disponible.</td>
+                <td class="duree">2 jours</td>
+              </tr>
+              <tr>
+                <td class="mono">28/03/2026 10:05</td>
+                <td><span class="type-bc">Bon de commande</span></td>
+                <td><span class="ref-code">BC-2026-011</span></td>
+                <td>BRAHIM Daouda</td>
+                <td><span class="d-approuve"><i class="fas fa-check me-1"></i>Approuvé</span></td>
+                <td class="comment-cell">Procédure DC respectée, tableau comparatif validé.</td>
+                <td class="duree">1 jour</td>
+              </tr>
+              <tr>
+                <td class="mono">20/03/2026 08:30</td>
+                <td><span class="type-pao">PAO</span></td>
+                <td><span class="ref-code">PAO-SGAS-2026</span></td>
+                <td>KONE Ali</td>
+                <td><span class="d-approuve"><i class="fas fa-check me-1"></i>Approuvé</span></td>
+                <td class="comment-cell">Conforme aux prévisions PTCA 2026.</td>
+                <td class="duree">2 jours</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+  document.getElementById('userName').textContent = _u.nom || _u.name || _u.email || '';
+</script>
+</body>
+</html>

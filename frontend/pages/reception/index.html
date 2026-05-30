@@ -1,0 +1,432 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Réception &amp; Service fait</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo"
+           onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+        <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/dossiers/index.html">Opérations</a></li>
+            <li class="breadcrumb-item active">Réception & Service fait</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong>2026</strong>
+      </div>
+
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-truck text-primary me-2"></i>Réception & Service fait</h4>
+          <small class="text-muted">PV de réception, attestations de service fait et validation technique</small>
+        </div>
+      </div>
+
+      <ul class="nav nav-tabs mb-3" id="tabs">
+        <li class="nav-item"><a class="nav-link active" href="#" onclick="switchTab('receptions',this)"><i class="fas fa-clipboard-check me-1"></i>PV de réception</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('asf',this)"><i class="fas fa-file-signature me-1"></i>Attestations de service fait</a></li>
+      </ul>
+
+      <!-- PV de réception -->
+      <div id="tabReceptions">
+        <div class="row g-2 mb-3 align-items-end">
+          <div class="col-md-3">
+            <select class="form-select form-select-sm" id="pvStatut" onchange="loadReceptions()">
+              <option value="">Tous</option>
+              <option value="provisoire">Provisoire</option>
+              <option value="definitif">Définitif</option>
+              <option value="rejete">Rejeté</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control form-control-sm" id="pvSearch" placeholder="Référence / BC..." oninput="loadReceptions()">
+          </div>
+          <div class="col-md-6 text-end">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalReception" onclick="openReception()">
+              <i class="fas fa-plus me-1"></i>Nouveau PV de réception
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>N° PV</th>
+                  <th>Bon de commande</th>
+                  <th>Dossier</th>
+                  <th>Date réception</th>
+                  <th>Type</th>
+                  <th>Statut</th>
+                  <th>Validé par</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodyReceptions"><tr><td colspan="8" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attestations de service fait -->
+      <div id="tabAsf" class="d-none">
+        <div class="row g-2 mb-3 align-items-end">
+          <div class="col-md-3">
+            <select class="form-select form-select-sm" id="asfStatut" onchange="loadASF()">
+              <option value="">Tous</option>
+              <option value="etablie">Établie</option>
+              <option value="validee">Validée</option>
+              <option value="rejetee">Rejetée</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control form-control-sm" id="asfSearch" placeholder="Rechercher..." oninput="loadASF()">
+          </div>
+          <div class="col-md-6 text-end">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalASF" onclick="openASF()">
+              <i class="fas fa-plus me-1"></i>Nouvelle attestation
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>N° ASF</th>
+                  <th>Dossier</th>
+                  <th>Prestataire</th>
+                  <th>Service rendu</th>
+                  <th>Date</th>
+                  <th>Montant</th>
+                  <th>Statut</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodyASF"><tr><td colspan="8" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal PV de réception -->
+<div class="modal fade" id="modalReception" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Procès-verbal de réception</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="pvId">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Bon de commande <span class="text-danger">*</span></label>
+            <select class="form-select" id="pvBC"><option value="">Sélectionner...</option></select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Date de réception <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" id="pvDate">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Type de réception</label>
+            <select class="form-select" id="pvType">
+              <option value="provisoire">Provisoire</option>
+              <option value="definitif">Définitive</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Statut</label>
+            <select class="form-select" id="pvStatutM">
+              <option value="provisoire">Provisoire</option>
+              <option value="definitif">Définitif</option>
+              <option value="rejete">Rejeté</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Lieu de réception</label>
+            <input type="text" class="form-control" id="pvLieu">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Membres de la commission de réception</label>
+            <input type="text" class="form-control" id="pvMembres" placeholder="Noms séparés par des virgules">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Observations / Réserves</label>
+            <textarea class="form-control" id="pvObs" rows="3" placeholder="Constats, réserves, non-conformités..."></textarea>
+          </div>
+          <div class="col-12">
+            <div class="alert alert-info small mb-0">
+              <i class="fas fa-info-circle me-2"></i>Un PV de réception définitif déclenchera le passage du dossier en statut <strong>réceptionné</strong>.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" onclick="saveReception()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal ASF -->
+<div class="modal fade" id="modalASF" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Attestation de service fait</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="asfId">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Dossier <span class="text-danger">*</span></label>
+            <select class="form-select" id="asfDossier"><option value="">Sélectionner...</option></select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Prestataire <span class="text-danger">*</span></label>
+            <select class="form-select" id="asfPrestataire"><option value="">Sélectionner...</option></select>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Nature du service rendu <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="asfService" rows="2" placeholder="Description du service réalisé..."></textarea>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Date du service</label>
+            <input type="date" class="form-control" id="asfDate">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Montant (FCFA)</label>
+            <input type="number" class="form-control" id="asfMontant" min="0">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Statut</label>
+            <select class="form-select" id="asfStatutM">
+              <option value="etablie">Établie</option>
+              <option value="validee">Validée</option>
+              <option value="rejetee">Rejetée</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Observations</label>
+            <textarea class="form-control" id="asfObs" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" onclick="saveASF()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+requireAuth();
+document.getElementById('userName').textContent = (getUser()?.prenom || '') + ' ' + (getUser()?.nom || '');
+
+function switchTab(tab, el) {
+  document.querySelectorAll('#tabs .nav-link').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tabReceptions').classList.toggle('d-none', tab !== 'receptions');
+  document.getElementById('tabAsf').classList.toggle('d-none', tab !== 'asf');
+  if (tab === 'asf') loadASF();
+}
+
+async function loadReceptions() {
+  const st = document.getElementById('pvStatut').value;
+  const q = document.getElementById('pvSearch').value;
+  const params = new URLSearchParams();
+  if (st) params.append('statut', st);
+  if (q) params.append('q', q);
+  try {
+    const r = await api.get('/reception/receptions?' + params);
+    const items = r.data || [];
+    const badges = { provisoire:'<span class="badge bg-warning text-dark">Provisoire</span>', definitif:'<span class="badge bg-success">Définitif</span>', rejete:'<span class="badge bg-danger">Rejeté</span>' };
+    document.getElementById('bodyReceptions').innerHTML = items.length ? items.map(p => `
+      <tr>
+        <td><code>${p.numero || p.id}</code></td>
+        <td class="small">${p.BonCommande?.reference || '—'}</td>
+        <td class="small">${p.Dossier?.reference || p.BonCommande?.Dossier?.reference || '—'}</td>
+        <td>${formatDate(p.date_reception)}</td>
+        <td>${p.type_reception === 'definitif' ? 'Définitive' : 'Provisoire'}</td>
+        <td>${badges[p.statut] || p.statut}</td>
+        <td class="small">${p.valide_par || '—'}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary me-1" onclick='editPV(${JSON.stringify(p).replace(/"/g,"&quot;")})'><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="fas fa-print"></i></button>
+        </td>
+      </tr>
+    `).join('') : '<tr><td colspan="8" class="text-center py-4 text-muted">Aucun PV de réception</td></tr>';
+  } catch(e) {}
+}
+
+async function loadASF() {
+  const st = document.getElementById('asfStatut').value;
+  const q = document.getElementById('asfSearch').value;
+  const params = new URLSearchParams();
+  if (st) params.append('statut', st);
+  if (q) params.append('q', q);
+  try {
+    const r = await api.get('/reception/asf?' + params);
+    const items = r.data || [];
+    const badges = { etablie:'<span class="badge bg-secondary">Établie</span>', validee:'<span class="badge bg-success">Validée</span>', rejetee:'<span class="badge bg-danger">Rejetée</span>' };
+    document.getElementById('bodyASF').innerHTML = items.length ? items.map(a => `
+      <tr>
+        <td><code>${a.numero || a.id}</code></td>
+        <td class="small">${a.Dossier?.reference || '—'}</td>
+        <td>${a.Fournisseur?.nom || a.Fournisseur?.raison_sociale || '—'}</td>
+        <td>${a.nature_service}</td>
+        <td>${formatDate(a.date_service)}</td>
+        <td class="fw-semibold">${formatXOF(a.montant)}</td>
+        <td>${badges[a.statut] || a.statut}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary" onclick='editASF(${JSON.stringify(a).replace(/"/g,"&quot;")})'><i class="fas fa-edit"></i></button>
+        </td>
+      </tr>
+    `).join('') : '<tr><td colspan="8" class="text-center py-4 text-muted">Aucune attestation de service fait</td></tr>';
+  } catch(e) {}
+}
+
+function openReception() { document.getElementById('pvId').value = ''; }
+function openASF() { document.getElementById('asfId').value = ''; }
+
+function editPV(p) {
+  document.getElementById('pvId').value = p.id;
+  document.getElementById('pvDate').value = p.date_reception?.substring(0,10) || '';
+  document.getElementById('pvType').value = p.type_reception || 'provisoire';
+  document.getElementById('pvStatutM').value = p.statut;
+  document.getElementById('pvLieu').value = p.lieu || '';
+  document.getElementById('pvMembres').value = p.membres || '';
+  document.getElementById('pvObs').value = p.observations || '';
+  new bootstrap.Modal(document.getElementById('modalReception')).show();
+}
+
+function editASF(a) {
+  document.getElementById('asfId').value = a.id;
+  document.getElementById('asfService').value = a.nature_service || '';
+  document.getElementById('asfDate').value = a.date_service?.substring(0,10) || '';
+  document.getElementById('asfMontant').value = a.montant || '';
+  document.getElementById('asfStatutM').value = a.statut;
+  document.getElementById('asfObs').value = a.observations || '';
+  new bootstrap.Modal(document.getElementById('modalASF')).show();
+}
+
+async function saveReception() {
+  const id = document.getElementById('pvId').value;
+  const bcId = document.getElementById('pvBC').value;
+  const data = {
+    bon_commande_id: bcId,
+    date_reception: document.getElementById('pvDate').value,
+    type_reception: document.getElementById('pvType').value,
+    statut: document.getElementById('pvStatutM').value,
+    lieu: document.getElementById('pvLieu').value,
+    membres: document.getElementById('pvMembres').value,
+    observations: document.getElementById('pvObs').value
+  };
+  if (!data.date_reception) { toast('La date est obligatoire', 'warning'); return; }
+  try {
+    if (id) await api.put('/reception/receptions/' + id, data);
+    else await api.post('/reception/receptions', data);
+    toast(id ? 'PV mis à jour' : 'PV créé');
+    bootstrap.Modal.getInstance(document.getElementById('modalReception'))?.hide();
+    loadReceptions();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+async function saveASF() {
+  const id = document.getElementById('asfId').value;
+  const data = {
+    dossier_id: document.getElementById('asfDossier').value,
+    fournisseur_id: document.getElementById('asfPrestataire').value,
+    nature_service: document.getElementById('asfService').value,
+    date_service: document.getElementById('asfDate').value,
+    montant: document.getElementById('asfMontant').value || null,
+    statut: document.getElementById('asfStatutM').value,
+    observations: document.getElementById('asfObs').value
+  };
+  if (!data.nature_service) { toast('La nature du service est obligatoire', 'warning'); return; }
+  try {
+    if (id) await api.put('/reception/asf/' + id, data);
+    else await api.post('/reception/asf', data);
+    toast(id ? 'ASF mise à jour' : 'ASF créée');
+    bootstrap.Modal.getInstance(document.getElementById('modalASF'))?.hide();
+    loadASF();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+async function init() {
+  try {
+    const [bcR, dossiersR, fourniR] = await Promise.all([
+      api.get('/commandes/bons-commande?statut=emis'),
+      api.get('/dossiers?statut=commandé'),
+      api.get('/passation/fournisseurs')
+    ]);
+    const bcs = bcR.data || [];
+    const dossiers = dossiersR.data || [];
+    const fournisseurs = fourniR.data || [];
+    bcs.forEach(bc => {
+      const o = document.createElement('option'); o.value = bc.id;
+      o.textContent = bc.reference + ' — ' + (bc.Fournisseur?.nom || bc.Fournisseur?.raison_sociale || '');
+      document.getElementById('pvBC').appendChild(o);
+    });
+    dossiers.forEach(d => {
+      const o = document.createElement('option'); o.value = d.id;
+      o.textContent = d.reference + ' — ' + d.objet;
+      document.getElementById('asfDossier').appendChild(o);
+    });
+    fournisseurs.forEach(f => {
+      const o = document.createElement('option'); o.value = f.id;
+      o.textContent = f.nom || f.raison_sociale;
+      document.getElementById('asfPrestataire').appendChild(o);
+    });
+  } catch(e) {}
+  loadReceptions();
+}
+init();
+</script>
+
+    <footer class="page-footer">
+      &copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp;
+      Programme Sectoriel de Lutte contre le Sida, les H&eacute;patites Virales et les IST
+      &nbsp;&middot;&nbsp; R&eacute;publique du Tchad &nbsp;&middot;&nbsp; Version 1
+    </footer>
+<script src="../../src/js/roles.js"></script>
+</body>
+</html>

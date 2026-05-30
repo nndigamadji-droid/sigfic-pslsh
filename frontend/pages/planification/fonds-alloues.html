@@ -1,0 +1,793 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Fonds alloués</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    html, body { height:100%; overflow:hidden; }
+    .app-layout, .main-content { height:100vh; overflow:hidden; }
+    .page-content { flex:1; overflow:hidden; display:flex; flex-direction:column; padding:0; gap:0; }
+    .fal-top  { flex-shrink:0; padding:12px 24px 0; }
+    .fal-title-strip { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .fal-title-strip h5 { margin:0; font-size:.95rem; font-weight:800; color:#1b2f52; }
+    .fal-title-strip small { font-size:.7rem; color:#64748b; }
+    .fal-tabs { flex-shrink:0; display:flex; align-items:flex-end; gap:2px; padding:0 24px;
+      border-bottom:2px solid #d1d5db; background:#f8fafc; margin-top:10px; }
+    .fal-tab { padding:8px 20px; font-size:.78rem; font-weight:600; color:#64748b;
+      border:1px solid transparent; border-bottom:none; border-radius:6px 6px 0 0;
+      background:transparent; cursor:pointer; position:relative; bottom:-2px; }
+    .fal-tab.active { color:#1b3a6b; background:#fff; border-color:#d1d5db; border-bottom-color:#fff; font-weight:700; }
+    .fal-body { flex:1; overflow-y:auto; padding:16px 24px 20px; background:#eef2f7; }
+    .fal-panel { display:none; }
+    .fal-panel.active { display:block; }
+
+    /* ── KPI globaux ── */
+    .fa-kpi-bar { display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap; }
+    .fa-kpi     { flex:1;min-width:180px;border-radius:12px;padding:14px 18px; }
+    .fk-blue    { background:linear-gradient(135deg,#1b3a6b,#2563eb);color:#fff; }
+    .fk-green   { background:linear-gradient(135deg,#15803d,#22c55e);color:#fff; }
+    .fk-orange  { background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff; }
+    .fk-purple  { background:linear-gradient(135deg,#7e22ce,#a855f7);color:#fff; }
+    .fk-label   { font-size:.62rem;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.06em; }
+    .fk-value   { font-size:1.1rem;font-weight:800;font-family:monospace;margin:4px 0 2px; }
+    .fk-sub     { font-size:.62rem;opacity:.75; }
+
+    /* ── Groupes ── */
+    .fa-group { margin-bottom:20px;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08); }
+
+    .fa-group-head {
+      display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;user-select:none;
+    }
+    .fa-group-head.grp-etat        { background:linear-gradient(90deg,#0f2944,#1b3a6b); }
+    .fa-group-head.grp-partenaires { background:linear-gradient(90deg,#1a3d2e,#166534); }
+
+    .grp-icon  { width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.15);
+                 display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#fff;flex-shrink:0; }
+    .grp-title { font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#fff;flex:1; }
+    .grp-kpis  { display:flex;gap:24px;margin-right:8px; }
+    .grp-kpi   { text-align:right; }
+    .grp-kpi .gk-val { font-size:.78rem;font-weight:800;font-family:monospace;color:#fff; }
+    .grp-kpi .gk-lbl { font-size:.6rem;font-weight:600;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.03em; }
+    .grp-chevron { font-size:.78rem;color:rgba(255,255,255,.6);transition:transform .2s;flex-shrink:0; }
+    .fa-group-head.collapsed .grp-chevron { transform:rotate(-90deg); }
+
+    /* ── Corps du groupe ── */
+    .fa-group-body { background:#fff; }
+
+    /* ── Label sous-section ── */
+    .sub-lbl {
+      background:#f8fafc;color:#475569;font-size:.66rem;font-weight:700;
+      padding:7px 14px;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;
+      text-transform:uppercase;letter-spacing:.06em;
+    }
+
+    /* ── Tableau ── */
+    .fa-tbl { width:100%;border-collapse:collapse;font-size:.78rem; }
+    .fa-tbl thead th {
+      background:#f8fafc;color:#64748b;font-size:.62rem;font-weight:700;
+      text-transform:uppercase;padding:9px 10px;border-bottom:2px solid #e2e8f0;white-space:nowrap;
+    }
+    .fa-tbl tbody td { padding:8px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle; }
+    .fa-tbl tbody tr:last-child td { border-bottom:none; }
+    .fa-tbl tbody tr:hover td { background:#f8fafc; }
+    .fa-tbl tfoot td { background:#f1f5f9;font-weight:800;padding:8px 10px;font-size:.78rem;color:#1b2f52; }
+
+    /* Badges de période */
+    .tp { display:inline-block;font-size:.7rem;font-weight:700;padding:3px 6px;
+          border-radius:6px;font-family:monospace;min-width:80px;text-align:center; }
+    .tp-sm { display:inline-block;font-size:.67rem;font-weight:700;padding:2px 4px;
+             border-radius:5px;font-family:monospace;min-width:60px;text-align:center; }
+    /* Badge ultra-compact pour les 12 mois */
+    .tp-xs { display:block;font-size:.58rem;font-weight:700;padding:2px 1px;
+             border-radius:4px;font-family:monospace;text-align:center;width:100%; }
+    .tp-ok  { background:#dcfce7;color:#15803d; }
+    .tp-att { background:#fef3c7;color:#b45309; }
+    .tp-non { background:#f1f5f9;color:#94a3b8; }
+
+    /* Taux badge */
+    .taux-badge { display:inline-block;font-size:.67rem;font-weight:700;border-radius:20px;
+                  padding:2px 8px;font-family:monospace; }
+    .tb-hi  { background:#dcfce7;color:#15803d; }
+    .tb-mid { background:#fef3c7;color:#b45309; }
+    .tb-low { background:#fee2e2;color:#b91c1c; }
+    .tb-na  { background:#f1f5f9;color:#94a3b8; }
+
+    .te  { text-align:right; }
+    .tc  { text-align:center; }
+    .mono{ font-family:'Cascadia Code','Consolas',monospace; }
+
+    /* Type badge dans libelle */
+    .badge-trim { font-size:.58rem;background:#dbeafe;color:#1d4ed8;padding:1px 5px;border-radius:4px;margin-left:5px; }
+    .badge-mens { font-size:.58rem;background:#f3e8ff;color:#7e22ce;padding:1px 5px;border-radius:4px;margin-left:5px; }
+    .row-note   { font-size:.65rem;color:#64748b;margin-top:2px; }
+
+    /* Décaissé indicatif */
+    .dec-info { font-size:.6rem;color:#64748b;font-style:italic; }
+
+    /* Boutons action */
+    .btn-act-edit { background:none;border:1px solid #bfdbfe;color:#3b82f6;cursor:pointer;
+                    padding:3px 8px;border-radius:6px;font-size:.7rem;transition:background .15s; }
+    .btn-act-edit:hover { background:#dbeafe; }
+
+    /* Toast */
+    #_faToast { position:fixed;bottom:24px;right:24px;background:#1e3a5f;color:#fff;padding:10px 18px;
+      border-radius:8px;font-size:.85rem;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none; }
+
+    /* Source indicatif badge */
+    .src-indic { display:inline-block;font-size:.58rem;background:#e0f2fe;color:#0369a1;
+                 padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/planification/pao-global.html">Planification</a></li>
+            <li class="breadcrumb-item active">Fonds alloués</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Fixed top -->
+      <div class="fal-top">
+        <div class="fal-title-strip">
+          <div>
+            <h5><i class="fas fa-hand-holding-usd text-primary me-2"></i>Fonds alloués, PSLSH/IST</h5>
+            <small>Planification des allocations et mode de décaissement par source, exercice 2026</small>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="fas fa-print me-1"></i> Imprimer</button>
+            <button class="btn btn-sm btn-success" onclick="sauvegarder()"><i class="fas fa-save me-1"></i> Sauvegarder</button>
+            <button class="btn btn-sm btn-danger" onclick="reinitialiserDonnees()"><i class="fas fa-undo me-1"></i> Réinitialiser</button>
+          </div>
+        </div>
+        <div class="fa-kpi-bar">
+          <div class="fa-kpi fk-blue">
+            <div class="fk-label">Total Alloué (Prévision)</div>
+            <div class="fk-value" id="kpi-prev">—</div>
+            <div class="fk-sub">FCFA — Exercice 2026</div>
+          </div>
+          <div class="fa-kpi fk-purple">
+            <div class="fk-label">Sources actives</div>
+            <div class="fk-value">4</div>
+            <div class="fk-sub">État (3) + Partenaires (1)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="fal-tabs">
+        <div class="fal-tab active" id="faltab-etat" onclick="falSwitchTab('etat')">
+          <i class="fas fa-university me-1"></i>Financement État
+        </div>
+        <div class="fal-tab" id="faltab-ptf" onclick="falSwitchTab('ptf')">
+          <i class="fas fa-globe-africa me-1"></i>Financement Partenaires
+        </div>
+      </div>
+
+      <!-- Scrollable body -->
+      <div class="fal-body">
+
+        <!-- Panel : État -->
+        <div class="fal-panel active" id="falpanel-etat">
+      <!-- ═══ GROUPE ÉTAT ═══ -->
+      <div class="fa-group" id="grpEtat">
+        <div class="fa-group-head grp-etat" onclick="toggleGroup('bodyEtat', this)">
+          <div class="grp-icon"><i class="fas fa-university"></i></div>
+          <div class="grp-title"><i class="fas fa-flag me-2"></i>Financement État, PSLSH/IST</div>
+          <div class="grp-kpis">
+            <div class="grp-kpi">
+              <div class="gk-lbl">Prévision</div>
+              <div class="gk-val" id="gkEtatPrev">—</div>
+            </div>
+          </div>
+          <i class="fas fa-chevron-down grp-chevron"></i>
+        </div>
+        <div class="fa-group-body" id="bodyEtat">
+
+          <!-- Sous-section trimestrielle (S1, S2) -->
+          <div class="sub-lbl"><i class="fas fa-calendar-alt me-1"></i>Sources trimestrielles : fonctionnement &amp; contrepartie</div>
+          <table class="fa-tbl">
+            <thead>
+              <tr>
+                <th style="min-width:220px">Source / Rubrique</th>
+                <th class="te" style="min-width:110px">Prévision (FCFA)</th>
+                <th class="tc" style="min-width:90px">T1 / Jan–Mars</th>
+                <th class="tc" style="min-width:90px">T2 / Avr–Juin</th>
+                <th class="tc" style="min-width:90px">T3 / Juil–Sep</th>
+                <th class="tc" style="min-width:90px">T4 / Oct–Déc</th>
+                <th style="width:50px"></th>
+              </tr>
+            </thead>
+            <tbody id="tbodyEtatTrim"></tbody>
+            <tfoot id="tfootEtatTrim"></tfoot>
+          </table>
+
+          <!-- Sous-section mensuelle (S3) — 2 lignes par source (S1-S6 / S7-S12) -->
+          <div class="sub-lbl"><i class="fas fa-calendar me-1"></i>Source mensuelle : charges personnel État-PSLSH (Compte Trésor)</div>
+          <div style="overflow:hidden">
+          <table class="fa-tbl" id="tblMensuelle" style="table-layout:fixed;width:100%">
+            <colgroup>
+              <col style="width:22%"> <!-- Source -->
+              <col style="width:12%"> <!-- Prévision -->
+              <col style="width:8%"><col style="width:8%"><col style="width:8%"> <!-- M1-M3 / M7-M9 -->
+              <col style="width:8%"><col style="width:8%"><col style="width:8%"> <!-- M4-M6 / M10-M12 -->
+              <col style="width:5%"> <!-- Actions -->
+            </colgroup>
+            <thead>
+              <tr>
+                <th rowspan="2">Source / Rubrique</th>
+                <th class="te" rowspan="2">Prévision (FCFA)</th>
+                <th class="tc" style="font-size:.62rem;padding:5px 3px">Janv</th>
+                <th class="tc" style="font-size:.62rem;padding:5px 3px">Févr</th>
+                <th class="tc" style="font-size:.62rem;padding:5px 3px">Mars</th>
+                <th class="tc" style="font-size:.62rem;padding:5px 3px">Avr</th>
+                <th class="tc" style="font-size:.62rem;padding:5px 3px">Mai</th>
+                <th class="tc" style="font-size:.62rem;padding:5px 3px">Juin</th>
+                <th rowspan="2"></th>
+              </tr>
+              <tr>
+                <th class="tc" style="font-size:.62rem;padding:5px 3px;border-top:1px solid #e2e8f0">Juil</th>
+                <th class="tc" style="font-size:.62rem;padding:5px 3px;border-top:1px solid #e2e8f0">Août</th>
+                <th class="tc" style="font-size:.62rem;padding:5px 3px;border-top:1px solid #e2e8f0">Sept</th>
+                <th class="tc" style="font-size:.62rem;padding:5px 3px;border-top:1px solid #e2e8f0">Oct</th>
+                <th class="tc" style="font-size:.62rem;padding:5px 3px;border-top:1px solid #e2e8f0">Nov</th>
+                <th class="tc" style="font-size:.62rem;padding:5px 3px;border-top:1px solid #e2e8f0">Déc</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyEtatMens"></tbody>
+            <tfoot id="tfootEtatMens"></tfoot>
+          </table>
+          </div><!-- /overflow:hidden mensuel -->
+
+        </div>
+      </div>
+
+        </div><!-- /falpanel-etat -->
+
+        <!-- Panel : Partenaires -->
+        <div class="fal-panel" id="falpanel-ptf">
+      <!-- ═══ GROUPE PARTENAIRES ═══ -->
+      <div class="fa-group" id="grpPtf">
+        <div class="fa-group-head grp-partenaires" onclick="toggleGroup('bodyPtf', this)">
+          <div class="grp-icon"><i class="fas fa-globe-africa"></i></div>
+          <div class="grp-title"><i class="fas fa-globe-africa me-2"></i>Financement Partenaires, FM/GC7</div>
+          <div class="grp-kpis">
+            <div class="grp-kpi">
+              <div class="gk-lbl">Prévision</div>
+              <div class="gk-val" id="gkPtfPrev">—</div>
+            </div>
+          </div>
+          <i class="fas fa-chevron-down grp-chevron"></i>
+        </div>
+        <div class="fa-group-body" id="bodyPtf">
+          <div class="sub-lbl"><i class="fas fa-calendar-alt me-1"></i>Source trimestrielle : subvention FM/GC7 (Ecobact)</div>
+          <table class="fa-tbl">
+            <thead>
+              <tr>
+                <th style="min-width:220px">Source / Rubrique</th>
+                <th class="te" style="min-width:110px">Prévision (FCFA)</th>
+                <th class="tc" style="min-width:90px">T1 / Jan–Mars</th>
+                <th class="tc" style="min-width:90px">T2 / Avr–Juin</th>
+                <th class="tc" style="min-width:90px">T3 / Juil–Sep</th>
+                <th class="tc" style="min-width:90px">T4 / Oct–Déc</th>
+                <th style="width:50px"></th>
+              </tr>
+            </thead>
+            <tbody id="tbodyPtf"></tbody>
+            <tfoot id="tfootPtf"></tfoot>
+          </table>
+        </div>
+      </div>
+
+        </div><!-- /falpanel-ptf -->
+      </div><!-- /fal-body -->
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+<div id="_faToast"></div>
+
+<!-- ══ MODAL MODIFICATION ══ -->
+<div class="modal fade" id="modalEdit" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1b3a6b;color:#fff;">
+        <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Modifier — <span id="editModalLabel"></span></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editId">
+        <input type="hidden" id="editType">
+        <div class="row g-3">
+
+          <!-- Prévision annuelle -->
+          <div class="col-12">
+            <label class="form-label fw-bold small">Prévision annuelle totale (FCFA) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control form-control-sm" id="editPrev" placeholder="0" min="0">
+            <div class="form-text">Montant global alloué pour l'exercice 2026.</div>
+          </div>
+
+          <!-- ── Section TRIMESTRIELLE ── -->
+          <div id="editPeriodesTrimestrielles" class="col-12">
+            <hr class="my-1">
+            <p class="small fw-bold text-muted mb-2"><i class="fas fa-calendar-alt me-1"></i>Décaissements prévisionnels par trimestre</p>
+            <div class="row g-2">
+              <div class="col-md-3">
+                <label class="form-label small fw-bold">T1 — Janv / Mars</label>
+                <input type="number" class="form-control form-control-sm" id="editT1" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editT1s">
+                  <option value="ok">Reçu ✓</option>
+                  <option value="att">En attente ⏳</option>
+                  <option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-bold">T2 — Avr / Juin</label>
+                <input type="number" class="form-control form-control-sm" id="editT2" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editT2s">
+                  <option value="ok">Reçu ✓</option>
+                  <option value="att">En attente ⏳</option>
+                  <option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-bold">T3 — Juil / Sep</label>
+                <input type="number" class="form-control form-control-sm" id="editT3" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editT3s">
+                  <option value="ok">Reçu ✓</option>
+                  <option value="att">En attente ⏳</option>
+                  <option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-bold">T4 — Oct / Déc</label>
+                <input type="number" class="form-control form-control-sm" id="editT4" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editT4s">
+                  <option value="ok">Reçu ✓</option>
+                  <option value="att">En attente ⏳</option>
+                  <option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Section MENSUELLE ── -->
+          <div id="editPeriodesMenuelles" class="col-12" style="display:none">
+            <hr class="my-1">
+            <p class="small fw-bold text-muted mb-2"><i class="fas fa-calendar me-1"></i>Décaissements prévisionnels mensuels (12 mois)</p>
+            <div class="row g-2">
+              <!-- Ligne 1 : M1-M3 -->
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">M1 — Janvier</label>
+                <input type="number" class="form-control form-control-sm" id="editM1" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editM1s">
+                  <option value="ok">Reçu ✓</option><option value="att">En attente ⏳</option><option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">M2 — Février</label>
+                <input type="number" class="form-control form-control-sm" id="editM2" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editM2s">
+                  <option value="ok">Reçu ✓</option><option value="att">En attente ⏳</option><option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">M3 — Mars</label>
+                <input type="number" class="form-control form-control-sm" id="editM3" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editM3s">
+                  <option value="ok">Reçu ✓</option><option value="att">En attente ⏳</option><option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <!-- Ligne 2 : M4-M6 -->
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">M4 — Avril</label>
+                <input type="number" class="form-control form-control-sm" id="editM4" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editM4s">
+                  <option value="ok">Reçu ✓</option><option value="att">En attente ⏳</option><option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">M5 — Mai</label>
+                <input type="number" class="form-control form-control-sm" id="editM5" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editM5s">
+                  <option value="ok">Reçu ✓</option><option value="att">En attente ⏳</option><option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">M6 — Juin</label>
+                <input type="number" class="form-control form-control-sm" id="editM6" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editM6s">
+                  <option value="ok">Reçu ✓</option><option value="att">En attente ⏳</option><option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <!-- Ligne 3 : M7-M9 -->
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">M7 — Juillet</label>
+                <input type="number" class="form-control form-control-sm" id="editM7" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editM7s">
+                  <option value="ok">Reçu ✓</option><option value="att">En attente ⏳</option><option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">M8 — Août</label>
+                <input type="number" class="form-control form-control-sm" id="editM8" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editM8s">
+                  <option value="ok">Reçu ✓</option><option value="att">En attente ⏳</option><option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">M9 — Septembre</label>
+                <input type="number" class="form-control form-control-sm" id="editM9" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editM9s">
+                  <option value="ok">Reçu ✓</option><option value="att">En attente ⏳</option><option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <!-- Ligne 4 : M10-M12 -->
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">M10 — Octobre</label>
+                <input type="number" class="form-control form-control-sm" id="editM10" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editM10s">
+                  <option value="ok">Reçu ✓</option><option value="att">En attente ⏳</option><option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">M11 — Novembre</label>
+                <input type="number" class="form-control form-control-sm" id="editM11" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editM11s">
+                  <option value="ok">Reçu ✓</option><option value="att">En attente ⏳</option><option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold">M12 — Décembre</label>
+                <input type="number" class="form-control form-control-sm" id="editM12" placeholder="0" min="0">
+                <select class="form-select form-select-sm mt-1" id="editM12s">
+                  <option value="ok">Reçu ✓</option><option value="att">En attente ⏳</option><option value="non" selected>Non reçu</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Note -->
+          <div class="col-12">
+            <label class="form-label small fw-bold">Référence / Observations</label>
+            <input type="text" class="form-control form-control-sm" id="editNote"
+              placeholder="ex : Virement CBT n° 2026-001 du 15/01/2026">
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="saveEdit()">
+          <i class="fas fa-save me-1"></i> Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/sources-ref.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  function falSwitchTab(tab) {
+    document.querySelectorAll('.fal-tab').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.fal-panel').forEach(el => el.classList.remove('active'));
+    document.getElementById('faltab-' + tab).classList.add('active');
+    document.getElementById('falpanel-' + tab).classList.add('active');
+  }
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user')||'{}');
+  document.getElementById('userName').textContent = _u.nom||_u.name||_u.email||'';
+  function logout(){
+    localStorage.removeItem('pslsh_token');
+    localStorage.removeItem('pslsh_user');
+    location.href = '/pages/auth/login.html';
+  }
+
+  /* ══ DONNÉES PAR DÉFAUT ══ */
+  const DEFAULT_DATA = [
+    /* Groupe État — Trimestriel */
+    { id:'S1', groupe:'etat', libelle:'Fonctionnement État-PSLSH', banque:'Banque CBT', type:'trimestriel',
+      prev:0, T1:0,T1s:'non', T2:0,T2s:'non', T3:0,T3s:'non', T4:0,T4s:'non', note:'' },
+    { id:'S2', groupe:'etat', libelle:'Contrepartie État-PSLSH', banque:'Banque CBT', type:'trimestriel',
+      prev:0, T1:0,T1s:'non', T2:0,T2s:'non', T3:0,T3s:'non', T4:0,T4s:'non', note:'' },
+    /* Groupe État — Mensuel */
+    { id:'S3', groupe:'etat', libelle:'Charges Personnel État-PSLSH', banque:'Compte Trésor', type:'mensuel',
+      prev:0,
+      M1:0,M1s:'non', M2:0,M2s:'non',  M3:0,M3s:'non',
+      M4:0,M4s:'non', M5:0,M5s:'non',  M6:0,M6s:'non',
+      M7:0,M7s:'non', M8:0,M8s:'non',  M9:0,M9s:'non',
+      M10:0,M10s:'non', M11:0,M11s:'non', M12:0,M12s:'non',
+      note:'' },
+    /* Groupe Partenaires — Trimestriel */
+    { id:'S4', groupe:'ptf', libelle:'Subvention FM/GC7', banque:'Ecobact', type:'trimestriel',
+      prev:0, T1:0,T1s:'non', T2:0,T2s:'non', T3:0,T3s:'non', T4:0,T4s:'non', note:'' },
+  ];
+
+  let DATA = [];
+
+  /* ══ PERSISTANCE ══ */
+  const STORAGE_KEY = 'pslsh_fonds_alloues_v2';
+  const SAVED_KEY   = 'pslsh_fonds_alloues_saved';
+
+  function _payload(){ return JSON.stringify({ _ok:true, data:DATA }); }
+  function saveStorage(){ localStorage.setItem(STORAGE_KEY, _payload()); }
+
+  function sauvegarder(){
+    const p = _payload();
+    localStorage.setItem(STORAGE_KEY, p);
+    localStorage.setItem(SAVED_KEY, p);
+    toast('✓ Données sauvegardées comme nouvelle référence.');
+  }
+
+  function reinitialiserDonnees(){
+    if (!confirm('Réinitialiser aux données sauvegardées ?')) return;
+    const raw = localStorage.getItem(SAVED_KEY);
+    if (raw) {
+      try { const s=JSON.parse(raw); if(s&&s._ok) DATA.splice(0,DATA.length,...(s.data||[])); }
+      catch(e){}
+    } else {
+      DATA.splice(0, DATA.length, ...DEFAULT_DATA.map(d=>({...d})));
+    }
+    saveStorage(); render();
+    toast('Données réinitialisées.');
+  }
+
+  /* ── Chargement initial ── */
+  (function(){
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(SAVED_KEY);
+    if (raw) {
+      try {
+        const s = JSON.parse(raw);
+        if (s && s._ok && s.data) {
+          DATA.splice(0, DATA.length, ...s.data);
+          /* Migration S3 : si ancienne version avec T1-T4, ajouter champs mensuels */
+          DATA.forEach(d => {
+            if (d.id === 'S3' && d.type === 'mensuel' && !('M1' in d)) {
+              for (let m=1; m<=12; m++) { d[`M${m}`]=0; d[`M${m}s`]='non'; }
+            }
+          });
+          saveStorage();
+          return;
+        }
+      } catch(e){}
+    }
+    DATA.splice(0, DATA.length, ...DEFAULT_DATA.map(d=>({...d})));
+    saveStorage();
+  })();
+
+  /* ══ HELPERS ══ */
+  function fmt(n){ return Math.round(n||0).toLocaleString('fr-FR'); }
+  function fmtK(n){
+    n = Math.round(n||0);
+    if (n === 0) return '—';
+    if (Math.abs(n) >= 1000000) return (n/1000000).toFixed(n%1000000===0?0:1).replace('.',',')+' M';
+    if (Math.abs(n) >= 1000)    return (n/1000).toFixed(n%1000===0?0:1).replace('.',',')+' K';
+    return n.toString();
+  }
+
+  function tpBadge(val, statut){
+    const cls = statut==='ok' ? 'tp-ok' : statut==='att' ? 'tp-att' : 'tp-non';
+    return `<span class="tp ${cls}">${val > 0 ? fmt(val) : '—'}</span>`;
+  }
+
+  /* ══ RENDU ══ */
+
+  /* — Table trimestrielle — */
+  function buildTrimRows(rows, tbodyId, tfootId){
+    let gPrev = 0;
+    const html = rows.map(d => {
+      gPrev += d.prev||0;
+      const bq = d.banque ? `<span style="font-size:.6rem;color:#94a3b8;margin-left:4px">(${d.banque})</span>` : '';
+      return `<tr>
+        <td style="font-weight:700;color:#1b2f52">${d.libelle}${bq}<span class="badge-trim">Trimestriel</span>
+          ${d.note ? `<div class="row-note"><i class="fas fa-comment me-1"></i>${d.note}</div>` : ''}
+        </td>
+        <td class="te mono" style="font-weight:700">${fmt(d.prev)}</td>
+        <td class="tc">${tpBadge(d.T1,d.T1s)}</td>
+        <td class="tc">${tpBadge(d.T2,d.T2s)}</td>
+        <td class="tc">${tpBadge(d.T3,d.T3s)}</td>
+        <td class="tc">${tpBadge(d.T4,d.T4s)}</td>
+        <td class="tc"><button class="btn-act-edit" onclick="openEdit('${d.id}')" title="Modifier"><i class="fas fa-pencil-alt"></i></button></td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById(tbodyId).innerHTML = html ||
+      `<tr><td colspan="7" class="text-center text-muted py-3">Aucune donnée</td></tr>`;
+    document.getElementById(tfootId).innerHTML = `<tr>
+      <td colspan="2"><i class="fas fa-sigma me-1"></i>TOTAL — <span class="mono">${fmt(gPrev)} FCFA</span></td>
+      <td colspan="5"></td>
+    </tr>`;
+    return { prev: gPrev };
+  }
+
+  /* — Table mensuelle — 2 lignes par source (M1-M6 / M7-M12) — */
+  function mCell(d, key){
+    const v   = d[key]||0;
+    const s   = d[key+'s']||'non';
+    const cls = s==='ok' ? 'tp-ok' : s==='att' ? 'tp-att' : 'tp-non';
+    return `<td style="padding:4px 2px;text-align:center"><span class="tp-xs ${cls}">${v>0?fmtK(v):'—'}</span></td>`;
+  }
+
+  function buildMensRows(rows, tbodyId, tfootId){
+    let gPrev = 0;
+    const html = rows.map(d => {
+      gPrev += d.prev||0;
+      const row1 = `<tr>
+        <td rowspan="2" style="font-weight:700;color:#1b2f52;font-size:.76rem;vertical-align:middle">
+          ${d.libelle}<span class="badge-mens">Mensuel</span>
+          ${d.banque?`<div style="font-size:.6rem;color:#94a3b8">${d.banque}</div>`:''}
+          ${d.note?`<div class="row-note">${d.note}</div>`:''}
+        </td>
+        <td rowspan="2" class="te mono" style="font-weight:700;font-size:.74rem;vertical-align:middle">${fmt(d.prev)}</td>
+        ${mCell(d,'M1')}${mCell(d,'M2')}${mCell(d,'M3')}${mCell(d,'M4')}${mCell(d,'M5')}${mCell(d,'M6')}
+        <td rowspan="2" class="tc" style="vertical-align:middle">
+          <button class="btn-act-edit" onclick="openEdit('${d.id}')" title="Modifier"><i class="fas fa-pencil-alt"></i></button>
+        </td>
+      </tr>`;
+      const row2 = `<tr style="background:#fafbfc">
+        ${mCell(d,'M7')}${mCell(d,'M8')}${mCell(d,'M9')}${mCell(d,'M10')}${mCell(d,'M11')}${mCell(d,'M12')}
+      </tr>`;
+      return row1 + row2;
+    }).join('');
+
+    document.getElementById(tbodyId).innerHTML = html ||
+      `<tr><td colspan="9" class="text-center text-muted py-3">Aucune donnée</td></tr>`;
+    document.getElementById(tfootId).innerHTML = `
+      <tr>
+        <td rowspan="2"><i class="fas fa-sigma me-1"></i>TOTAL — <span class="mono">${fmt(gPrev)} FCFA</span></td>
+        <td colspan="6" class="tc" style="font-size:.6rem;color:#94a3b8;font-style:italic">Jan → Juin</td>
+        <td rowspan="2"></td>
+      </tr>
+      <tr>
+        <td colspan="6" class="tc" style="font-size:.6rem;color:#94a3b8;font-style:italic">Juil → Déc</td>
+      </tr>`;
+    return { prev: gPrev };
+  }
+
+  function render(){
+    const etatTrim = DATA.filter(d => d.groupe==='etat' && d.type==='trimestriel');
+    const etatMens = DATA.filter(d => d.groupe==='etat' && d.type==='mensuel');
+    const ptfRows  = DATA.filter(d => d.groupe==='ptf');
+
+    const eTrim = buildTrimRows(etatTrim, 'tbodyEtatTrim', 'tfootEtatTrim');
+    const eMens = buildMensRows(etatMens, 'tbodyEtatMens', 'tfootEtatMens');
+    const p     = buildTrimRows(ptfRows,  'tbodyPtf',      'tfootPtf');
+
+    const totPrev = eTrim.prev + eMens.prev + p.prev;
+
+    document.getElementById('gkEtatPrev').textContent = fmt(eTrim.prev + eMens.prev) + ' FCFA';
+    document.getElementById('gkPtfPrev').textContent  = fmt(p.prev) + ' FCFA';
+    document.getElementById('kpi-prev').textContent   = fmt(totPrev) + ' FCFA';
+  }
+
+  /* ══ TOGGLE GROUPE ══ */
+  function toggleGroup(bodyId, headEl){
+    const body = document.getElementById(bodyId);
+    if (!body) return;
+    const hidden = body.style.display === 'none';
+    body.style.display = hidden ? '' : 'none';
+    headEl.classList.toggle('collapsed', !hidden);
+  }
+
+  /* ══ MODAL ÉDITION ══ */
+  function openEdit(id){
+    const d = DATA.find(x => x.id === id);
+    if (!d) return;
+    document.getElementById('editId').value    = id;
+    document.getElementById('editType').value  = d.type;
+    document.getElementById('editModalLabel').textContent = d.libelle;
+    document.getElementById('editPrev').value  = d.prev  || 0;
+    document.getElementById('editNote').value  = d.note  || '';
+
+    const isMensuel = d.type === 'mensuel';
+    document.getElementById('editPeriodesTrimestrielles').style.display = isMensuel ? 'none' : '';
+    document.getElementById('editPeriodesMenuelles').style.display      = isMensuel ? ''     : 'none';
+
+    if (isMensuel) {
+      for (let m=1; m<=12; m++) {
+        document.getElementById(`editM${m}`).value  = d[`M${m}`]  || 0;
+        document.getElementById(`editM${m}s`).value = d[`M${m}s`] || 'non';
+      }
+    } else {
+      for (let t=1; t<=4; t++) {
+        document.getElementById(`editT${t}`).value  = d[`T${t}`]  || 0;
+        document.getElementById(`editT${t}s`).value = d[`T${t}s`] || 'non';
+      }
+    }
+
+    new bootstrap.Modal(document.getElementById('modalEdit')).show();
+  }
+
+  function saveEdit(){
+    const id  = document.getElementById('editId').value;
+    const idx = DATA.findIndex(x => x.id === id);
+    if (idx === -1) return;
+    const type = document.getElementById('editType').value;
+
+    const updates = {
+      prev: parseFloat(document.getElementById('editPrev').value) || 0,
+      note: document.getElementById('editNote').value.trim(),
+    };
+
+    if (type === 'mensuel') {
+      for (let m=1; m<=12; m++) {
+        updates[`M${m}`]  = parseFloat(document.getElementById(`editM${m}`).value)  || 0;
+        updates[`M${m}s`] = document.getElementById(`editM${m}s`).value;
+      }
+    } else {
+      for (let t=1; t<=4; t++) {
+        updates[`T${t}`]  = parseFloat(document.getElementById(`editT${t}`).value)  || 0;
+        updates[`T${t}s`] = document.getElementById(`editT${t}s`).value;
+      }
+    }
+
+    DATA[idx] = { ...DATA[idx], ...updates };
+
+    /* ── Validation : somme des périodes doit correspondre à la prévision ── */
+    const d2 = DATA[idx];
+    let sumPer = 0;
+    if (d2.type === 'mensuel') {
+      for (let m=1; m<=12; m++) sumPer += d2[`M${m}`]||0;
+    } else {
+      sumPer = (d2.T1||0)+(d2.T2||0)+(d2.T3||0)+(d2.T4||0);
+    }
+    const ecartPer = Math.abs((d2.prev||0) - sumPer);
+    if (d2.prev > 0 && ecartPer > 0) {
+      toast(`⚠ Enregistré — mais attention : la somme des périodes (${fmt(sumPer)} FCFA) diffère de la prévision (${fmt(d2.prev)} FCFA) de ${fmt(ecartPer)} FCFA.`);
+    } else {
+      toast('✓ Source mise à jour.');
+    }
+
+    saveStorage(); render();
+    bootstrap.Modal.getInstance(document.getElementById('modalEdit')).hide();
+  }
+
+  /* ══ TOAST ══ */
+  function toast(msg){
+    const t = document.getElementById('_faToast');
+    t.textContent = msg; t.style.opacity = '1';
+    clearTimeout(t._t);
+    t._t = setTimeout(() => { t.style.opacity = '0'; }, 3200);
+  }
+
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,565 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Contrôle &amp; Audit</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo"
+           onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+        <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/controle/index.html">Contrôle</a></li>
+            <li class="breadcrumb-item active">Contrôle interne & Audit</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong>2026</strong>
+      </div>
+
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-search text-primary me-2"></i>Contrôle interne & Audit</h4>
+          <small class="text-muted">Contrôles de conformité, anomalies, audits et suivi des recommandations</small>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-3">
+          <div class="kpi-card kpi-blue">
+            <div class="kpi-icon"><i class="fas fa-clipboard-check"></i></div>
+            <div class="kpi-value" id="kpiControles">—</div>
+            <div class="kpi-label">Contrôles effectués</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="kpi-card kpi-red">
+            <div class="kpi-icon"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="kpi-value" id="kpiAnomalies">—</div>
+            <div class="kpi-label">Anomalies ouvertes</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="kpi-card kpi-orange">
+            <div class="kpi-icon"><i class="fas fa-tasks"></i></div>
+            <div class="kpi-value" id="kpiReco">—</div>
+            <div class="kpi-label">Recommandations en cours</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="kpi-card kpi-green">
+            <div class="kpi-icon"><i class="fas fa-check-double"></i></div>
+            <div class="kpi-value" id="kpiResolues">—</div>
+            <div class="kpi-label">Anomalies résolues</div>
+          </div>
+        </div>
+      </div>
+
+      <ul class="nav nav-tabs mb-3" id="tabs">
+        <li class="nav-item"><a class="nav-link active" href="#" onclick="switchTab('anomalies',this)"><i class="fas fa-exclamation-circle me-1"></i>Anomalies</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('controles',this)"><i class="fas fa-clipboard-check me-1"></i>Contrôles</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('audits',this)"><i class="fas fa-search-plus me-1"></i>Audits</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('recommandations',this)"><i class="fas fa-lightbulb me-1"></i>Recommandations</a></li>
+      </ul>
+
+      <!-- Anomalies -->
+      <div id="tabAnomalies">
+        <div class="row g-2 mb-3 align-items-end">
+          <div class="col-md-2">
+            <select class="form-select form-select-sm" id="anomNiveau" onchange="loadAnomalies()">
+              <option value="">Tous niveaux</option>
+              <option value="faible">Faible</option>
+              <option value="moyen">Moyen</option>
+              <option value="eleve">Élevé</option>
+              <option value="critique">Critique</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select form-select-sm" id="anomStatut" onchange="loadAnomalies()">
+              <option value="">Tous</option>
+              <option value="ouverte">Ouverte</option>
+              <option value="en_cours">En cours</option>
+              <option value="resolue">Résolue</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control form-control-sm" id="anomSearch" placeholder="Dossier / description..." oninput="loadAnomalies()">
+          </div>
+          <div class="col-md-5 text-end">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalAnomalie" onclick="openAnomalie()">
+              <i class="fas fa-plus me-1"></i>Signaler une anomalie
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr><th>Dossier</th><th>Type</th><th>Description</th><th>Niveau</th><th>Signalé le</th><th>Statut</th><th class="text-end">Actions</th></tr>
+              </thead>
+              <tbody id="bodyAnomalies"><tr><td colspan="7" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contrôles -->
+      <div id="tabControles" class="d-none">
+        <div class="d-flex justify-content-between mb-3">
+          <select class="form-select form-select-sm" id="ctrlType" onchange="loadControles()" style="width:200px">
+            <option value="">Tous types</option>
+            <option value="conformite">Conformité</option>
+            <option value="exhaustivite">Exhaustivité</option>
+            <option value="coherence">Cohérence</option>
+            <option value="regularite">Régularité</option>
+          </select>
+          <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalControle" onclick="openControle()">
+            <i class="fas fa-plus me-1"></i>Nouveau contrôle
+          </button>
+        </div>
+        <div class="card">
+          <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr><th>Dossier</th><th>Type contrôle</th><th>Résultat</th><th>Contrôleur</th><th>Date</th><th>Observations</th><th class="text-end">Actions</th></tr>
+              </thead>
+              <tbody id="bodyControles"><tr><td colspan="7" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audits -->
+      <div id="tabAudits" class="d-none">
+        <div class="d-flex justify-content-between mb-3">
+          <select class="form-select form-select-sm" id="auditStatut" onchange="loadAudits()" style="width:200px">
+            <option value="">Tous</option>
+            <option value="planifie">Planifié</option>
+            <option value="en_cours">En cours</option>
+            <option value="termine">Terminé</option>
+          </select>
+          <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalAudit" onclick="openAudit()">
+            <i class="fas fa-plus me-1"></i>Planifier un audit
+          </button>
+        </div>
+        <div class="card">
+          <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr><th>Référence</th><th>Objet de l'audit</th><th>Périmètre</th><th>Auditeur</th><th>Période</th><th>Statut</th><th class="text-end">Actions</th></tr>
+              </thead>
+              <tbody id="bodyAudits"><tr><td colspan="7" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommandations -->
+      <div id="tabRecommandations" class="d-none">
+        <div class="row g-2 mb-3 align-items-end">
+          <div class="col-md-2">
+            <select class="form-select form-select-sm" id="recoStatut" onchange="loadRecommandations()">
+              <option value="">Tous</option>
+              <option value="ouverte">Ouverte</option>
+              <option value="en_cours">En cours</option>
+              <option value="mise_en_oeuvre">Mise en œuvre</option>
+              <option value="cloturee">Clôturée</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select form-select-sm" id="recoPriorite" onchange="loadRecommandations()">
+              <option value="">Toutes priorités</option>
+              <option value="haute">Haute</option>
+              <option value="moyenne">Moyenne</option>
+              <option value="basse">Basse</option>
+            </select>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr><th>Audit / Source</th><th>Recommandation</th><th>Priorité</th><th>Responsable</th><th>Échéance</th><th>Statut</th><th class="text-end">Actions</th></tr>
+              </thead>
+              <tbody id="bodyRecommandations"><tr><td colspan="7" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Anomalie -->
+<div class="modal fade" id="modalAnomalie" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Signaler une anomalie</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label fw-semibold">Dossier concerné</label><select class="form-select" id="anomDossier"><option value="">Sélectionner...</option></select></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Type d'anomalie <span class="text-danger">*</span></label>
+            <select class="form-select" id="anomType">
+              <option value="piece_manquante">Pièce manquante</option>
+              <option value="incoherence_montant">Incohérence de montant</option>
+              <option value="depassement_budget">Dépassement budgétaire</option>
+              <option value="non_conformite">Non-conformité</option>
+              <option value="fraude_suspectee">Fraude suspectée</option>
+              <option value="autre">Autre</option>
+            </select></div>
+          <div class="col-12"><label class="form-label fw-semibold">Description <span class="text-danger">*</span></label><textarea class="form-control" id="anomDesc" rows="3" placeholder="Décrivez précisément l'anomalie constatée..."></textarea></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Niveau de gravité</label>
+            <select class="form-select" id="anomNiv">
+              <option value="faible">Faible</option><option value="moyen">Moyen</option>
+              <option value="eleve">Élevé</option><option value="critique">Critique</option>
+            </select></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Statut</label>
+            <select class="form-select" id="anomStatutM">
+              <option value="ouverte">Ouverte</option><option value="en_cours">En cours</option><option value="resolue">Résolue</option>
+            </select></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Date constat</label><input type="date" class="form-control" id="anomDate"></div>
+          <div class="col-12"><label class="form-label fw-semibold">Mesures correctives proposées</label><textarea class="form-control" id="anomMesures" rows="2"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-danger" onclick="saveAnomalie()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Contrôle -->
+<div class="modal fade" id="modalControle" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Nouveau contrôle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-12"><label class="form-label fw-semibold">Dossier <span class="text-danger">*</span></label><select class="form-select" id="ctrlDossier"><option value="">Sélectionner...</option></select></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Type de contrôle</label>
+            <select class="form-select" id="ctrlTypeM">
+              <option value="conformite">Conformité</option><option value="exhaustivite">Exhaustivité</option>
+              <option value="coherence">Cohérence</option><option value="regularite">Régularité</option>
+            </select></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Résultat</label>
+            <select class="form-select" id="ctrlResultat">
+              <option value="conforme">Conforme</option><option value="non_conforme">Non conforme</option><option value="reserves">Avec réserves</option>
+            </select></div>
+          <div class="col-12"><label class="form-label fw-semibold">Observations</label><textarea class="form-control" id="ctrlObs" rows="3"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" onclick="saveControle()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Audit -->
+<div class="modal fade" id="modalAudit" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Planifier un audit</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-12"><label class="form-label fw-semibold">Objet de l'audit <span class="text-danger">*</span></label><input type="text" class="form-control" id="auditObjet"></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Périmètre</label><input type="text" class="form-control" id="auditPerimetre" placeholder="Ex: Dossiers 2026, Module paiement..."></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Auditeur / Cabinet</label><input type="text" class="form-control" id="auditAuditeur"></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Date début</label><input type="date" class="form-control" id="auditDebut"></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Date fin</label><input type="date" class="form-control" id="auditFin"></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Statut</label>
+            <select class="form-select" id="auditStatutM">
+              <option value="planifie">Planifié</option><option value="en_cours">En cours</option><option value="termine">Terminé</option>
+            </select></div>
+          <div class="col-12"><label class="form-label fw-semibold">Observations / Conclusions</label><textarea class="form-control" id="auditObs" rows="3"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" onclick="saveAudit()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+requireAuth();
+document.getElementById('userName').textContent = (getUser()?.prenom || '') + ' ' + (getUser()?.nom || '');
+
+function switchTab(tab, el) {
+  document.querySelectorAll('#tabs .nav-link').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+  ['Anomalies','Controles','Audits','Recommandations'].forEach(t =>
+    document.getElementById('tab'+t).classList.toggle('d-none', t.toLowerCase() !== tab)
+  );
+  if (tab === 'controles') loadControles();
+  if (tab === 'audits') loadAudits();
+  if (tab === 'recommandations') loadRecommandations();
+}
+
+async function loadKPIs() {
+  try {
+    const r = await api.get('/controle/stats');
+    const s = r.data || {};
+    document.getElementById('kpiControles').textContent = s.controles || 0;
+    document.getElementById('kpiAnomalies').textContent = s.anomalies_ouvertes || 0;
+    document.getElementById('kpiReco').textContent = s.recommandations_en_cours || 0;
+    document.getElementById('kpiResolues').textContent = s.anomalies_resolues || 0;
+  } catch(e) {}
+}
+
+const niveauBadge = {
+  faible:'<span class="badge bg-info">Faible</span>',
+  moyen:'<span class="badge bg-warning text-dark">Moyen</span>',
+  eleve:'<span class="badge bg-danger">Élevé</span>',
+  critique:'<span class="badge bg-dark">Critique</span>'
+};
+const statutAnom = {
+  ouverte:'<span class="badge bg-danger">Ouverte</span>',
+  en_cours:'<span class="badge bg-warning text-dark">En cours</span>',
+  resolue:'<span class="badge bg-success">Résolue</span>'
+};
+
+async function loadAnomalies() {
+  const niveau = document.getElementById('anomNiveau').value;
+  const statut = document.getElementById('anomStatut').value;
+  const q = document.getElementById('anomSearch').value;
+  const params = new URLSearchParams();
+  if (niveau) params.append('niveau', niveau);
+  if (statut) params.append('statut', statut);
+  if (q) params.append('q', q);
+  try {
+    const r = await api.get('/controle/anomalies?' + params);
+    const items = r.data || [];
+    document.getElementById('bodyAnomalies').innerHTML = items.length ? items.map(a => `
+      <tr class="${a.niveau === 'critique' ? 'table-danger' : a.niveau === 'eleve' ? 'table-warning' : ''}">
+        <td class="small"><code>${a.Dossier?.reference || '—'}</code></td>
+        <td class="small">${a.type_anomalie?.replace(/_/g,' ')}</td>
+        <td>${a.description}</td>
+        <td>${niveauBadge[a.niveau] || a.niveau}</td>
+        <td class="small">${formatDate(a.date_constat)}</td>
+        <td>${statutAnom[a.statut] || a.statut}</td>
+        <td class="text-end">
+          ${a.statut !== 'resolue' ? `<button class="btn btn-sm btn-outline-success me-1" onclick="resoudreAnomalie(${a.id})" title="Marquer résolue"><i class="fas fa-check"></i></button>` : ''}
+          <button class="btn btn-sm btn-outline-primary" onclick='editAnomalie(${JSON.stringify(a).replace(/"/g,"&quot;")})'><i class="fas fa-edit"></i></button>
+        </td>
+      </tr>
+    `).join('') : '<tr><td colspan="7" class="text-center py-4 text-muted">Aucune anomalie</td></tr>';
+  } catch(e) {}
+}
+
+async function loadControles() {
+  const type = document.getElementById('ctrlType').value;
+  const params = type ? '?type=' + type : '';
+  try {
+    const r = await api.get('/controle/controles' + params);
+    const items = r.data || [];
+    const resBadge = { conforme:'<span class="badge bg-success">Conforme</span>', non_conforme:'<span class="badge bg-danger">Non conforme</span>', reserves:'<span class="badge bg-warning text-dark">Avec réserves</span>' };
+    document.getElementById('bodyControles').innerHTML = items.length ? items.map(c => `
+      <tr>
+        <td class="small"><code>${c.Dossier?.reference || '—'}</code></td>
+        <td><span class="badge bg-secondary">${c.type_controle?.replace(/_/g,' ')}</span></td>
+        <td>${resBadge[c.resultat] || c.resultat}</td>
+        <td class="small">${c.User?.prenom || ''} ${c.User?.nom || ''}</td>
+        <td>${formatDate(c.created_at)}</td>
+        <td class="small">${c.observations ? c.observations.substring(0,60) + '...' : '—'}</td>
+        <td class="text-end"><button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button></td>
+      </tr>
+    `).join('') : '<tr><td colspan="7" class="text-center py-4 text-muted">Aucun contrôle</td></tr>';
+  } catch(e) {}
+}
+
+async function loadAudits() {
+  const st = document.getElementById('auditStatut').value;
+  const params = st ? '?statut=' + st : '';
+  try {
+    const r = await api.get('/controle/audits' + params);
+    const items = r.data || [];
+    const badges = { planifie:'<span class="badge bg-secondary">Planifié</span>', en_cours:'<span class="badge bg-primary">En cours</span>', termine:'<span class="badge bg-success">Terminé</span>' };
+    document.getElementById('bodyAudits').innerHTML = items.length ? items.map(a => `
+      <tr>
+        <td><code>${a.reference || a.id}</code></td>
+        <td class="fw-semibold">${a.objet}</td>
+        <td class="small">${a.perimetre || '—'}</td>
+        <td>${a.auditeur || '—'}</td>
+        <td class="small">${formatDate(a.date_debut)} → ${formatDate(a.date_fin)}</td>
+        <td>${badges[a.statut] || a.statut}</td>
+        <td class="text-end"><button class="btn btn-sm btn-outline-primary" onclick='editAudit(${JSON.stringify(a).replace(/"/g,"&quot;")})'><i class="fas fa-edit"></i></button></td>
+      </tr>
+    `).join('') : '<tr><td colspan="7" class="text-center py-4 text-muted">Aucun audit</td></tr>';
+  } catch(e) {}
+}
+
+async function loadRecommandations() {
+  const st = document.getElementById('recoStatut').value;
+  const pr = document.getElementById('recoPriorite').value;
+  const params = new URLSearchParams();
+  if (st) params.append('statut', st);
+  if (pr) params.append('priorite', pr);
+  try {
+    const r = await api.get('/controle/recommandations?' + params);
+    const items = r.data || [];
+    const prBadge = { haute:'<span class="badge bg-danger">Haute</span>', moyenne:'<span class="badge bg-warning text-dark">Moyenne</span>', basse:'<span class="badge bg-info">Basse</span>' };
+    const stBadge = { ouverte:'<span class="badge bg-danger">Ouverte</span>', en_cours:'<span class="badge bg-warning text-dark">En cours</span>', mise_en_oeuvre:'<span class="badge bg-primary">En œuvre</span>', cloturee:'<span class="badge bg-success">Clôturée</span>' };
+    document.getElementById('bodyRecommandations').innerHTML = items.length ? items.map(r => `
+      <tr>
+        <td class="small">${r.Audit?.objet || '—'}</td>
+        <td>${r.contenu}</td>
+        <td>${prBadge[r.priorite] || r.priorite}</td>
+        <td>${r.responsable || '—'}</td>
+        <td class="${new Date(r.echeance) < new Date() && r.statut !== 'cloturee' ? 'text-danger fw-bold' : ''}">${formatDate(r.echeance)}</td>
+        <td>${stBadge[r.statut] || r.statut}</td>
+        <td class="text-end"><button class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></button></td>
+      </tr>
+    `).join('') : '<tr><td colspan="7" class="text-center py-4 text-muted">Aucune recommandation</td></tr>';
+  } catch(e) {}
+}
+
+function openAnomalie() {
+  document.getElementById('anomDate').value = new Date().toISOString().substring(0,10);
+}
+function openControle() {}
+function openAudit() {}
+
+function editAnomalie(a) {
+  document.getElementById('anomType').value = a.type_anomalie;
+  document.getElementById('anomDesc').value = a.description;
+  document.getElementById('anomNiv').value = a.niveau;
+  document.getElementById('anomStatutM').value = a.statut;
+  document.getElementById('anomMesures').value = a.mesures_correctives || '';
+  new bootstrap.Modal(document.getElementById('modalAnomalie')).show();
+}
+function editAudit(a) {
+  document.getElementById('auditObjet').value = a.objet;
+  document.getElementById('auditPerimetre').value = a.perimetre || '';
+  document.getElementById('auditAuditeur').value = a.auditeur || '';
+  document.getElementById('auditDebut').value = a.date_debut?.substring(0,10) || '';
+  document.getElementById('auditFin').value = a.date_fin?.substring(0,10) || '';
+  document.getElementById('auditStatutM').value = a.statut;
+  document.getElementById('auditObs').value = a.observations || '';
+  new bootstrap.Modal(document.getElementById('modalAudit')).show();
+}
+
+async function saveAnomalie() {
+  const data = {
+    dossier_id: document.getElementById('anomDossier').value || null,
+    type_anomalie: document.getElementById('anomType').value,
+    description: document.getElementById('anomDesc').value,
+    niveau: document.getElementById('anomNiv').value,
+    statut: document.getElementById('anomStatutM').value,
+    date_constat: document.getElementById('anomDate').value,
+    mesures_correctives: document.getElementById('anomMesures').value
+  };
+  if (!data.description) { toast('La description est obligatoire', 'warning'); return; }
+  try {
+    await api.post('/controle/anomalies', data);
+    toast('Anomalie signalée');
+    bootstrap.Modal.getInstance(document.getElementById('modalAnomalie'))?.hide();
+    loadAnomalies(); loadKPIs();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+async function saveControle() {
+  const data = {
+    dossier_id: document.getElementById('ctrlDossier').value,
+    type_controle: document.getElementById('ctrlTypeM').value,
+    resultat: document.getElementById('ctrlResultat').value,
+    observations: document.getElementById('ctrlObs').value
+  };
+  try {
+    await api.post('/controle/controles', data);
+    toast('Contrôle enregistré');
+    bootstrap.Modal.getInstance(document.getElementById('modalControle'))?.hide();
+    loadControles();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+async function saveAudit() {
+  const data = {
+    objet: document.getElementById('auditObjet').value,
+    perimetre: document.getElementById('auditPerimetre').value,
+    auditeur: document.getElementById('auditAuditeur').value,
+    date_debut: document.getElementById('auditDebut').value,
+    date_fin: document.getElementById('auditFin').value,
+    statut: document.getElementById('auditStatutM').value,
+    observations: document.getElementById('auditObs').value
+  };
+  if (!data.objet) { toast('L\'objet est obligatoire', 'warning'); return; }
+  try {
+    await api.post('/controle/audits', data);
+    toast('Audit enregistré');
+    bootstrap.Modal.getInstance(document.getElementById('modalAudit'))?.hide();
+    loadAudits();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+async function resoudreAnomalie(id) {
+  if (!confirm('Marquer cette anomalie comme résolue ?')) return;
+  try {
+    await api.put('/controle/anomalies/' + id, { statut: 'resolue' });
+    toast('Anomalie marquée résolue');
+    loadAnomalies(); loadKPIs();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+async function init() {
+  try {
+    const r = await api.get('/dossiers');
+    const dossiers = r.data || [];
+    ['anomDossier','ctrlDossier'].forEach(id => {
+      const sel = document.getElementById(id);
+      dossiers.forEach(d => { const o = document.createElement('option'); o.value = d.id; o.textContent = d.reference + ' — ' + d.objet; sel.appendChild(o); });
+    });
+  } catch(e) {}
+  loadAnomalies();
+  loadKPIs();
+}
+init();
+</script>
+
+    <footer class="page-footer">
+      &copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp;
+      Programme Sectoriel de Lutte contre le Sida, les H&eacute;patites Virales et les IST
+      &nbsp;&middot;&nbsp; R&eacute;publique du Tchad &nbsp;&middot;&nbsp; Version 1
+    </footer>
+<script src="../../src/js/roles.js"></script>
+</body>
+</html>

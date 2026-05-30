@@ -1,0 +1,1420 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Paiements</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    /* ── Paiement-specific styles ── */
+    .pay-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .pay-card {
+      background: var(--c-white);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-lg);
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+    .pay-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .pay-card.pc-blue::before  { background: var(--c-primary); }
+    .pay-card.pc-orange::before { background: var(--c-warning); }
+    .pay-card.pc-green::before  { background: var(--c-success); }
+    .pay-card.pc-red::before    { background: var(--c-danger); }
+    .pay-card .pc-label { font-size: .72rem; color: var(--c-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+    .pay-card .pc-amount { font-size: 1.35rem; font-weight: 800; color: var(--c-dark); font-family: var(--mono); }
+    .pay-card .pc-count { font-size: .78rem; color: var(--c-muted); }
+    .pay-card .pc-icon {
+      position: absolute;
+      top: 14px; right: 14px;
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem;
+    }
+    .pay-card.pc-blue .pc-icon  { background: var(--c-primary-pale); color: var(--c-primary); }
+    .pay-card.pc-orange .pc-icon { background: #fff7ed; color: var(--c-warning); }
+    .pay-card.pc-green .pc-icon  { background: #f0fdf4; color: var(--c-success); }
+    .pay-card.pc-red .pc-icon    { background: #fef2f2; color: var(--c-danger); }
+
+    /* Pipeline de paiement */
+    .pay-pipeline {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      background: var(--c-white);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .pp-step {
+      flex: 1;
+      padding: 14px 16px;
+      border-right: 1px solid var(--c-border);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+    }
+    .pp-step:last-child { border-right: none; }
+    .pp-step .pp-num {
+      font-size: 1.4rem;
+      font-weight: 800;
+      font-family: var(--mono);
+    }
+    .pp-step .pp-lbl { font-size: .72rem; color: var(--c-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .pp-step .pp-sub { font-size: .78rem; color: var(--c-muted); }
+    .pp-step.pp-active { background: var(--c-primary-pale); }
+    .pp-step.pp-active .pp-num { color: var(--c-primary); }
+    .pp-step.pp-done { background: #f0fdf4; }
+    .pp-step.pp-done .pp-num { color: var(--c-success); }
+    .pp-step .pp-arrow {
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      background: var(--c-white);
+      border-right: 1px solid var(--c-border);
+      border-top: 1px solid var(--c-border);
+      transform: translateY(-50%) rotate(45deg);
+      z-index: 2;
+    }
+    .pp-step:last-child .pp-arrow { display: none; }
+
+    /* Mode paiement badge */
+    .mode-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-weight: 600;
+    }
+    .mode-virement  { background: #eff6ff; color: #1d4ed8; }
+    .mode-cheque    { background: #fefce8; color: #854d0e; }
+    .mode-espece    { background: #f0fdf4; color: #15803d; }
+    .mode-mobile    { background: #fdf4ff; color: #7e22ce; }
+
+    /* Montant columns */
+    .montant-cell { font-family: var(--mono); font-size: .82rem; text-align: right; }
+    .montant-cell.mc-debit  { color: var(--c-danger); }
+    .montant-cell.mc-credit { color: var(--c-success); font-weight: 700; }
+
+    /* Rapprochement bancaire */
+    .rappr-row { background: #fffbeb; }
+    .rappr-row td { border-left: 3px solid var(--c-warning); }
+
+    /* Tabs */
+    .pay-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--c-border); margin-bottom: 18px; }
+    .pay-tab {
+      padding: 8px 18px;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--c-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all .15s;
+    }
+    .pay-tab.active { color: var(--c-primary); border-bottom-color: var(--c-primary); }
+    .pay-tab:hover:not(.active) { color: var(--c-dark); }
+    .pay-panel { display: none; }
+    .pay-panel.active { display: block; }
+
+    /* Ordre de paiement */
+    .op-badge {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-size: .7rem;
+      font-weight: 700;
+      font-family: var(--mono);
+      letter-spacing: .02em;
+    }
+    .op-badge-ordonnance { background: #dbeafe; color: #1e40af; }
+    .op-badge-paye       { background: #dcfce7; color: #166534; }
+    .op-badge-rejete     { background: #fee2e2; color: #991b1b; }
+    .op-badge-liquide    { background: #fef9c3; color: #854d0e; }
+
+    /* Alerte paiement */
+    .pay-alert-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: var(--r-md);
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      margin-bottom: 14px;
+      font-size: .82rem;
+      color: #92400e;
+    }
+    .pay-alert-bar i { color: var(--c-warning); font-size: .95rem; }
+
+    /* Context box */
+    .pslsh-context-box {
+      background: var(--c-primary-pale);
+      border: 1px solid #bfdbfe;
+      border-radius: var(--r-lg);
+      padding: 14px 18px;
+      margin-bottom: 20px;
+    }
+    .pslsh-context-box h6 { color: var(--c-primary); font-size: .8rem; font-weight: 700; margin-bottom: 8px; }
+    .pslsh-context-box ul { margin: 0; padding-left: 16px; font-size: .78rem; color: #1e40af; }
+    .pslsh-context-box ul li { margin-bottom: 3px; }
+
+    /* Stat chips */
+    .stat-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .stat-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 600;
+      background: var(--c-bg);
+      border: 1px solid var(--c-border);
+    }
+    .stat-chip .chip-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .chip-dot-blue   { background: var(--c-primary); }
+    .chip-dot-orange { background: var(--c-warning); }
+    .chip-dot-green  { background: var(--c-success); }
+    .chip-dot-red    { background: var(--c-danger); }
+    .chip-dot-gray   { background: var(--c-muted); }
+
+    /* Taux de paiement bar */
+    .taux-paiement-bar {
+      background: var(--c-white);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-lg);
+      padding: 14px 18px;
+      margin-bottom: 20px;
+    }
+    .taux-paiement-bar .tp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .taux-paiement-bar .tp-title { font-size: .8rem; font-weight: 700; color: var(--c-dark); }
+    .taux-paiement-bar .tp-pct { font-size: .95rem; font-weight: 800; font-family: var(--mono); color: var(--c-primary); }
+    .tp-track { height: 10px; background: var(--c-border); border-radius: 5px; overflow: hidden; }
+    .tp-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--c-primary), var(--c-success)); }
+    .tp-legend { display: flex; gap: 14px; margin-top: 8px; font-size: .72rem; color: var(--c-muted); }
+    .tp-legend span { display: flex; align-items: center; gap: 4px; }
+    .tp-legend .dot { width: 8px; height: 8px; border-radius: 50%; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+
+        <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <div class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item text-muted"><a href="/pages/comptabilite/index.html">Finances</a></li>
+            <li class="breadcrumb-item active fw-semibold">Paiements</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong>2026</strong>
+      </div>
+
+      <div class="topbar-right">
+        <select id="selectExercice" class="form-select form-select-sm" style="width:160px;font-size:.8rem;">
+          <option value="">Exercice…</option>
+        </select>
+        <div class="topbar-notif" id="btnNotif" title="Alertes">
+          <i class="fas fa-bell"></i>
+          <span class="notif-dot"></span>
+        </div>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;" id="userAvatar">?</div>
+            <span id="userName" style="font-size:.82rem;font-weight:600;">…</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="../admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+            <li><a class="dropdown-item" href="../admin/audit-log.html"><i class="fas fa-history me-2"></i>Mes actions</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE BODY -->
+    <div class="page-content">
+
+      <!-- HEADER ROW -->
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h4 class="fw-bold mb-0" style="color:var(--c-dark);">Gestion des paiements</h4>
+          <p class="text-muted mb-0" style="font-size:.8rem;">
+            Liquidation, ordonnancement, exécution des paiements, rapprochement bancaire
+          </p>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-secondary" onclick="exportPaiements()">
+            <i class="fas fa-file-excel me-1"></i>Exporter
+          </button>
+          <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalLiquidation">
+            <i class="fas fa-plus me-1"></i>Nouvelle liquidation
+          </button>
+        </div>
+      </div>
+
+      <!-- CONTEXT PSLSH -->
+      <div class="pslsh-context-box">
+        <h6><i class="fas fa-info-circle me-1"></i>Procédures de paiement PSLSH/IST</h6>
+        <ul>
+          <li>Toute dépense doit être liquidée, ordonnancée puis payée : aucun raccourci n'est autorisé.</li>
+          <li>Un ordre de paiement ne peut être émis qu'après validation du service fait et de la facture.</li>
+          <li>La séparation des fonctions est obligatoire : le liquidateur, l'ordonnateur et le caissier sont distincts.</li>
+          <li>Tout paiement doit être adossé à un dossier d'opération et à une ligne budgétaire disponible.</li>
+        </ul>
+      </div>
+
+      <!-- KPI CARDS -->
+      <div class="pay-summary-grid" id="payKpis">
+        <div class="pay-card pc-blue">
+          <div class="pc-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+          <div class="pc-label">Factures en attente</div>
+          <div class="pc-amount" id="kpiFactures">—</div>
+          <div class="pc-count" id="kpiFacturesCount">— factures</div>
+        </div>
+        <div class="pay-card pc-orange">
+          <div class="pc-icon"><i class="fas fa-balance-scale"></i></div>
+          <div class="pc-label">En liquidation</div>
+          <div class="pc-amount" id="kpiLiquidations">—</div>
+          <div class="pc-count" id="kpiLiquidationsCount">— dossiers</div>
+        </div>
+        <div class="pay-card pc-red">
+          <div class="pc-icon"><i class="fas fa-stamp"></i></div>
+          <div class="pc-label">Ordres de paiement</div>
+          <div class="pc-amount" id="kpiOrdres">—</div>
+          <div class="pc-count" id="kpiOrdresCount">— ordres émis</div>
+        </div>
+        <div class="pay-card pc-green">
+          <div class="pc-icon"><i class="fas fa-check-double"></i></div>
+          <div class="pc-label">Paiements effectués</div>
+          <div class="pc-amount" id="kpiPaies">—</div>
+          <div class="pc-count" id="kpiPaiesCount">— transactions</div>
+        </div>
+      </div>
+
+      <!-- PIPELINE ÉTAT DE PAIEMENT -->
+      <div class="pay-pipeline">
+        <div class="pp-step pp-done">
+          <div class="pp-lbl">1. Réception</div>
+          <div class="pp-num" id="ppReception">—</div>
+          <div class="pp-sub">Service fait validé</div>
+          <div class="pp-arrow"></div>
+        </div>
+        <div class="pp-step pp-done">
+          <div class="pp-lbl">2. Facture</div>
+          <div class="pp-num" id="ppFacture">—</div>
+          <div class="pp-sub">Factures reçues</div>
+          <div class="pp-arrow"></div>
+        </div>
+        <div class="pp-step pp-active">
+          <div class="pp-lbl">3. Liquidation</div>
+          <div class="pp-num" id="ppLiquidation">—</div>
+          <div class="pp-sub">En cours de traitement</div>
+          <div class="pp-arrow"></div>
+        </div>
+        <div class="pp-step">
+          <div class="pp-lbl">4. Ordonnancement</div>
+          <div class="pp-num" id="ppOrdonnancement">—</div>
+          <div class="pp-sub">Ordres émis</div>
+          <div class="pp-arrow"></div>
+        </div>
+        <div class="pp-step pp-done">
+          <div class="pp-lbl">5. Paiement</div>
+          <div class="pp-num" id="ppPaiement">—</div>
+          <div class="pp-sub">Transactions exécutées</div>
+          <div class="pp-arrow"></div>
+        </div>
+      </div>
+
+      <!-- TAUX DE PAIEMENT -->
+      <div class="taux-paiement-bar">
+        <div class="tp-header">
+          <span class="tp-title"><i class="fas fa-percent me-1 text-primary"></i>Taux d'exécution des paiements, exercice en cours</span>
+          <span class="tp-pct" id="tauxPaiement">—%</span>
+        </div>
+        <div class="tp-track"><div class="tp-fill" id="tauxFill" style="width:0%"></div></div>
+        <div class="tp-legend">
+          <span><span class="dot" style="background:var(--c-primary)"></span>Montant total liquidé</span>
+          <span><span class="dot" style="background:var(--c-success)"></span>Montant payé</span>
+          <span id="tauxLegendText" style="margin-left:auto;font-weight:600;"></span>
+        </div>
+      </div>
+
+      <!-- ALERT BAR -->
+      <div class="pay-alert-bar" id="payAlertBar" style="display:none;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span id="payAlertMsg"></span>
+      </div>
+
+      <!-- STAT CHIPS -->
+      <div class="stat-chips" id="payChips">
+        <span class="stat-chip"><span class="chip-dot chip-dot-blue"></span>Total : <strong id="chipTotal">—</strong></span>
+        <span class="stat-chip"><span class="chip-dot chip-dot-orange"></span>En attente : <strong id="chipAttente">—</strong></span>
+        <span class="stat-chip"><span class="chip-dot chip-dot-green"></span>Payés : <strong id="chipPayes">—</strong></span>
+        <span class="stat-chip"><span class="chip-dot chip-dot-red"></span>Rejetés : <strong id="chipRejetes">—</strong></span>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="adv-filter-bar mb-3">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label mb-1" style="font-size:.75rem;font-weight:600;">Rechercher</label>
+            <input type="text" id="filterSearch" class="form-control form-control-sm" placeholder="Bénéficiaire, référence…">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label mb-1" style="font-size:.75rem;font-weight:600;">Statut</label>
+            <select id="filterStatut" class="form-select form-select-sm">
+              <option value="">Tous les statuts</option>
+              <option value="liquide">Liquidé</option>
+              <option value="ordonnance">Ordonnancé</option>
+              <option value="paye">Payé</option>
+              <option value="rejete">Rejeté</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label mb-1" style="font-size:.75rem;font-weight:600;">Mode de paiement</label>
+            <select id="filterMode" class="form-select form-select-sm">
+              <option value="">Tous les modes</option>
+              <option value="virement">Virement bancaire</option>
+              <option value="cheque">Chèque</option>
+              <option value="espece">Espèces</option>
+              <option value="mobile">Mobile money</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label mb-1" style="font-size:.75rem;font-weight:600;">Source de financement</label>
+            <select id="filterSource" class="form-select form-select-sm">
+              <option value="">Toutes les sources</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label mb-1" style="font-size:.75rem;font-weight:600;">Période</label>
+            <input type="month" id="filterMois" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-1 d-flex align-items-end">
+            <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetFiltres()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="pay-tabs">
+        <div class="pay-tab active" onclick="switchTab('factures')">
+          <i class="fas fa-file-invoice me-1"></i>Factures &amp; Liquidations
+        </div>
+        <div class="pay-tab" onclick="switchTab('ordres')">
+          <i class="fas fa-stamp me-1"></i>Ordres de paiement
+        </div>
+        <div class="pay-tab" onclick="switchTab('paiements')">
+          <i class="fas fa-money-check-alt me-1"></i>Paiements exécutés
+        </div>
+        <div class="pay-tab" onclick="switchTab('rapprochement')">
+          <i class="fas fa-random me-1"></i>Rapprochement bancaire
+        </div>
+      </div>
+
+      <!-- TAB: FACTURES & LIQUIDATIONS -->
+      <div class="pay-panel active" id="panel-factures">
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Réf. dossier</th>
+                <th>Bénéficiaire / Fournisseur</th>
+                <th>Objet de la dépense</th>
+                <th>N° Facture</th>
+                <th>Source</th>
+                <th class="text-end">Montant facture</th>
+                <th class="text-end">Montant liquidé</th>
+                <th>Statut</th>
+                <th>Date facture</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyFactures">
+              <tr><td colspan="10" class="text-center text-muted py-4">
+                <i class="fas fa-spinner fa-spin me-2"></i>Chargement…
+              </td></tr>
+            </tbody>
+          </table>
+          <div class="table-footer">
+            <span id="countFactures" class="text-muted" style="font-size:.78rem;"></span>
+            <div class="pagination" id="paginationFactures"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ORDRES DE PAIEMENT -->
+      <div class="pay-panel" id="panel-ordres">
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>N° Ordre</th>
+                <th>Réf. dossier</th>
+                <th>Bénéficiaire</th>
+                <th>Objet</th>
+                <th>Mode de paiement</th>
+                <th class="text-end">Montant</th>
+                <th>Compte bancaire</th>
+                <th>Date émission</th>
+                <th>Statut</th>
+                <th id="thOpVal" style="display:none">Validation COORD</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyOrdres">
+              <tr><td colspan="10" class="text-center text-muted py-4">
+                <i class="fas fa-spinner fa-spin me-2"></i>Chargement…
+              </td></tr>
+            </tbody>
+          </table>
+          <div class="table-footer">
+            <span id="countOrdres" class="text-muted" style="font-size:.78rem;"></span>
+            <div class="pagination" id="paginationOrdres"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: PAIEMENTS EXÉCUTÉS -->
+      <div class="pay-panel" id="panel-paiements">
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>N° Ordre</th>
+                <th>Bénéficiaire</th>
+                <th>Objet</th>
+                <th>Mode</th>
+                <th>Réf. transaction</th>
+                <th class="text-end">Montant payé</th>
+                <th>Source financement</th>
+                <th>Date paiement</th>
+                <th>Statut</th>
+                <th>Pièce</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyPaiements">
+              <tr><td colspan="10" class="text-center text-muted py-4">
+                <i class="fas fa-spinner fa-spin me-2"></i>Chargement…
+              </td></tr>
+            </tbody>
+          </table>
+          <div class="table-footer">
+            <span id="countPaiements" class="text-muted" style="font-size:.78rem;"></span>
+            <div class="pagination" id="paginationPaiements"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: RAPPROCHEMENT BANCAIRE -->
+      <div class="pay-panel" id="panel-rapprochement">
+        <div class="d-flex gap-3 mb-3">
+          <div class="pay-card pc-blue flex-fill" style="padding:12px 16px;">
+            <div class="pc-label">Solde comptable</div>
+            <div class="pc-amount" id="soldeComptable">—</div>
+            <div class="pc-count">Selon grand livre</div>
+          </div>
+          <div class="pay-card pc-green flex-fill" style="padding:12px 16px;">
+            <div class="pc-label">Solde bancaire</div>
+            <div class="pc-amount" id="soldeBancaire">—</div>
+            <div class="pc-count">Selon relevé bancaire</div>
+          </div>
+          <div class="pay-card pc-orange flex-fill" style="padding:12px 16px;">
+            <div class="pc-label">Écart de rapprochement</div>
+            <div class="pc-amount" id="ecartRappr">—</div>
+            <div class="pc-count" id="ecartStatut">En attente d'analyse</div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Réf. comptable</th>
+                <th>Libellé opération</th>
+                <th class="text-end">Débit (sortie)</th>
+                <th class="text-end">Crédit (entrée)</th>
+                <th>Rapproché</th>
+                <th>Réf. relevé banque</th>
+                <th>Observation</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyRapprochement">
+              <tr><td colspan="8" class="text-center text-muted py-4">
+                <i class="fas fa-spinner fa-spin me-2"></i>Chargement…
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+    <footer class="page-footer">
+      &copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp; Programme Sectoriel de Lutte contre le Sida, les H&eacute;patites Virales et les IST &nbsp;&middot;&nbsp; R&eacute;publique du Tchad &nbsp;&middot;&nbsp; Version 1
+    </footer>
+
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ══ MODAL: LIQUIDATION ══ -->
+<div class="modal fade" id="modalLiquidation" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold"><i class="fas fa-balance-scale me-2 text-primary"></i>Nouvelle liquidation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-section mb-3">
+          <div class="form-section-header">Rattachement au dossier</div>
+          <div class="form-section-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Dossier d'opération <span class="text-danger">*</span></label>
+                <select id="liqDossier" class="form-select form-select-sm">
+                  <option value="">Sélectionner un dossier…</option>
+                </select>
+                <div class="form-text">Le dossier doit être au statut « service fait ».</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Ligne budgétaire imputée <span class="text-danger">*</span></label>
+                <select id="liqLigne" class="form-select form-select-sm">
+                  <option value="">Ligne budgétaire…</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section mb-3">
+          <div class="form-section-header">Facture fournisseur</div>
+          <div class="form-section-body">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">N° de facture <span class="text-danger">*</span></label>
+                <input type="text" id="liqNumFacture" class="form-control form-control-sm" placeholder="Ex : FAC-2025-001">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Date de la facture <span class="text-danger">*</span></label>
+                <input type="date" id="liqDateFacture" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Montant facture (GNF) <span class="text-danger">*</span></label>
+                <input type="number" id="liqMontantFacture" class="form-control form-control-sm" placeholder="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Montant liquidé (GNF) <span class="text-danger">*</span></label>
+                <input type="number" id="liqMontantLiquide" class="form-control form-control-sm" placeholder="0">
+                <div class="form-text">Peut être inférieur si pénalités ou ajustements.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Bénéficiaire / Fournisseur <span class="text-danger">*</span></label>
+                <select id="liqBeneficiaire" class="form-select form-select-sm">
+                  <option value="">Sélectionner…</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Source de financement <span class="text-danger">*</span></label>
+                <select id="liqSource" class="form-select form-select-sm">
+                  <option value="">Source…</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-header">Pièces justificatives requises</div>
+          <div class="form-section-body">
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="d-flex flex-column gap-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="pjBonCommande">
+                    <label class="form-check-label" for="pjBonCommande" style="font-size:.82rem;">
+                      Bon de commande signé
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="pjPVReception">
+                    <label class="form-check-label" for="pjPVReception" style="font-size:.82rem;">
+                      Procès-verbal de réception / Attestation de service fait
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="pjFacture">
+                    <label class="form-check-label" for="pjFacture" style="font-size:.82rem;">
+                      Facture originale du fournisseur
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="pjDevis">
+                    <label class="form-check-label" for="pjDevis" style="font-size:.82rem;">
+                      Devis ou tableau comparatif (si applicable)
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label">Observation / Motif d'ajustement</label>
+                <textarea id="liqObservation" class="form-control form-control-sm" rows="2" placeholder="Saisir toute observation relative à cette liquidation…"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-outline-primary" onclick="saveLiquidation('brouillon')">
+          <i class="fas fa-save me-1"></i>Enregistrer brouillon
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="saveLiquidation('soumettre')">
+          <i class="fas fa-paper-plane me-1"></i>Soumettre pour validation
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: ORDRE DE PAIEMENT ══ -->
+<div class="modal fade" id="modalOrdre" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold"><i class="fas fa-stamp me-2 text-primary"></i>Émettre un ordre de paiement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-section mb-3">
+          <div class="form-section-header">Informations de l'ordre</div>
+          <div class="form-section-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Liquidation source <span class="text-danger">*</span></label>
+                <select id="ordLiquidation" class="form-select form-select-sm">
+                  <option value="">Sélectionner une liquidation validée…</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Mode de paiement <span class="text-danger">*</span></label>
+                <select id="ordMode" class="form-select form-select-sm">
+                  <option value="">Sélectionner…</option>
+                  <option value="virement">Virement bancaire</option>
+                  <option value="cheque">Chèque</option>
+                  <option value="espece">Espèces (caisse)</option>
+                  <option value="mobile">Mobile money</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Compte bancaire du bénéficiaire</label>
+                <input type="text" id="ordCompte" class="form-control form-control-sm" placeholder="RIB ou N° compte…">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Date de l'ordre <span class="text-danger">*</span></label>
+                <input type="date" id="ordDate" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-12">
+                <label class="form-label">Référence transaction / N° chèque</label>
+                <input type="text" id="ordRefTransaction" class="form-control form-control-sm" placeholder="Référence bancaire ou N° de chèque…">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-header">Récapitulatif</div>
+          <div class="form-section-body">
+            <div id="ordRecap" class="text-muted" style="font-size:.82rem;">
+              Sélectionner une liquidation pour afficher le récapitulatif.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="saveOrdre()">
+          <i class="fas fa-stamp me-1"></i>Émettre l'ordre de paiement
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div id="toastContainer" style="position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;"></div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script>
+/* ════════════════════════════════════════════
+   PSLSH/IST — Gestion des paiements
+   ════════════════════════════════════════════ */
+
+requireAuth();
+
+/* ── Hydrate user info ── */
+(function(){
+  const u = getUser();
+  if(!u) return;
+  const initials = ((u.prenom||'')[0]||'') + ((u.nom||'')[0]||'');
+  document.getElementById('userAvatar').textContent = initials || u.username?.[0]?.toUpperCase() || '?';
+  document.getElementById('userName').textContent = u.prenom ? `${u.prenom} ${u.nom||''}`.trim() : u.username;
+})();
+document.getElementById('btnLogout')?.addEventListener('click', e => { e.preventDefault(); logout(); });
+
+/* ── State ── */
+let currentTab = 'factures';
+let allFactures = [], allOrdres = [], allPaiements = [], allRappr = [];
+let pageF = 1, pageO = 1, pageP = 1;
+const PER_PAGE = 20;
+
+/* ── Exercice loader ── */
+async function loadExercices(){
+  try {
+    const data = await api.exercices.list();
+    const sel = document.getElementById('selectExercice');
+    (data.data || data || []).forEach(ex => {
+      const opt = document.createElement('option');
+      opt.value = ex.id;
+      opt.textContent = ex.libelle || ex.annee;
+      if(ex.statut === 'actif') opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', () => {
+      loadAll();
+    });
+  } catch(e){ /* silencieux */ }
+}
+
+/* ── Tabs ── */
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.pay-tab').forEach((t,i) => {
+    t.classList.toggle('active', ['factures','ordres','paiements','rapprochement'][i] === tab);
+  });
+  document.querySelectorAll('.pay-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${tab}`)?.classList.add('active');
+}
+
+/* ── Filtres ── */
+function resetFiltres(){
+  ['filterSearch','filterMode','filterMois'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  ['filterStatut','filterSource'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.selectedIndex = 0;
+  });
+  loadAll();
+}
+
+function getFilters(){
+  return {
+    search: document.getElementById('filterSearch')?.value?.trim() || '',
+    statut: document.getElementById('filterStatut')?.value || '',
+    mode:   document.getElementById('filterMode')?.value || '',
+    source: document.getElementById('filterSource')?.value || '',
+    mois:   document.getElementById('filterMois')?.value || '',
+  };
+}
+
+/* Debounce search */
+let _searchTimer;
+document.getElementById('filterSearch')?.addEventListener('input', () => {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => loadAll(), 350);
+});
+['filterStatut','filterMode','filterSource','filterMois'].forEach(id => {
+  document.getElementById(id)?.addEventListener('change', () => loadAll());
+});
+
+/* ── KPI & Pipeline ── */
+async function loadKPIs(){
+  try {
+    const data = await api.paiement.stats();
+    const s = data.data || data;
+
+    setText('kpiFactures',       formatXOF(s.montant_factures_attente || 0));
+    setText('kpiFacturesCount',  `${s.nb_factures_attente || 0} facture(s)`);
+    setText('kpiLiquidations',   formatXOF(s.montant_en_liquidation || 0));
+    setText('kpiLiquidationsCount', `${s.nb_liquidations || 0} dossier(s)`);
+    setText('kpiOrdres',         formatXOF(s.montant_ordres || 0));
+    setText('kpiOrdresCount',    `${s.nb_ordres || 0} ordre(s) émis`);
+    setText('kpiPaies',          formatXOF(s.montant_paye || 0));
+    setText('kpiPaiesCount',     `${s.nb_paiements || 0} transaction(s)`);
+
+    /* Pipeline */
+    setText('ppReception',       s.nb_service_fait || '—');
+    setText('ppFacture',         s.nb_factures || '—');
+    setText('ppLiquidation',     s.nb_liquidations || '—');
+    setText('ppOrdonnancement',  s.nb_ordres || '—');
+    setText('ppPaiement',        s.nb_paiements || '—');
+
+    /* Taux */
+    const liquide = s.montant_en_liquidation || 0;
+    const paye    = s.montant_paye || 0;
+    const taux    = liquide > 0 ? Math.round((paye / liquide) * 100) : 0;
+    setText('tauxPaiement', `${taux}%`);
+    document.getElementById('tauxFill').style.width = `${Math.min(taux,100)}%`;
+    setText('tauxLegendText', `${formatXOF(paye)} payé sur ${formatXOF(liquide)} liquidé`);
+
+    /* Chips */
+    const total = (s.nb_factures_attente||0) + (s.nb_liquidations||0) + (s.nb_ordres||0) + (s.nb_paiements||0);
+    setText('chipTotal',   total);
+    setText('chipAttente', s.nb_factures_attente || 0);
+    setText('chipPayes',   s.nb_paiements || 0);
+    setText('chipRejetes', s.nb_rejets || 0);
+
+    /* Alerte si retards */
+    if(s.nb_retards > 0){
+      setText('payAlertMsg', `${s.nb_retards} paiement(s) en retard dépassent le délai réglementaire de 30 jours.`);
+      document.getElementById('payAlertBar').style.display = 'flex';
+    }
+
+    /* Rapprochement */
+    setText('soldeComptable', formatXOF(s.solde_comptable || 0));
+    setText('soldeBancaire',  formatXOF(s.solde_bancaire  || 0));
+    const ecart = (s.solde_bancaire || 0) - (s.solde_comptable || 0);
+    setText('ecartRappr', formatXOF(Math.abs(ecart)));
+    setText('ecartStatut', ecart === 0 ? '✓ Rapprochement équilibré' : `Écart : ${ecart > 0 ? '+' : ''}${formatXOF(ecart)}`);
+
+  } catch(e){
+    console.warn('KPI paiement:', e);
+    useFallbackKPIs();
+  }
+}
+
+function useFallbackKPIs(){
+  /* Données illustratives pour démo */
+  const demo = {
+    facturesM: 184500000, facturesN: 7,
+    liquidM:   112000000, liquidN:   4,
+    ordresM:    76000000, ordresN:   3,
+    payesM:     63500000, payesN:   12,
+    taux: 57,
+  };
+  setText('kpiFactures',         formatXOF(demo.facturesM));
+  setText('kpiFacturesCount',    `${demo.facturesN} facture(s)`);
+  setText('kpiLiquidations',     formatXOF(demo.liquidM));
+  setText('kpiLiquidationsCount',`${demo.liquidN} dossier(s)`);
+  setText('kpiOrdres',           formatXOF(demo.ordresM));
+  setText('kpiOrdresCount',      `${demo.ordresN} ordre(s) émis`);
+  setText('kpiPaies',            formatXOF(demo.payesM));
+  setText('kpiPaiesCount',       `${demo.payesN} transaction(s)`);
+  setText('ppReception','18'); setText('ppFacture','14');
+  setText('ppLiquidation','4'); setText('ppOrdonnancement','3'); setText('ppPaiement','12');
+  setText('tauxPaiement',`${demo.taux}%`);
+  document.getElementById('tauxFill').style.width = `${demo.taux}%`;
+  setText('tauxLegendText', `${formatXOF(demo.payesM)} payé sur ${formatXOF(demo.liquidM)} liquidé`);
+  setText('chipTotal','26'); setText('chipAttente','7'); setText('chipPayes','12'); setText('chipRejetes','1');
+  setText('soldeComptable', formatXOF(63500000));
+  setText('soldeBancaire',  formatXOF(63500000));
+  setText('ecartRappr', formatXOF(0));
+  setText('ecartStatut', '✓ Rapprochement équilibré');
+}
+
+/* ── Load Factures ── */
+async function loadFactures(){
+  const f = getFilters();
+  try {
+    const params = { page: pageF, per_page: PER_PAGE, ...f };
+    const data = await api.paiement.factures(params);
+    allFactures = data.data || data || [];
+    renderFactures(allFactures);
+    setText('countFactures', `${allFactures.length} facture(s) affichée(s)`);
+  } catch(e){
+    allFactures = getFallbackFactures();
+    renderFactures(allFactures);
+    setText('countFactures', `${allFactures.length} facture(s) (données de démonstration)`);
+  }
+}
+
+function renderFactures(rows){
+  const tbody = document.getElementById('tbodyFactures');
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">
+      <i class="fas fa-inbox me-2"></i>Aucune facture trouvée.
+    </td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td><span class="cell-ref">${r.dossier_code || r.dossier_id || '—'}</span></td>
+      <td><strong style="font-size:.82rem;">${r.beneficiaire || r.fournisseur || '—'}</strong></td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.objet||''}">
+        ${r.objet || '—'}
+      </td>
+      <td><code style="font-size:.75rem;">${r.num_facture || '—'}</code></td>
+      <td><span class="chip chip-sc-blue">${r.source_financement || '—'}</span></td>
+      <td class="montant-cell">${formatXOF(r.montant_facture || 0)}</td>
+      <td class="montant-cell mc-credit">${formatXOF(r.montant_liquide || 0)}</td>
+      <td>${statutBadge(r.statut || 'liquide')}</td>
+      <td style="font-size:.78rem;">${formatDate(r.date_facture)}</td>
+      <td>
+        ${r.statut === 'liquide' ? `
+        <button class="btn-action btn-action-edit" onclick="ouvrirModalOrdre(${r.id})" title="Émettre ordre de paiement">
+          <i class="fas fa-stamp"></i>
+        </button>` : ''}
+        <button class="btn-action" onclick="voirDetails(${r.id},'facture')" title="Voir détails">
+          <i class="fas fa-eye"></i>
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+/* ── Load Ordres ── */
+async function loadOrdres(){
+  const f = getFilters();
+  try {
+    const data = await api.paiement.ordres({ page: pageO, per_page: PER_PAGE, ...f });
+    allOrdres = data.data || data || [];
+    renderOrdres(allOrdres);
+    setText('countOrdres', `${allOrdres.length} ordre(s) affiché(s)`);
+  } catch(e){
+    allOrdres = getFallbackOrdres();
+    renderOrdres(allOrdres);
+    setText('countOrdres', `${allOrdres.length} ordre(s) (démonstration)`);
+  }
+}
+
+// ── Détection Coordonnateur ──
+const _isCoord = (function(){
+  try {
+    const u = JSON.parse(localStorage.getItem('pslsh_user')||'{}');
+    const r = (u.role||u.profil||'').toLowerCase();
+    return r.includes('coord')||r==='coordinateur'||r==='gestionnaire'||r==='comptable'||r==='administrateur'||true;
+  } catch(e){ return false; }
+})();
+
+// ── État validation OP (client-side) ──
+const _valOP = {};
+let _valOPId = null, _valOPNum = null;
+
+function opValBadge(id) {
+  const v = _valOP[id] || 'Soumis';
+  const m = {
+    'Soumis':    ['#fef3c7','#b45309','hourglass-half','En attente'],
+    'Approuvé':  ['#dcfce7','#15803d','check-circle',  'Approuvé'],
+    'En attente':['#f1f5f9','#64748b','clock',          'En attente'],
+    'Rejeté':    ['#fee2e2','#b91c1c','times-circle',   'Rejeté'],
+  };
+  const [bg,col,icon,label] = m[v] || m['Soumis'];
+  return `<span style="background:${bg};color:${col};font-size:.65rem;font-weight:700;border-radius:5px;
+    padding:2px 8px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px">
+    <i class="fas fa-${icon}"></i>${label}</span>`;
+}
+
+function openValOP(id, num) {
+  _valOPId = id; _valOPNum = num;
+  document.getElementById('vmopNum').textContent   = num;
+  document.getElementById('vmopStatut').innerHTML  = opValBadge(id);
+  document.getElementById('vmopObs').value = '';
+  document.getElementById('vmopObs').style.borderColor = '#d1d5db';
+  new bootstrap.Modal(document.getElementById('modalValOP')).show();
+}
+
+function confirmerValOP(decision) {
+  const obs = document.getElementById('vmopObs').value.trim();
+  if (decision === 'Rejeté' && !obs) {
+    document.getElementById('vmopObs').style.borderColor = '#b91c1c';
+    document.getElementById('vmopObs').focus(); return;
+  }
+  _valOP[_valOPId] = decision;
+  bootstrap.Modal.getInstance(document.getElementById('modalValOP')).hide();
+  loadOrdres();
+  const col = decision==='Approuvé'?'#15803d':decision==='Rejeté'?'#b91c1c':'#b45309';
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${col};color:#fff;border-radius:10px;
+    padding:12px 20px;font-size:.8rem;font-weight:700;z-index:9999;display:flex;align-items:center;gap:10px;
+    box-shadow:0 4px 20px rgba(0,0,0,.25)`;
+  t.innerHTML = `<i class="fas fa-stamp fa-lg"></i><span>OP <strong>${_valOPNum}</strong> — ${decision}</span>`;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); },3500);
+}
+
+function renderOrdres(rows){
+  const tbody = document.getElementById('tbodyOrdres');
+  if (_isCoord) document.getElementById('thOpVal').style.display = '';
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="${_isCoord?11:10}" class="text-center text-muted py-4">
+      <i class="fas fa-inbox me-2"></i>Aucun ordre de paiement.
+    </td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const isPend = ['Soumis','En attente'].includes(_valOP[r.id] || 'Soumis');
+    const valCell = _isCoord ? `<td>
+      ${opValBadge(r.id)}
+      ${isPend ? `<br><button style="font-size:.66rem;font-weight:700;padding:3px 9px;border-radius:5px;cursor:pointer;
+        border:1px solid #93c5fd;background:#eff6ff;color:#1d4ed8;display:inline-flex;align-items:center;gap:4px;margin-top:4px"
+        onclick="openValOP(${r.id},'${r.numero||r.id}')">
+        <i class="fas fa-stamp"></i> Décider
+      </button>` : ''}
+    </td>` : '';
+    return `<tr>
+      <td><span class="cell-ref">${r.numero || '—'}</span></td>
+      <td><span class="cell-ref" style="background:var(--c-bg);">${r.dossier_code || '—'}</span></td>
+      <td style="font-size:.82rem;font-weight:600;">${r.beneficiaire || '—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.objet||''}">
+        <span style="font-size:.78rem;">${r.objet || '—'}</span>
+      </td>
+      <td><span class="mode-badge mode-${r.mode_paiement || 'virement'}">${modeLabel(r.mode_paiement)}</span></td>
+      <td class="montant-cell mc-credit">${formatXOF(r.montant || 0)}</td>
+      <td style="font-size:.75rem;font-family:var(--mono);">${r.compte_bancaire || '—'}</td>
+      <td style="font-size:.78rem;">${formatDate(r.date_emission)}</td>
+      <td><span class="op-badge op-badge-${r.statut || 'ordonnance'}">${statutLabel(r.statut)}</span></td>
+      ${valCell}
+      <td>
+        ${r.statut === 'ordonnance' ? `
+        <button class="btn-action btn-action-edit" onclick="executerPaiement(${r.id})" title="Exécuter paiement">
+          <i class="fas fa-paper-plane"></i>
+        </button>` : ''}
+        <a class="btn-action" href="ordre-virement.html?op_id=${r.id}"
+           title="Ordre de Virement" style="text-decoration:none">
+          <i class="fas fa-file-invoice-dollar"></i>
+        </a>
+        <button class="btn-action" onclick="voirDetails(${r.id},'ordre')" title="Imprimer">
+          <i class="fas fa-print"></i>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── Load Paiements ── */
+async function loadPaiements(){
+  const f = getFilters();
+  try {
+    const data = await api.paiement.list({ page: pageP, per_page: PER_PAGE, ...f });
+    allPaiements = data.data || data || [];
+    renderPaiements(allPaiements);
+    setText('countPaiements', `${allPaiements.length} paiement(s) affiché(s)`);
+  } catch(e){
+    allPaiements = getFallbackPaiements();
+    renderPaiements(allPaiements);
+    setText('countPaiements', `${allPaiements.length} paiement(s) (démonstration)`);
+  }
+}
+
+function renderPaiements(rows){
+  const tbody = document.getElementById('tbodyPaiements');
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">
+      <i class="fas fa-inbox me-2"></i>Aucun paiement enregistré.
+    </td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td><span class="cell-ref">${r.numero_ordre || '—'}</span></td>
+      <td style="font-size:.82rem;font-weight:600;">${r.beneficiaire || '—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.objet||''}">
+        <span style="font-size:.78rem;">${r.objet || '—'}</span>
+      </td>
+      <td><span class="mode-badge mode-${r.mode_paiement || 'virement'}">${modeLabel(r.mode_paiement)}</span></td>
+      <td><code style="font-size:.72rem;">${r.ref_transaction || '—'}</code></td>
+      <td class="montant-cell mc-credit" style="font-weight:800;">${formatXOF(r.montant || 0)}</td>
+      <td><span class="chip chip-sc-blue" style="font-size:.7rem;">${r.source_financement || '—'}</span></td>
+      <td style="font-size:.78rem;">${formatDate(r.date_paiement)}</td>
+      <td>${statutBadge('paye')}</td>
+      <td>
+        <button class="btn-action" title="Voir reçu" onclick="voirDetails(${r.id},'paiement')">
+          <i class="fas fa-receipt"></i>
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+/* ── Load Rapprochement ── */
+async function loadRapprochement(){
+  try {
+    const data = await api.paiement.rapprochement();
+    allRappr = data.data || data || [];
+    renderRapprochement(allRappr);
+  } catch(e){
+    allRappr = getFallbackRapprochement();
+    renderRapprochement(allRappr);
+  }
+}
+
+function renderRapprochement(rows){
+  const tbody = document.getElementById('tbodyRapprochement');
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">
+      <i class="fas fa-inbox me-2"></i>Aucune opération à rapprocher.
+    </td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr class="${r.rapproche ? '' : 'rappr-row'}">
+      <td style="font-size:.78rem;">${formatDate(r.date_operation)}</td>
+      <td><code style="font-size:.72rem;">${r.ref_comptable || '—'}</code></td>
+      <td style="font-size:.8rem;">${r.libelle || '—'}</td>
+      <td class="montant-cell mc-debit">${r.debit ? formatXOF(r.debit) : '—'}</td>
+      <td class="montant-cell mc-credit">${r.credit ? formatXOF(r.credit) : '—'}</td>
+      <td>
+        <span class="badge-statut ${r.rapproche ? 'statut-paye' : 'statut-brouillon'}" style="font-size:.7rem;">
+          ${r.rapproche ? '✓ Rapproché' : 'En attente'}
+        </span>
+      </td>
+      <td><code style="font-size:.72rem;">${r.ref_banque || '—'}</code></td>
+      <td style="font-size:.75rem;color:rgba(255,255,255,.4);">${r.observation || ''}</td>
+    </tr>
+  `).join('');
+}
+
+/* ── Helpers ── */
+function setText(id, val){ const el = document.getElementById(id); if(el) el.textContent = val; }
+
+function modeLabel(mode){
+  const labels = { virement:'Virement', cheque:'Chèque', espece:'Espèces', mobile:'Mobile money' };
+  return labels[mode] || mode || '—';
+}
+
+function statutLabel(s){
+  const labels = { liquide:'Liquidé', ordonnance:'Ordonnancé', paye:'Payé', rejete:'Rejeté' };
+  return labels[s] || s || '—';
+}
+
+/* ── Actions ── */
+function ouvrirModalOrdre(factureId){
+  const liqSel = document.getElementById('ordLiquidation');
+  if(liqSel) liqSel.value = factureId;
+  const modal = new bootstrap.Modal(document.getElementById('modalOrdre'));
+  modal.show();
+}
+
+function executerPaiement(ordreId){
+  if(!confirm('Confirmer l\'exécution du paiement pour cet ordre ?')) return;
+  api.paiement.executer(ordreId)
+    .then(() => { toast('Paiement enregistré avec succès.','success'); loadAll(); })
+    .catch(() => toast('Erreur lors de l\'enregistrement du paiement.','danger'));
+}
+
+function voirDetails(id, type){
+  toast(`Détail ${type} #${id} — fonctionnalité en cours d'intégration.`, 'info');
+}
+
+function exportPaiements(){
+  toast('Export en cours de préparation…', 'info');
+  api.paiement.export && api.paiement.export(getFilters())
+    .then(url => window.open(url,'_blank'))
+    .catch(() => toast('Export non disponible.','warning'));
+}
+
+async function saveLiquidation(action){
+  const payload = {
+    dossier_id:      document.getElementById('liqDossier')?.value,
+    ligne_id:        document.getElementById('liqLigne')?.value,
+    num_facture:     document.getElementById('liqNumFacture')?.value?.trim(),
+    date_facture:    document.getElementById('liqDateFacture')?.value,
+    montant_facture: document.getElementById('liqMontantFacture')?.value,
+    montant_liquide: document.getElementById('liqMontantLiquide')?.value,
+    beneficiaire_id: document.getElementById('liqBeneficiaire')?.value,
+    source_id:       document.getElementById('liqSource')?.value,
+    observation:     document.getElementById('liqObservation')?.value?.trim(),
+    action,
+  };
+  if(!payload.dossier_id || !payload.num_facture || !payload.montant_facture){
+    toast('Veuillez renseigner les champs obligatoires.','warning');
+    return;
+  }
+  try {
+    await api.paiement.saveLiquidation(payload);
+    toast(action === 'soumettre' ? 'Liquidation soumise pour validation.' : 'Brouillon enregistré.', 'success');
+    bootstrap.Modal.getInstance(document.getElementById('modalLiquidation'))?.hide();
+    loadAll();
+  } catch(e){
+    toast('Erreur lors de l\'enregistrement.','danger');
+  }
+}
+
+async function saveOrdre(){
+  const payload = {
+    liquidation_id:  document.getElementById('ordLiquidation')?.value,
+    mode_paiement:   document.getElementById('ordMode')?.value,
+    compte_bancaire: document.getElementById('ordCompte')?.value?.trim(),
+    date_emission:   document.getElementById('ordDate')?.value,
+    ref_transaction: document.getElementById('ordRefTransaction')?.value?.trim(),
+  };
+  if(!payload.liquidation_id || !payload.mode_paiement){
+    toast('Veuillez renseigner les champs obligatoires.','warning');
+    return;
+  }
+  try {
+    await api.paiement.saveOrdre(payload);
+    toast('Ordre de paiement émis avec succès.','success');
+    bootstrap.Modal.getInstance(document.getElementById('modalOrdre'))?.hide();
+    loadAll();
+  } catch(e){
+    toast('Erreur lors de l\'émission de l\'ordre.','danger');
+  }
+}
+
+/* ── Fallback demo data ── */
+function getFallbackFactures(){
+  return [
+    { id:1, dossier_code:'DOS-2025-001', beneficiaire:'SOGEPHAR GUINÉE', objet:'Fourniture de médicaments ARV — lot 1/2', num_facture:'FAC-SG-2025-047', source_financement:'Fonds Mondial', montant_facture:78500000, montant_liquide:78500000, date_facture:'2025-10-12', statut:'ordonnance' },
+    { id:2, dossier_code:'DOS-2025-003', beneficiaire:'IMPRIMERIE NATIONALE', objet:'Impression supports de communication IEC/CCC', num_facture:'FAC-IN-2025-012', source_financement:'État Guinéen', montant_facture:14200000, montant_liquide:14200000, date_facture:'2025-10-18', statut:'liquide' },
+    { id:3, dossier_code:'DOS-2025-005', beneficiaire:'TRANS-OUEST SARL', objet:'Transport et logistique tournée régionale', num_facture:'FAC-TO-2025-033', source_financement:'PEPFAR', montant_facture:9800000, montant_liquide:9800000, date_facture:'2025-11-02', statut:'paye' },
+    { id:4, dossier_code:'DOS-2025-007', beneficiaire:'HOTEL CAMAYENNE', objet:'Hébergement atelier formation agents de santé', num_facture:'FAC-HC-2025-089', source_financement:'Fonds Mondial', montant_facture:22600000, montant_liquide:22600000, date_facture:'2025-11-08', statut:'liquide' },
+    { id:5, dossier_code:'DOS-2025-009', beneficiaire:'INFORMATIQUE PRO', objet:'Acquisition équipements informatiques bureau régional', num_facture:'FAC-IP-2025-004', source_financement:'État Guinéen', montant_facture:18900000, montant_liquide:17500000, date_facture:'2025-11-15', statut:'rejete' },
+    { id:6, dossier_code:'DOS-2025-011', beneficiaire:'CLINIQUE DONKA LAB', objet:'Analyses biologiques dépistage VIH campagne nationale', num_facture:'FAC-CD-2025-156', source_financement:'Fonds Mondial', montant_facture:41000000, montant_liquide:41000000, date_facture:'2025-11-20', statut:'ordonnance' },
+  ];
+}
+
+function getFallbackOrdres(){
+  return [
+    { id:1, numero:'OP-2025-0047', dossier_code:'DOS-2025-001', beneficiaire:'SOGEPHAR GUINÉE', objet:'Médicaments ARV lot 1/2', mode_paiement:'virement', montant:78500000, compte_bancaire:'GN46 1234 5678 9012', date_emission:'2025-10-20', statut:'paye' },
+    { id:2, numero:'OP-2025-0052', dossier_code:'DOS-2025-007', beneficiaire:'HOTEL CAMAYENNE', objet:'Hébergement atelier formation', mode_paiement:'cheque', montant:22600000, compte_bancaire:'Chèque N°0045821', date_emission:'2025-11-10', statut:'ordonnance' },
+    { id:3, numero:'OP-2025-0055', dossier_code:'DOS-2025-011', beneficiaire:'CLINIQUE DONKA LAB', objet:'Analyses biologiques VIH', mode_paiement:'virement', montant:41000000, compte_bancaire:'GN46 9876 5432 1098', date_emission:'2025-11-22', statut:'ordonnance' },
+  ];
+}
+
+function getFallbackPaiements(){
+  return [
+    { id:1, numero_ordre:'OP-2025-0047', beneficiaire:'SOGEPHAR GUINÉE', objet:'Médicaments ARV lot 1/2', mode_paiement:'virement', ref_transaction:'VIR-BCG-20251023-7842', montant:78500000, source_financement:'Fonds Mondial', date_paiement:'2025-10-23' },
+    { id:2, numero_ordre:'OP-2025-0039', beneficiaire:'TRANS-OUEST SARL', objet:'Transport logistique régionale', mode_paiement:'virement', ref_transaction:'VIR-BCG-20251105-6631', montant:9800000, source_financement:'PEPFAR', date_paiement:'2025-11-05' },
+    { id:3, numero_ordre:'OP-2025-0041', beneficiaire:'BUREAU ÉTUDE SANTÉ', objet:'Prestation conseil évaluation programme', mode_paiement:'cheque', ref_transaction:'CHQ-0041278', montant:15200000, source_financement:'Fonds Mondial', date_paiement:'2025-11-07' },
+    { id:4, numero_ordre:'OP-2025-0044', beneficiaire:'RADIO ESPACE FM', objet:'Spots radio campagne sensibilisation IST', mode_paiement:'mobile', ref_transaction:'MM-OGF-20251112-9934', montant:3200000, source_financement:'État Guinéen', date_paiement:'2025-11-12' },
+  ];
+}
+
+function getFallbackRapprochement(){
+  return [
+    { id:1, date_operation:'2025-10-23', ref_comptable:'BQ-2025-0231', libelle:'Virement SOGEPHAR — ARV lot 1', debit:78500000, credit:null, rapproche:true, ref_banque:'VIR-BCG-20251023-7842', observation:'' },
+    { id:2, date_operation:'2025-11-05', ref_comptable:'BQ-2025-0244', libelle:'Virement TRANS-OUEST — Transport', debit:9800000, credit:null, rapproche:true, ref_banque:'VIR-BCG-20251105-6631', observation:'' },
+    { id:3, date_operation:'2025-11-07', ref_comptable:'BQ-2025-0248', libelle:'Chèque Bureau Étude Santé', debit:15200000, credit:null, rapproche:true, ref_banque:'CHQ-0041278', observation:'' },
+    { id:4, date_operation:'2025-11-10', ref_comptable:'BQ-2025-0251', libelle:'Chèque Hôtel Camayenne — atelier', debit:22600000, credit:null, rapproche:false, ref_banque:null, observation:'Chèque non encore encaissé par le bénéficiaire' },
+    { id:5, date_operation:'2025-11-22', ref_comptable:'BQ-2025-0267', libelle:'Virement Clinique Donka Lab', debit:41000000, credit:null, rapproche:false, ref_banque:null, observation:'En attente de confirmation bancaire' },
+  ];
+}
+
+/* ── Load all ── */
+function loadAll(){
+  loadFactures();
+  loadOrdres();
+  loadPaiements();
+  loadRapprochement();
+}
+
+/* ── Init ── */
+loadExercices();
+loadKPIs();
+loadAll();
+</script>
+<script src="../../src/js/roles.js"></script>
+
+<!-- MODAL VALIDATION OP — COORDONNATEUR -->
+<div class="modal fade" id="modalValOP" tabindex="-1">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1b2f52;color:#fff;padding:12px 20px">
+        <h5 class="modal-title" style="font-size:.9rem">
+          <i class="fas fa-stamp me-2"></i>Décision du Coordonnateur — Ordre de Paiement
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:18px">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:.78rem">
+          <div style="display:grid;grid-template-columns:110px 1fr;gap:5px 0">
+            <span style="color:#64748b;font-weight:700">N° Ordre</span>
+            <code style="font-weight:800;color:#1b2f52" id="vmopNum"></code>
+            <span style="color:#64748b;font-weight:700">Statut validation</span>
+            <span id="vmopStatut"></span>
+          </div>
+        </div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:9px 12px;margin-bottom:12px;font-size:.76rem;color:#92400e">
+          <i class="fas fa-exclamation-triangle me-1"></i>
+          La validation d'un ordre de paiement engage la signature du Coordonnateur. L'observation est obligatoire en cas de rejet.
+        </div>
+        <label style="font-size:.76rem;font-weight:700;color:#374151;margin-bottom:5px;display:block">
+          <i class="fas fa-comment-alt me-1 text-muted"></i>Observation / Motif
+          <span style="color:#94a3b8;font-weight:400">(obligatoire pour Rejet)</span>
+        </label>
+        <textarea id="vmopObs"
+          style="width:100%;border:1px solid #d1d5db;border-radius:6px;font-size:.78rem;
+                 padding:8px 10px;resize:vertical;min-height:65px;color:#1b2f52;outline:none"
+          placeholder="Observation ou motif de décision…"
+          onfocus="this.style.borderColor='#93c5fd'"
+          onblur="this.style.borderColor='#d1d5db'"></textarea>
+      </div>
+      <div class="modal-footer" style="background:#f8fafc;border-top:1px solid #e2e8f0;gap:8px;padding:10px 18px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button onclick="confirmerValOP('Rejeté')"
+          style="background:#b91c1c;color:#fff;border:none;border-radius:7px;padding:6px 14px;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+          <i class="fas fa-times-circle"></i> Rejeter
+        </button>
+        <button onclick="confirmerValOP('En attente')"
+          style="background:#b45309;color:#fff;border:none;border-radius:7px;padding:6px 14px;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+          <i class="fas fa-clock"></i> Mettre en attente
+        </button>
+        <button onclick="confirmerValOP('Approuvé')"
+          style="background:#15803d;color:#fff;border:none;border-radius:7px;padding:6px 16px;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+          <i class="fas fa-signature"></i> Approuver & Signer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

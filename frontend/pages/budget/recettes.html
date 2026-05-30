@@ -1,0 +1,1332 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Recettes</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .page-body { padding:22px 28px 48px; }
+
+    /* KPI */
+    .kpi-bar { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px; }
+    .kpi-card { background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px 15px;position:relative;overflow:hidden; }
+    .kpi-card::before { content:'';position:absolute;top:0;left:0;right:0;height:3px; }
+    .kc-blue::before   { background:#1b3a6b; }
+    .kc-green::before  { background:#15803d; }
+    .kc-orange::before { background:#b45309; }
+    .kc-red::before    { background:#b91c1c; }
+    .kc-teal::before   { background:#0f766e; }
+    .kpi-lbl { font-size:.65rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em; }
+    /* Ligne montant + badge % côte à côte */
+    .kpi-row { display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:3px; }
+    .kpi-val { font-size:.92rem;font-weight:800;color:#1b2f52;font-family:monospace; }
+    .kpi-pct { font-size:.78rem;font-weight:900;font-family:monospace;
+               padding:1px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0; }
+    .kp-blue   { background:#dbeafe;color:#1b3a6b; }
+    .kp-green  { background:#dcfce7;color:#15803d; }
+    .kp-orange { background:#fef3c7;color:#b45309; }
+    .kp-red    { background:#fee2e2;color:#b91c1c; }
+    .kp-teal   { background:#ccfbf1;color:#0f766e; }
+    .kpi-sub { font-size:.65rem;color:#94a3b8;margin-top:4px; }
+
+    /* Section card */
+    .sec-card { background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px; }
+    .sec-head  { display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #e2e8f0; }
+    .sec-icon  { width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;flex-shrink:0; }
+    .sec-title { font-size:.88rem;font-weight:800;color:#1b2f52;flex:1; }
+    .sec-sub   { font-size:.7rem;color:#64748b;margin-top:1px; }
+    .sec-actions { display:flex;gap:8px; }
+
+    /* Toolbar */
+    .toolbar { display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #f1f5f9;flex-wrap:wrap; }
+    .toolbar select, .toolbar input { font-size:.76rem;padding:4px 9px;border:1px solid #d1d5db;border-radius:6px;background:#f8fafc;height:30px; }
+
+    /* Table */
+    .tbl { width:100%;border-collapse:collapse;font-size:.77rem; }
+    .tbl thead th { background:#f1f5f9;color:#1b2f52;font-size:.63rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:.03em;padding:8px 12px;border-bottom:2px solid #e2e8f0;white-space:nowrap; }
+    .tbl tbody td { padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle; }
+    .tbl tbody tr:hover td { background:#f8fafc; }
+    .tbl tfoot td { background:#1b2f52;color:#fff;font-weight:800;padding:8px 12px; }
+    .tbl .te  { text-align:right; }
+    .tbl .tc  { text-align:center; }
+    .mono { font-family:'Cascadia Code','Consolas',monospace;font-size:.74rem; }
+
+    /* Badges */
+    .orig-badge { font-size:.63rem;font-weight:700;border-radius:4px;padding:2px 7px; }
+    .ob-etat    { background:#dbeafe;color:#1d4ed8; }
+    .ob-fm      { background:#dcfce7;color:#15803d; }
+    .ob-oms     { background:#fef3c7;color:#b45309; }
+    .ob-unicef  { background:#cffafe;color:#0e7490; }
+    .ob-report  { background:#f3e8ff;color:#7e22ce; }
+    .ob-autre   { background:#f1f5f9;color:#475569; }
+
+    /* Taux badge */
+    .tx { display:inline-block;font-size:.68rem;font-weight:700;border-radius:20px;padding:2px 8px;font-family:monospace; }
+    .tx-hi   { background:#dcfce7;color:#15803d; }
+    .tx-mid  { background:#fef3c7;color:#b45309; }
+    .tx-low  { background:#fee2e2;color:#b91c1c; }
+    .tx-na   { background:#f1f5f9;color:#94a3b8; }
+
+    /* Écart */
+    .gap-pos { color:#15803d;font-weight:700; }
+    .gap-neg { color:#b91c1c;font-weight:700; }
+    .gap-zero{ color:#b45309;font-weight:700; }
+
+    /* Boutons */
+    .btn-add { font-size:.72rem;font-weight:700;padding:5px 13px;border-radius:7px;border:none;
+      background:#1b2f52;color:#fff;cursor:pointer;display:flex;align-items:center;gap:5px; }
+    .btn-add:hover { background:#1b3a6b; }
+    .btn-exp { font-size:.71rem;font-weight:600;padding:5px 11px;border-radius:7px;
+      border:1px solid #d1d5db;background:#fff;color:#374151;cursor:pointer;display:flex;align-items:center;gap:5px; }
+    .btn-exp:hover { background:#f8fafc; }
+    .btn-act { font-size:.63rem;padding:2px 6px;border-radius:4px;cursor:pointer;
+      display:inline-flex;align-items:center;gap:2px;font-weight:700;border:1px solid; }
+    .ba-e { border-color:#93c5fd;background:#eff6ff;color:#1d4ed8; }
+    .ba-e:hover { background:#dbeafe; }
+    .ba-d { border-color:#fca5a5;background:#fff5f5;color:#b91c1c; }
+    .ba-d:hover { background:#fee2e2; }
+
+    /* Barre progression */
+    .prog { height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden;min-width:55px; }
+    .prog-fill { height:100%;border-radius:3px; }
+    .pf-g { background:#15803d; }
+    .pf-o { background:#b45309; }
+    .pf-r { background:#b91c1c; }
+
+    /* ══════════════════════════════════════════════════════════
+       ZONE IMPRESSION - masquée à l'écran, visible à l'impression
+    ══════════════════════════════════════════════════════════ */
+    #print-zone { display:none; }
+
+    @media print {
+      @page { size: A4 landscape; margin: 7mm 10mm; }
+      .app-layout, .modal, .modal-backdrop { display:none !important; }
+      #print-zone {
+        display: block !important;
+        position: relative;
+        font-family: 'Times New Roman', serif;
+        font-size: 9pt;
+        color: #000;
+        width: 100%;
+      }
+
+      /* Filigrane */
+      .pz-wm {
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 240px; height: 240px;
+        opacity: 0.055;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .pz-wm img { width:100%; height:100%; object-fit:contain; }
+
+      /* Tout le contenu au-dessus du filigrane */
+      .pz-content { position:relative; z-index:1; }
+
+      /* ── En-tête tripartite ── */
+      .pz-header {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 6px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 5px;
+        margin-bottom: 5px;
+        align-items: center;
+      }
+      .pz-hdr-left { font-size: 7.5pt; font-weight: bold; text-align: center; line-height: 1.45; }
+      .pz-hdr-center { text-align: center; padding: 0 10px; }
+      .pz-hdr-center .pz-motto { font-size: 8pt; font-weight: bold; font-style: italic; }
+      .pz-hdr-center .pz-motto-ar { font-size: 8pt; direction: rtl; }
+      .pz-hdr-center img { width: 70px; height: 70px; object-fit: contain; display:block; margin: 3px auto; }
+      .pz-hdr-right { font-size: 7.5pt; font-weight: bold; text-align: center; direction: rtl; line-height: 1.45; }
+      .pz-hdr-sep { font-size: 6pt; color: #444; }
+
+      /* ── Titre du document ── */
+      .pz-doctitle {
+        text-align: center;
+        font-size: 10.5pt;
+        font-weight: bold;
+        text-transform: uppercase;
+        border: 1.5px solid #000;
+        padding: 5px 10px;
+        margin: 5px 0;
+        letter-spacing: .04em;
+      }
+      .pz-docsubtitle {
+        text-align: center;
+        font-size: 8pt;
+        margin-bottom: 5px;
+        color: #222;
+      }
+
+      /* ── Ligne KPI résumé ── */
+      .pz-kpis {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+        margin-bottom: 5px;
+      }
+      .pz-kpi-box {
+        border: 1px solid #000;
+        text-align: center;
+        padding: 3px 4px;
+      }
+      .pz-kpi-box .pk-lbl { font-size: 6.5pt; font-weight: bold; text-transform: uppercase; }
+      .pz-kpi-box .pk-val { font-size: 8.5pt; font-weight: 900; font-family: monospace; }
+
+      /* ── Tableau ── */
+      .pz-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 7.5pt;
+      }
+      .pz-table th {
+        background: #000;
+        color: #fff;
+        border: 1px solid #000;
+        padding: 4px 5px;
+        text-align: center;
+        font-size: 7pt;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+      .pz-table td {
+        border: 1px solid #555;
+        padding: 3px 5px;
+        vertical-align: middle;
+      }
+      .pz-table .tc { text-align: center; }
+      .pz-table .tr { text-align: right; font-family: monospace; }
+      .pzt-titre td {
+        background: #d1d5db;
+        font-weight: bold;
+        font-style: italic;
+        font-size: 7.5pt;
+        border: 1px solid #555;
+        padding: 3px 5px;
+      }
+      .pzt-sous-total td {
+        background: #e5e7eb;
+        font-weight: bold;
+        font-style: italic;
+        font-size: 7.5pt;
+        border: 1px solid #555;
+        padding: 3px 5px;
+      }
+      .pzt-total td {
+        background: #000;
+        color: #fff;
+        font-weight: 900;
+        font-size: 8pt;
+        border: 1px solid #000;
+        padding: 4px 5px;
+      }
+      .pzt-total .tr { text-align: right; font-family: monospace; }
+      .pzt-total .tc { text-align: center; }
+
+      /* ── Pied de page ── */
+      .pz-footer {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        margin-top: 7px;
+        border-top: 1px solid #555;
+        padding-top: 5px;
+        align-items: end;
+      }
+      .pz-sigs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      .pz-sig-box { border-top: 1px solid #000; padding-top: 3px; font-size: 7pt; text-align: center; }
+      .pz-sig-box strong { display: block; font-size: 7.5pt; }
+
+      .pz-qr-block { text-align: center; }
+      .pz-qr-block img { width: 85px; height: 85px; display:block; margin:0 auto; }
+      .pz-qr-label { font-size: 5.5pt; color: #555; margin-top: 2px; word-break: break-all; max-width:85px; }
+
+      .pz-legal {
+        text-align: center;
+        font-size: 6pt;
+        color: #555;
+        margin-top: 4px;
+        border-top: 1px dashed #aaa;
+        padding-top: 3px;
+      }
+
+      /* Éviter coupures sur les lignes de titre */
+      .pzt-titre, .pzt-sous-total, .pzt-total { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/budget/synthese.html">Budget</a></li>
+            <li class="breadcrumb-item active">Recettes</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i> Exercice :
+        <select id="selEx" class="form-select form-select-sm d-inline-block w-auto ms-1" onchange="render()">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+
+    <div class="page-content page-body">
+
+      <!-- Titre -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-arrow-trend-up text-success me-2"></i>Recettes</h4>
+          <small class="text-muted">PSLSH/IST - Prévisions, réalisations, écarts et taux de mobilisation par titre et source</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-exp" onclick="exportCSV()"><i class="fas fa-file-csv"></i> Exporter</button>
+          <button class="btn-exp" onclick="printRecettes()" title="Imprimer en A4 paysage - format officiel avec en-tête et QR Code"><i class="fas fa-print"></i> Imprimer PDF</button>
+        </div>
+      </div>
+
+      <!-- Liens rapides -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
+        <a href="synthese.html" style="font-size:.71rem;font-weight:700;padding:6px 14px;border-radius:7px;background:#1b3a6b;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 6px rgba(27,58,107,.25);">
+          <i class="fas fa-chart-pie"></i> Voir dans la Synthèse globale
+          <span id="synth-badge-rec" style="background:rgba(255,255,255,.25);border-radius:10px;padding:1px 7px;font-size:.65rem;font-family:monospace;margin-left:2px">-</span>
+        </a>
+        <a href="depenses.html" style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#fef3c7;color:#b45309;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-file-invoice-dollar"></i> Dépenses</a>
+        <span style="font-size:.65rem;color:#94a3b8;font-style:italic" id="rec-sync-info">
+          <i class="fas fa-circle" style="font-size:.45rem;color:#22c55e;vertical-align:middle"></i>
+          Les modifications sont instantanément reflétées dans la Synthèse
+        </span>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-bar mb-3">
+
+        <!-- 1 - Prévisions totales -->
+        <div class="kpi-card kc-blue">
+          <div class="kpi-lbl">Prévisions totales</div>
+          <div class="kpi-row">
+            <div class="kpi-val" id="kPrev">-</div>
+            <span class="kpi-pct kp-blue" id="kPrevPct">-</span>
+          </div>
+          <div class="kpi-sub">Objectif de mobilisation pour l'exercice</div>
+        </div>
+
+        <!-- 2 - Recettes réalisées -->
+        <div class="kpi-card kc-green">
+          <div class="kpi-lbl">Recettes réalisées</div>
+          <div class="kpi-row">
+            <div class="kpi-val" id="kReal">-</div>
+            <span class="kpi-pct kp-green" id="kRealPct">-</span>
+          </div>
+          <div class="kpi-sub" id="kRealRate">Taux de mobilisation</div>
+        </div>
+
+        <!-- 3 - Écart global -->
+        <div class="kpi-card kc-teal">
+          <div class="kpi-lbl">Écart global</div>
+          <div class="kpi-row">
+            <div class="kpi-val" id="kEcart">-</div>
+            <span class="kpi-pct kp-teal" id="kEcartPct">-</span>
+          </div>
+          <div class="kpi-sub">Montant encore à mobiliser</div>
+        </div>
+
+        <!-- 4 - Sources actives (inchangé) -->
+        <div class="kpi-card kc-orange">
+          <div class="kpi-lbl">Sources actives</div>
+          <div class="kpi-val" id="kSources">-</div>
+          <div class="kpi-sub" id="kSourcesSub">-</div>
+        </div>
+
+      </div>
+
+      <!-- Table recettes -->
+      <div class="sec-card">
+        <div class="sec-head">
+          <div class="sec-icon" style="background:#15803d"><i class="fas fa-arrow-trend-up"></i></div>
+          <div>
+            <div class="sec-title">État des recettes, exercice 2026</div>
+            <div class="sec-sub">Prévisions, réalisations, écarts et taux de mobilisation par source de financement</div>
+          </div>
+          <div class="sec-actions">
+            <button class="btn-exp" onclick="exportCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+            <button class="btn-add" onclick="openModal('add', null)"><i class="fas fa-plus"></i> Ajouter</button>
+            <button class="btn-exp" style="color:#0f766e;border-color:#99f6e4" onclick="syncManuel()" title="Récupérer les dernières données depuis les sources de financement"><i class="fas fa-rotate"></i> Actualiser les sources</button>
+            <span id="syncFraicheur" style="font-size:.68rem;color:#94a3b8;align-self:center;margin-left:4px"></span>
+            <button class="btn-add" style="background:#15803d;border-color:#15803d" onclick="sauvegarder()" title="Enregistrer les modifications"><i class="fas fa-save"></i> Enregistrer</button>
+            <button class="btn-exp" style="color:#b91c1c;border-color:#fca5a5" onclick="reinitialiserDonnees()" title="Annuler toutes les modifications non enregistrées"><i class="fas fa-arrow-rotate-left"></i> Annuler</button>
+          </div>
+        </div>
+        <div class="toolbar">
+          <select id="filtOrigine" onchange="render()">
+            <option value="">Toutes origines</option>
+            <optgroup label="Titre I - Reports de soldes">
+              <option value="Report">Report de solde</option>
+            </optgroup>
+            <optgroup label="Titre II - Nouvelles subventions">
+              <option value="État">État</option>
+              <option value="Fonds Mondial">Fonds Mondial</option>
+              <option value="OMS">OMS</option>
+              <option value="UNICEF">UNICEF</option>
+              <option value="Autre">Autre PTF</option>
+            </optgroup>
+          </select>
+          <select id="filtStatut" onchange="render()">
+            <option value="">Tous statuts</option>
+            <option value="Mobilisé">Mobilisé</option>
+            <option value="Partiel">Partiel</option>
+            <option value="Non mobilisé">Non mobilisé</option>
+          </select>
+          <input type="text" id="filtSearch" placeholder="Rechercher..." oninput="render()">
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="min-width:220px">Source / Libellé</th>
+                <th style="width:100px">Origine</th>
+                <th class="te">Prévision initiale (FCFA)</th>
+                <th class="te">Réalisé (FCFA)</th>
+                <th class="te">Écart (FCFA)</th>
+                <th class="tc" style="width:130px">Taux de mobilisation</th>
+                <th class="tc" style="width:80px">Statut</th>
+                <th class="te" style="width:90px">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyRec"></tbody>
+            <tfoot id="tfootRec"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Note méthodologique -->
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;font-size:.75rem;color:#166534">
+        <strong><i class="fas fa-info-circle me-2"></i>Lecture du tableau :</strong>
+        L'<strong>écart</strong> = Prévision - Réalisé.
+        Un écart <span style="color:#15803d;font-weight:700">positif</span> indique des fonds non encore mobilisés (gap à combler).
+        Un écart <span style="color:#b91c1c;font-weight:700">négatif</span> indique un dépassement de la prévision initiale.
+        Le <strong>taux de mobilisation</strong> = Réalisé / Prévision × 100.
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL Ajouter / Modifier -->
+<div class="modal fade" id="modalRec" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#15803d;color:#fff;padding:12px 20px">
+        <h5 class="modal-title" id="modalRecTitle" style="font-size:.9rem">
+          <i class="fas fa-arrow-trend-up me-2"></i>Recette
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:20px">
+        <input type="hidden" id="rId">
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label fw-bold small">Libellé / Source <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="rLibelle" placeholder="Ex : Subvention Fonds Mondial - ARV">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Origine <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="rOrigine">
+              <optgroup label="Titre I - Reports de soldes">
+                <option value="Report">Report de solde</option>
+              </optgroup>
+              <optgroup label="Titre II - Nouvelles subventions">
+                <option value="État">État</option>
+                <option value="Fonds Mondial">Fonds Mondial</option>
+                <option value="OMS">OMS</option>
+                <option value="UNICEF">UNICEF</option>
+                <option value="Autre">Autre PTF</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Prévision (FCFA) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control form-control-sm" id="rPrev" min="0" oninput="calcRec()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Réalisé (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="rReal" min="0" value="0" oninput="calcRec()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Écart - calculé</label>
+            <input type="text" class="form-control form-control-sm" id="rEcart" readonly style="background:#f8fafc">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Taux mobilisation - calculé</label>
+            <input type="text" class="form-control form-control-sm" id="rTaux" readonly style="background:#f8fafc">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Statut</label>
+            <select class="form-select form-select-sm" id="rStatut">
+              <option value="Mobilisé">Mobilisé</option>
+              <option value="Partiel">Partiel</option>
+              <option value="Non mobilisé">Non mobilisé</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Période de réalisation</label>
+            <input type="text" class="form-control form-control-sm" id="rPeriode" placeholder="Ex : T1 2026, Jan-Mar 2026">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Observation</label>
+            <input type="text" class="form-control form-control-sm" id="rNote" placeholder="Observation ou précision facultative">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="background:#f8fafc;padding:10px 18px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-sm" style="background:#15803d;color:#fff;border:none;border-radius:7px;padding:6px 18px;font-size:.78rem;font-weight:700" onclick="saveRec()">
+          <i class="fas fa-save me-1"></i>Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL Confirmer suppression -->
+<div class="modal fade" id="modalDel" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#b91c1c;color:#fff;padding:10px 16px">
+        <h6 class="modal-title" style="font-size:.85rem"><i class="fas fa-exclamation-triangle me-2"></i>Confirmer</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center" style="padding:18px">
+        <p style="font-size:.82rem;color:#1b2f52;margin:0" id="delMsg"></p>
+      </div>
+      <div class="modal-footer" style="padding:8px 16px;gap:8px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Non</button>
+        <button class="btn btn-sm btn-danger" id="btnDel"><i class="fas fa-trash-alt me-1"></i>Supprimer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     ZONE IMPRESSION A4 PAYSAGE - masquée à l'écran, visible à l'impression
+══════════════════════════════════════════════════════════════════════ -->
+<div id="print-zone">
+
+  <!-- Filigrane PSLSH -->
+  <div class="pz-wm">
+    <img src="../../assets/logo/logo-pslsh.png" alt="" onerror="this.style.display='none'">
+  </div>
+
+  <div class="pz-content">
+
+    <!-- ── EN-TÊTE TRIPARTITE ── -->
+    <div class="pz-header">
+
+      <!-- Colonne gauche - Français -->
+      <div class="pz-hdr-left">
+        RÉPUBLIQUE DU TCHAD<br>
+        <span class="pz-hdr-sep">********************</span><br>
+        MINISTÈRE DE LA SANTÉ PUBLIQUE<br>ET DE LA PRÉVENTION<br>
+        <span class="pz-hdr-sep">********************</span><br>
+        SECRÉTARIAT GÉNÉRAL<br>
+        <span class="pz-hdr-sep">********************</span><br>
+        PROGRAMME SECTORIEL DE LUTTE CONTRE<br>
+        LE SIDA, LES HÉPATITES VIRALES ET LES IST<br>
+        <span style="font-style:italic">(PSLSH/IST)</span>
+      </div>
+
+      <!-- Colonne centrale - Devise + Logo -->
+      <div class="pz-hdr-center">
+        <div class="pz-motto">Unité&nbsp;-&nbsp;Travail&nbsp;-&nbsp;Progrès</div>
+        <div class="pz-motto-ar">وحدة ـ عمل ـ تقدم</div>
+        <img src="../../assets/logo/logo-pslsh.png" alt="PSLSH" onerror="this.style.display='none'">
+      </div>
+
+      <!-- Colonne droite - Arabe -->
+      <div class="pz-hdr-right">
+        جمهورية تشاد<br>
+        <span class="pz-hdr-sep">*******</span><br>
+        وزارة الصحة العامة والوقاية<br>
+        <span class="pz-hdr-sep">*******</span><br>
+        الأمانة العامة<br>
+        <span class="pz-hdr-sep">*******</span><br>
+        البرنامج القطاعي لمكافحة السيدا<br>
+        والتهاب الكبد الفيروسي والأمراض<br>
+        المنقولة جنسياً (PSLSH/IST)
+      </div>
+
+    </div><!-- /pz-header -->
+
+    <!-- ── TITRE DU DOCUMENT ── -->
+    <div class="pz-doctitle">
+      Situation de Recouvrement des Recettes du PSLSH/IST - Exercice <span id="pz-annee">2026</span>
+    </div>
+    <div class="pz-docsubtitle">
+      Établi le <span id="pz-date">-</span> &nbsp;|&nbsp;
+      Document N° : <span id="pz-ref">-</span> &nbsp;|&nbsp;
+      Source : SIGFIC-PSLSH v2.0
+    </div>
+
+    <!-- ── BANDEAU KPI ── -->
+    <div class="pz-kpis">
+      <div class="pz-kpi-box">
+        <div class="pk-lbl">Ressources prévues</div>
+        <div class="pk-val" id="pz-kpi-prev">-</div>
+      </div>
+      <div class="pz-kpi-box">
+        <div class="pk-lbl">Recouvrement effectué</div>
+        <div class="pk-val" id="pz-kpi-real">-</div>
+      </div>
+      <div class="pz-kpi-box">
+        <div class="pk-lbl">Reste à recouvrer</div>
+        <div class="pk-val" id="pz-kpi-reste">-</div>
+      </div>
+      <div class="pz-kpi-box">
+        <div class="pk-lbl">Taux global</div>
+        <div class="pk-val" id="pz-kpi-taux">-</div>
+      </div>
+      <div class="pz-kpi-box">
+        <div class="pk-lbl">Sources actives</div>
+        <div class="pk-val" id="pz-kpi-sources">-</div>
+      </div>
+    </div>
+
+    <!-- ── TABLEAU DES RECETTES ── -->
+    <table class="pz-table">
+      <thead>
+        <tr>
+          <th style="width:28px">N°</th>
+          <th style="text-align:left;width:auto">RECETTES - Source / Libellé</th>
+          <th style="width:110px">Ressources allouées<br>(FCFA)</th>
+          <th style="width:100px">Recouvrement<br>additionnel (FCFA)</th>
+          <th style="width:110px">Recouvrement<br>effectué (FCFA)</th>
+          <th style="width:100px">Reste à<br>recouvrer (FCFA)</th>
+          <th style="width:55px">Pourcent.</th>
+        </tr>
+      </thead>
+      <tbody id="pz-tbody">
+        <!-- rempli par printRecettes() -->
+      </tbody>
+    </table>
+
+    <!-- ── PIED DE PAGE ── -->
+    <div class="pz-footer">
+
+      <!-- Signatures -->
+      <div class="pz-sigs">
+        <div class="pz-sig-box">
+          <strong>Le Responsable Financier</strong>
+          <span style="display:block;height:22px"></span>
+          Nom &amp; Cachet
+        </div>
+        <div class="pz-sig-box">
+          <strong>Le Directeur Administratif et Financier</strong>
+          <span style="display:block;height:22px"></span>
+          Nom &amp; Cachet
+        </div>
+        <div class="pz-sig-box">
+          <strong>Le Secrétaire Général</strong>
+          <span style="display:block;height:22px"></span>
+          Nom &amp; Cachet
+        </div>
+      </div>
+
+      <!-- QR Code -->
+      <div class="pz-qr-block">
+        <img id="pz-qr-img" src="" alt="QR Code" onerror="this.style.display='none'">
+        <div class="pz-qr-label" id="pz-qr-ref">-</div>
+      </div>
+
+    </div><!-- /pz-footer -->
+
+    <!-- Note légale -->
+    <div class="pz-legal">
+      Établi par le SIGFIC-PSLSH - Conforme au manuel de procédures administratives, financières et comptables du PSLSH/IST (édition 2025).
+    </div>
+
+  </div><!-- /pz-content -->
+</div><!-- /print-zone -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/sources-ref.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user')||'{}');
+  document.getElementById('userName').textContent = _u.nom||_u.name||_u.email||'';
+  function logout(){ localStorage.removeItem('pslsh_token'); localStorage.removeItem('pslsh_user'); location.href='/pages/auth/login.html'; }
+
+  /* ── DONNÉES DE RÉFÉRENCE (structure initiale) ── */
+  let _nid = 10;
+  const DEFAULT_DATA = [
+    { id:'R1', libelle:'Budget État - Fonctionnement PSLSH',          origine:'État',        prev:1236624278, real:908736479,  statut:'Partiel',       periode:'Jan-Mars 2026', note:'' },
+    { id:'R2', libelle:'Subvention Fonds Mondial - Cycle 7 (ARV)',    origine:'Fonds Mondial',prev:6250000000, real:621830393,  statut:'Partiel',       periode:'Jan-Mars 2026', note:'Décaissement T1 reçu' },
+    { id:'R3', libelle:'Appui OMS - Formations & Supervisions',        origine:'OMS',         prev:554772050,  real:106840679,  statut:'Partiel',       periode:'Jan-Mars 2026', note:'' },
+    { id:'R4', libelle:'Appui UNICEF - Sensibilisation communautaire', origine:'UNICEF',      prev:579389500,  real:91203350,   statut:'Partiel',       periode:'Jan-Mars 2026', note:'' },
+    { id:'R5', libelle:'Redevances Centrale Pharmaceutique (CPN)',     origine:'Autre',       prev:200000000,  real:199669073,  statut:'Mobilisé',      periode:'Jan-Mars 2026', note:'Quasi-intégral mobilisé' },
+    { id:'R6a', libelle:'Report solde 2025 - Fonctionnement État-PSLSH',    origine:'Report', prev:0, real:0, statut:'Non mobilisé', periode:'Jan 2026', note:'' },
+    { id:'R6b', libelle:'Report solde 2025 - Contrepartie État-PSLSH',     origine:'Report', prev:0, real:0, statut:'Non mobilisé', periode:'Jan 2026', note:'' },
+    { id:'R6c', libelle:'Report solde 2025 - Charges Personnel État-PSLSH',origine:'Report', prev:0, real:0, statut:'Non mobilisé', periode:'Jan 2026', note:'' },
+    { id:'R6d', libelle:'Report solde 2025 - Subvention FM/GC7',           origine:'Report', prev:0, real:0, statut:'Non mobilisé', periode:'Jan 2026', note:'' },
+    { id:'R7', libelle:'Subvention USAID - Prévue (en négociation)',   origine:'Autre',       prev:250000000,  real:0,          statut:'Non mobilisé',  periode:'-',             note:'Accord non encore signé' },
+  ];
+
+  /* ── DONNÉES ACTIVES ── */
+  let DATA = [];
+
+  /* ── PERSISTENCE localStorage ── */
+  const STORAGE_KEY = 'pslsh_recettes_v1';
+  const SAVED_KEY = 'pslsh_recettes_saved';
+  function saveStorage(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ _ok:true, data:DATA, nid:_nid }));
+    localStorage.setItem('pslsh_recettes_ts', Date.now().toString());
+  }
+  function sauvegarder(){
+    const p = JSON.stringify({ _ok:true, data:DATA, nid:_nid });
+    localStorage.setItem(STORAGE_KEY, p);
+    localStorage.setItem(SAVED_KEY, p);
+    toast('✓ Modifications enregistrées.');
+  }
+  (function(){
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(SAVED_KEY);
+    if(raw){
+      try {
+        const s = JSON.parse(raw);
+        if(s && s._ok){
+          let rows = s.data || [];
+          /* Migration : remplacer l'ancien R6 unique par les 4 reports par source */
+          const hasOldR6  = rows.some(r => r.id === 'R6');
+          const hasNewR6a = rows.some(r => r.id === 'R6a');
+          if(hasOldR6 && !hasNewR6a){
+            const oldR6 = rows.find(r => r.id === 'R6');
+            rows = rows.filter(r => r.id !== 'R6');
+            const ins = [
+              { id:'R6a', libelle:'Report solde 2025 - Fonctionnement État-PSLSH',    origine:'Report', prev:0, real:0, statut:'Non mobilisé', periode:'Jan 2026', note:'' },
+              { id:'R6b', libelle:'Report solde 2025 - Contrepartie État-PSLSH',     origine:'Report', prev:0, real:0, statut:'Non mobilisé', periode:'Jan 2026', note:'' },
+              { id:'R6c', libelle:'Report solde 2025 - Charges Personnel État-PSLSH',origine:'Report', prev:0, real:0, statut:'Non mobilisé', periode:'Jan 2026', note:'' },
+              { id:'R6d', libelle:'Report solde 2025 - Subvention FM/GC7',           origine:'Report', prev:0, real:0, statut:'Non mobilisé', periode:'Jan 2026', note:'' },
+            ];
+            /* Reporter le montant de l'ancien R6 sur R6a par défaut */
+            if(oldR6 && oldR6.prev){ ins[0].prev = oldR6.prev; ins[0].real = oldR6.real || oldR6.prev; ins[0].statut = 'Mobilisé'; }
+            rows.splice(rows.length, 0, ...ins);
+          }
+          DATA.splice(0, DATA.length, ...rows);
+          _nid = s.nid || 10;
+          saveStorage();
+          return;
+        }
+      } catch(e){ console.warn('localStorage corrompu.', e); }
+    }
+    DATA.splice(0, DATA.length, ...DEFAULT_DATA);
+    saveStorage();
+  })();
+
+  /* ── HELPERS ── */
+  function fmt(n){ if(n===null||n===undefined||isNaN(n)) return '-'; return Math.round(n).toLocaleString('fr-FR'); }
+  function origBadge(o){
+    const m={État:'ob-etat','Fonds Mondial':'ob-fm',OMS:'ob-oms',UNICEF:'ob-unicef',Report:'ob-report',Autre:'ob-autre'};
+    return `<span class="orig-badge ${m[o]||'ob-autre'}">${o}</span>`;
+  }
+  function txBadge(t){
+    if(t===null) return `<span class="tx tx-na">N/A</span>`;
+    const c = t>=90?'tx-hi':t>=50?'tx-mid':'tx-low';
+    return `<span class="tx ${c}">${t.toFixed(1)} %</span>`;
+  }
+  function statColor(s){ return {Mobilisé:'#15803d',Partiel:'#b45309','Non mobilisé':'#b91c1c'}[s]||'#64748b'; }
+  function toast(msg,ok=true){
+    const t=document.createElement('div');
+    t.style.cssText=`position:fixed;bottom:24px;right:24px;background:${ok?'#15803d':'#b91c1c'};color:#fff;border-radius:10px;
+      padding:11px 18px;font-size:.8rem;font-weight:700;z-index:9999;display:flex;align-items:center;gap:9px;box-shadow:0 4px 20px rgba(0,0,0,.25)`;
+    t.innerHTML=`<i class="fas fa-${ok?'check':'times'}-circle"></i><span>${msg}</span>`;
+    document.body.appendChild(t);
+    setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},3000);
+  }
+
+  /* ══ SYNCHRONISATION DEPUIS FONDS DISPONIBLES ══
+     Principe :
+       Logique par source (4 sources) :
+       - prev  = prévision du module Fonds Alloués (pslsh_fonds_alloues_v2)
+       - real  = soldeBancaire + Σ crédits reçus (depuis Fonds Disponibles)
+       Les lignes syncées sont identifiées par fdKey pour ne pas dupliquer.
+  */
+  /* ── Déduire l'origine PSLSH depuis l'ID de la source ──
+     'fm_*'     → Fonds Mondial
+     'oms_*'    → OMS
+     'unicef_*' → UNICEF
+     tout autre → État (fonctionnement, salaires, contreparties État)        */
+  function _origineFromId(id) {
+    const s = (id || '').toLowerCase();
+    if (s.startsWith('fm_'))     return 'Fonds Mondial';
+    if (s.startsWith('oms_'))    return 'OMS';
+    if (s.startsWith('unicef_')) return 'UNICEF';
+    return 'État';
+  }
+
+  function syncFromFondsDispo(){
+    /* 1. Lire les PRÉVISIONS depuis Fonds Alloués */
+    let prevMap = {};
+    try {
+      const rawA = localStorage.getItem('pslsh_fonds_alloues_v2') || localStorage.getItem('pslsh_fonds_alloues_saved');
+      if (rawA) {
+        const a = JSON.parse(rawA);
+        if (a && a._ok && a.data) {
+          a.data.forEach(src => { prevMap[src.id] = src.prev || 0; });
+        }
+      }
+    } catch(e) {}
+
+    /* 2. Lire les RÉALISATIONS depuis Fonds Disponibles */
+    const raw = localStorage.getItem('pslsh_fonds_dispo_v1') || localStorage.getItem('pslsh_fonds_dispo_saved');
+    if (!raw) return 0;
+    let count = 0;
+    try {
+      const s = JSON.parse(raw);
+      if (!s || !s._ok || !s.data) return 0;
+      s.data.forEach(src => {
+        const sumCred  = (src.credits||[]).reduce((t,c) => t+(c.montant||0), 0);
+        const prev     = prevMap[src.id] !== undefined ? prevMap[src.id] : (src.allocation || 0);
+        const real     = sumCred;
+        const statut   = prev > 0 && real >= prev ? 'Mobilisé' : real > 0 ? 'Partiel' : 'Non mobilisé';
+        const existing = DATA.find(r => r.fdKey === src.id);
+        const entry = {
+          fdKey:   src.id,
+          libelle: src.libelle,
+          origine: _origineFromId(src.id),
+          prev,
+          real,
+          statut,
+          periode: 'Exercice 2026',
+          note:    existing ? (existing.note || '') : '',  /* ← préserver les notes manuelles */
+        };
+        const idx = DATA.findIndex(r => r.fdKey === src.id);
+        if (idx !== -1) { DATA[idx] = { ...DATA[idx], ...entry }; }
+        else            { DATA.push({ id: 'FD-' + src.id, ...entry }); count++; }
+      });
+    } catch(e) { console.warn('syncFromFondsDispo error', e); }
+    return count;
+  }
+
+  /* ── SYNC REPORT SOLDES depuis Fonds Disponibles ──
+     Injecte le soldeBancaire de chaque source dans la prévision ET le réalisé
+     des 4 lignes Report (R6a→S1, R6b→S2, R6c→S3, R6d→S4).
+  */
+  const REPORT_MAP = { R6a:'S1', R6b:'S2', R6c:'S3', R6d:'S4' };
+
+  function syncReportSoldes(){
+    const raw = localStorage.getItem('pslsh_fonds_dispo_v1') || localStorage.getItem('pslsh_fonds_dispo_saved');
+    if (!raw) return;
+    try {
+      const s = JSON.parse(raw);
+      if (!s || !s._ok || !s.data) return;
+      /* Construire map sourceId → soldeBancaire */
+      const soldeMap = {};
+      s.data.forEach(src => { soldeMap[src.id] = src.soldeBancaire || 0; });
+
+      Object.entries(REPORT_MAP).forEach(([rid, sid]) => {
+        const idx = DATA.findIndex(r => r.id === rid);
+        if (idx === -1) return;
+        const solde  = soldeMap[sid] || 0;
+        const statut = solde > 0 ? 'Mobilisé' : 'Non mobilisé';
+        DATA[idx] = { ...DATA[idx], prev: solde, real: solde, statut };
+      });
+    } catch(e) { console.warn('syncReportSoldes error', e); }
+  }
+
+  /* ── Sync au chargement : uniquement les nouvelles lignes FD-*, sans écraser les
+     lignes Report (R6a-R6d) qui peuvent avoir été modifiées manuellement ── */
+  syncFromFondsDispo();
+
+  /* ── Migration des données sauvegardées ─────────────────────────────────────
+     1. Corriger les origines stockées avec l'ancien format (nom de banque)
+     2. Purger les notes techniques auto-générées (Compte : ..., Crédits reçus : ...)
+  ─────────────────────────────────────────────────────────────────────────── */
+  const _TECH_NOTE_RE = /^(Compte\s*:.*|Crédits reçus\s*:.*|Banque CBT|Compte Trésor|Ecobact)$/i;
+  DATA.forEach(r => {
+    /* Origines */
+    if (r.fdKey) {
+      const correct = _origineFromId(r.fdKey);
+      if (r.origine !== correct) r.origine = correct;
+    }
+    /* Notes techniques générées automatiquement → vider */
+    if (r.note && _TECH_NOTE_RE.test(r.note.trim())) r.note = '';
+    /* Cas mixte "Compte : X · Crédits reçus : Y" */
+    if (r.note && r.note.includes('Crédits reçus :')) r.note = '';
+    if (r.note && r.note.includes('Compte :'))        r.note = '';
+  });
+
+  /* ── Indicateur de fraîcheur ── */
+  const _SYNC_TS_KEY = 'pslsh_recettes_sync_ts';
+  function _saveSyncTs(){
+    localStorage.setItem(_SYNC_TS_KEY, Date.now().toString());
+    _renderSyncBadge();
+  }
+  function _renderSyncBadge(){
+    const el = document.getElementById('syncFraicheur');
+    if (!el) return;
+    const ts = parseInt(localStorage.getItem(_SYNC_TS_KEY)||'0');
+    el.innerHTML = ts
+      ? '<i class="fas fa-circle" style="font-size:.4rem;color:#22c55e;vertical-align:middle"></i>&nbsp;<span style="color:#64748b">Sources à jour</span>'
+      : '';
+  }
+  _renderSyncBadge();
+
+  /* ── FILTRAGE ── */
+  function filtered(){
+    const orig=document.getElementById('filtOrigine').value;
+    const stat=document.getElementById('filtStatut').value;
+    const s=document.getElementById('filtSearch').value.toLowerCase();
+    return DATA.filter(r=>{
+      if(orig && r.origine!==orig) return false;
+      if(stat && r.statut!==stat)  return false;
+      if(s && !r.libelle.toLowerCase().includes(s)) return false;
+      return true;
+    });
+  }
+
+  /* ── Groupement par Titre (législation tchadienne) ── */
+  /* ── Groupement par Titre PSLSH/IST ── */
+  const REC_TITRES_DEF = [
+    { num:'I',  label:'TITRE I - REPORTS DE SOLDES',      origines:['Report'] },
+    { num:'II', label:'TITRE II - NOUVELLES SUBVENTIONS', origines:['État','Fonds Mondial','OMS','UNICEF','Autre'] }
+  ];
+
+  /* ── RENDU ── */
+  function render(){
+    const data=filtered();
+    const tbody=document.getElementById('tbodyRec');
+    const tfoot=document.getElementById('tfootRec');
+
+    if(!data.length){
+      tbody.innerHTML='<tr><td colspan="8" class="text-center py-4 text-muted">Aucune recette correspondante</td></tr>';
+      tfoot.innerHTML='';
+      updateKPIs();
+      return;
+    }
+
+    /* Groupement par Titre */
+    const html=[];
+    let totGlobalP=0, totGlobalR=0;
+
+    REC_TITRES_DEF.forEach(titre=>{
+      const lignes=data.filter(r=>titre.origines.includes(r.origine||''));
+      if(!lignes.length) return;
+      const sPrev=lignes.reduce((s,r)=>s+Number(r.prev||0),0);
+      const sReal=lignes.reduce((s,r)=>s+Number(r.real||0),0);
+      const sPct=sPrev>0?Math.round(sReal/sPrev*100):0;
+      /* Ligne titre */
+      html.push(`<tr style="background:#1b3a6b">
+        <td colspan="8" style="color:#fff;font-weight:800;font-size:.76rem;padding:8px 12px">
+          <i class="fas fa-layer-group me-2" style="font-size:.68rem"></i>${titre.label}
+          <span style="margin-left:10px;font-size:.65rem;font-weight:700;background:rgba(255,255,255,.2);color:#fff;border-radius:20px;padding:2px 8px;">${sPct} %</span>
+        </td>
+      </tr>`);
+      /* Lignes détail */
+      lignes.forEach(r=>{
+        const ecart=r.prev-r.real;
+        const taux=r.prev>0?((r.real/r.prev)*100):null;
+        const pct=taux?Math.min(Math.round(taux),100):0;
+        const pCls=pct>=90?'pf-g':pct>=50?'pf-o':'pf-r';
+        const ecartCls=ecart>0?'gap-pos':ecart<0?'gap-neg':'gap-zero';
+        html.push(`<tr>
+          <td style="padding-left:22px">
+            <div style="font-weight:600;color:#1b2f52">${r.libelle}</div>
+            ${r.note?`<div style="font-size:.65rem;color:#64748b;margin-top:2px"><i class="fas fa-comment me-1"></i>${r.note}</div>`:''}
+          </td>
+          <td>${origBadge(r.origine)}</td>
+          <td class="te mono">${fmt(r.prev)}</td>
+          <td class="te mono" style="color:#15803d">${fmt(r.real)}</td>
+          <td class="te mono ${ecartCls}">${fmt(ecart)}</td>
+          <td class="tc">
+            <div class="d-flex flex-column align-items-center gap-1">
+              ${txBadge(taux)}
+              <div class="prog w-100"><div class="prog-fill ${pCls}" style="width:${pct}%"></div></div>
+            </div>
+          </td>
+          <td class="tc"><span style="font-size:.68rem;font-weight:700;color:${statColor(r.statut)}">${r.statut}</span></td>
+          <td class="te" style="white-space:nowrap">
+            <button class="btn-act ba-e me-1" onclick="openModal('edit','${r.id}')"><i class="fas fa-pencil-alt"></i></button>
+            <button class="btn-act ba-d" onclick="confirmDel('${r.id}','${r.libelle.substring(0,35).replace(/'/g,"&#39;")}')"><i class="fas fa-trash-alt"></i></button>
+          </td>
+        </tr>`);
+      });
+      /* Sous-total titre */
+      const ecartT=sPrev-sReal;
+      html.push(`<tr style="background:#f1f5f9;font-weight:700;font-size:.75rem">
+        <td colspan="2" style="padding:7px 12px;color:#1b2f52;font-weight:800">Sous-total Titre ${titre.num}</td>
+        <td class="te mono" style="padding:7px 12px;color:#1b2f52">${fmt(sPrev)}</td>
+        <td class="te mono" style="padding:7px 12px;color:#15803d">${fmt(sReal)}</td>
+        <td class="te mono" style="padding:7px 12px;color:${ecartT>0?'#b45309':'#15803d'}">${fmt(ecartT)}</td>
+        <td class="tc" style="padding:7px 12px"><span style="font-size:.67rem;font-weight:700;border-radius:20px;padding:2px 8px;background:${sPct>=70?'#dcfce7':sPct>=40?'#fef3c7':'#fee2e2'};color:${sPct>=70?'#15803d':sPct>=40?'#b45309':'#b91c1c'}">${sPct} %</span></td>
+        <td colspan="2" style="padding:7px 12px"></td>
+      </tr>`);
+      totGlobalP+=sPrev; totGlobalR+=sReal;
+    });
+
+    /* Lignes non classées (origines inconnues) */
+    const classees=REC_TITRES_DEF.flatMap(t=>t.origines);
+    const nonClass=data.filter(r=>!classees.includes(r.origine||''));
+    nonClass.forEach(r=>{
+      const ecart=r.prev-r.real;
+      const taux=r.prev>0?((r.real/r.prev)*100):null;
+      const pct=taux?Math.min(Math.round(taux),100):0;
+      const pCls=pct>=90?'pf-g':pct>=50?'pf-o':'pf-r';
+      const ecartCls=ecart>0?'gap-pos':ecart<0?'gap-neg':'gap-zero';
+      html.push(`<tr>
+        <td><div style="font-weight:600;color:#1b2f52">${r.libelle}</div></td>
+        <td>${origBadge(r.origine)}</td>
+        <td class="te mono">${fmt(r.prev)}</td>
+        <td class="te mono" style="color:#15803d">${fmt(r.real)}</td>
+        <td class="te mono ${ecartCls}">${fmt(ecart)}</td>
+        <td class="tc"><div class="d-flex flex-column align-items-center gap-1">${txBadge(taux)}<div class="prog w-100"><div class="prog-fill ${pCls}" style="width:${pct}%"></div></div></div></td>
+        <td class="tc"><span style="font-size:.68rem;font-weight:700;color:${statColor(r.statut)}">${r.statut}</span></td>
+        <td class="te" style="white-space:nowrap">
+          <button class="btn-act ba-e me-1" onclick="openModal('edit','${r.id}')"><i class="fas fa-pencil-alt"></i></button>
+          <button class="btn-act ba-d" onclick="confirmDel('${r.id}','${r.libelle.substring(0,35).replace(/'/g,"&#39;")}')"><i class="fas fa-trash-alt"></i></button>
+        </td>
+      </tr>`);
+      totGlobalP+=Number(r.prev||0); totGlobalR+=Number(r.real||0);
+    });
+
+    tbody.innerHTML=html.join('');
+
+    const totE=totGlobalP-totGlobalR;
+    const totT=totGlobalP>0?((totGlobalR/totGlobalP)*100):null;
+    tfoot.innerHTML=`<tr>
+      <td colspan="2">TOTAL GÉNÉRAL - RECETTES (${data.length} ligne${data.length>1?'s':''})</td>
+      <td class="te mono" style="color:#7dd3fc">${fmt(totGlobalP)}</td>
+      <td class="te mono" style="color:#a7f3d0">${fmt(totGlobalR)}</td>
+      <td class="te mono" style="color:${totE>0?'#fcd34d':'#fca5a5'}">${fmt(totE)}</td>
+      <td class="tc" style="color:#a7f3d0">${totT?totT.toFixed(1)+' %':'-'}</td>
+      <td colspan="2"></td>
+    </tr>`;
+
+    updateKPIs();
+  }
+
+  function updateKPIs(){
+    const all   = DATA;
+    const totP  = all.reduce((s,r) => s + Number(r.prev||0), 0);
+    const totR  = all.reduce((s,r) => s + Number(r.real||0), 0);
+    const ecart = Math.max(0, totP - totR);
+    const taux  = totP > 0 ? (totR / totP * 100) : 0;
+    const pctEcart = totP > 0 ? (ecart / totP * 100) : 0;
+    const actives  = all.filter(r => r.statut !== 'Non mobilisé').length;
+
+    /* ── Panel 1 : Prévisions ── */
+    document.getElementById('kPrev').textContent    = fmt(totP) + ' FCFA';
+    /* Badge = taux de réalisation actuel sur cet objectif */
+    const kPrevPct = document.getElementById('kPrevPct');
+    kPrevPct.textContent = taux.toFixed(1) + ' % mobilisés';
+    kPrevPct.className   = 'kpi-pct ' + (taux >= 70 ? 'kp-green' : taux >= 40 ? 'kp-orange' : 'kp-blue');
+
+    /* ── Panel 2 : Réalisé ── */
+    document.getElementById('kReal').textContent    = fmt(totR) + ' FCFA';
+    const kRealPct = document.getElementById('kRealPct');
+    kRealPct.textContent = taux.toFixed(1) + ' %';
+    kRealPct.className   = 'kpi-pct ' + (taux >= 70 ? 'kp-green' : taux >= 40 ? 'kp-orange' : 'kp-red');
+    document.getElementById('kRealRate').textContent = 'du budget prévu mobilisé';
+
+    /* ── Panel 3 : Écart ── */
+    document.getElementById('kEcart').textContent   = fmt(ecart) + ' FCFA';
+    document.getElementById('kEcart').style.color   = ecart > 0 ? '#0f766e' : '#15803d';
+    const kEcartPct = document.getElementById('kEcartPct');
+    kEcartPct.textContent = pctEcart.toFixed(1) + ' %';
+    kEcartPct.className   = 'kpi-pct ' + (pctEcart > 60 ? 'kp-red' : pctEcart > 30 ? 'kp-orange' : 'kp-teal');
+
+    /* ── Panel 4 : Sources ── */
+    document.getElementById('kSources').textContent    = actives + ' / ' + all.length;
+    document.getElementById('kSourcesSub').textContent = all.filter(r => r.statut === 'Mobilisé').length + ' intégralement mobilisées';
+  }
+
+  /* ── MODAL ── */
+  let _mode='add', _eid=null;
+  function openModal(mode,id){
+    _mode=mode; _eid=id;
+    document.getElementById('modalRecTitle').innerHTML=
+      `<i class="fas fa-arrow-trend-up me-2"></i>${mode==='add'?'Nouvelle recette':'Modifier la recette'}`;
+    if(mode==='edit'&&id){
+      const r=DATA.find(x=>x.id===id); if(!r) return;
+      document.getElementById('rId').value      = r.id;
+      document.getElementById('rLibelle').value = r.libelle;
+      document.getElementById('rOrigine').value = r.origine;
+      document.getElementById('rPrev').value    = r.prev;
+      document.getElementById('rReal').value    = r.real;
+      document.getElementById('rStatut').value  = r.statut;
+      document.getElementById('rPeriode').value = r.periode;
+      document.getElementById('rNote').value    = r.note||'';
+      calcRec();
+    } else {
+      ['rId','rLibelle','rPrev','rEcart','rTaux','rPeriode','rNote'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});
+      document.getElementById('rReal').value    = '0';
+      document.getElementById('rOrigine').value = 'État';
+      document.getElementById('rStatut').value  = 'Partiel';
+    }
+    new bootstrap.Modal(document.getElementById('modalRec')).show();
+  }
+  function calcRec(){
+    const p=parseFloat(document.getElementById('rPrev').value)||0;
+    const r=parseFloat(document.getElementById('rReal').value)||0;
+    document.getElementById('rEcart').value=(p-r).toLocaleString('fr-FR')+' FCFA';
+    document.getElementById('rTaux').value =p>0?((r/p*100).toFixed(2)+' %'):'N/A';
+  }
+  function saveRec(){
+    const libelle=document.getElementById('rLibelle').value.trim();
+    const prev=parseFloat(document.getElementById('rPrev').value)||0;
+    if(!libelle){alert('Le libellé est obligatoire.');return;}
+    if(!prev){alert('La prévision est obligatoire.');return;}
+    const real=parseFloat(document.getElementById('rReal').value)||0;
+    const r={
+      libelle, origine:document.getElementById('rOrigine').value,
+      prev, real, statut:document.getElementById('rStatut').value,
+      periode:document.getElementById('rPeriode').value.trim(),
+      note:document.getElementById('rNote').value.trim()
+    };
+    if(_mode==='add'){ DATA.push({id:'R'+(_nid++), ...r}); }
+    else { const i=DATA.findIndex(x=>x.id===_eid); if(i!==-1) DATA[i]={...DATA[i],...r}; }
+    bootstrap.Modal.getInstance(document.getElementById('modalRec')).hide();
+    render(); saveStorage();
+    toast(_mode==='add'?'Recette ajoutée.':'Recette modifiée.');
+  }
+
+  /* ── SUPPRESSION ── */
+  let _did=null;
+  function confirmDel(id,label){
+    _did=id;
+    document.getElementById('delMsg').innerHTML=`Supprimer <strong>"${label}"</strong> ?<br><small class="text-muted">Action irréversible.</small>`;
+    document.getElementById('btnDel').onclick=()=>{
+      DATA=DATA.filter(x=>x.id!==_did);
+      bootstrap.Modal.getInstance(document.getElementById('modalDel')).hide();
+      render(); saveStorage(); toast('Recette supprimée.');
+    };
+    new bootstrap.Modal(document.getElementById('modalDel')).show();
+  }
+
+  /* ── RÉINITIALISATION ── */
+  function reinitialiserDonnees(){
+    if(!confirm('Annuler les modifications ?\n\nLes données seront restaurées à la dernière version enregistrée.')) return;
+    const raw = localStorage.getItem(SAVED_KEY);
+    let ref = null;
+    if(raw){ try{ const s=JSON.parse(raw); if(s&&s._ok) ref=s; }catch(e){} }
+    if(ref){ DATA.splice(0,DATA.length,...(ref.data||[])); _nid=ref.nid||10; }
+    else    { DATA.splice(0,DATA.length,...DEFAULT_DATA); _nid=10; }
+    saveStorage(); render();
+    toast('Modifications annulées - données restaurées.');
+  }
+
+  /* ── SYNC MANUELLE ── */
+  function syncManuel(){
+    syncReportSoldes();      /* écrase R6a-R6d uniquement sur action explicite */
+    syncFromFondsDispo();    /* met à jour les lignes FD-S* */
+    _saveSyncTs();           /* enregistre le timestamp */
+    saveStorage(); render();
+    toast('✓ Données actualisées depuis les sources de financement.');
+  }
+
+  /* ── EXPORT ── */
+  function exportCSV(){
+    const h=['Libellé','Origine','Prévision','Réalisé','Écart','Taux (%)','Statut','Période'];
+    const rows=DATA.map(r=>[`"${r.libelle}"`,r.origine,r.prev,r.real,(r.prev-r.real),r.prev>0?((r.real/r.prev)*100).toFixed(2):'0',r.statut,r.periode]);
+    const csv=[h,...rows].map(r=>r.join(';')).join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+    a.download='Recettes-PSLSH-2026.csv'; a.click();
+  }
+
+  render();
+
+  /* ══════════════════════════════════════════════════════════════════
+     IMPRESSION A4 PAYSAGE - Format officiel PSLSH/IST
+  ══════════════════════════════════════════════════════════════════ */
+  function printRecettes() {
+    const annee   = document.getElementById('selEx').value;
+    const all     = DATA; /* toutes les lignes, sans filtre */
+
+    /* ── KPIs ── */
+    const totP    = all.reduce((s, r) => s + Number(r.prev || 0), 0);
+    const totR    = all.reduce((s, r) => s + Number(r.real || 0), 0);
+    const ecart   = Math.max(0, totP - totR);
+    const taux    = totP > 0 ? (totR / totP * 100).toFixed(1) : 0;
+    const actives = all.filter(r => r.statut !== 'Non mobilisé').length;
+
+    /* ── Méta ── */
+    const dateStr = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+    const _n = new Date();
+    const ref = 'REC-' + annee + '-'
+      + String(_n.getDate()).padStart(2,'0')
+      + String(_n.getMonth()+1).padStart(2,'0')
+      + '-' + String(_n.getHours()).padStart(2,'0')
+      + 'h' + String(_n.getMinutes()).padStart(2,'0');
+
+    /* ── Remplissage des éléments fixes ── */
+    document.getElementById('pz-annee').textContent        = annee;
+    document.getElementById('pz-date').textContent         = dateStr;
+    document.getElementById('pz-ref').textContent          = ref;
+    document.getElementById('pz-kpi-prev').textContent     = fmt(totP) + ' FCFA';
+    document.getElementById('pz-kpi-real').textContent     = fmt(totR) + ' FCFA';
+    document.getElementById('pz-kpi-reste').textContent    = fmt(ecart) + ' FCFA';
+    document.getElementById('pz-kpi-taux').textContent     = taux + ' %';
+    document.getElementById('pz-kpi-sources').textContent  = actives + ' / ' + all.length + ' sources';
+
+    /* ── Construction du tableau ── */
+    const TITRES_PRINT = [
+      { num:'I',  label:'TITRE I - REPORTS DE SOLDES',      origines:['Report'] },
+      { num:'II', label:'TITRE II - NOUVELLES SUBVENTIONS', origines:['État','Fonds Mondial','OMS','UNICEF','Autre'] }
+    ];
+
+    let html = '';
+    let num  = 1;
+    let totGP = 0, totGR = 0, totGAdd = 0;
+
+    TITRES_PRINT.forEach(t => {
+      const lignes = all.filter(r => t.origines.includes(r.origine || ''));
+      if (!lignes.length) return;
+
+      let sP = 0, sR = 0, sAdd = 0;
+
+      /* Ligne titre */
+      html += `<tr class="pzt-titre"><td colspan="7">${t.label}</td></tr>`;
+
+      /* Lignes de détail */
+      lignes.forEach(r => {
+        const prev  = Number(r.prev  || 0);
+        const real  = Number(r.real  || 0);
+        const add   = Math.max(0, real - prev);   /* recouvrement additionnel si real > prev */
+        const reste = Math.max(0, prev - real);
+        const pct   = prev > 0 ? Math.round(real / prev * 100) : (real > 0 ? 100 : 0);
+
+        html += `<tr>
+          <td class="tc">${num++}</td>
+          <td>${r.libelle}</td>
+          <td class="tr">${fmt(prev)}</td>
+          <td class="tr">${add > 0 ? fmt(add) : ''}</td>
+          <td class="tr">${fmt(real)}</td>
+          <td class="tr">${fmt(reste)}</td>
+          <td class="tc">${pct} %</td>
+        </tr>`;
+
+        sP += prev; sR += real; sAdd += add;
+      });
+
+      /* Sous-total titre */
+      const sPct   = sP > 0 ? Math.round(sR / sP * 100) : 0;
+      const sReste = Math.max(0, sP - sR);
+      html += `<tr class="pzt-sous-total">
+        <td colspan="2" style="font-style:italic">Sous Total ${t.label.split('-')[0].trim()}</td>
+        <td class="tr">${fmt(sP)}</td>
+        <td class="tr">${sAdd > 0 ? fmt(sAdd) : ''}</td>
+        <td class="tr">${fmt(sR)}</td>
+        <td class="tr">${fmt(sReste)}</td>
+        <td class="tc">${sPct} %</td>
+      </tr>`;
+
+      totGP += sP; totGR += sR; totGAdd += sAdd;
+    });
+
+    /* Lignes non classées */
+    const classees = TITRES_PRINT.flatMap(t => t.origines);
+    const autres   = all.filter(r => !classees.includes(r.origine || ''));
+    if (autres.length) {
+      html += `<tr class="pzt-titre"><td colspan="7">AUTRES SOURCES</td></tr>`;
+      autres.forEach(r => {
+        const prev  = Number(r.prev || 0);
+        const real  = Number(r.real || 0);
+        const add   = Math.max(0, real - prev);
+        const reste = Math.max(0, prev - real);
+        const pct   = prev > 0 ? Math.round(real / prev * 100) : 0;
+        html += `<tr>
+          <td class="tc">${num++}</td>
+          <td>${r.libelle}</td>
+          <td class="tr">${fmt(prev)}</td>
+          <td class="tr">${add > 0 ? fmt(add) : ''}</td>
+          <td class="tr">${fmt(real)}</td>
+          <td class="tr">${fmt(reste)}</td>
+          <td class="tc">${pct > 0 ? pct + ' %' : '-'}</td>
+        </tr>`;
+        totGP += prev; totGR += real; totGAdd += add;
+      });
+    }
+
+    /* Total général */
+    const totReste = Math.max(0, totGP - totGR);
+    const totPct   = totGP > 0 ? Math.round(totGR / totGP * 100) : 0;
+    html += `<tr class="pzt-total">
+      <td colspan="2">TOTAL</td>
+      <td class="tr">${fmt(totGP)}</td>
+      <td class="tr">${totGAdd > 0 ? fmt(totGAdd) : '0'}</td>
+      <td class="tr">${fmt(totGR)}</td>
+      <td class="tr">${fmt(totReste)}</td>
+      <td class="tc">${totPct} %</td>
+    </tr>`;
+
+    document.getElementById('pz-tbody').innerHTML = html;
+
+    /* ── QR Code (API publique, encode les totaux + référence) ── */
+    const qrData = encodeURIComponent(
+      'SIGFIC-PSLSH | Recettes ' + annee +
+      ' | Prev: ' + fmt(totGP) + ' FCFA' +
+      ' | Real: ' + fmt(totGR) + ' FCFA' +
+      ' | Taux: ' + totPct + '%' +
+      ' | Ref: ' + ref
+    );
+    document.getElementById('pz-qr-img').src =
+      'https://api.qrserver.com/v1/create-qr-code/?size=90x90&color=000000&bgcolor=ffffff&data=' + qrData;
+    document.getElementById('pz-qr-ref').textContent = ref;
+
+    /* ── Légère pause pour laisser le QR charger, puis impression ── */
+    setTimeout(() => window.print(), 600);
+  }
+
+  /* ── Badge "Voir dans la Synthèse" : affiche le nombre de lignes ── */
+  function updateSynthBadge() {
+    const b = document.getElementById('synth-badge-rec');
+    if (!b) return;
+    b.textContent = DATA.length + ' ligne' + (DATA.length > 1 ? 's' : '');
+  }
+  updateSynthBadge();
+
+  /* Patch : chaque sauvegarde met aussi à jour le badge */
+  const _saveStorageOrig = saveStorage;
+  saveStorage = function() { _saveStorageOrig(); updateSynthBadge(); };
+</script>
+</body>
+</html>

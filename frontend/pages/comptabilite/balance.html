@@ -1,0 +1,311 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Balance comptable</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .page-body { padding:22px 28px 48px; }
+    .filter-bar { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:14px 18px; margin-bottom:18px; display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; }
+    .filter-bar label { font-size:.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; margin-bottom:0; display:block; }
+    .filter-bar .form-select { font-size:.78rem; border-radius:7px; border:1px solid #d1d5db; padding:5px 10px; min-width:130px; }
+    .filter-btn { font-size:.72rem; font-weight:700; padding:6px 14px; border-radius:7px; background:#1b3a6b; color:#fff; border:none; cursor:pointer; display:flex; align-items:center; gap:5px; }
+    .filter-btn:hover { background:#1b2f52; }
+    .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+    .kpi-box { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:12px; }
+    .kpi-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+    .kpi-lbl { font-size:.63rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
+    .kpi-val { font-size:.88rem; font-weight:800; color:#1b2f52; font-family:monospace; }
+    .equil-badge { display:inline-flex; align-items:center; gap:6px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; border-radius:8px; font-size:.75rem; font-weight:800; padding:6px 14px; }
+    .data-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; }
+    .data-card-head { display:flex; align-items:center; gap:10px; padding:12px 18px; border-bottom:1px solid #e2e8f0; background:linear-gradient(90deg,#0f2944,#1b3a6b); }
+    .dc-icon { width:32px; height:32px; border-radius:8px; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; color:#7dd3fc; font-size:.9rem; }
+    .dc-title { color:#fff; font-size:.85rem; font-weight:800; flex:1; }
+    .dc-sub { font-size:.7rem; color:#a5f3fc; }
+    .bal-table { width:100%; border-collapse:collapse; font-size:.77rem; }
+    .bal-table thead th { background:#1b3a6b; color:#fff; font-size:.64rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:9px 12px; border:1px solid #1b2f52; text-align:center; }
+    .bal-table thead th.th-left { text-align:left; }
+    .bal-table thead tr:first-child th { background:#1b2f52; }
+    .bal-table tbody td { padding:8px 12px; border:1px solid #e2e8f0; vertical-align:middle; color:#1b2f52; }
+    .bal-table tbody tr:hover td { background:#f8fafc; }
+    .bal-table tfoot td { background:#1b3a6b; color:#fff; font-weight:800; padding:9px 12px; border:1px solid #1b2f52; font-size:.78rem; font-family:monospace; text-align:right; }
+    .bal-table tfoot td.tf-label { text-align:right; font-size:.75rem; }
+    .bal-table tfoot td.tf-ok { background:#15803d; text-align:center; }
+    .ref-code { font-family:'Cascadia Code','Consolas',monospace; font-size:.72rem; font-weight:700; color:#1b3a6b; }
+    .mono { font-family:'Cascadia Code','Consolas',monospace; font-size:.73rem; }
+    .te { text-align:right; }
+    .tc { text-align:center; }
+    .classe-badge { font-size:.6rem; font-weight:700; border-radius:3px; padding:1px 5px; }
+    .c1 { background:#dbeafe; color:#1d4ed8; }
+    .c2 { background:#d1fae5; color:#065f46; }
+    .c3 { background:#fef3c7; color:#b45309; }
+    .c4 { background:#ede9fe; color:#6d28d9; }
+    .c5 { background:#e0f2fe; color:#0369a1; }
+    .c6 { background:#fee2e2; color:#b91c1c; }
+    .c7 { background:#f0fdf4; color:#166534; }
+    .btn-exp { font-size:.71rem; font-weight:600; padding:5px 11px; border-radius:7px; border:1px solid #d1d5db; background:#fff; color:#374151; cursor:pointer; display:flex; align-items:center; gap:5px; }
+    .btn-exp:hover { background:#f8fafc; }
+    .zero { color:#94a3b8; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Gestion Financière</div></div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/comptabilite/index.html">Finances</a></li>
+            <li class="breadcrumb-item active">Balance</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center"><i class="fas fa-calendar-alt"></i> Exercice : <select class="form-select form-select-sm d-inline-block w-auto ms-1"><option>2026</option><option>2025</option></select></div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+    <div class="page-content page-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-balance-scale text-primary me-2"></i>Balance Comptable</h4>
+          <small class="text-muted">SYSCOHADA, Exercice 2026, arrêtée au 05/04/2026, tous journaux confondus</small>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <span class="equil-badge"><i class="fas fa-check-circle"></i> Équilibre vérifié</span>
+          <button class="btn-exp"><i class="fas fa-file-excel"></i> Exporter</button>
+          <button class="btn-exp" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-box">
+          <div class="kpi-icon" style="background:#dbeafe;color:#1d4ed8"><i class="fas fa-arrow-right"></i></div>
+          <div><div class="kpi-lbl">Total débits</div><div class="kpi-val">186 420 000</div></div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-icon" style="background:#dcfce7;color:#15803d"><i class="fas fa-arrow-left"></i></div>
+          <div><div class="kpi-lbl">Total crédits</div><div class="kpi-val">186 420 000</div></div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-icon" style="background:#f0fdf4;color:#166534"><i class="fas fa-list-ol"></i></div>
+          <div><div class="kpi-lbl">Comptes actifs</div><div class="kpi-val">47</div></div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-icon" style="background:#fef3c7;color:#b45309"><i class="fas fa-calendar-check"></i></div>
+          <div><div class="kpi-lbl">Arrêtée au</div><div class="kpi-val" style="font-size:.8rem">05/04/2026</div></div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div><label>Classe</label>
+          <select class="form-select">
+            <option value="">Toutes</option>
+            <option>Classe 1 : Capitaux</option>
+            <option>Classe 2 : Immobilisations</option>
+            <option>Classe 4 : Tiers</option>
+            <option>Classe 5 : Trésorerie</option>
+            <option>Classe 6 : Charges</option>
+            <option>Classe 7 : Produits</option>
+          </select>
+        </div>
+        <div><label>Période</label>
+          <select class="form-select">
+            <option>Exercice complet 2026</option>
+            <option>T1 2026 (Jan–Mar)</option>
+            <option>Janvier 2026</option>
+            <option>Février 2026</option>
+            <option>Mars 2026</option>
+          </select>
+        </div>
+        <button class="filter-btn"><i class="fas fa-sync-alt"></i> Actualiser</button>
+      </div>
+
+      <div class="data-card">
+        <div class="data-card-head">
+          <div class="dc-icon"><i class="fas fa-balance-scale"></i></div>
+          <div>
+            <div class="dc-title">Balance Générale, SYSCOHADA, PSLSH/IST</div>
+            <div class="dc-sub">Exercice 2026, arrêtée au 05/04/2026</div>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="bal-table">
+            <thead>
+              <tr>
+                <th rowspan="2" class="th-left" style="min-width:60px">N° Cpte</th>
+                <th rowspan="2" class="th-left" style="min-width:200px">Intitulé</th>
+                <th rowspan="2" class="tc" style="min-width:50px">Cl.</th>
+                <th colspan="2">Soldes à l'ouverture</th>
+                <th colspan="2">Mouvements de l'exercice</th>
+                <th colspan="2">Soldes à la clôture</th>
+              </tr>
+              <tr>
+                <th>Débiteur</th><th>Créditeur</th>
+                <th>Débiteurs</th><th>Créditeurs</th>
+                <th>Débiteur</th><th>Créditeur</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="ref-code">101</span></td>
+                <td>Capital</td>
+                <td class="tc"><span class="classe-badge c1">1</span></td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">18 000 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">168 420 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">186 420 000</td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">2184</span></td>
+                <td>Matériel informatique</td>
+                <td class="tc"><span class="classe-badge c2">2</span></td>
+                <td class="te mono">4 200 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">1 850 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">6 050 000</td>
+                <td class="te mono zero">—</td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">5312</span></td>
+                <td>Banque ECOBANK</td>
+                <td class="tc"><span class="classe-badge c5">5</span></td>
+                <td class="te mono">25 000 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">8 200 000</td>
+                <td class="te mono">5 400 000</td>
+                <td class="te mono">27 800 000</td>
+                <td class="te mono zero">—</td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">5313</span></td>
+                <td>Banque BCC</td>
+                <td class="tc"><span class="classe-badge c5">5</span></td>
+                <td class="te mono">18 000 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">3 500 000</td>
+                <td class="te mono">2 100 000</td>
+                <td class="te mono">19 400 000</td>
+                <td class="te mono zero">—</td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">5711</span></td>
+                <td>Caisse principale</td>
+                <td class="tc"><span class="classe-badge c5">5</span></td>
+                <td class="te mono">2 850 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">3 200 000</td>
+                <td class="te mono">4 200 000</td>
+                <td class="te mono">1 850 000</td>
+                <td class="te mono zero">—</td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">6011</span></td>
+                <td>Achats marchandises</td>
+                <td class="tc"><span class="classe-badge c6">6</span></td>
+                <td class="te mono">8 400 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">12 300 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">20 700 000</td>
+                <td class="te mono zero">—</td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">6042</span></td>
+                <td>Fournitures de bureau</td>
+                <td class="tc"><span class="classe-badge c6">6</span></td>
+                <td class="te mono">1 200 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">2 850 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">4 050 000</td>
+                <td class="te mono zero">—</td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">6282</span></td>
+                <td>Per diem et indemnités mission</td>
+                <td class="tc"><span class="classe-badge c6">6</span></td>
+                <td class="te mono">3 600 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">5 400 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">9 000 000</td>
+                <td class="te mono zero">—</td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">6311</span></td>
+                <td>Transports et déplacements</td>
+                <td class="tc"><span class="classe-badge c6">6</span></td>
+                <td class="te mono">2 100 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">3 600 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">5 700 000</td>
+                <td class="te mono zero">—</td>
+              </tr>
+              <tr>
+                <td><span class="ref-code">7021</span></td>
+                <td>Subventions reçues, Fonds Mondial</td>
+                <td class="tc"><span class="classe-badge c7">7</span></td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">62 000 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">95 000 000</td>
+                <td class="te mono zero">—</td>
+                <td class="te mono">157 000 000</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" class="tf-label" style="color:#fff;text-align:right">TOTAUX GÉNÉRAUX</td>
+                <td class="te mono">65 350 000</td>
+                <td class="te mono">80 000 000</td>
+                <td class="te mono">40 900 000</td>
+                <td class="te mono">275 120 000</td>
+                <td class="te mono">89 550 000</td>
+                <td class="te mono">343 420 000</td>
+              </tr>
+              <tr>
+                <td colspan="7" class="tf-label" style="color:#fff">Vérification équilibre (Σ Débits = Σ Crédits) :</td>
+                <td colspan="2" class="tf-ok"><i class="fas fa-check-circle me-1"></i> ÉQUILIBRÉ</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+  document.getElementById('userName').textContent = _u.nom || _u.name || _u.email || '';
+</script>
+</body>
+</html>

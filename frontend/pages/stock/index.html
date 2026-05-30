@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Stock &amp; Immobilisations</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    /* ── Layout plein-écran "feuille Excel" ── */
+    html, body          { height: 100%; overflow: hidden; }
+    .app-layout         { height: 100vh; overflow: hidden; }
+    .main-content       { height: 100vh; overflow: hidden; }
+
+    .page-content {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 0;
+      gap: 0;
+    }
+
+    /* ── En-tête de page ── */
+    .stk-header {
+      flex-shrink: 0;
+      padding: 16px 24px 10px;
+    }
+
+    /* ── Barre d'onglets style Excel ── */
+    .stk-tabs {
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      padding: 0 24px;
+      border-bottom: 2px solid #d1d5db;
+      background: #f8fafc;
+    }
+    .stk-tab {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 20px;
+      font-size: .78rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      background: transparent;
+      user-select: none;
+      transition: color .12s, background .12s;
+      position: relative;
+      bottom: -2px;
+    }
+    .stk-tab:hover { color: #1b3a6b; background: #eef2ff; }
+    .stk-tab.active {
+      color: #1b3a6b;
+      background: #fff;
+      border-color: #d1d5db;
+      border-bottom-color: #fff;
+      font-weight: 700;
+    }
+    .stk-tab i { font-size: .75rem; opacity: .75; }
+    .stk-tab.active i { opacity: 1; color: #2563eb; }
+
+    /* ── Zone de contenu scrollable ── */
+    .stk-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 24px 20px;
+      background: #fff;
+    }
+
+    /* Panels */
+    .stk-panel { display: none; }
+    .stk-panel.active { display: block; }
+
+    /* ── Table compacte ── */
+    .card { margin-bottom: 0; }
+    .table > :not(caption) > * > * { padding: .5rem .75rem; }
+    .table thead th { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo"
+           onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+
+  <div class="main-content">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/dossiers/index.html">Opérations</a></li>
+            <li class="breadcrumb-item active">Stock & Immobilisations</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i>
+        Exercice : <strong>2026</strong>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </div>
+
+    <!-- Page (flex column plein-écran) -->
+    <div class="page-content">
+
+      <!-- En-tête -->
+      <div class="stk-header d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-0"><i class="fas fa-boxes text-primary me-2"></i>Stock & Immobilisations</h5>
+          <small class="text-muted">Articles, mouvements, bordereaux de sortie et immobilisations</small>
+        </div>
+      </div>
+
+      <!-- Onglets style Excel -->
+      <div class="stk-tabs">
+        <div class="stk-tab active" id="tab-articles"       onclick="switchTab('articles')">
+          <i class="fas fa-box"></i>Articles
+        </div>
+        <div class="stk-tab" id="tab-mouvements"    onclick="switchTab('mouvements')">
+          <i class="fas fa-exchange-alt"></i>Mouvements
+        </div>
+        <div class="stk-tab" id="tab-bordereaux"    onclick="switchTab('bordereaux')">
+          <i class="fas fa-file-alt"></i>Bordereaux de sortie
+        </div>
+        <div class="stk-tab" id="tab-immobilisations" onclick="switchTab('immobilisations')">
+          <i class="fas fa-laptop"></i>Immobilisations
+        </div>
+      </div>
+
+      <!-- Corps scrollable -->
+      <div class="stk-body">
+
+        <!-- ── Articles ── -->
+        <div class="stk-panel active" id="panelArticles">
+          <div class="row g-2 mb-3 align-items-end">
+            <div class="col-md-3">
+              <select class="form-select form-select-sm" id="artCategorie" onchange="loadArticles()">
+                <option value="">Toutes catégories</option>
+                <option value="consommable">Consommable</option>
+                <option value="equipement">Équipement</option>
+                <option value="medicament">Médicament</option>
+                <option value="carburant">Carburant</option>
+                <option value="autre">Autre</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <input type="text" class="form-control form-control-sm" id="artSearch" placeholder="Rechercher..." oninput="loadArticles()">
+            </div>
+            <div class="col-md-6 text-end">
+              <button class="btn btn-sm btn-outline-secondary me-2" onclick="loadArticles()"><i class="fas fa-sync"></i></button>
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalArticle" onclick="openArticle()">
+                <i class="fas fa-plus me-1"></i>Nouvel article
+              </button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body p-0">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Code</th>
+                    <th>Désignation</th>
+                    <th>Catégorie</th>
+                    <th>Unité</th>
+                    <th class="text-end">Stock actuel</th>
+                    <th class="text-end">Stock min.</th>
+                    <th>Alerte</th>
+                    <th class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="bodyArticles">
+                  <tr><td colspan="8" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Mouvements ── -->
+        <div class="stk-panel" id="panelMouvements">
+          <div class="row g-2 mb-3 align-items-end">
+            <div class="col-md-2">
+              <select class="form-select form-select-sm" id="mvtType" onchange="loadMouvements()">
+                <option value="">Tous types</option>
+                <option value="entree">Entrée</option>
+                <option value="sortie">Sortie</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select form-select-sm" id="mvtArticle" onchange="loadMouvements()">
+                <option value="">Tous les articles</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <input type="date" class="form-control form-control-sm" id="mvtDateDe" onchange="loadMouvements()">
+            </div>
+            <div class="col-md-2">
+              <input type="date" class="form-control form-control-sm" id="mvtDateA" onchange="loadMouvements()">
+            </div>
+            <div class="col-md-3 text-end">
+              <button class="btn btn-sm btn-success me-1" data-bs-toggle="modal" data-bs-target="#modalMvt" onclick="openMvt('entree')"><i class="fas fa-arrow-down me-1"></i>Entrée</button>
+              <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalMvt" onclick="openMvt('sortie')"><i class="fas fa-arrow-up me-1"></i>Sortie</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body p-0">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr><th>Date</th><th>Type</th><th>Article</th><th class="text-end">Quantité</th><th>Référence doc.</th><th>Motif</th><th>Saisi par</th></tr>
+                </thead>
+                <tbody id="bodyMouvements">
+                  <tr><td colspan="7" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Bordereaux de sortie ── -->
+        <div class="stk-panel" id="panelBordereaux">
+          <div class="d-flex justify-content-between mb-3">
+            <input type="text" class="form-control form-control-sm" id="bsSearch"
+                   placeholder="Rechercher un bordereau..." oninput="loadBordereaux()" style="width:280px">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalBordereau" onclick="openBordereau()">
+              <i class="fas fa-plus me-1"></i>Nouveau bordereau
+            </button>
+          </div>
+          <div class="card">
+            <div class="card-body p-0">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr><th>N° Bordereau</th><th>Date</th><th>Bénéficiaire</th><th>Dossier</th><th>Articles</th><th>Validé</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody id="bodyBordereaux">
+                  <tr><td colspan="7" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Immobilisations ── -->
+        <div class="stk-panel" id="panelImmobilisations">
+          <div class="row g-2 mb-3 align-items-end">
+            <div class="col-md-3">
+              <select class="form-select form-select-sm" id="immoCat" onchange="loadImmobilisations()">
+                <option value="">Toutes catégories</option>
+                <option value="materiel_informatique">Matériel informatique</option>
+                <option value="mobilier">Mobilier</option>
+                <option value="vehicule">Véhicule</option>
+                <option value="equipement_medical">Équipement médical</option>
+                <option value="autre">Autre</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <input type="text" class="form-control form-control-sm" id="immoSearch" placeholder="Rechercher..." oninput="loadImmobilisations()">
+            </div>
+            <div class="col-md-6 text-end">
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalImmo" onclick="openImmo()">
+                <i class="fas fa-plus me-1"></i>Nouvelle immobilisation
+              </button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body p-0">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr><th>N° Inventaire</th><th>Désignation</th><th>Catégorie</th><th class="text-end">Valeur d'achat</th><th>Date achat</th><th>Localisation</th><th>État</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody id="bodyImmobilisations">
+                  <tr><td colspan="8" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /stk-body -->
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ── Modal Article ── -->
+<div class="modal fade" id="modalArticle" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Article de stock</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="artId">
+        <div class="row g-3">
+          <div class="col-md-4"><label class="form-label fw-semibold">Code</label><input type="text" class="form-control" id="artCode" placeholder="ART-001"></div>
+          <div class="col-md-8"><label class="form-label fw-semibold">Désignation <span class="text-danger">*</span></label><input type="text" class="form-control" id="artDesignation"></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Catégorie</label>
+            <select class="form-select" id="artCatM">
+              <option value="consommable">Consommable</option><option value="equipement">Équipement</option>
+              <option value="medicament">Médicament</option><option value="carburant">Carburant</option><option value="autre">Autre</option>
+            </select></div>
+          <div class="col-md-3"><label class="form-label fw-semibold">Unité</label><input type="text" class="form-control" id="artUnite" placeholder="pcs, kg, L..."></div>
+          <div class="col-md-3"><label class="form-label fw-semibold">Stock min.</label><input type="number" class="form-control" id="artStockMin" min="0" value="0"></div>
+          <div class="col-12"><label class="form-label fw-semibold">Description</label><textarea class="form-control" id="artDesc" rows="2"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" onclick="saveArticle()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal Mouvement ── -->
+<div class="modal fade" id="modalMvt" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title" id="mvtTitle">Mouvement de stock</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="mvtTypeVal">
+        <div class="row g-3">
+          <div class="col-12"><label class="form-label fw-semibold">Article <span class="text-danger">*</span></label><select class="form-select" id="mvtArticleM"></select></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Quantité <span class="text-danger">*</span></label><input type="number" class="form-control" id="mvtQte" min="1"></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Date</label><input type="date" class="form-control" id="mvtDate"></div>
+          <div class="col-12"><label class="form-label fw-semibold">Référence document</label><input type="text" class="form-control" id="mvtRef" placeholder="N° BC, PV, etc."></div>
+          <div class="col-12"><label class="form-label fw-semibold">Motif / Observations</label><textarea class="form-control" id="mvtMotif" rows="2"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" onclick="saveMvt()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal Immobilisation ── -->
+<div class="modal fade" id="modalImmo" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Immobilisation</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="immoId">
+        <div class="row g-3">
+          <div class="col-md-4"><label class="form-label fw-semibold">N° Inventaire <span class="text-danger">*</span></label><input type="text" class="form-control" id="immoNum" placeholder="IMM-2026-001"></div>
+          <div class="col-md-8"><label class="form-label fw-semibold">Désignation <span class="text-danger">*</span></label><input type="text" class="form-control" id="immoDesig"></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Catégorie</label>
+            <select class="form-select" id="immoCatM">
+              <option value="materiel_informatique">Mat. informatique</option><option value="mobilier">Mobilier</option>
+              <option value="vehicule">Véhicule</option><option value="equipement_medical">Équip. médical</option><option value="autre">Autre</option>
+            </select></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Valeur d'achat (FCFA)</label><input type="number" class="form-control" id="immoValeur" min="0"></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Date d'achat</label><input type="date" class="form-control" id="immoDate"></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">Localisation</label><input type="text" class="form-control" id="immoLoc" placeholder="Bureau / Salle..."></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">État</label>
+            <select class="form-select" id="immoEtat">
+              <option value="bon">Bon état</option><option value="moyen">État moyen</option><option value="mauvais">Mauvais état</option><option value="hors_service">Hors service</option>
+            </select></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">N° Série</label><input type="text" class="form-control" id="immoSerie"></div>
+          <div class="col-12"><label class="form-label fw-semibold">Observations</label><textarea class="form-control" id="immoObs" rows="2"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-primary" onclick="saveImmo()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+requireAuth();
+if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+if (typeof renderServiceBadge === 'function') renderServiceBadge();
+document.getElementById('userName').textContent = (getUser()?.prenom || '') + ' ' + (getUser()?.nom || '');
+
+let articlesData = [];
+
+/* ── Bascule d'onglet ── */
+function switchTab(tab) {
+  document.querySelectorAll('.stk-tab').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.stk-panel').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+  if (tab === 'mouvements')     loadMouvements();
+  if (tab === 'bordereaux')     loadBordereaux();
+  if (tab === 'immobilisations') loadImmobilisations();
+}
+
+/* ── Articles ── */
+async function loadArticles() {
+  const cat = document.getElementById('artCategorie').value;
+  const q   = document.getElementById('artSearch').value;
+  const params = new URLSearchParams();
+  if (cat) params.append('categorie', cat);
+  if (q)   params.append('q', q);
+  try {
+    const r = await api.get('/stock/articles?' + params);
+    articlesData = r.data || [];
+    document.getElementById('bodyArticles').innerHTML = articlesData.length
+      ? articlesData.map(a => {
+          const alert = a.stock_actuel <= a.stock_minimum
+            ? '<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>Alerte</span>'
+            : '<span class="badge bg-success">OK</span>';
+          return `<tr class="${a.stock_actuel <= a.stock_minimum ? 'table-warning' : ''}">
+            <td><code>${a.code}</code></td>
+            <td class="fw-semibold">${a.designation}</td>
+            <td><span class="badge bg-light text-dark">${a.categorie}</span></td>
+            <td>${a.unite || '—'}</td>
+            <td class="text-end fw-bold">${a.stock_actuel || 0}</td>
+            <td class="text-end text-muted">${a.stock_minimum || 0}</td>
+            <td>${alert}</td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-primary" onclick='editArticle(${JSON.stringify(a).replace(/"/g,"&quot;")})'><i class="fas fa-edit"></i></button>
+            </td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="8" class="text-center py-4 text-muted">Aucun article</td></tr>';
+
+    const sel = document.getElementById('mvtArticleM');
+    sel.innerHTML = '<option value="">Sélectionner un article...</option>';
+    articlesData.forEach(a => {
+      const o = document.createElement('option');
+      o.value = a.id;
+      o.textContent = a.code + ' — ' + a.designation;
+      sel.appendChild(o);
+    });
+  } catch(e) {}
+}
+
+/* ── Mouvements ── */
+async function loadMouvements() {
+  const type  = document.getElementById('mvtType').value;
+  const artId = document.getElementById('mvtArticle').value;
+  const de    = document.getElementById('mvtDateDe').value;
+  const a     = document.getElementById('mvtDateA').value;
+  const params = new URLSearchParams();
+  if (type)  params.append('type', type);
+  if (artId) params.append('article_id', artId);
+  if (de)    params.append('date_de', de);
+  if (a)     params.append('date_a', a);
+  try {
+    const r = await api.get('/stock/mouvements?' + params);
+    const items = r.data || [];
+    document.getElementById('bodyMouvements').innerHTML = items.length
+      ? items.map(m => `
+        <tr>
+          <td>${formatDate(m.date_mouvement || m.created_at)}</td>
+          <td>${m.type === 'entree'
+            ? '<span class="badge bg-success"><i class="fas fa-arrow-down me-1"></i>Entrée</span>'
+            : '<span class="badge bg-warning text-dark"><i class="fas fa-arrow-up me-1"></i>Sortie</span>'}</td>
+          <td>${m.Article?.designation || '—'}</td>
+          <td class="text-end fw-bold">${m.quantite}</td>
+          <td><code>${m.reference_document || '—'}</code></td>
+          <td class="small">${m.motif || '—'}</td>
+          <td class="small">${m.User?.prenom || ''} ${m.User?.nom || ''}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="7" class="text-center py-4 text-muted">Aucun mouvement</td></tr>';
+  } catch(e) {}
+}
+
+/* ── Bordereaux ── */
+async function loadBordereaux() {
+  const q = document.getElementById('bsSearch').value;
+  try {
+    const r = await api.get('/stock/bordereaux?q=' + q);
+    const items = r.data || [];
+    document.getElementById('bodyBordereaux').innerHTML = items.length
+      ? items.map(b => `
+        <tr>
+          <td><code>${b.numero || b.id}</code></td>
+          <td>${formatDate(b.date_bordereau)}</td>
+          <td>${b.beneficiaire || '—'}</td>
+          <td class="small">${b.Dossier?.reference || '—'}</td>
+          <td><span class="badge bg-info">${b.lignes_count || 0} article(s)</span></td>
+          <td>${b.valide ? '<span class="badge bg-success">Oui</span>' : '<span class="badge bg-secondary">Non</span>'}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="fas fa-print"></i></button>
+          </td>
+        </tr>`).join('')
+      : '<tr><td colspan="7" class="text-center py-4 text-muted">Aucun bordereau</td></tr>';
+  } catch(e) {}
+}
+
+/* ── Immobilisations ── */
+async function loadImmobilisations() {
+  const cat = document.getElementById('immoCat').value;
+  const q   = document.getElementById('immoSearch').value;
+  const params = new URLSearchParams();
+  if (cat) params.append('categorie', cat);
+  if (q)   params.append('q', q);
+  try {
+    const r = await api.get('/stock/immobilisations?' + params);
+    const items = r.data || [];
+    const etatBadge = {
+      bon:         '<span class="badge bg-success">Bon</span>',
+      moyen:       '<span class="badge bg-warning text-dark">Moyen</span>',
+      mauvais:     '<span class="badge bg-danger">Mauvais</span>',
+      hors_service:'<span class="badge bg-dark">H.S.</span>'
+    };
+    document.getElementById('bodyImmobilisations').innerHTML = items.length
+      ? items.map(i => `
+        <tr>
+          <td><code>${i.numero_inventaire}</code></td>
+          <td class="fw-semibold">${i.designation}</td>
+          <td><span class="badge bg-light text-dark">${i.categorie?.replace('_',' ')}</span></td>
+          <td class="text-end">${formatXOF(i.valeur_achat)}</td>
+          <td>${formatDate(i.date_achat)}</td>
+          <td>${i.localisation || '—'}</td>
+          <td>${etatBadge[i.etat] || i.etat}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-primary" onclick='editImmo(${JSON.stringify(i).replace(/"/g,"&quot;")})'><i class="fas fa-edit"></i></button>
+          </td>
+        </tr>`).join('')
+      : '<tr><td colspan="8" class="text-center py-4 text-muted">Aucune immobilisation</td></tr>';
+  } catch(e) {}
+}
+
+/* ── Helpers ── */
+function openArticle() {
+  document.getElementById('artId').value = '';
+  ['artCode','artDesignation','artUnite','artDesc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('artStockMin').value = 0;
+}
+function openMvt(type) {
+  document.getElementById('mvtTypeVal').value = type;
+  document.getElementById('mvtTitle').textContent = type === 'entree' ? 'Entrée en stock' : 'Sortie de stock';
+  document.getElementById('mvtDate').value = new Date().toISOString().substring(0,10);
+  ['mvtQte','mvtRef','mvtMotif'].forEach(id => document.getElementById(id).value = '');
+}
+function openBordereau() {}
+function openImmo() { document.getElementById('immoId').value = ''; }
+
+function editArticle(a) {
+  document.getElementById('artId').value         = a.id;
+  document.getElementById('artCode').value       = a.code || '';
+  document.getElementById('artDesignation').value= a.designation;
+  document.getElementById('artCatM').value       = a.categorie || 'consommable';
+  document.getElementById('artUnite').value      = a.unite || '';
+  document.getElementById('artStockMin').value   = a.stock_minimum || 0;
+  document.getElementById('artDesc').value       = a.description || '';
+  new bootstrap.Modal(document.getElementById('modalArticle')).show();
+}
+
+function editImmo(i) {
+  document.getElementById('immoId').value    = i.id;
+  document.getElementById('immoNum').value   = i.numero_inventaire;
+  document.getElementById('immoDesig').value = i.designation;
+  document.getElementById('immoCatM').value  = i.categorie || 'autre';
+  document.getElementById('immoValeur').value= i.valeur_achat || '';
+  document.getElementById('immoDate').value  = i.date_achat?.substring(0,10) || '';
+  document.getElementById('immoLoc').value   = i.localisation || '';
+  document.getElementById('immoEtat').value  = i.etat || 'bon';
+  document.getElementById('immoSerie').value = i.numero_serie || '';
+  document.getElementById('immoObs').value   = i.observations || '';
+  new bootstrap.Modal(document.getElementById('modalImmo')).show();
+}
+
+async function saveArticle() {
+  const id   = document.getElementById('artId').value;
+  const data = {
+    code:         document.getElementById('artCode').value,
+    designation:  document.getElementById('artDesignation').value,
+    categorie:    document.getElementById('artCatM').value,
+    unite:        document.getElementById('artUnite').value,
+    stock_minimum:document.getElementById('artStockMin').value,
+    description:  document.getElementById('artDesc').value
+  };
+  if (!data.designation) { toast('La désignation est obligatoire', 'warning'); return; }
+  try {
+    if (id) await api.put('/stock/articles/' + id, data);
+    else    await api.post('/stock/articles', data);
+    toast(id ? 'Article mis à jour' : 'Article créé');
+    bootstrap.Modal.getInstance(document.getElementById('modalArticle'))?.hide();
+    loadArticles();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+async function saveMvt() {
+  const data = {
+    article_id:         document.getElementById('mvtArticleM').value,
+    type:               document.getElementById('mvtTypeVal').value,
+    quantite:           document.getElementById('mvtQte').value,
+    date_mouvement:     document.getElementById('mvtDate').value,
+    reference_document: document.getElementById('mvtRef').value,
+    motif:              document.getElementById('mvtMotif').value
+  };
+  if (!data.article_id || !data.quantite) { toast('Article et quantité obligatoires', 'warning'); return; }
+  try {
+    await api.post('/stock/mouvements', data);
+    toast('Mouvement enregistré');
+    bootstrap.Modal.getInstance(document.getElementById('modalMvt'))?.hide();
+    loadArticles(); loadMouvements();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+async function saveImmo() {
+  const id   = document.getElementById('immoId').value;
+  const data = {
+    numero_inventaire: document.getElementById('immoNum').value,
+    designation:       document.getElementById('immoDesig').value,
+    categorie:         document.getElementById('immoCatM').value,
+    valeur_achat:      document.getElementById('immoValeur').value || null,
+    date_achat:        document.getElementById('immoDate').value,
+    localisation:      document.getElementById('immoLoc').value,
+    etat:              document.getElementById('immoEtat').value,
+    numero_serie:      document.getElementById('immoSerie').value,
+    observations:      document.getElementById('immoObs').value
+  };
+  if (!data.numero_inventaire || !data.designation) { toast('Champs obligatoires manquants', 'warning'); return; }
+  try {
+    if (id) await api.put('/stock/immobilisations/' + id, data);
+    else    await api.post('/stock/immobilisations', data);
+    toast(id ? 'Immobilisation mise à jour' : 'Immobilisation créée');
+    bootstrap.Modal.getInstance(document.getElementById('modalImmo'))?.hide();
+    loadImmobilisations();
+  } catch(e) { toast(e.message || 'Erreur', 'error'); }
+}
+
+function logout() {
+  localStorage.removeItem('pslsh_user');
+  location.href = '../auth/login.html';
+}
+
+loadArticles();
+</script>
+</body>
+</html>

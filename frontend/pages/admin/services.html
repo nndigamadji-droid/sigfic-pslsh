@@ -1,0 +1,618 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SIGFIC-PSLSH | Services &amp; Unités</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .stat-card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+    .stat-card .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+    .stat-value { font-size: 1.8rem; font-weight: 700; line-height: 1; }
+    .stat-label { font-size: .75rem; color: #6c757d; }
+    .svc-code-badge { font-size: .75rem; font-weight: 700; padding: .3em .6em; border-radius: 6px; }
+    .services-table th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; background: #f8f9fa; }
+    .services-table td { vertical-align: middle; font-size: .875rem; }
+    .unite-table th { font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; background: #f8f9fa; }
+    .unite-table td { font-size: .85rem; vertical-align: middle; }
+    .section-title { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: #6c757d; font-weight: 700; }
+    .accordion-button:not(.collapsed) { background: #f0f4ff; color: #1b4fa8; }
+    .accordion-button { font-weight: 600; font-size: .9rem; }
+    .filter-bar { background: #f8f9fa; border-radius: 8px; padding: 1rem; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Gestion Financière</div></div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="../admin/index.html">Administration</a></li>
+          <li class="breadcrumb-item active">Services &amp; Unités</li>
+        </ol></nav>
+      </div>
+      <div class="topbar-center"><i class="fas fa-calendar-alt"></i> Exercice : <strong>2026</strong></div>
+      <div class="topbar-right">
+        <button class="topbar-btn"><i class="fas fa-bell"></i></button>
+        <div class="dropdown">
+          <div class="user-pill dropdown-toggle" data-bs-toggle="dropdown" style="cursor:pointer">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div><div class="user-name" id="userName">—</div><div class="user-role" id="userRole">—</div></div>
+            <i class="fas fa-chevron-down ms-1" style="font-size:.6rem;color:rgba(255,255,255,.4)"></i>
+          </div>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- En-tête -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-sitemap text-primary me-2"></i>Services &amp; unités</h4>
+          <small class="text-muted">Organigramme fonctionnel PSLSH/IST, entités organisationnelles</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalService">
+            <i class="fas fa-plus me-1"></i>Nouveau service
+          </button>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalUnite">
+            <i class="fas fa-layer-group me-1"></i>Nouvelle unité
+          </button>
+        </div>
+      </div>
+
+      <!-- Statistiques -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+          <div class="card stat-card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+              <div class="stat-icon bg-primary bg-opacity-10">
+                <i class="fas fa-building text-primary"></i>
+              </div>
+              <div>
+                <div class="stat-value text-primary">11</div>
+                <div class="stat-label">Services actifs</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="card stat-card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+              <div class="stat-icon bg-success bg-opacity-10">
+                <i class="fas fa-layer-group text-success"></i>
+              </div>
+              <div>
+                <div class="stat-value text-success">28</div>
+                <div class="stat-label">Unités internes</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="card stat-card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+              <div class="stat-icon bg-info bg-opacity-10">
+                <i class="fas fa-users text-info"></i>
+              </div>
+              <div>
+                <div class="stat-value text-info">44</div>
+                <div class="stat-label">Utilisateurs affectés</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="card stat-card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+              <div class="stat-icon bg-warning bg-opacity-10">
+                <i class="fas fa-user-tie text-warning"></i>
+              </div>
+              <div>
+                <div class="stat-value text-warning">9</div>
+                <div class="stat-label">Responsables nommés</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barre de filtre -->
+      <div class="filter-bar mb-3 d-flex gap-3 align-items-center flex-wrap">
+        <div class="flex-grow-1" style="min-width:200px">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" class="form-control" id="searchInput" placeholder="Rechercher un service ou une unité..." oninput="filterTable()">
+          </div>
+        </div>
+        <div>
+          <select class="form-select form-select-sm" id="filterStatut" onchange="filterTable()" style="min-width:150px">
+            <option value="">Tous les statuts</option>
+            <option value="actif">Actif</option>
+            <option value="desactive">Désactivé</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Table des services -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h6 class="mb-0 fw-bold"><i class="fas fa-building text-primary me-2"></i>Liste des services PSLSH/IST</h6>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover services-table mb-0" id="servicesTable">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Libellé du service</th>
+                  <th>Responsable</th>
+                  <th class="text-center">Unités</th>
+                  <th class="text-center">Utilisateurs</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="servicesTableBody">
+                <!-- Généré par JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Unités internes — Accordéon -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h6 class="mb-0 fw-bold"><i class="fas fa-layer-group text-success me-2"></i>Unités internes par service</h6>
+          <small class="text-muted">SAF déployé par défaut — cliquer sur un service pour afficher ses unités</small>
+        </div>
+        <div class="card-body p-3">
+          <div class="accordion" id="accordionUnites">
+            <!-- Généré par JS -->
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+
+    <footer class="page-footer">&copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp; République du Tchad &nbsp;&middot;&nbsp; Version 1</footer>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — Nouveau service
+══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalService" tabindex="-1" aria-labelledby="modalServiceLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalServiceLabel"><i class="fas fa-building me-2"></i>Nouveau service</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formService" novalidate>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nom du service <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="serviceNom" placeholder="Ex : Service Administratif et Financier" required>
+            <div class="invalid-feedback">Le nom du service est obligatoire.</div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-4">
+              <label class="form-label fw-semibold">Code <span class="text-danger">*</span></label>
+              <input type="text" class="form-control text-uppercase" id="serviceCode" maxlength="10" placeholder="SAF" required>
+              <div class="invalid-feedback">Le code est obligatoire.</div>
+            </div>
+            <div class="col-sm-8">
+              <label class="form-label fw-semibold">Responsable</label>
+              <select class="form-select" id="serviceResponsable">
+                <option value="">— Sélectionner un responsable —</option>
+                <option value="u1">Dr. Mahamat Ali Ibrahim</option>
+                <option value="u2">Mme Fatimé Oumar Hassan</option>
+                <option value="u3">M. Abakar Saleh Moussa</option>
+                <option value="u4">Dr. Halimé Adoum Djar</option>
+                <option value="u5">M. Youssouf Idriss Adam</option>
+              </select>
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Couleur d'identification</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-palette"></i></span>
+                <input type="color" class="form-control form-control-color" id="serviceCouleur" value="#1b4fa8">
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Statut</label>
+              <select class="form-select" id="serviceStatut">
+                <option value="actif">Actif</option>
+                <option value="desactive">Désactivé</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description</label>
+            <textarea class="form-control" id="serviceDescription" rows="2" placeholder="Mission et périmètre du service..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Annuler</button>
+        <button type="button" class="btn btn-primary" onclick="saveService()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — Nouvelle unité
+══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalUnite" tabindex="-1" aria-labelledby="modalUniteLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalUniteLabel"><i class="fas fa-layer-group me-2"></i>Nouvelle unité interne</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formUnite" novalidate>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Libellé de l'unité <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="uniteLibelle" placeholder="Ex : Unité Comptable" required>
+            <div class="invalid-feedback">Le libellé est obligatoire.</div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-4">
+              <label class="form-label fw-semibold">Code <span class="text-danger">*</span></label>
+              <input type="text" class="form-control text-uppercase" id="uniteCode" maxlength="10" placeholder="UC" required>
+              <div class="invalid-feedback">Le code est obligatoire.</div>
+            </div>
+            <div class="col-sm-8">
+              <label class="form-label fw-semibold">Service de rattachement <span class="text-danger">*</span></label>
+              <select class="form-select" id="uniteService" required>
+                <option value="">— Sélectionner un service —</option>
+                <option value="SAF">SAF — Service Administratif et Financier</option>
+                <option value="SGAS">SGAS — Service de Gestion des Approvisionnements</option>
+                <option value="SEB">SEB — Service de Suivi Biologique</option>
+                <option value="SPCG">SPCG — Service Prise en Charge Globale</option>
+                <option value="SPCH">SPCH — Service Prise en Charge Hépatites</option>
+                <option value="SPSAC">SPSAC — Service Promotion de la Santé</option>
+                <option value="SESRO">SESRO — Service Suivi-Évaluation</option>
+                <option value="SC">SC — Service Communication</option>
+                <option value="APMS">APMS — Service d'Appui Psycho-Médico-Social</option>
+                <option value="SLNR">SLNR — Service Laboratoire National</option>
+                <option value="SR">SR — Service Rattaché</option>
+              </select>
+              <div class="invalid-feedback">Le rattachement est obligatoire.</div>
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-8">
+              <label class="form-label fw-semibold">Responsable de l'unité</label>
+              <select class="form-select" id="uniteResponsable">
+                <option value="">— Sélectionner —</option>
+                <option value="u1">Dr. Mahamat Ali Ibrahim</option>
+                <option value="u2">Mme Fatimé Oumar Hassan</option>
+                <option value="u3">M. Abakar Saleh Moussa</option>
+                <option value="u4">Dr. Halimé Adoum Djar</option>
+                <option value="u5">M. Youssouf Idriss Adam</option>
+              </select>
+            </div>
+            <div class="col-sm-4">
+              <label class="form-label fw-semibold">Statut</label>
+              <select class="form-select" id="uniteStatut">
+                <option value="actif">Actif</option>
+                <option value="desactive">Désactivé</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Annuler</button>
+        <button type="button" class="btn btn-success" onclick="saveUnite()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   Données des services avec responsables et stats
+═══════════════════════════════════════════════════════════ */
+const SERVICES_DATA = [
+  { code:'SAF',   label:'Service Administratif et Financier',                         responsable:'M. Abakar Saleh Moussa',   unites:7,  users:8,  color:'#1b4fa8', actif:true  },
+  { code:'SGAS',  label:'Service de Gestion des Approvisionnements et des Stocks',    responsable:'Mme Fatimé Oumar Hassan',  unites:2,  users:4,  color:'#2d7a2d', actif:true  },
+  { code:'SEB',   label:'Service de Suivi Biologique',                                responsable:'Dr. Mahamat Ali Ibrahim',  unites:1,  users:3,  color:'#8b4513', actif:true  },
+  { code:'SPCG',  label:'Service Prise en Charge Globale',                            responsable:'Dr. Halimé Adoum Djar',   unites:3,  users:5,  color:'#8b0000', actif:true  },
+  { code:'SPCH',  label:'Service Prise en Charge Hépatites',                          responsable:'M. Youssouf Idriss Adam',  unites:1,  users:2,  color:'#b8860b', actif:true  },
+  { code:'SPSAC', label:'Service Promotion de la Santé et Approche Communautaire',    responsable:'Mme Amina Hassan Tidjani', unites:0,  users:3,  color:'#006400', actif:true  },
+  { code:'SESRO', label:'Service Suivi-Évaluation et Recherche Opérationnelle',       responsable:'M. Mahamat Nour Oumar',    unites:3,  users:4,  color:'#4b0082', actif:true  },
+  { code:'SC',    label:'Service Communication',                                       responsable:'—',                        unites:0,  users:2,  color:'#00688b', actif:true  },
+  { code:'APMS',  label:"Service d'Appui Psycho-Médico-Social",                       responsable:'Mme Khadidja Idriss',      unites:8,  users:7,  color:'#8b008b', actif:true  },
+  { code:'SLNR',  label:'Service Laboratoire National de Référence',                  responsable:'—',                        unites:0,  users:3,  color:'#2f4f4f', actif:true  },
+  { code:'SR',    label:'Service Rattaché',                                            responsable:'—',                        unites:0,  users:3,  color:'#556b2f', actif:false },
+];
+
+const UNITES_DATA = {
+  SAF:   [
+    { id:'UC',    label:'Unité Comptable',                            responsable:'M. Abakar Saleh Moussa',   users:2 },
+    { id:'URF',   label:'Unité des Ressources Financières',           responsable:'Mme Fatimé Oumar Hassan',  users:1 },
+    { id:'ACUGP', label:'Assistant Comptable UGP',                    responsable:'M. Idriss Moussa',         users:1 },
+    { id:'URH',   label:'Unité des Ressources Humaines',              responsable:'Mme Hawa Ali',             users:1 },
+    { id:'URML',  label:'Unité des Ressources Matérielles & Logist.', responsable:'M. Adam Brahim',           users:1 },
+    { id:'UI',    label:'Unité Informatique et Maintenance',          responsable:'M. Youssouf Adam',         users:1 },
+    { id:'SEC',   label:'Secrétariat SAF',                            responsable:'Mme Zeinab Hassan',        users:1 },
+  ],
+  SGAS:  [
+    { id:'UGAS',  label:"Unité de Gestion d'Approvisionnement et de Stock",   responsable:'M. Mahamat Kaka',   users:2 },
+    { id:'ULEB',  label:'Unité des Laboratoires et Équipements Biomédicaux',  responsable:'Dr. Saleh Oumar',   users:2 },
+  ],
+  SEB:   [{ id:'UCV',   label:'Unité Charge Virale',                          responsable:'Dr. Ibrahim Moussa',  users:3 }],
+  SPCG:  [
+    { id:'UPCYIH',  label:'Unité de Prise en Charge YIH',             responsable:'Dr. Halimé Adoum',   users:2 },
+    { id:'UPCN',    label:'Unité de Prise en Charge Nutritionnelle',   responsable:'Mme Amina Bichara',  users:1 },
+    { id:'UPCIST',  label:'Unité de Prise en Charge IST',              responsable:'Dr. Nour Adam',      users:2 },
+  ],
+  SPCH:  [{ id:'UPCH',  label:'Unité de Prise en Charge Hépatites',   responsable:'M. Youssouf Idriss', users:2 }],
+  SESRO: [
+    { id:'UDGD',  label:'Unité DHIS2 et Gestion des Données',         responsable:'M. Mahamat Nour',    users:2 },
+    { id:'URO',   label:'Unité Recherche Opérationnelle',             responsable:'Dr. Seidou Hassan',  users:1 },
+    { id:'USP',   label:'Unité de Suivi Programmatique',             responsable:'Mme Ramatou Ali',    users:1 },
+  ],
+  APMS:  [
+    { id:'CAPMS', label:'Coordinatrice APMS',  responsable:'Mme Khadidja Idriss',  users:1 },
+    { id:'UPCB',  label:'UPCB',                responsable:'—',                     users:1 },
+    { id:'UPCM',  label:'UPC/M',               responsable:'—',                     users:1 },
+    { id:'UPIH',  label:'UPIH',                responsable:'—',                     users:1 },
+    { id:'UP',    label:'UP',                  responsable:'—',                     users:1 },
+    { id:'ULABO', label:'U-Labo',              responsable:'—',                     users:1 },
+    { id:'UCD',   label:'UCD',                 responsable:'—',                     users:0 },
+    { id:'UAO',   label:'UAO',                 responsable:'—',                     users:1 },
+  ],
+};
+
+/* ── Rendu table services ────────────────────────────────────────── */
+function renderServicesTable(data) {
+  const tbody = document.getElementById('servicesTableBody');
+  tbody.innerHTML = data.map(svc => `
+    <tr>
+      <td>
+        <span class="svc-code-badge text-white" style="background:${svc.color}">${svc.code}</span>
+      </td>
+      <td>
+        <span class="fw-semibold">${svc.label}</span>
+      </td>
+      <td class="text-muted">${svc.responsable}</td>
+      <td class="text-center">
+        <span class="badge bg-light text-dark border">${svc.unites}</span>
+      </td>
+      <td class="text-center">
+        <span class="badge bg-info bg-opacity-10 text-info border border-info">${svc.users}</span>
+      </td>
+      <td>
+        ${svc.actif
+          ? '<span class="badge bg-success-subtle text-success border border-success"><i class="fas fa-circle me-1" style="font-size:.5rem"></i>Actif</span>'
+          : '<span class="badge bg-secondary-subtle text-secondary border border-secondary"><i class="fas fa-circle me-1" style="font-size:.5rem"></i>Désactivé</span>'
+        }
+      </td>
+      <td>
+        <div class="d-flex gap-1">
+          <button class="btn btn-sm btn-outline-secondary" title="Modifier" onclick="editService('${svc.code}')">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-primary" title="Gérer les unités" onclick="scrollToUnite('${svc.code}')">
+            <i class="fas fa-layer-group"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger" title="${svc.actif ? 'Désactiver' : 'Activer'}" onclick="toggleService('${svc.code}')">
+            <i class="fas fa-${svc.actif ? 'ban' : 'check'}"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+/* ── Rendu accordéon unités ──────────────────────────────────────── */
+function renderUnitesAccordion() {
+  const container = document.getElementById('accordionUnites');
+  const svcsWithUnites = SERVICES_DATA.filter(s => UNITES_DATA[s.code] && UNITES_DATA[s.code].length > 0);
+
+  container.innerHTML = svcsWithUnites.map((svc, idx) => {
+    const unites = UNITES_DATA[svc.code] || [];
+    const isOpen = idx === 0; // SAF ouvert par défaut
+
+    const unitesRows = unites.map(u => `
+      <tr>
+        <td><span class="badge bg-light text-dark border" style="font-size:.75rem">${u.id}</span></td>
+        <td>${u.label}</td>
+        <td class="text-muted">${u.responsable}</td>
+        <td class="text-center"><span class="badge bg-info bg-opacity-10 text-info border border-info">${u.users}</span></td>
+        <td>
+          <button class="btn btn-sm btn-outline-secondary" title="Modifier l'unité">
+            <i class="fas fa-edit"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+    return `
+      <div class="accordion-item mb-2 border rounded">
+        <h2 class="accordion-header">
+          <button class="accordion-button ${isOpen ? '' : 'collapsed'}" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#collapse${svc.code}"
+                  aria-expanded="${isOpen}" aria-controls="collapse${svc.code}">
+            <span class="svc-code-badge text-white me-2" style="background:${svc.color};font-size:.72rem">${svc.code}</span>
+            ${svc.label}
+            <span class="ms-2 badge bg-light text-dark border" style="font-size:.7rem">${unites.length} unité${unites.length > 1 ? 's' : ''}</span>
+          </button>
+        </h2>
+        <div id="collapse${svc.code}" class="accordion-collapse collapse ${isOpen ? 'show' : ''}">
+          <div class="accordion-body p-0">
+            <table class="table table-sm table-hover unite-table mb-0">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Libellé de l'unité</th>
+                  <th>Responsable</th>
+                  <th class="text-center">Utilisateurs</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>${unitesRows}</tbody>
+            </table>
+            <div class="p-2 border-top d-flex justify-content-end">
+              <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalUnite"
+                      onclick="preselectService('${svc.code}')">
+                <i class="fas fa-plus me-1"></i>Ajouter une unité
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ── Filtrage ────────────────────────────────────────────────────── */
+function filterTable() {
+  const search  = document.getElementById('searchInput').value.toLowerCase();
+  const statut  = document.getElementById('filterStatut').value;
+
+  const filtered = SERVICES_DATA.filter(s => {
+    const matchSearch = !search ||
+      s.code.toLowerCase().includes(search) ||
+      s.label.toLowerCase().includes(search) ||
+      s.responsable.toLowerCase().includes(search);
+
+    const matchStatut = !statut ||
+      (statut === 'actif' && s.actif) ||
+      (statut === 'desactive' && !s.actif);
+
+    return matchSearch && matchStatut;
+  });
+
+  renderServicesTable(filtered);
+}
+
+/* ── Actions ─────────────────────────────────────────────────────── */
+function editService(code) {
+  showToast(`Modification du service ${code} — fonctionnalité à implémenter.`, 'info');
+}
+
+function scrollToUnite(code) {
+  const el = document.getElementById('collapse' + code);
+  if (el) {
+    el.closest('.accordion-item').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!el.classList.contains('show')) {
+      new bootstrap.Collapse(el, { toggle: true });
+    }
+  }
+}
+
+function toggleService(code) {
+  showToast(`Statut du service ${code} modifié.`, 'success');
+}
+
+function preselectService(code) {
+  const sel = document.getElementById('uniteService');
+  if (sel) sel.value = code;
+}
+
+function saveService() {
+  const nom  = document.getElementById('serviceNom');
+  const code = document.getElementById('serviceCode');
+  if (!nom.value.trim() || !code.value.trim()) {
+    document.getElementById('formService').classList.add('was-validated');
+    return;
+  }
+  bootstrap.Modal.getInstance(document.getElementById('modalService')).hide();
+  showToast('Service enregistré avec succès.', 'success');
+}
+
+function saveUnite() {
+  const lib = document.getElementById('uniteLibelle');
+  const svc = document.getElementById('uniteService');
+  if (!lib.value.trim() || !svc.value) {
+    document.getElementById('formUnite').classList.add('was-validated');
+    return;
+  }
+  bootstrap.Modal.getInstance(document.getElementById('modalUnite')).hide();
+  showToast('Unité enregistrée avec succès.', 'success');
+}
+
+/* ── Toast ──────────────────────────────────────────────────────── */
+function showToast(msg, type) {
+  const container = document.getElementById('toastContainer') || (() => {
+    const d = document.createElement('div');
+    d.id = 'toastContainer';
+    d.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+    d.style.zIndex = '1100';
+    document.body.appendChild(d);
+    return d;
+  })();
+
+  const icons = { success:'fa-check-circle text-success', info:'fa-info-circle text-primary', danger:'fa-exclamation-circle text-danger' };
+  const id = 'toast_' + Date.now();
+  container.insertAdjacentHTML('beforeend', `
+    <div id="${id}" class="toast align-items-center border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex"><div class="toast-body"><i class="fas ${icons[type] || icons.info} me-2"></i>${msg}</div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button></div>
+    </div>`);
+  const el = document.getElementById(id);
+  new bootstrap.Toast(el, { delay: 3500 }).show();
+  el.addEventListener('hidden.bs.toast', () => el.remove());
+}
+
+/* ── Déconnexion ─────────────────────────────────────────────────── */
+function logout() {
+  localStorage.removeItem('pslsh_user');
+  localStorage.removeItem('pslsh_token');
+  window.location.href = '/pages/auth/login.html';
+}
+
+/* ── Init ───────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function () {
+  // User info
+  const user = (typeof SIGFIC !== 'undefined') ? SIGFIC.getUser() : null;
+  if (user) {
+    const nom = user.nom || user.name || '—';
+    const el  = document.getElementById('userAvatar');
+    if (el) el.textContent = nom.charAt(0).toUpperCase();
+    const elN = document.getElementById('userName');
+    if (elN) elN.textContent = nom;
+    const elR = document.getElementById('userRole');
+    if (elR) elR.textContent = user.role || user.profil || '—';
+  }
+
+  // Render
+  renderServicesTable(SERVICES_DATA);
+  renderUnitesAccordion();
+});
+</script>
+</body>
+</html>

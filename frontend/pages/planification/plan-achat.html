@@ -1,0 +1,2744 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Plan d'achat</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .pa-page { padding:24px 28px 40px; }
+
+    /* ── Focus global (Accessibilité §1) ── */
+    *:focus-visible {
+      outline: 2px solid #1b3a6b;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* ── KPI ── */
+    .pa-kpi-bar { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:18px; }
+    .pa-kpi {
+      background:#fff; border:1px solid #e2e8f0; border-radius:12px;
+      padding:14px 16px; position:relative; overflow:hidden;
+      transition: box-shadow .2s ease, transform .2s ease;
+    }
+    .pa-kpi:hover {
+      box-shadow: 0 4px 16px rgba(27,58,107,.10);
+      transform: translateY(-2px);
+    }
+    .pa-kpi::before { content:''; position:absolute; top:0;left:0;right:0;height:4px; border-radius:12px 12px 0 0; }
+    .pk-blue::before   { background: linear-gradient(90deg,#1b3a6b,#2563eb); }
+    .pk-green::before  { background: linear-gradient(90deg,#15803d,#22c55e); }
+    .pk-orange::before { background: linear-gradient(90deg,#b45309,#f59e0b); }
+    .pk-red::before    { background: linear-gradient(90deg,#b91c1c,#ef4444); }
+    .pk-purple::before { background: linear-gradient(90deg,#6d28d9,#a855f7); }
+    /* Icône de fond (décoration visuelle) */
+    .pa-kpi .pk-icon {
+      position:absolute; top:12px; right:14px;
+      font-size:1.5rem; opacity:.07;
+    }
+    .pk-blue .pk-icon   { color:#1b3a6b; }
+    .pk-green .pk-icon  { color:#15803d; }
+    .pk-orange .pk-icon { color:#b45309; }
+    .pk-red .pk-icon    { color:#b91c1c; }
+    .pk-purple .pk-icon { color:#6d28d9; }
+    /* Typographie KPI améliorée (§6 weight-hierarchy) */
+    .pa-kpi .pk-lbl { font-size:.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; }
+    .pa-kpi .pk-val { font-size:1.05rem; font-weight:800; color:#1b2f52; font-family:monospace; margin:5px 0 3px; line-height:1.2; }
+    .pa-kpi .pk-sub { font-size:.70rem; color:#94a3b8; }
+
+    /* ── Sources financement ── */
+    .sources-bloc { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:14px 18px; margin-bottom:18px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .src-title { font-size:.75rem; font-weight:800; color:#1b2f52; text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px; }
+    .src-row { display:flex; align-items:center; gap:10px; margin-bottom:6px; font-size:.77rem; }
+    .src-label { flex:1; color:#2d3748; }
+    .src-bar-track { flex:2; height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden; transition:all .2s; }
+    .src-bar-fill { height:100%; border-radius:4px; }
+    .src-amount { min-width:155px; text-align:right; font-family:monospace; font-weight:700; color:#1b2f52; font-size:.75rem; }
+    .src-pct { min-width:42px; text-align:right; color:#64748b; font-size:.72rem; }
+    .src-total { border-top:1px solid #e2e8f0; padding-top:8px; margin-top:4px; font-weight:700; }
+
+    /* ── Lien PAO ── */
+    .pao-link-bar { display:flex; align-items:center; gap:10px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:9px 14px; margin-bottom:16px; font-size:.78rem; flex-wrap:wrap; }
+    .pao-link-bar .plb-label { font-weight:700; color:#1e40af; }
+    .pao-pill { display:inline-flex; align-items:center; gap:5px; background:#1e40af; color:#fff; border-radius:6px; padding:3px 10px; font-size:.7rem; font-weight:700; cursor:pointer; text-decoration:none; }
+    .pao-pill:hover { background:#1b3a6b; color:#fff; }
+
+    /* ── Tabs (§7 state-transition, duration-timing) ── */
+    .pa-tabs { display:flex; gap:4px; border-bottom:2px solid #e2e8f0; margin-bottom:16px; padding-bottom:0; }
+    .pa-tab {
+      padding:9px 18px; font-size:.8rem; font-weight:600; color:#64748b;
+      cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px;
+      transition:color .18s ease, border-color .18s ease, background .18s ease;
+      border-radius:8px 8px 0 0; display:flex; align-items:center; gap:6px;
+      white-space:nowrap; user-select:none;
+    }
+    .pa-tab:hover { color:#1b2f52; background:#f1f5f9; }
+    .pa-tab.active { color:#1b3a6b; border-bottom-color:#1b3a6b; font-weight:700; }
+    .pa-tab:focus-visible { outline:2px solid #1b3a6b; outline-offset:2px; }
+    /* Animation panel (§7 fadeIn) */
+    .pa-panel { display:none; }
+    .pa-panel.active { display:block; animation:paFadeIn .2s ease; }
+    @keyframes paFadeIn {
+      from { opacity:0; transform:translateY(5px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── Bloc ── */
+    .pa-bloc { background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; }
+    .pa-bloc-head { display:flex; align-items:center; gap:12px; padding:12px 18px; background:linear-gradient(135deg,#1b2f52 0%,#1b3a6b 100%); }
+    .pa-bloc-title { font-size:.8rem; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:.04em; flex:1; }
+    .pa-bloc-sub { font-size:.7rem; color:rgba(255,255,255,.65); }
+
+    /* ── Table (§6 contrast-readability, §1 accessible) ── */
+    .pa-table-wrap { overflow-x:auto; }
+    .pa-table { width:100%; border-collapse:collapse; font-size:.79rem; }
+    .pa-table thead th {
+      background:#f1f5f9; color:#1b2f52;
+      font-size:.69rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:.03em; padding:9px 10px;
+      border-bottom:2px solid #e2e8f0; white-space:nowrap;
+      position:sticky; top:0; z-index:2;
+    }
+    .pa-table tbody td { padding:8px 10px; border-bottom:1px solid #f1f5f9; color:#2d3748; vertical-align:middle; }
+    .pa-table tbody tr:hover td { background:#eff6ff; transition:background .12s ease; }
+    .pa-table .text-end { text-align:right; }
+    .pa-table .text-center { text-align:center; }
+    .pa-table .mono { font-family:'Cascadia Code','Consolas',monospace; font-size:.72rem; }
+    .pa-table .row-total td { background:#1b2f52; color:#fff; font-weight:700; border-bottom:none; }
+    .pa-table .row-total .mono { color:#7dd3fc; }
+    .pa-table .row-cat td { background:#f8fafc; font-weight:800; font-size:.73rem; color:#1b2f52; border-bottom:1px solid #e2e8f0; border-top:2px solid #e2e8f0; }
+
+    /* ── Badges catégorie ── */
+    .cat-badge { display:inline-block; font-size:.70rem; font-weight:700; border-radius:5px; padding:3px 9px; white-space:nowrap; }
+    .cat-react-vih  { background:#fef3c7; color:#92400e; }
+    .cat-cv-vih     { background:#fdf4ff; color:#7e22ce; }
+    .cat-react-hep  { background:#ecfeff; color:#0e7490; }
+    .cat-cv-hep     { background:#fff3e0; color:#bf360c; }
+    .cat-sero-hep   { background:#fce4ec; color:#880e4f; }
+    .cat-ist        { background:#e8f5e9; color:#1b5e20; }
+    .cat-arv           { background:#ede9fe; color:#5b21b6; }
+    .cat-ios           { background:#fef3c7; color:#92400e; }
+    .cat-intrants      { background:#d1fae5; color:#065f46; }
+    .cat-institutionnel{ background:#f1f5f9; color:#334155; }
+
+    /* ── Procédure ── */
+    .proc-bc { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:3px 9px; border-radius:20px; font-size:.70rem; font-weight:600; white-space:nowrap; }
+    .proc-mr { background:#fdf4ff; color:#7e22ce; border:1px solid #ddd6fe; padding:3px 9px; border-radius:20px; font-size:.70rem; font-weight:600; white-space:nowrap; }
+
+    /* ── Taux exécution ── */
+    .exec-wrap { display:flex; align-items:center; gap:5px; min-width:105px; }
+    .exec-track { flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden; }
+    .exec-fill { height:100%; border-radius:3px; }
+    .exec-lbl { font-size:.7rem; font-weight:700; font-family:monospace; min-width:36px; text-align:right; }
+    .t-high { color:#15803d; } .t-med { color:#b45309; } .t-low { color:#b91c1c; } .t-zero { color:#94a3b8; }
+
+    /* ── Statut réception (§6 contrast-readability) ── */
+    .rx-ok   { background:#dcfce7; color:#15803d; font-size:.70rem; font-weight:700; border-radius:6px; padding:3px 8px; white-space:nowrap; }
+    .rx-part { background:#fef3c7; color:#b45309; font-size:.70rem; font-weight:700; border-radius:6px; padding:3px 8px; white-space:nowrap; }
+    .rx-att  { background:#f1f5f9; color:#475569; font-size:.70rem; font-weight:700; border-radius:6px; padding:3px 8px; white-space:nowrap; }
+    .rx-cmd  { background:#ede9fe; color:#6d28d9; font-size:.70rem; font-weight:700; border-radius:6px; padding:3px 8px; white-space:nowrap; }
+
+    /* ── Trimestre cells (calendrier) ── */
+    .trim-cell { text-align:center; }
+    .trim-qty { display:inline-block; font-size:.68rem; font-weight:700; border-radius:4px; padding:1px 5px; font-family:monospace; }
+    .tq-t1 { background:#dbeafe; color:#1d4ed8; }
+    .tq-t2 { background:#dcfce7; color:#15803d; }
+    .tq-t3 { background:#fef3c7; color:#b45309; }
+    .tq-t4 { background:#fee2e2; color:#b91c1c; }
+    .tq-0  { background:#f1f5f9; color:#cbd5e1; }
+
+    /* ── Trim cards ── */
+    .trim-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:16px; }
+    .trim-card { border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; }
+    .trim-card-head { padding:8px 14px; font-size:.76rem; font-weight:800; }
+    .trim-card-body { background:#fff; padding:10px 14px; }
+    .tcr { display:flex; justify-content:space-between; font-size:.73rem; padding:3px 0; border-bottom:1px solid #f1f5f9; }
+    .tcr:last-child { border-bottom:none; }
+    .tcr .tl { color:#64748b; font-weight:600; }
+    .tcr .tv { font-family:monospace; font-weight:700; font-size:.71rem; }
+    .trim-prog-wrap { padding:8px 14px 10px; }
+    .tpbar { height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden; margin-top:4px; }
+    .tpbar-fill { height:100%; border-radius:3px; }
+
+    /* ── Alerte ── */
+    .pa-alerte { display:flex; align-items:center; gap:10px; padding:9px 14px; border-radius:8px; font-size:.78rem; margin-bottom:14px; }
+    .al-warn { background:#fff7ed; border:1px solid #fed7aa; color:#92400e; }
+    .al-ok   { background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; }
+
+    /* ── Boutons action ── */
+    /* Boutons action (§2 touch-target-size minimum 30px) */
+    .btn-act { font-size:.70rem; padding:5px 10px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-weight:600; transition:all .15s; border:1px solid; min-height:30px; }
+    .btn-act-edit { background:#eff6ff; color:#1d4ed8; border-color:#93c5fd; }
+    .btn-act-edit:hover { background:#dbeafe; }
+    .btn-act-del  { background:#fff5f5; color:#b91c1c; border-color:#fca5a5; }
+    .btn-act-del:hover  { background:#fee2e2; }
+
+    /* ── DCI section ── */
+    .dci-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:14px 16px; }
+    .dci-cat { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; }
+    .dci-cat-title { font-size:.74rem; font-weight:800; color:#1b2f52; margin-bottom:8px; border-bottom:1px solid #e2e8f0; padding-bottom:5px; }
+    .dci-cat ul { margin:0; padding-left:14px; font-size:.72rem; color:#2d3748; }
+    .dci-cat ul li { margin-bottom:3px; }
+    .dci-sub { font-size:.67rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.03em; margin-top:8px; margin-bottom:3px; }
+
+    /* ── Taux cat bars ── */
+    .taux-cat-row { margin-bottom:6px; }
+    .taux-cat-row .tl { display:flex; justify-content:space-between; font-size:.71rem; margin-bottom:2px; }
+
+    /* ── Excel full-height layout ── */
+    html, body { height:100%; overflow:hidden; }
+    .app-layout, .main-content { height:100vh; overflow:hidden; }
+    .page-content { flex:1; overflow:hidden; display:flex; flex-direction:column; padding:0; gap:0; }
+    .pa-top { flex-shrink:0; padding:10px 24px 8px; background:#fff; border-bottom:1px solid #e2e8f0; }
+    .pa-top .pa-kpi-bar { margin-bottom:0; }
+    .pa-body { flex:1; overflow-y:auto; padding:14px 24px 20px; background:#eef2f7; }
+
+    /* ── IMPRESSION ── */
+    #printHeader { display:none; }
+    #printDoc    { display:none; }
+
+    @media print {
+      @page { size:A4 landscape; margin:.8cm 1.2cm 1.2cm; }
+      * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+
+      /* ── Réinitialisation critique du layout ──
+         Doit surcharger html,body { height:100%; overflow:hidden } défini côté écran */
+      html { height:auto !important; overflow:visible !important; }
+      body {
+        height:auto !important; min-height:0 !important;
+        max-height:none !important; overflow:visible !important;
+        background:#fff !important; display:block !important;
+      }
+
+      /* Masquer l'application entière */
+      .app-layout, .modal, .modal-backdrop,
+      .sidebar, .topbar, .main-content { display:none !important; }
+
+      /* Afficher le document d'impression */
+      #printHeader {
+        display:block !important;
+        width:100%; box-sizing:border-box;
+      }
+      #printDoc {
+        display:block !important;
+        width:100%; box-sizing:border-box;
+        font-family:Arial,Helvetica,sans-serif;
+        color:#1e293b; background:#fff;
+      }
+
+      /* Sauts de page entre sections — double déclaration pour compatibilité */
+      .pp-section {
+        display:block !important;
+        page-break-after:always;
+        break-after:page;
+        page-break-inside:auto;
+      }
+      .pp-section:last-child {
+        page-break-after:auto;
+        break-after:auto;
+      }
+      .pp-no-break { page-break-inside:avoid; break-inside:avoid; }
+
+      /* Titres de section */
+      .pp-section-title {
+        display:block !important;
+        font-size:8.5pt; font-weight:800; color:#fff !important;
+        background:#1b2f52 !important;
+        text-transform:uppercase; letter-spacing:.06em;
+        padding:4pt 8pt; margin:0 0 6pt;
+      }
+
+      /* Texte courant */
+      .pp-text {
+        display:block !important;
+        font-size:7pt; color:#374151; line-height:1.6;
+        margin:0 0 5pt; text-align:justify;
+      }
+
+      /* Tableau standard impression */
+      .pp-table { width:100%; border-collapse:collapse; font-size:6.5pt; margin-bottom:8pt; }
+      .pp-table thead th {
+        background:#1b2f52 !important; color:#fff !important;
+        padding:3.5pt 5pt; font-size:6pt; font-weight:700; text-align:left;
+        border:0.5pt solid #1b2f52;
+      }
+      .pp-table thead th.tc { text-align:center; }
+      .pp-table thead th.te { text-align:right;  }
+      .pp-table tbody td    { padding:3pt 5pt; border:0.5pt solid #cbd5e1; font-size:6.5pt; vertical-align:top; }
+      .pp-table tbody td.tc { text-align:center; }
+      .pp-table tbody td.te { text-align:right; font-family:monospace; }
+      .pp-table tfoot td    { padding:3.5pt 5pt; border:0.5pt solid #1b2f52; font-weight:700; }
+      .pp-table tfoot td.te { text-align:right; font-family:monospace; }
+      .pp-table .row-cat td { background:#eef2f7 !important; font-weight:700; color:#1b2f52; border-top:1pt solid #1b2f52; }
+      .pp-table .row-total td { background:#1b2f52 !important; color:#fff !important; }
+      .pp-table .row-sub td { background:#f8fafc !important; font-style:italic; }
+
+      /* Grille 2 colonnes préambule — table fallback pour compatibilité impression */
+      .pp-grid2 {
+        display:table !important; width:100%; border-spacing:8pt 0;
+        margin-bottom:8pt; table-layout:fixed;
+      }
+      .pp-grid2 > div {
+        display:table-cell !important; vertical-align:top; width:50%;
+      }
+
+      /* Encart sources / catégories */
+      .pp-box { border:0.5pt solid #cbd5e1; padding:6pt 8pt; display:block !important; }
+      .pp-box-title { font-size:6.5pt; font-weight:800; color:#1b2f52; text-transform:uppercase; letter-spacing:.04em; margin-bottom:5pt; display:block !important; }
+      .pp-box table { width:100%; font-size:6.5pt; border-collapse:collapse; }
+      .pp-box table th { font-weight:700; color:#1b2f52; padding:2pt 4pt; border-bottom:0.5pt solid #cbd5e1; text-align:left; }
+      .pp-box table th.te { text-align:right; }
+      .pp-box table th.tc { text-align:center; }
+      .pp-box table td { padding:2.5pt 4pt; border-bottom:0.3pt solid #e2e8f0; }
+      .pp-box table td.te { text-align:right; font-family:monospace; }
+      .pp-box table td.tc { text-align:center; }
+      .pp-box table tr.tot td { font-weight:700; border-top:0.5pt solid #cbd5e1; border-bottom:none; }
+
+      /* Commentaire analytique */
+      .pp-commentaire {
+        display:block !important;
+        background:#f8fafc !important; border:0.5pt solid #cbd5e1; border-left:2.5pt solid #1b2f52;
+        padding:7pt 10pt; margin-bottom:10pt; font-size:7pt; color:#374151; line-height:1.65;
+        page-break-inside:avoid; break-inside:avoid;
+      }
+      .pp-commentaire .comm-title { font-weight:800; color:#1b2f52; font-size:7.5pt; margin-bottom:4pt; display:block !important; }
+
+      /* Badges inline */
+      .pp-bc   { color:#1d4ed8; font-weight:700; }
+      .pp-mr   { color:#7e22ce; font-weight:700; }
+      .pp-ok   { color:#15803d; }
+      .pp-part { color:#b45309; }
+      .pp-cmd  { color:#1d4ed8; }
+      .pp-att  { color:#64748b; }
+      .pp-x    { font-weight:800; color:#1b2f52; }
+      .pp-dash { color:#cbd5e1; }
+
+      /* Signatures — table fallback pour compatibilité impression */
+      .pp-signatures {
+        display:table !important; width:100%; table-layout:fixed;
+        margin-top:18pt; page-break-inside:avoid; break-inside:avoid;
+      }
+      .pp-sig-bloc {
+        display:table-cell !important; text-align:center; font-size:7pt;
+        width:50%; vertical-align:top;
+      }
+      .pp-sig-date  { font-size:6.5pt; color:#64748b; margin-bottom:2pt; display:block !important; }
+      .pp-sig-line  { display:block !important; border-top:1pt solid #1b2f52; padding-top:4pt; margin-top:30pt; font-weight:800; font-size:8pt; color:#1b2f52; }
+      .pp-sig-sous  { display:block !important; font-size:6.5pt; color:#64748b; margin-top:2pt; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     EN-TÊTE OFFICIELLE — visible uniquement à l'impression
+══════════════════════════════════════════════════════════ -->
+<div id="printHeader">
+
+  <!-- Bloc 3 colonnes : Français | Armoiries | Arabe -->
+  <table style="width:100%;border-collapse:collapse;margin-bottom:5pt;line-height:1.75">
+    <tr>
+
+      <!-- ── Colonne gauche : texte français ── -->
+      <td style="width:37%;vertical-align:top;padding-right:8pt">
+        <div style="font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.02em">
+          RÉPUBLIQUE DU TCHAD<br>
+          <span style="font-weight:400;letter-spacing:.18em;font-size:6.5pt">············</span><br>
+          MINISTERE DE LA SANTE PUBLIQUE<br>
+          ET DE LA PREVENTION<br>
+          <span style="font-weight:400;letter-spacing:.18em;font-size:6.5pt">············</span><br>
+          SECRÉTARIAT D'ÉTAT<br>
+          <span style="font-weight:400;letter-spacing:.18em;font-size:6.5pt">············</span><br>
+          DIRECTION GÉNÉRALE<br>
+          <span style="font-weight:400;letter-spacing:.18em;font-size:6.5pt">············</span><br>
+          PROGRAMME SECTORIEL DE LUTTE CONTRE LE SIDA,<br>
+          HÉPATITES VIRALES ET LES INFECTIONS<br>
+          SEXUELLEMENT TRANSMISSIBLES<br>
+          <span style="font-weight:400;letter-spacing:.18em;font-size:6.5pt">············</span><br>
+          SERVICE ADMINISTRATIF ET FINANCIER
+        </div>
+        <div style="font-size:8pt;font-weight:700;margin-top:5pt;font-style:italic">Agent Comptable</div>
+        <div style="font-size:6.5pt;margin-top:2pt">N°_______//MSPSN/SE/SG/PSLS-IST/SAF/AC/2026</div>
+      </td>
+
+      <!-- ── Colonne centre : devise + emblème ── -->
+      <td style="width:26%;text-align:center;vertical-align:middle;padding:0 6pt">
+        <div style="font-size:10pt;font-weight:700;margin-bottom:2pt;font-family:Georgia,serif">Unité-Travail-Progrès</div>
+        <div style="font-size:9pt;font-family:'Times New Roman',serif;margin-bottom:5pt;direction:rtl">وحدة-عمل-تقدم</div>
+        <img src="../../assets/partners/msp-tchad.png"
+             alt="Armoiries — République du Tchad"
+             style="height:68pt;max-width:90pt;object-fit:contain;display:block;margin:0 auto">
+      </td>
+
+      <!-- ── Colonne droite : texte arabe ── -->
+      <td style="width:37%;vertical-align:top;text-align:right;padding-left:8pt;direction:rtl">
+        <div style="font-size:7pt;font-weight:700;font-family:'Tahoma','Arial',sans-serif;line-height:1.85">
+          جمهورية تشاد<br>
+          <span style="font-weight:400">*****</span><br>
+          وزارة الصحة العامة<br>
+          <span style="font-weight:400">*****</span><br>
+          أمانة الدولة<br>
+          <span style="font-weight:400">*****</span><br>
+          الأمانة العامة للوزارة<br>
+          <span style="font-weight:400">*****</span><br>
+          البرنامج الإقطاعي لمكافحة السيدا والتهابات الكيد الفيروسية<br>
+          والعدوى المنقولة جنسياً<br>
+          <span style="font-weight:400">*****</span>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Ligne séparatrice double -->
+  <div style="border-top:2pt solid #000;border-bottom:.5pt solid #000;padding-top:1pt;margin-bottom:7pt"></div>
+
+  <!-- Titre encadré du document -->
+  <table style="width:100%;border-collapse:collapse;margin-bottom:6pt">
+    <tr>
+      <td style="border:1.5pt solid #1b2f52;padding:5pt 12pt;text-align:center;background:#f8fafc">
+        <div style="font-size:13pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#1b2f52">
+          Plan d'Achat des Intrants
+        </div>
+        <div style="font-size:9pt;font-weight:600;margin-top:2pt;color:#1b2f52">
+          Réactifs &amp; Consommables Médicaux &nbsp;·&nbsp; Exercice 2026
+        </div>
+        <div style="font-size:7pt;margin-top:3pt;color:#4a5568">
+          PSLSH/IST &nbsp;·&nbsp; APMS &nbsp;·&nbsp; Sources PAO : PSLSH-032 &amp; PSLSH-033 &nbsp;·&nbsp; Arrêté au 05/04/2026
+        </div>
+      </td>
+    </tr>
+  </table>
+
+</div>
+<!-- /printHeader -->
+
+<!-- ══════════════════════════════════════════════════════════
+     DOCUMENT D'IMPRESSION — structure multi-pages A4 paysage
+     Contenu généré dynamiquement par buildPrintDoc()
+══════════════════════════════════════════════════════════ -->
+<div id="printDoc">
+  <div class="pp-section" id="ppPreamble"></div>
+  <div class="pp-section" id="ppCalendrier"></div>
+  <div class="pp-section" id="ppProcedures"></div>
+  <div class="pp-section" id="ppCompte"></div>
+</div>
+<!-- /printDoc -->
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/planification/pao-global.html">Planification</a></li>
+            <li class="breadcrumb-item active">Plan d'Achat · Réactifs &amp; Consommables</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i> Exercice :
+        <select id="selExercice" class="form-select form-select-sm d-inline-block w-auto ms-1">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content pa-page">
+
+      <!-- Fixed top -->
+      <div class="pa-top">
+
+      <!-- Titre -->
+      <div class="d-flex justify-content-between align-items-center mb-2" style="margin-bottom:8px!important;">
+        <div>
+          <h4 class="mb-0">
+            <i class="fas fa-vials text-primary me-2"></i>
+            Plan d'Achat · Réactifs &amp; Consommables Médicaux
+          </h4>
+          <small class="text-muted">
+            PSLSH/IST, exercice 2026, APMS, arrêté au <strong>05/04/2026</strong>,
+            PAO source : <strong>PSLSH-032</strong> &amp; <strong>PSLSH-033</strong>
+          </small>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="pao-global.html" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-project-diagram me-1"></i>PAO Global
+          </a>
+          <button class="btn btn-sm btn-outline-secondary" onclick="exportExcel()" title="Exporter en Excel (.xlsx)">
+            <i class="fas fa-file-excel me-1"></i>Export Excel
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="doPrint()">
+            <i class="fas fa-print me-1"></i>Imprimer
+          </button>
+        </div>
+      </div>
+
+      <!-- Alerte -->
+      <div class="pa-alerte al-warn">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>
+          <strong>Situation au 05/04/2026, taux d'exécution global : <span id="alerteTaux">0%</span></strong>.
+          T1 clôturé à <span id="alerteT1">0%</span>, T2 démarré à <span id="alerteT2">0%</span>,
+          T3 et T4 : en attente d'engagement.
+        </span>
+      </div>
+
+      <!-- KPI -->
+      <div class="pa-kpi-bar">
+        <div class="pa-kpi pk-blue" title="Budget total prévu pour l'exercice 2026">
+          <i class="fas fa-wallet pk-icon"></i>
+          <div class="pk-lbl">Budget prévu total</div>
+          <div class="pk-val" id="kpiPrevu">0</div>
+          <div class="pk-sub">FCFA · PSLSH-032 + 033</div>
+        </div>
+        <div class="pa-kpi pk-green" title="Montant total engagé (bons de commande émis)">
+          <i class="fas fa-file-signature pk-icon"></i>
+          <div class="pk-lbl">Montant engagé</div>
+          <div class="pk-val" id="kpiEngage">0</div>
+          <div class="pk-sub">FCFA commandés</div>
+        </div>
+        <div class="pa-kpi pk-orange" title="Montant total effectivement payé">
+          <i class="fas fa-money-check-alt pk-icon"></i>
+          <div class="pk-lbl">Montant payé</div>
+          <div class="pk-val" id="kpiPaye">0</div>
+          <div class="pk-sub">FCFA payés</div>
+        </div>
+        <div class="pa-kpi pk-red" title="Écart entre budget prévu et montant payé">
+          <i class="fas fa-exclamation-triangle pk-icon"></i>
+          <div class="pk-lbl">Écart non exécuté</div>
+          <div class="pk-val" id="kpiEcart">0</div>
+          <div class="pk-sub">FCFA restants</div>
+        </div>
+        <div class="pa-kpi pk-purple" title="Taux d'exécution = Payé ÷ Budget prévu × 100">
+          <i class="fas fa-chart-pie pk-icon"></i>
+          <div class="pk-lbl">Taux d'exécution</div>
+          <div class="pk-val" id="kpiTaux" style="font-size:1.0rem">0 %</div>
+          <div class="pk-sub" id="kpiNbProd">0 produit</div>
+        </div>
+      </div>
+
+      </div><!-- /pa-top -->
+
+      <!-- Scrollable body -->
+      <div class="pa-body">
+
+      <!-- Sources de financement -->
+      <div class="sources-bloc">
+        <div>
+          <div class="src-title"><i class="fas fa-hand-holding-usd me-1"></i>Sources de financement — Plan d'achat 2026</div>
+          <div class="src-row">
+            <span class="src-label">PSLSH-032 · Réactifs VIH (dépistage + charge virale)</span>
+            <div class="src-bar-track"><div class="src-bar-fill" id="srcBar032" style="background:#1b3a6b;"></div></div>
+            <span class="src-amount" id="srcMt032">0</span>
+            <span class="src-pct" id="srcPct032">0%</span>
+          </div>
+          <div class="src-row">
+            <span class="src-label">PSLSH-033 · Réactifs hépatites, IST & syphilis</span>
+            <div class="src-bar-track"><div class="src-bar-fill" id="srcBar033" style="background:#0891b2;"></div></div>
+            <span class="src-amount" id="srcMt033">0</span>
+            <span class="src-pct" id="srcPct033">0%</span>
+          </div>
+          <div class="src-row">
+            <span class="src-label">PSLSH-034 · Médicaments ARV et traitement hépatites</span>
+            <div class="src-bar-track"><div class="src-bar-fill" id="srcBar034" style="background:#5b21b6;"></div></div>
+            <span class="src-amount" id="srcMt034">0</span>
+            <span class="src-pct" id="srcPct034">0%</span>
+          </div>
+          <div class="src-row">
+            <span class="src-label">PSLSH-035 · Intrants nutritionnels et redevances CPA</span>
+            <div class="src-bar-track"><div class="src-bar-fill" id="srcBar035" style="background:#065f46;"></div></div>
+            <span class="src-amount" id="srcMt035">0</span>
+            <span class="src-pct" id="srcPct035">0%</span>
+          </div>
+          <div class="src-row src-total">
+            <span class="src-label">TOTAL BUDGET PLAN D'ACHAT 2026</span>
+            <div class="src-bar-track"></div>
+            <span class="src-amount" id="srcTotal">0</span>
+            <span class="src-pct">100%</span>
+          </div>
+        </div>
+        <div>
+          <div class="src-title"><i class="fas fa-tachometer-alt me-1"></i>Taux d'exécution par catégorie</div>
+          <div id="tauxCatBars"></div>
+        </div>
+      </div>
+
+      <!-- Lien PAO -->
+      <div class="pao-link-bar">
+        <span class="plb-label"><i class="fas fa-link me-1"></i>Prévisions PAO liées :</span>
+        <a href="pao-global.html" class="pao-pill">
+          <i class="fas fa-vial"></i> PSLSH-032 · Réactifs VIH
+        </a>
+        <a href="pao-global.html" class="pao-pill" style="background:#0891b2;">
+          <i class="fas fa-vials"></i> PSLSH-033 · Réactifs hépatites + IST
+        </a>
+        <a href="pao-global.html" class="pao-pill" style="background:#5b21b6;">
+          <i class="fas fa-pills"></i> PSLSH-034 · Médicaments ARV
+        </a>
+        <a href="pao-global.html" class="pao-pill" style="background:#065f46;">
+          <i class="fas fa-apple-alt"></i> PSLSH-035 · Intrants nutritionnels
+        </a>
+      </div>
+
+      <!-- Synthèse trimestrielle -->
+      <div class="trim-cards" id="trimCards"></div>
+
+      <!-- TABS -->
+      <!-- Tabs navigation (§9 keyboard nav + aria) -->
+      <div class="pa-tabs" role="tablist" aria-label="Vues du plan d'achat">
+        <div class="pa-tab active" role="tab" aria-selected="true" aria-controls="panel-compte" tabindex="0"
+             onclick="switchTab('compte')" onkeydown="if(event.key==='Enter'||event.key===' ')switchTab('compte')">
+          <i class="fas fa-table"></i>Compte financier
+        </div>
+        <div class="pa-tab" role="tab" aria-selected="false" aria-controls="panel-calendrier" tabindex="-1"
+             onclick="switchTab('calendrier')" onkeydown="if(event.key==='Enter'||event.key===' ')switchTab('calendrier')">
+          <i class="fas fa-calendar-alt"></i>Calendrier trimestriel
+        </div>
+        <div class="pa-tab" role="tab" aria-selected="false" aria-controls="panel-procedures" tabindex="-1"
+             onclick="switchTab('procedures')" onkeydown="if(event.key==='Enter'||event.key===' ')switchTab('procedures')">
+          <i class="fas fa-clipboard-list"></i>Procédures
+        </div>
+        <div class="pa-tab" role="tab" aria-selected="false" aria-controls="panel-dci" tabindex="-1"
+             onclick="switchTab('dci')" onkeydown="if(event.key==='Enter'||event.key===' ')switchTab('dci')">
+          <i class="fas fa-vials"></i>Détail DCI
+        </div>
+      </div>
+
+      <!-- ═══ TAB : COMPTE FINANCIER ═══ -->
+      <div class="pa-panel active" id="panel-compte">
+        <div class="pa-bloc">
+          <div class="pa-bloc-head">
+            <i class="fas fa-coins" style="color:#fff;font-size:.9rem;"></i>
+            <span class="pa-bloc-title">Compte financier : réactifs &amp; consommables médicaux 2026</span>
+            <span class="pa-bloc-sub">Arrêté au 05/04/2026</span>
+            <button class="no-print" onclick="openModalAjouter()" aria-label="Ajouter un nouveau produit"
+              style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.45);color:#fff;border-radius:8px;padding:6px 16px;font-size:.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .15s;min-height:34px;"
+              onmouseover="this.style.background='rgba(255,255,255,.28)'"
+              onmouseout="this.style.background='rgba(255,255,255,.18)'">
+              <i class="fas fa-plus"></i> Ajouter un produit
+            </button>
+          </div>
+
+          <!-- Filtres -->
+          <!-- Barre filtres (§8 touch-target-size 32px minimum) -->
+          <div class="no-print" style="display:flex;gap:8px;align-items:center;padding:10px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">
+            <label style="font-size:.72rem;font-weight:700;color:#374151;margin:0;display:flex;align-items:center;gap:5px;"><i class="fas fa-filter" style="color:#1b3a6b"></i>Filtres :</label>
+            <select id="fCat" onchange="applyFilters()" style="font-size:.76rem;padding:4px 10px;border:1px solid #cbd5e1;border-radius:7px;height:32px;background:#fff;color:#374151;cursor:pointer;transition:border-color .15s;">
+              <option value="">Toutes catégories</option>
+              <optgroup label="Réactifs — VIH">
+                <option value="Réactifs dépistage VIH">Réactifs dépistage VIH</option>
+                <option value="Réactifs charge virale VIH">Réactifs charge virale VIH</option>
+              </optgroup>
+              <optgroup label="Réactifs — Hépatites">
+                <option value="Réactifs hépatites &amp; syphilis">Réactifs hépatites &amp; syphilis</option>
+                <option value="Charge virale hépatites">Charge virale hépatites</option>
+                <option value="Sérologie hépatites">Sérologie hépatites</option>
+              </optgroup>
+              <optgroup label="Réactifs — IST">
+                <option value="Réactifs IST">Réactifs IST</option>
+              </optgroup>
+              <optgroup label="Médicaments">
+                <option value="Médicaments ARV">Médicaments ARV</option>
+                <option value="Médicaments Ios">Médicaments Ios</option>
+              </optgroup>
+              <optgroup label="Intrants &amp; Frais">
+                <option value="Intrants nutritionnels">Intrants nutritionnels</option>
+                <option value="Frais logistiques et institutionnels">Frais logistiques et institutionnels</option>
+              </optgroup>
+            </select>
+            <select id="fStatut" onchange="applyFilters()" style="font-size:.76rem;padding:4px 10px;border:1px solid #cbd5e1;border-radius:7px;height:32px;background:#fff;color:#374151;cursor:pointer;">
+              <option value="">Tous statuts</option>
+              <option value="Reçu">Reçu</option>
+              <option value="Partiellement reçu">Partiellement reçu</option>
+              <option value="Commandé">Commandé</option>
+              <option value="En attente">En attente</option>
+            </select>
+            <select id="fPao" onchange="applyFilters()" style="font-size:.76rem;padding:4px 10px;border:1px solid #cbd5e1;border-radius:7px;height:32px;background:#fff;color:#374151;cursor:pointer;">
+              <option value="">Toutes sources PAO</option>
+              <option value="PSLSH-032">PSLSH-032 · Réactifs VIH</option>
+              <option value="PSLSH-033">PSLSH-033 · Réactifs hépatites + IST</option>
+              <option value="PSLSH-034">PSLSH-034 · Médicaments ARV</option>
+              <option value="PSLSH-035">PSLSH-035 · Intrants + CPA</option>
+            </select>
+            <input type="text" id="fSearch" oninput="applyFilters()" placeholder="Rechercher…" aria-label="Rechercher un produit" style="font-size:.76rem;padding:4px 10px;border:1px solid #cbd5e1;border-radius:7px;height:32px;min-width:160px;background:#fff;color:#374151;">
+            <button onclick="resetFilters()" aria-label="Réinitialiser les filtres" style="font-size:.72rem;padding:4px 12px;height:32px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#475569;cursor:pointer;font-weight:600;transition:all .15s;display:flex;align-items:center;gap:5px;">
+              <i class="fas fa-times"></i>Réinitialiser
+            </button>
+            <span id="filterBadge" style="display:none;font-size:.68rem;font-weight:700;color:#1d4ed8;background:#dbeafe;border:1px solid #93c5fd;border-radius:20px;padding:2px 10px;white-space:nowrap;"></span>
+          </div>
+
+          <div class="pa-table-wrap">
+            <table class="pa-table">
+              <thead>
+                <tr>
+                  <th style="width:40px">N°</th>
+                  <th style="min-width:230px">Désignation (DCI)</th>
+                  <th style="width:140px">Catégorie</th>
+                  <th class="text-center" style="width:70px">Qté prévue</th>
+                  <th class="text-end" style="width:115px">Prix unit. (FCFA)</th>
+                  <th class="text-end" style="width:130px">Coût global (FCFA)</th>
+                  <th class="text-end" style="width:120px">Engagé (FCFA)</th>
+                  <th class="text-end" style="width:120px">Payé (FCFA)</th>
+                  <th class="text-end" style="width:115px">Écart (FCFA)</th>
+                  <th style="width:110px">Taux exéc.</th>
+                  <th style="width:100px">Statut réception</th>
+                  <th style="width:70px">Procédure</th>
+                  <th class="text-center" style="width:85px">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyCompte"></tbody>
+              <tfoot id="tfootCompte"></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB : CALENDRIER TRIMESTRIEL ═══ -->
+      <div class="pa-panel" id="panel-calendrier">
+        <div class="pa-bloc">
+          <div class="pa-bloc-head">
+            <i class="fas fa-calendar-alt" style="color:#fff;font-size:.9rem;"></i>
+            <span class="pa-bloc-title">Calendrier de livraison trimestriel, exercice 2026</span>
+            <span class="pa-bloc-sub">Approvisionnement trimestriel, CPA + marché restreint</span>
+          </div>
+          <div class="pa-table-wrap">
+            <table class="pa-table">
+              <thead>
+                <tr>
+                  <th>N°</th>
+                  <th style="min-width:230px">Désignation (DCI)</th>
+                  <th>Dosage / Présentation</th>
+                  <th>Unité</th>
+                  <th style="text-align:center;background:#dbeafe;color:#1d4ed8">T1<br><small>Jan–Mar</small></th>
+                  <th style="text-align:center;background:#dcfce7;color:#15803d">T2<br><small>Avr–Juin</small></th>
+                  <th style="text-align:center;background:#fef3c7;color:#b45309">T3<br><small>Juil–Sep</small></th>
+                  <th style="text-align:center;background:#fee2e2;color:#b91c1c">T4<br><small>Oct–Déc</small></th>
+                  <th>Fréquence</th>
+                  <th>Procédure</th>
+                  <th>Fournisseur / CPA</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyCalendrier"></tbody>
+            </table>
+          </div>
+          <div style="padding:9px 14px;font-size:.71rem;color:#64748b;background:#f8fafc;border-top:1px solid #e2e8f0;">
+            <i class="fas fa-info-circle me-1 text-primary"></i>
+            Réception à la CPA/APMS, redistribution vers les PPA et structures sanitaires.
+            Chaque livraison donne lieu à un PV de réception, un bon d'entrée stock et une écriture comptable.
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB : PROCÉDURES ═══ -->
+      <div class="pa-panel" id="panel-procedures">
+        <div class="pa-bloc">
+          <div class="pa-bloc-head">
+            <i class="fas fa-clipboard-list" style="color:#fff;font-size:.9rem;"></i>
+            <span class="pa-bloc-title">Procédures d'approvisionnement, cadre réglementaire PSLSH/IST</span>
+          </div>
+          <div style="padding:18px 20px;">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;">
+                  <div style="font-size:.78rem;font-weight:800;color:#1e40af;margin-bottom:10px;"><i class="fas fa-file-contract me-1"></i>Bon de Commande (BC)</div>
+                  <ul style="font-size:.75rem;color:#1e40af;margin:0;padding-left:16px;">
+                    <li>Tests rapides auprès de la CPA</li>
+                    <li>Montant : jusqu'au plafond réglementaire</li>
+                    <li>Validation : Coordonnateur + Agent Comptable</li>
+                    <li>Délai livraison : 15 à 30 jours</li>
+                    <li>Pièces : BC + facture + PV réception + BSE</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div style="background:#fdf4ff;border:1px solid #ddd6fe;border-radius:10px;padding:14px;">
+                  <div style="font-size:.78rem;font-weight:800;color:#7e22ce;margin-bottom:10px;"><i class="fas fa-gavel me-1"></i>Marché Restreint (MR)</div>
+                  <ul style="font-size:.75rem;color:#7e22ce;margin:0;padding-left:16px;">
+                    <li>Réactifs PCR, charge virale, ELISA</li>
+                    <li>Cartouches GeneXpert (HBV, HCV, CT/NG)</li>
+                    <li>DAO, évaluation offres, commission</li>
+                    <li>Approbation : organe de contrôle</li>
+                    <li>Délai : 45 à 90 jours</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;">
+                  <div style="font-size:.78rem;font-weight:800;color:#15803d;margin-bottom:10px;"><i class="fas fa-boxes me-1"></i>Gestion stock &amp; traçabilité</div>
+                  <ul style="font-size:.75rem;color:#15803d;margin:0;padding-left:16px;">
+                    <li>Chaque réception → PV + bon d'entrée</li>
+                    <li>Enregistrement dans logiciel stock</li>
+                    <li>Inventaire trimestriel obligatoire</li>
+                    <li>Redistribution vers PPA sur bon de sortie</li>
+                    <li>Rapport de gestion des stocks mensuel</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="col-12">
+                <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px;">
+                  <div style="font-size:.78rem;font-weight:800;color:#92400e;margin-bottom:8px;"><i class="fas fa-exclamation-triangle me-1"></i>Contraintes réglementaires</div>
+                  <div class="row g-2" style="font-size:.74rem;color:#92400e;">
+                    <div class="col-md-3"><i class="fas fa-check me-1"></i>Aucun achat sans ligne budgétaire disponible</div>
+                    <div class="col-md-3"><i class="fas fa-check me-1"></i>Aucune facture sans PV de réception</div>
+                    <div class="col-md-3"><i class="fas fa-check me-1"></i>Séparation ordonnateur / comptable obligatoire</div>
+                    <div class="col-md-3"><i class="fas fa-check me-1"></i>Visa contrôle interne avant paiement</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB : DÉTAIL DCI ═══ -->
+      <div class="pa-panel" id="panel-dci">
+        <div class="pa-bloc">
+          <div class="pa-bloc-head">
+            <i class="fas fa-vials" style="color:#fff;font-size:.9rem;"></i>
+            <span class="pa-bloc-title">DCI · réactifs &amp; consommables médicaux 2026</span>
+          </div>
+          <div class="dci-grid" id="dciGrid">
+            <!-- Généré dynamiquement par renderDci() — réagit aux filtres et aux modifications -->
+          </div>
+        </div>
+      </div>
+
+      </div><!-- /pa-body -->
+
+    </div><!-- /page-content -->
+  </div>
+</div><!-- /app-layout -->
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL — AJOUTER UN PRODUIT
+════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalAjouterProduit" tabindex="-1" aria-labelledby="modalAjouterLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#15803d;color:#fff;padding:12px 20px;">
+        <div>
+          <h6 class="modal-title mb-0" id="modalAjouterLabel">
+            <i class="fas fa-plus me-2"></i>Ajouter un produit
+          </h6>
+          <small style="opacity:.75;font-size:.71rem">Réactifs &amp; Consommables Médicaux · PSLSH/IST 2026</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:20px 24px;">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label fw-bold small">Désignation (DCI) <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="aDci" placeholder="Ex : Cartouches GeneXpert HCV…">
+          </div>
+          <div class="col-md-5">
+            <label class="form-label fw-bold small">Dosage / Présentation</label>
+            <input type="text" class="form-control form-control-sm" id="aDosage">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Unité de conditionnement</label>
+            <input type="text" class="form-control form-control-sm" id="aUnite" placeholder="Ex : Boîte 25 tests">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Source PAO <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="aPao">
+              <option value="PSLSH-032">PSLSH-032 · Réactifs VIH</option>
+              <option value="PSLSH-033">PSLSH-033 · Réactifs hépatites + IST</option>
+              <option value="PSLSH-034">PSLSH-034 · Médicaments ARV</option>
+              <option value="PSLSH-035">PSLSH-035 · Intrants + CPA</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Catégorie <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="aCat">
+              <option value="">Sélectionner...</option>
+              <optgroup label="Réactifs — VIH">
+                <option value="Réactifs dépistage VIH">Réactifs dépistage VIH</option>
+                <option value="Réactifs charge virale VIH">Réactifs charge virale VIH</option>
+              </optgroup>
+              <optgroup label="Réactifs — Hépatites">
+                <option value="Réactifs hépatites &amp; syphilis">Réactifs hépatites &amp; syphilis</option>
+                <option value="Charge virale hépatites">Charge virale hépatites</option>
+                <option value="Sérologie hépatites">Sérologie hépatites</option>
+              </optgroup>
+              <optgroup label="Réactifs — IST">
+                <option value="Réactifs IST">Réactifs IST</option>
+              </optgroup>
+              <optgroup label="Médicaments">
+                <option value="Médicaments ARV">Médicaments ARV</option>
+                <option value="Médicaments Ios">Médicaments Ios</option>
+              </optgroup>
+              <optgroup label="Intrants &amp; Frais">
+                <option value="Intrants nutritionnels">Intrants nutritionnels</option>
+                <option value="Frais logistiques et institutionnels">Frais logistiques et institutionnels</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Procédure</label>
+            <select class="form-select form-select-sm" id="aProcedure">
+              <option value="BC">Bon de commande (BC)</option>
+              <option value="MR">Marché restreint (MR)</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Statut réception</label>
+            <select class="form-select form-select-sm" id="aStatutRx">
+              <option value="En attente">En attente</option>
+              <option value="Commandé">Commandé</option>
+              <option value="Partiellement reçu">Partiellement reçu</option>
+              <option value="Reçu">Reçu</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Fournisseur / CPA</label>
+            <input type="text" class="form-control form-control-sm" id="aFourn" placeholder="Ex : SD Biosensor, Roche Import.">
+          </div>
+          <!-- Quantités & Prix -->
+          <div class="col-12">
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;">
+              <div style="font-size:.72rem;font-weight:800;color:#1b2f52;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">
+                <i class="fas fa-calculator me-1"></i>Quantités &amp; Prix
+              </div>
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <label class="form-label small mb-1">Quantité totale prévue <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control form-control-sm" id="aQte" min="0" oninput="recalcAdd()">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small mb-1">Prix unitaire (FCFA) <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control form-control-sm" id="aPrixU" min="0" oninput="recalcAdd()">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small mb-1">Coût global calculé</label>
+                  <div id="aCoutGlobal" style="background:#e2e8f0;border-radius:6px;padding:5px 10px;font-size:.8rem;font-weight:800;font-family:monospace;color:#1b2f52;height:31px;display:flex;align-items:center;">0 FCFA</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Trimestres -->
+          <div class="col-12">
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;">
+              <div style="font-size:.72rem;font-weight:800;color:#1b2f52;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">
+                <i class="fas fa-calendar-alt me-1"></i>Répartition trimestrielle (quantités)
+              </div>
+              <div class="row g-2">
+                <div class="col-md-3">
+                  <label class="form-label small mb-1" style="color:#1d4ed8;font-weight:700">T1 (Jan/Mar)</label>
+                  <input type="number" class="form-control form-control-sm" id="aT1" min="0" style="border-color:#93c5fd" value="0">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small mb-1" style="color:#15803d;font-weight:700">T2 (Avr/Juin)</label>
+                  <input type="number" class="form-control form-control-sm" id="aT2" min="0" style="border-color:#86efac" value="0">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small mb-1" style="color:#b45309;font-weight:700">T3 (Juil/Sep)</label>
+                  <input type="number" class="form-control form-control-sm" id="aT3" min="0" style="border-color:#fcd34d" value="0">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small mb-1" style="color:#b91c1c;font-weight:700">T4 (Oct/Déc)</label>
+                  <input type="number" class="form-control form-control-sm" id="aT4" min="0" style="border-color:#fca5a5" value="0">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Exécution -->
+          <div class="col-12">
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;">
+              <div style="font-size:.72rem;font-weight:800;color:#1b2f52;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">
+                <i class="fas fa-coins me-1"></i>Exécution financière (FCFA), facultatif
+              </div>
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <label class="form-label small mb-1" style="color:#1d4ed8">Montant engagé</label>
+                  <input type="number" class="form-control form-control-sm" id="aEngage" min="0" value="0">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small mb-1" style="color:#15803d">Montant payé</label>
+                  <input type="number" class="form-control form-control-sm" id="aPaye" min="0" value="0" oninput="recalcAdd()">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small mb-1">Taux d'exécution</label>
+                  <div id="aTauxExec" style="background:#e2e8f0;border-radius:6px;padding:5px 10px;font-size:.8rem;font-weight:800;font-family:monospace;height:31px;display:flex;align-items:center;color:#64748b;">0 %</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:10px 20px;gap:8px;">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>Annuler
+        </button>
+        <button type="button" class="btn btn-sm" style="background:#15803d;color:#fff;" onclick="saveProduit('add')">
+          <i class="fas fa-plus me-1"></i>Ajouter le produit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL — MODIFIER UN PRODUIT
+════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalModifierProduit" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1b2f52;color:#fff;padding:12px 20px;">
+        <div>
+          <h6 class="modal-title mb-0">
+            <i class="fas fa-edit me-2"></i>Modifier le produit
+          </h6>
+          <small style="opacity:.7;font-size:.72rem">ID <span id="mProdId"></span> <span id="mProdCatLabel"></span></small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:20px 24px;">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label fw-bold small">Désignation (DCI) <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="mDci">
+          </div>
+          <div class="col-md-5">
+            <label class="form-label fw-bold small">Dosage / Présentation</label>
+            <input type="text" class="form-control form-control-sm" id="mDosage">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Unité de conditionnement</label>
+            <input type="text" class="form-control form-control-sm" id="mUnite">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Source PAO</label>
+            <select class="form-select form-select-sm" id="mPao">
+              <option value="PSLSH-032">PSLSH-032 · Réactifs VIH</option>
+              <option value="PSLSH-033">PSLSH-033 · Réactifs hépatites + IST</option>
+              <option value="PSLSH-034">PSLSH-034 · Médicaments ARV</option>
+              <option value="PSLSH-035">PSLSH-035 · Intrants + CPA</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Catégorie <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="mCat">
+              <option value="">Sélectionner...</option>
+              <optgroup label="Réactifs — VIH">
+                <option value="Réactifs dépistage VIH">Réactifs dépistage VIH</option>
+                <option value="Réactifs charge virale VIH">Réactifs charge virale VIH</option>
+              </optgroup>
+              <optgroup label="Réactifs — Hépatites">
+                <option value="Réactifs hépatites &amp; syphilis">Réactifs hépatites &amp; syphilis</option>
+                <option value="Charge virale hépatites">Charge virale hépatites</option>
+                <option value="Sérologie hépatites">Sérologie hépatites</option>
+              </optgroup>
+              <optgroup label="Réactifs — IST">
+                <option value="Réactifs IST">Réactifs IST</option>
+              </optgroup>
+              <optgroup label="Médicaments">
+                <option value="Médicaments ARV">Médicaments ARV</option>
+                <option value="Médicaments Ios">Médicaments Ios</option>
+              </optgroup>
+              <optgroup label="Intrants &amp; Frais">
+                <option value="Intrants nutritionnels">Intrants nutritionnels</option>
+                <option value="Frais logistiques et institutionnels">Frais logistiques et institutionnels</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Procédure</label>
+            <select class="form-select form-select-sm" id="mProcedure">
+              <option value="BC">Bon de commande (BC)</option>
+              <option value="MR">Marché restreint (MR)</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Statut réception</label>
+            <select class="form-select form-select-sm" id="mStatutRx">
+              <option value="Reçu">Reçu</option>
+              <option value="Partiellement reçu">Partiellement reçu</option>
+              <option value="Commandé">Commandé</option>
+              <option value="En attente">En attente</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Fournisseur / CPA</label>
+            <input type="text" class="form-control form-control-sm" id="mFourn">
+          </div>
+          <div class="col-12">
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;">
+              <div style="font-size:.72rem;font-weight:800;color:#1b2f52;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">
+                <i class="fas fa-calculator me-1"></i>Quantités &amp; Prix
+              </div>
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <label class="form-label small mb-1">Quantité totale prévue</label>
+                  <input type="number" class="form-control form-control-sm" id="mQte" min="0" oninput="recalcEdit()">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small mb-1">Prix unitaire (FCFA)</label>
+                  <input type="number" class="form-control form-control-sm" id="mPrixU" min="0" oninput="recalcEdit()">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small mb-1">Coût global calculé</label>
+                  <div id="mCoutGlobal" style="background:#e2e8f0;border-radius:6px;padding:5px 10px;font-size:.8rem;font-weight:800;font-family:monospace;color:#1b2f52;height:31px;display:flex;align-items:center;">0 FCFA</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;">
+              <div style="font-size:.72rem;font-weight:800;color:#1b2f52;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">
+                <i class="fas fa-calendar-alt me-1"></i>Répartition trimestrielle (quantités)
+              </div>
+              <div class="row g-2">
+                <div class="col-md-3">
+                  <label class="form-label small mb-1" style="color:#1d4ed8;font-weight:700">T1 (Jan/Mar)</label>
+                  <input type="number" class="form-control form-control-sm" id="mT1" min="0" style="border-color:#93c5fd">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small mb-1" style="color:#15803d;font-weight:700">T2 (Avr/Juin)</label>
+                  <input type="number" class="form-control form-control-sm" id="mT2" min="0" style="border-color:#86efac">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small mb-1" style="color:#b45309;font-weight:700">T3 (Juil/Sep)</label>
+                  <input type="number" class="form-control form-control-sm" id="mT3" min="0" style="border-color:#fcd34d">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small mb-1" style="color:#b91c1c;font-weight:700">T4 (Oct/Déc)</label>
+                  <input type="number" class="form-control form-control-sm" id="mT4" min="0" style="border-color:#fca5a5">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;">
+              <div style="font-size:.72rem;font-weight:800;color:#1b2f52;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">
+                <i class="fas fa-coins me-1"></i>Exécution financière (FCFA)
+              </div>
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <label class="form-label small mb-1" style="color:#1d4ed8">Montant engagé</label>
+                  <input type="number" class="form-control form-control-sm" id="mEngage" min="0" oninput="recalcEdit()">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small mb-1" style="color:#15803d">Montant payé</label>
+                  <input type="number" class="form-control form-control-sm" id="mPaye" min="0" oninput="recalcEdit()">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small mb-1">Taux d'exécution</label>
+                  <div id="mTauxExec" style="background:#e2e8f0;border-radius:6px;padding:5px 10px;font-size:.8rem;font-weight:800;font-family:monospace;height:31px;display:flex;align-items:center;color:#64748b;">0%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:10px 20px;gap:8px;">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>Annuler
+        </button>
+        <button type="button" class="btn btn-sm" style="background:#1b2f52;color:#fff;" onclick="saveProduit('edit')">
+          <i class="fas fa-save me-1"></i>Enregistrer les modifications
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL — CONFIRMER SUPPRESSION
+════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalConfirmDel" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:430px">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#b91c1c;color:#fff;padding:10px 18px;">
+        <h6 class="modal-title mb-0"><i class="fas fa-trash-alt me-2"></i>Confirmer la suppression</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:18px 20px;">
+        <p style="font-size:.82rem;color:#374151;margin:0 0 8px">Produit à supprimer :</p>
+        <div id="delProdLabel" style="background:#fff5f5;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:.8rem;color:#b91c1c;font-weight:700;"></div>
+        <p style="font-size:.75rem;color:#94a3b8;margin-top:10px;margin-bottom:0;">
+          <i class="fas fa-exclamation-circle me-1"></i>Cette suppression est définitive.
+        </p>
+      </div>
+      <div class="modal-footer" style="padding:10px 18px;gap:8px;">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-danger" id="btnConfirmDel">
+          <i class="fas fa-trash-alt me-1"></i>Supprimer définitivement
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  else if (window.SIGFIC?.renderSidebarNav) SIGFIC.renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  else if (window.SIGFIC?.renderServiceBadge) SIGFIC.renderServiceBadge();
+
+  const u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+  const elU = document.getElementById('userName');
+  if (elU) elU.textContent = u.nom || u.name || u.email || '';
+  function logout() {
+    localStorage.removeItem('pslsh_token');
+    localStorage.removeItem('pslsh_user');
+    window.location.href = '/pages/auth/login.html';
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     DONNÉES — Réactifs & Consommables Médicaux uniquement
+     Source PAO : PSLSH-032 (VIH) et PSLSH-033 (Hépatites + IST)
+     Situation : 05/04/2026 — fin T1, début T2
+  ═══════════════════════════════════════════════════════════════ */
+  let PRODUITS = [
+
+    /* ══ RÉACTIFS DÉPISTAGE VIH  (PSLSH-032) ════════════════════ */
+    { id:1,  cat:'Réactifs dépistage VIH',       dci:'HIV 1+2 Determine (tests rapides — 1ère détection)', dosage:'1ère détection', unite:'Boîte 100 tests',    qte:2000, prix_u:55000,  pao:'PSLSH-032', T1:600, T2:500, T3:500, T4:400, engage:97350000,  paye:88000000,  procedure:'MR', statut:'Partiellement reçu', fourn:'Abbott / Import.' },
+    { id:2,  cat:'Réactifs dépistage VIH',       dci:'HIV 1+2 SD Bioline (tests de confirmation)',         dosage:'Confirmation',   unite:'Boîte 25 tests',     qte:3000, prix_u:32000,  pao:'PSLSH-032', T1:900, T2:750, T3:750, T4:600, engage:86400000,  paye:86400000,  procedure:'MR', statut:'Reçu',               fourn:'SD Biosensor' },
+    { id:3,  cat:'Réactifs dépistage VIH',       dci:'STAT-PAK HIV (tests de départage)',                  dosage:'Départage',      unite:'Boîte 30 tests',     qte:1500, prix_u:28000,  pao:'PSLSH-032', T1:450, T2:375, T3:375, T4:300, engage:37800000,  paye:37800000,  procedure:'MR', statut:'Reçu',               fourn:'Chembio' },
+
+    /* ══ RÉACTIFS CHARGE VIRALE VIH  (PSLSH-032) ════════════════ */
+    { id:4,  cat:'Réactifs charge virale VIH',   dci:'Cartouches COBAS VIH Qual/Quant (Roche)',            dosage:'Charge virale',  unite:'Boîte 24 cartouches',qte:1200, prix_u:185000, pao:'PSLSH-032', T1:360, T2:300, T3:300, T4:240, engage:199800000, paye:133200000, procedure:'MR', statut:'Partiellement reçu', fourn:'Roche Import.' },
+    { id:5,  cat:'Réactifs charge virale VIH',   dci:'Cartouches GeneXpert HIV Quant',                     dosage:'GX Quant VIH',   unite:'Boîte 10 cartouches',qte:800,  prix_u:125000, pao:'PSLSH-032', T1:240, T2:200, T3:200, T4:160, engage:90000000,  paye:60000000,  procedure:'MR', statut:'Partiellement reçu', fourn:'Cepheid Import.' },
+
+    /* ══ RÉACTIFS HÉPATITES & SYPHILIS  (PSLSH-033) ════════════ */
+    { id:6,  cat:'Réactifs hépatites & syphilis',dci:'HBsAg SD Bioline (tests rapides)',                   dosage:'HBs dépistage',  unite:'Boîte 25 tests',     qte:2500, prix_u:18000,  pao:'PSLSH-033', T1:750, T2:625, T3:625, T4:500, engage:40500000,  paye:40500000,  procedure:'MR', statut:'Reçu',               fourn:'SD Biosensor' },
+    { id:7,  cat:'Réactifs hépatites & syphilis',dci:'Anti-HCV Determine (tests rapides)',                 dosage:'HCV dépistage',  unite:'Boîte 100 tests',    qte:1500, prix_u:52000,  pao:'PSLSH-033', T1:450, T2:375, T3:375, T4:300, engage:70200000,  paye:58500000,  procedure:'MR', statut:'Partiellement reçu', fourn:'Abbott' },
+    { id:8,  cat:'Réactifs hépatites & syphilis',dci:'Tests RPR syphilis (boîtes 100)',                    dosage:'RPR',            unite:'Boîte 100 tests',    qte:1000, prix_u:14500,  pao:'PSLSH-033', T1:300, T2:250, T3:250, T4:200, engage:13050000,  paye:13050000,  procedure:'MR', statut:'Reçu',               fourn:'Import.' },
+    { id:9,  cat:'Réactifs hépatites & syphilis',dci:'SD Bioline Syphilis 3.0',                            dosage:'TPHA',           unite:'Boîte 25 tests',     qte:1200, prix_u:22000,  pao:'PSLSH-033', T1:360, T2:300, T3:300, T4:240, engage:23760000,  paye:23760000,  procedure:'MR', statut:'Reçu',               fourn:'SD Biosensor' },
+
+    /* ══ CHARGE VIRALE HÉPATITES  (PSLSH-033) ══════════════════ */
+    { id:10, cat:'Charge virale hépatites',      dci:'Cartouches GeneXpert HBV – Xpert HBV Viral Load',   dosage:'GX HBV VL',      unite:'Boîte 10 tests',     qte:400,  prix_u:95000,  pao:'PSLSH-033', T1:120, T2:100, T3:100, T4:80,  engage:13680000,  paye:10260000,  procedure:'MR', statut:'Partiellement reçu', fourn:'Cepheid Import.' },
+    { id:11, cat:'Charge virale hépatites',      dci:'Réactifs PCR HBV quantitatif (charge virale)',       dosage:'PCR HBV Quant.', unite:'Kit 96 réactions',   qte:200,  prix_u:185000, pao:'PSLSH-033', T1:60,  T2:50,  T3:50,  T4:40,  engage:12580000,  paye:9435000,   procedure:'MR', statut:'Partiellement reçu', fourn:'Roche Diagnostics' },
+    { id:12, cat:'Charge virale hépatites',      dci:'Réactifs PCR HCV quantitatif (charge virale)',       dosage:'PCR HCV Quant.', unite:'Kit 96 réactions',   qte:180,  prix_u:180000, pao:'PSLSH-033', T1:54,  T2:45,  T3:45,  T4:36,  engage:11610000,  paye:8707500,   procedure:'MR', statut:'Partiellement reçu', fourn:'Roche Diagnostics' },
+
+    /* ══ SÉROLOGIE HÉPATITES  (PSLSH-033) ══════════════════════ */
+    { id:13, cat:'Sérologie hépatites',          dci:'Tests rapides HBsAg (dépistage terrain)',            dosage:'HBsAg rapide',   unite:'Boîte 25 tests',     qte:2000, prix_u:8500,   pao:'PSLSH-033', T1:600, T2:500, T3:500, T4:400, engage:17000000,  paye:17000000,  procedure:'BC', statut:'Reçu',               fourn:'SD Biosensor / CPA' },
+    { id:14, cat:'Sérologie hépatites',          dci:'Kits ELISA Hépatite B (HBsAg + Anti-HBc)',          dosage:'ELISA HBV',      unite:'Kit 96 puits',       qte:300,  prix_u:42000,  pao:'PSLSH-033', T1:90,  T2:75,  T3:75,  T4:60,  engage:12600000,  paye:12600000,  procedure:'MR', statut:'Reçu',               fourn:'Biorad / DiaSorin' },
+    { id:15, cat:'Sérologie hépatites',          dci:'Tests rapides anti-HCV (dépistage communautaire)',   dosage:'Anti-HCV rapide',unite:'Boîte 25 tests',     qte:1500, prix_u:12000,  pao:'PSLSH-033', T1:450, T2:375, T3:375, T4:300, engage:18000000,  paye:18000000,  procedure:'BC', statut:'Reçu',               fourn:'SD Biosensor' },
+    { id:16, cat:'Sérologie hépatites',          dci:'Kits ELISA anti-HCV — sérologie totale',            dosage:'ELISA HCV',      unite:'Kit 96 puits',       qte:250,  prix_u:38000,  pao:'PSLSH-033', T1:75,  T2:62,  T3:63,  T4:50,  engage:9500000,   paye:9500000,   procedure:'MR', statut:'Reçu',               fourn:'Biorad / DiaSorin' },
+
+    /* ══ RÉACTIFS IST — VRAIS TESTS IST UNIQUEMENT  (PSLSH-033) */
+    { id:17, cat:'Réactifs IST',                 dci:'Tests rapides syphilis — TP Rapid Test',             dosage:'Syphilis RDT',   unite:'Boîte 25 tests',     qte:1200, prix_u:9000,   pao:'PSLSH-033', T1:360, T2:300, T3:300, T4:240, engage:10800000,  paye:10800000,  procedure:'BC', statut:'Reçu',               fourn:'SD Biosensor' },
+    { id:18, cat:'Réactifs IST',                 dci:'TPHA — Treponema pallidum Hemaggl. Assay',           dosage:'TPHA',           unite:'Kit 200 tests',      qte:800,  prix_u:18000,  pao:'PSLSH-033', T1:240, T2:200, T3:200, T4:160, engage:14400000,  paye:14400000,  procedure:'BC', statut:'Reçu',               fourn:'Omega Diagnostics' },
+    { id:19, cat:'Réactifs IST',                 dci:'VDRL — Venereal Disease Research Laboratory',        dosage:'VDRL',           unite:'Kit 500 tests',      qte:500,  prix_u:15000,  pao:'PSLSH-033', T1:150, T2:125, T3:125, T4:100, engage:7500000,   paye:7500000,   procedure:'BC', statut:'Reçu',               fourn:'Omega / Import.' },
+    { id:20, cat:'Réactifs IST',                 dci:'Tests combinés VIH/Syphilis Dual RDT',               dosage:'VIH + Syphilis', unite:'Boîte 25 tests',     qte:1500, prix_u:22000,  pao:'PSLSH-033', T1:450, T2:375, T3:375, T4:300, engage:23100000,  paye:19800000,  procedure:'BC', statut:'Partiellement reçu', fourn:'SD Biosensor' },
+    { id:21, cat:'Réactifs IST',                 dci:'GeneXpert CT/NG — gonocoque & chlamydia',            dosage:'CT/NG GX',       unite:'Boîte 10 tests',     qte:300,  prix_u:125000, pao:'PSLSH-033', T1:90,  T2:75,  T3:75,  T4:60,  engage:11250000,  paye:0,         procedure:'MR', statut:'En attente',         fourn:'Cepheid · Appel offres' },
+  ];
+
+
+  /* ═══════════════════════════════════════════════════════════════
+     NORMALISATION DES CATÉGORIES
+     Corrige automatiquement le champ cat selon la DCI :
+     - ARV/médicaments → 'Médicaments ARV'
+     - Spiruline/nutrition → 'Intrants nutritionnels'
+     - CPA/redevance → 'Frais logistiques et institutionnels'
+     Les réactifs diagnostiques restent dans leurs catégories.
+     ⚠ NE modifie JAMAIS les données financières.
+  ═══════════════════════════════════════════════════════════════ */
+  function normalizeCategories(data) {
+    const ARV = ['arv','dolutegravir','tenofovir','lamivudine','zidovudine','azt',
+                 'nevirapine','nvp','lopinavir','ritonavir','abacavir','efavirenz',
+                 'dtg','tdf','lpv/r','3tc','abc/','médicament arv','medicament arv',
+                 'antirétroviral','antiretroviral'];
+    const NUTRI = ['spiruline','plumpy','rutf','multivitamine','nutrition','intrant'];
+    const FRAIS = ['redevance cpa','redevance','frais cpa','cpa 20','forfait cpa',
+                   'allocation cpa','logistique','institutionnel'];
+    data.forEach(p => {
+      const d = (p.dci || '').toLowerCase();
+      if (ARV.some(k  => d.includes(k)))  { p.cat = 'Médicaments ARV'; return; }
+      if (NUTRI.some(k => d.includes(k))) { p.cat = 'Intrants nutritionnels'; return; }
+      if (FRAIS.some(k => d.includes(k))) { p.cat = 'Frais logistiques et institutionnels'; return; }
+    });
+    return data;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     STOCKAGE localStorage
+  ═══════════════════════════════════════════════════════════════ */
+  const PA_STORAGE_KEY = 'pslsh_plan_achat_v1';
+  const PAO_SHARED_KEY = 'pslsh_pao_v1';
+
+  function savePlanAchat() {
+    localStorage.setItem(PA_STORAGE_KEY, JSON.stringify({ data: PRODUITS, _nextId }));
+    syncPaoShared();
+  }
+
+  /* Calcule Σ paye par code PAO et met à jour budget_execute dans pslsh_pao_v1 */
+  function syncPaoShared() {
+    const raw = localStorage.getItem(PAO_SHARED_KEY);
+    if (!raw) return;
+    try {
+      const paoData = JSON.parse(raw);
+      if (!Array.isArray(paoData)) return;
+      // Agréger paye et engage par code PAO (PSLSH-032, -033, -034, -035)
+      const agg = {};
+      PRODUITS.forEach(p => {
+        if (!agg[p.pao]) agg[p.pao] = { paye: 0, engage: 0, prevu: 0 };
+        agg[p.pao].paye   += (p.paye   || 0);
+        agg[p.pao].engage += (p.engage || 0);
+        agg[p.pao].prevu  += p.qte * p.prix_u;
+      });
+      let changed = false;
+      paoData.forEach(a => {
+        if (agg[a.code]) {
+          a.budget_execute  = agg[a.code].paye;
+          a.budget_mobilise = agg[a.code].engage;
+          changed = true;
+        }
+      });
+      if (changed) localStorage.setItem(PAO_SHARED_KEY, JSON.stringify(paoData));
+    } catch(e) {}
+  }
+
+  /* ─── Compteur ID auto-incrémenté ─── */
+  let _nextId = 22;
+  function nextId() { return _nextId++; }
+
+  /* Chargement initial depuis localStorage */
+  (function() {
+    const raw = localStorage.getItem(PA_STORAGE_KEY);
+    if (raw) {
+      try {
+        const s = JSON.parse(raw);
+        if (s && Array.isArray(s.data) && s.data.length) {
+          PRODUITS = normalizeCategories(s.data);
+          _nextId  = s._nextId || (Math.max(...PRODUITS.map(p => p.id)) + 1);
+        }
+      } catch(e) {}
+    } else {
+      normalizeCategories(PRODUITS);
+    }
+  })();
+
+  /* ═══════════════════════════════════════════════════════════════
+     HELPERS
+  ═══════════════════════════════════════════════════════════════ */
+  function fmt(n) {
+    if (n === null || n === undefined) return '<span style="color:#94a3b8;font-size:.7rem">nc</span>';
+    return Math.round(n).toLocaleString('fr-FR');
+  }
+  function fmtPlain(n) { return n ? Math.round(n).toLocaleString('fr-FR') : '0'; }
+
+  const CAT_CLS = {
+    /* Réactifs diagnostiques — catégories originales */
+    'Réactifs dépistage VIH':        'cat-react-vih',
+    'Réactifs charge virale VIH':    'cat-cv-vih',
+    'Réactifs hépatites & syphilis': 'cat-react-hep',
+    'Charge virale hépatites':       'cat-cv-hep',
+    'Sérologie hépatites':           'cat-sero-hep',
+    'Réactifs IST':                  'cat-ist',
+    /* Nouvelles catégories correctement classées */
+    'Médicaments ARV':                       'cat-arv',
+    'Médicaments Ios':                       'cat-ios',
+    'Intrants nutritionnels':               'cat-intrants',
+    'Frais logistiques et institutionnels': 'cat-institutionnel',
+  };
+
+  function catBadge(c) {
+    return `<span class="cat-badge ${CAT_CLS[c] || ''}">${c}</span>`;
+  }
+  function procBadge(p) {
+    return p === 'BC'
+      ? '<span class="proc-bc"><i class="fas fa-file-contract me-1"></i>BC</span>'
+      : '<span class="proc-mr"><i class="fas fa-gavel me-1"></i>MR</span>';
+  }
+  function statutBadge(s) {
+    const m = { 'Reçu':'rx-ok', 'Partiellement reçu':'rx-part', 'Commandé':'rx-cmd', 'En attente':'rx-att' };
+    return `<span class="${m[s] || 'rx-att'}">${s}</span>`;
+  }
+  function execBar(paye, prevu) {
+    if (!prevu) return '<span style="color:#94a3b8;font-size:.68rem">0%</span>';
+    const t = Math.min(Math.round((paye / prevu) * 100), 100);
+    const col = t >= 75 ? '#15803d' : t >= 40 ? '#b45309' : t > 0 ? '#b91c1c' : '#94a3b8';
+    const cls = t >= 75 ? 't-high' : t >= 40 ? 't-med' : t > 0 ? 't-low' : 't-zero';
+    return `<div class="exec-wrap">
+      <div class="exec-track"><div class="exec-fill" style="width:${t}%;background:${col}"></div></div>
+      <span class="exec-lbl ${cls}">${t}%</span>
+    </div>`;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     TABS
+  ═══════════════════════════════════════════════════════════════ */
+  function switchTab(id) {
+    const ids = ['compte','calendrier','procedures','dci'];
+    document.querySelectorAll('.pa-tab').forEach((t, i) => {
+      const isActive = ids[i] === id;
+      t.classList.toggle('active', isActive);
+      t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      t.setAttribute('tabindex', isActive ? '0' : '-1');
+    });
+    document.querySelectorAll('.pa-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    if (id === 'calendrier') renderCalendrier(_currentFiltered);
+    if (id === 'dci')        renderDci(_currentFiltered);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     KPI GLOBAUX
+  ═══════════════════════════════════════════════════════════════ */
+  function updateKpis(data) {
+    const prevu  = data.reduce((s, p) => s + p.qte * p.prix_u, 0);
+    const engage = data.reduce((s, p) => s + (p.engage || 0), 0);
+    const paye   = data.reduce((s, p) => s + (p.paye  || 0), 0);
+    const ecart  = prevu - paye;
+    const taux   = prevu > 0 ? ((paye / prevu) * 100).toFixed(1) : 0;
+
+    document.getElementById('kpiPrevu').textContent  = fmtPlain(prevu) + ' FCFA';
+    document.getElementById('kpiEngage').textContent = fmtPlain(engage) + ' FCFA';
+    document.getElementById('kpiPaye').textContent   = fmtPlain(paye) + ' FCFA';
+    document.getElementById('kpiEcart').textContent  = fmtPlain(ecart) + ' FCFA';
+    document.getElementById('kpiTaux').textContent   = taux + ' %';
+    document.getElementById('kpiNbProd').textContent = data.length + ' produit' + (data.length > 1 ? 's' : '');
+    document.getElementById('alerteTaux').textContent = taux + '%';
+
+    // T1 / T2 estimation
+    const t1b = data.reduce((s, p) => s + p.prix_u * p.T1, 0);
+    const t1p = data.reduce((s, p) => {
+      const tot = p.T1 + p.T2 + p.T3 + p.T4;
+      return s + (tot > 0 ? (p.paye || 0) * p.T1 / tot : 0);
+    }, 0);
+    document.getElementById('alerteT1').textContent = t1b > 0 ? Math.round((t1p / t1b) * 100) + '%' : '0%';
+
+    const t2b = data.reduce((s, p) => s + p.prix_u * p.T2, 0);
+    const t2e = data.reduce((s, p) => {
+      const tot = p.T1 + p.T2 + p.T3 + p.T4;
+      return s + (tot > 0 ? (p.engage || 0) * p.T2 / tot : 0);
+    }, 0);
+    document.getElementById('alerteT2').textContent = t2b > 0 ? Math.round((t2e / t2b) * 100) + '%' : '0%';
+
+    // Sources de financement (4 PAO)
+    // IMPORTANT: srcTotal = somme TOTALE de TOUS les items (même ceux hors 032-035)
+    // pour que srcTotal soit TOUJOURS identique à kpiPrevu
+    const totBudget = data.reduce((s, p) => s + p.qte * p.prix_u, 0);
+    const paoIds = ['032','033','034','035'];
+    const paoMts = paoIds.map(id => data.filter(p=>p.pao==='PSLSH-'+id).reduce((s,p)=>s+p.qte*p.prix_u,0));
+    // Items avec codes PAO non standard → regroupés dans 035 pour l'affichage
+    const paoSum = paoMts.reduce((a,b)=>a+b,0);
+    const reste  = totBudget - paoSum;   // items hors 032-034 rattachés à 035
+    const paoMtsAjust = [...paoMts];
+    paoMtsAjust[3] += reste;             // ajout dans PSLSH-035
+    paoIds.forEach((id,i)=>{
+      const pct = totBudget > 0 ? Math.round(paoMtsAjust[i]/totBudget*100) : 0;
+      const elMt  = document.getElementById('srcMt'+id);
+      const elPct = document.getElementById('srcPct'+id);
+      const elBar = document.getElementById('srcBar'+id);
+      if(elMt)  elMt.textContent  = fmtPlain(paoMtsAjust[i]) + ' FCFA';
+      if(elPct) elPct.textContent = pct + '%';
+      if(elBar) elBar.style.width = pct + '%';
+    });
+    document.getElementById('srcTotal').textContent = fmtPlain(totBudget) + ' FCFA';
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     TAUX CATÉGORIE
+  ═══════════════════════════════════════════════════════════════ */
+  function renderTauxCat(data) {
+    const cats = [...new Set(data.map(p => p.cat))];
+    document.getElementById('tauxCatBars').innerHTML = cats.map(cat => {
+      const items = data.filter(p => p.cat === cat);
+      const prevu = items.reduce((s, p) => s + p.qte * p.prix_u, 0);
+      const paye  = items.reduce((s, p) => s + (p.paye || 0), 0);
+      const taux  = prevu > 0 ? Math.round((paye / prevu) * 100) : 0;
+      const col   = taux >= 75 ? '#15803d' : taux >= 40 ? '#b45309' : taux > 0 ? '#b91c1c' : '#94a3b8';
+      return `<div class="taux-cat-row">
+        <div class="tl">
+          <span style="color:#2d3748;font-size:.71rem">${cat}</span>
+          <span style="font-weight:700;color:${col};font-family:monospace;font-size:.71rem">${taux}%</span>
+        </div>
+        <div class="src-bar-track"><div class="src-bar-fill" style="width:${taux}%;background:${col}"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     SYNTHÈSE TRIMESTRIELLE
+  ═══════════════════════════════════════════════════════════════ */
+  const TRIM_CFG = {
+    T1: { label:'T1 (Janv/Mars)', head:'#1d4ed8', fill:'#3b82f6', bg:'#dbeafe', col:'#1d4ed8' },
+    T2: { label:'T2 (Avr/Juin)',  head:'#15803d', fill:'#22c55e', bg:'#dcfce7', col:'#15803d' },
+    T3: { label:'T3 (Juil/Sep)',  head:'#b45309', fill:'#f59e0b', bg:'#fef3c7', col:'#b45309' },
+    T4: { label:'T4 (Oct/Déc)',   head:'#b91c1c', fill:'#ef4444', bg:'#fee2e2', col:'#b91c1c' },
+  };
+
+  function renderTrimCards(data) {
+    document.getElementById('trimCards').innerHTML = ['T1','T2','T3','T4'].map(t => {
+      const cfg = TRIM_CFG[t];
+      const items = data.filter(p => p[t] > 0);
+      const prevu  = items.reduce((s, p) => s + p.prix_u * p[t], 0);
+      const paye   = items.reduce((s, p) => {
+        const tot = p.T1 + p.T2 + p.T3 + p.T4;
+        return s + (tot > 0 ? Math.round((p.paye || 0) * p[t] / tot) : 0);
+      }, 0);
+      const engage = items.reduce((s, p) => {
+        const tot = p.T1 + p.T2 + p.T3 + p.T4;
+        return s + (tot > 0 ? Math.round((p.engage || 0) * p[t] / tot) : 0);
+      }, 0);
+      const taux = prevu > 0 ? Math.round((paye / prevu) * 100) : 0;
+      return `<div class="trim-card">
+        <div class="trim-card-head" style="background:${cfg.head};color:#fff">
+          <i class="fas fa-calendar-week me-1"></i>${cfg.label}
+        </div>
+        <div class="trim-card-body">
+          <div class="tcr"><span class="tl">Lignes planifiées</span><span class="tv" style="color:#1b2f52">${items.length}</span></div>
+          <div class="tcr"><span class="tl">Budget prévu FCFA</span><span class="tv">${fmtPlain(prevu)}</span></div>
+          <div class="tcr"><span class="tl">Engagé FCFA</span><span class="tv" style="color:#1d4ed8">${fmtPlain(engage)}</span></div>
+          <div class="tcr"><span class="tl">Payé FCFA</span><span class="tv" style="color:#15803d">${fmtPlain(paye)}</span></div>
+        </div>
+        <div class="trim-prog-wrap" style="background:${cfg.bg}">
+          <div style="display:flex;justify-content:space-between;font-size:.68rem;color:${cfg.col};font-weight:700">
+            <span>Taux d'exécution</span><span>${taux}%</span>
+          </div>
+          <div class="tpbar"><div class="tpbar-fill" style="width:${taux}%;background:${cfg.fill}"></div></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     TABLE COMPTE FINANCIER
+  ═══════════════════════════════════════════════════════════════ */
+  let _currentFiltered = [...PRODUITS];
+
+  function renderTable(data) {
+    _currentFiltered = data;
+    const tbody = document.getElementById('tbodyCompte');
+    const tfoot = document.getElementById('tfootCompte');
+
+    const cats = [...new Set(data.map(p => p.cat))];
+    let html = '';
+
+    cats.forEach(cat => {
+      const items = data.filter(p => p.cat === cat);
+      const cP  = items.reduce((s, p) => s + p.qte * p.prix_u,  0);
+      const cE  = items.reduce((s, p) => s + (p.engage || 0),    0);
+      const cPy = items.reduce((s, p) => s + (p.paye   || 0),    0);
+      const cEc = cP - cPy;
+
+      html += `<tr class="row-cat">
+        <td colspan="13" style="padding:6px 12px;">
+          <span class="cat-badge ${CAT_CLS[cat] || ''}">${cat}</span>
+          <span style="font-size:.69rem;color:#64748b;font-weight:400;margin-left:8px">
+            ${items.length} produit${items.length > 1 ? 's' : ''} ·
+            Prévu : <strong>${fmtPlain(cP)}</strong> ·
+            Engagé : <strong style="color:#1d4ed8">${fmtPlain(cE)}</strong> ·
+            Payé : <strong style="color:#15803d">${fmtPlain(cPy)}</strong> ·
+            Écart : <strong style="color:#b91c1c">${fmtPlain(cEc)}</strong>
+          </span>
+        </td>
+      </tr>`;
+
+      items.forEach(p => {
+        const prevu = p.qte * p.prix_u;
+        const ecart = prevu - (p.paye || 0);
+        html += `<tr data-id="${p.id}">
+          <td style="color:#64748b;font-size:.7rem;font-weight:700">${p.id}</td>
+          <td style="max-width:230px" title="${p.dci.replace(/"/g,'&quot;')}">
+            <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.dci}</div>
+            <div style="font-size:.65rem;color:#94a3b8">${p.unite}</div>
+          </td>
+          <td>${catBadge(p.cat)}</td>
+          <td class="text-center mono">${p.qte.toLocaleString('fr-FR')}</td>
+          <td class="text-end mono">${fmtPlain(p.prix_u)}</td>
+          <td class="text-end mono"><strong>${fmtPlain(prevu)}</strong></td>
+          <td class="text-end mono" style="color:#1d4ed8">${fmtPlain(p.engage)}</td>
+          <td class="text-end mono" style="color:#15803d">${fmtPlain(p.paye)}</td>
+          <td class="text-end mono" style="color:#b91c1c">${fmtPlain(ecart)}</td>
+          <td>${execBar(p.paye || 0, prevu)}</td>
+          <td>${statutBadge(p.statut)}</td>
+          <td>${procBadge(p.procedure)}</td>
+          <td class="text-center" style="white-space:nowrap">
+            <button class="btn-act btn-act-edit me-1" onclick="openModalEdit(${p.id})" title="Modifier">
+              <i class="fas fa-pencil-alt"></i>
+            </button>
+            <button class="btn-act btn-act-del" onclick="openModalDel(${p.id})" title="Supprimer">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </td>
+        </tr>`;
+      });
+    });
+
+    tbody.innerHTML = html;
+
+    const totP  = data.reduce((s, p) => s + p.qte * p.prix_u,  0);
+    const totE  = data.reduce((s, p) => s + (p.engage || 0),    0);
+    const totPy = data.reduce((s, p) => s + (p.paye   || 0),    0);
+    const totEc = totP - totPy;
+
+    tfoot.innerHTML = `<tr class="row-total">
+      <td colspan="5"><strong>TOTAL : ${data.length} produit${data.length > 1 ? 's' : ''}</strong></td>
+      <td class="text-end mono"><strong>${fmtPlain(totP)}</strong></td>
+      <td class="text-end mono"><strong>${fmtPlain(totE)}</strong></td>
+      <td class="text-end mono"><strong>${fmtPlain(totPy)}</strong></td>
+      <td class="text-end mono" style="color:#fca5a5"><strong>${fmtPlain(totEc)}</strong></td>
+      <td colspan="4"></td>
+    </tr>`;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     CALENDRIER
+  ═══════════════════════════════════════════════════════════════ */
+  function renderCalendrier(data) {
+    document.getElementById('tbodyCalendrier').innerHTML = data.map((p, i) => {
+      const tqCell = (tk, qty) => qty > 0
+        ? `<td class="trim-cell"><span class="trim-qty tq-t${tk}">${qty.toLocaleString('fr-FR')}</span></td>`
+        : `<td class="trim-cell"><span class="trim-qty tq-0">0</span></td>`;
+      const freq = ['T1','T2','T3','T4'].filter(tk => p[tk] > 0).join(', ');
+      return `<tr>
+        <td style="color:#64748b;font-size:.7rem">${i + 1}</td>
+        <td style="font-size:.74rem;max-width:230px" title="${p.dci}">${p.dci}</td>
+        <td style="font-size:.72rem;color:#64748b">${p.dosage}</td>
+        <td style="font-size:.72rem">${p.unite}</td>
+        ${tqCell(1, p.T1)}${tqCell(2, p.T2)}${tqCell(3, p.T3)}${tqCell(4, p.T4)}
+        <td style="font-size:.71rem;color:#64748b">${freq}</td>
+        <td>${procBadge(p.procedure)}</td>
+        <td style="font-size:.71rem;color:#64748b">${p.fourn}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     FILTRES
+  ═══════════════════════════════════════════════════════════════ */
+  function applyFilters() {
+    const cat    = document.getElementById('fCat').value;
+    const statut = document.getElementById('fStatut').value;
+    const pao    = document.getElementById('fPao').value;
+    const search = document.getElementById('fSearch').value.toLowerCase().trim();
+    const isFiltered = cat || statut || pao || search;
+
+    const filtered = PRODUITS.filter(p => {
+      if (cat    && p.cat    !== cat)    return false;
+      if (statut && p.statut !== statut) return false;
+      if (pao    && p.pao    !== pao)    return false;
+      if (search && !p.dci.toLowerCase().includes(search) && !p.cat.toLowerCase().includes(search)) return false;
+      return true;
+    });
+    _currentFiltered = filtered;
+    renderTable(filtered);
+    renderTrimCards(filtered);
+    renderTauxCat(filtered);
+    updateKpis(filtered);
+    if (document.getElementById('panel-calendrier').classList.contains('active')) renderCalendrier(filtered);
+    if (document.getElementById('panel-dci').classList.contains('active'))        renderDci(filtered);
+    // Badge filtre
+    const badge = document.getElementById('filterBadge');
+    if (badge) {
+      badge.style.display = isFiltered ? '' : 'none';
+      badge.textContent = filtered.length + ' / ' + PRODUITS.length + ' produits';
+    }
+  }
+
+  function resetFilters() {
+    ['fCat','fStatut','fPao'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fSearch').value = '';
+    _currentFiltered = [...PRODUITS];
+    renderTable(PRODUITS);
+    renderTrimCards(PRODUITS);
+    renderTauxCat(PRODUITS);
+    updateKpis(PRODUITS);
+    renderCalendrier(PRODUITS);
+    renderDci(PRODUITS);
+    const badge = document.getElementById('filterBadge');
+    if (badge) badge.style.display = 'none';
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     EXPORT EXCEL (.xlsx)
+  ═══════════════════════════════════════════════════════════════ */
+  async function exportExcel() {
+    if (typeof ExcelJS === 'undefined') {
+      alert('La bibliothèque ExcelJS n\'est pas chargée. Vérifiez votre connexion.');
+      return;
+    }
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'SIGFIC-PSLSH/IST';
+    wb.created = new Date();
+
+    const C = {
+      navy:'FF1B2F52', navyL:'FF2D4A6B', navyXL:'FF3D5A8A',
+      white:'FFFFFFFF', offwhite:'FFF8FAFC', light:'FFF1F5F9', border:'FFE2E8F0',
+      green:'FF15803D', greenBg:'FFDCFCE7',
+      blue:'FF1D4ED8', blueBg:'FFDBEAFE',
+      red:'FFB91C1C', redBg:'FFFEE2E2',
+      orange:'FFB45309', orangeBg:'FFFEF3C7',
+      gray:'FF64748B', grayD:'FF374151',
+      teal:'FF0F766E', tealBg:'FFCCFBF1',
+    };
+    const CAT_BG = {
+      /* ── Réactifs VIH ── */
+      'Réactifs dépistage VIH':        'FFFFF7ED',
+      'Réactifs charge virale VIH':    'FFFEF9C3',
+      /* ── Réactifs hépatites ── */
+      'Réactifs hépatites & syphilis': 'FFE0F2FE',
+      'Charge virale hépatites':       'FFF0F9FF',
+      'Sérologie hépatites':           'FFFCE7F3',
+      /* ── IST ── */
+      'Réactifs IST':                  'FFF0FDF4',
+      /* ── Médicaments ── */
+      'Médicaments ARV':               'FFFDF4FF',
+      'Médicaments Ios':               'FFFEF3C7',
+      /* ── Intrants & frais ── */
+      'Intrants nutritionnels':        'FFD1FAE5',
+      'Frais logistiques et institutionnels': 'FFF1F5F9',
+    };
+    const CAT_FG = {
+      'Réactifs dépistage VIH':        'FFB45309',
+      'Réactifs charge virale VIH':    'FF854D0E',
+      'Réactifs hépatites & syphilis': 'FF0369A1',
+      'Charge virale hépatites':       'FF0891B2',
+      'Sérologie hépatites':           'FF9D174D',
+      'Réactifs IST':                  'FF15803D',
+      'Médicaments ARV':               'FF7E22CE',
+      'Médicaments Ios':               'FF92400E',
+      'Intrants nutritionnels':        'FF065F46',
+      'Frais logistiques et institutionnels': 'FF334155',
+    };
+
+    function getCatBg(cat) {
+      if (CAT_BG[cat]) return CAT_BG[cat];
+      for (const k of Object.keys(CAT_BG)) {
+        if (cat && cat.toLowerCase().includes(k.toLowerCase())) return CAT_BG[k];
+      }
+      return 'FFF3F4F6';
+    }
+    function getCatFg(cat) {
+      if (CAT_FG[cat]) return CAT_FG[cat];
+      for (const k of Object.keys(CAT_FG)) {
+        if (cat && cat.toLowerCase().includes(k.toLowerCase())) return CAT_FG[k];
+      }
+      return C.grayD;
+    }
+    function fill(argb) { return { type:'pattern', pattern:'solid', fgColor:{argb} }; }
+    function border(argb='FFD1D5DB') {
+      const s = { style:'thin', color:{argb} };
+      return { top:s, bottom:s, left:s, right:s };
+    }
+    function tauxColor(t) { return t>=0.75?C.green : t>=0.4?C.orange : C.red; }
+    function tauxBg(t)    { return t>=0.75?C.greenBg : t>=0.4?C.orangeBg : C.redBg; }
+
+    const data = (_currentFiltered && _currentFiltered.length) ? _currentFiltered : PRODUITS;
+    const totalBudget = data.reduce((s,p)=>s+p.qte*p.prix_u,0);
+    const totalEngage = data.reduce((s,p)=>s+(p.engage||0),0);
+    const totalPaye   = data.reduce((s,p)=>s+(p.paye||0),0);
+    const tauxGlobal  = totalBudget > 0 ? totalPaye/totalBudget : 0;
+
+    const cats = {};
+    data.forEach(p => { if (!cats[p.cat]) cats[p.cat]=[]; cats[p.cat].push(p); });
+
+    /* ── FEUILLE 1 : Compte financier ── */
+    const ws1 = wb.addWorksheet('Compte financier', {
+      pageSetup:{ paperSize:9, orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0 }
+    });
+    ws1.columns = [
+      {width:5},{width:34},{width:22},{width:7},{width:14},{width:16},{width:14},{width:14},{width:14},{width:8},{width:16},{width:16}
+    ];
+
+    // Titre principal
+    ws1.mergeCells('A1:L1');
+    Object.assign(ws1.getCell('A1'), {
+      value: "PLAN D'ACHAT — RÉACTIFS ET CONSOMMABLES MÉDICAUX — EXERCICE 2026",
+      font:{ name:'Calibri', size:13, bold:true, color:{argb:C.white} },
+      fill: fill(C.navy),
+      alignment:{ horizontal:'center', vertical:'middle' }
+    });
+    ws1.getRow(1).height = 30;
+
+    // Sous-titre
+    ws1.mergeCells('A2:L2');
+    Object.assign(ws1.getCell('A2'), {
+      value: 'Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les IST (PSLSH/IST) — Rapport d’exécution budgétaire',
+      font:{ name:'Calibri', size:9, italic:true, color:{argb:C.navyL} },
+      fill: fill(C.light),
+      alignment:{ horizontal:'center', vertical:'middle' }
+    });
+    ws1.getRow(2).height = 18;
+
+    // KPI bloc
+    const kpiDefs = [
+      ['A3:C3','Budget total (FCFA)',         'D3:F3', totalBudget,  '#,##0',   C.blue,  C.blueBg],
+      ['G3:I3','Montant engagé (FCFA)',  'J3:L3', totalEngage,  '#,##0',   C.blue,  C.blueBg],
+      ['A4:C4','Montant payé (FCFA)',    'D4:F4', totalPaye,    '#,##0',   C.green, C.greenBg],
+      ['G4:I4',"Taux d'exécution global",'J4:L4',tauxGlobal,   '0%', tauxColor(tauxGlobal), tauxBg(tauxGlobal)],
+    ];
+    kpiDefs.forEach(([lRef, lVal, vRef, vVal, fmt, fgArgb, bgArgb]) => {
+      ws1.mergeCells(lRef); ws1.mergeCells(vRef);
+      const lc = ws1.getCell(lRef.split(':')[0]);
+      lc.value = lVal;
+      lc.font = { name:'Calibri', size:9, bold:true, color:{argb:C.grayD} };
+      lc.fill = fill(C.offwhite);
+      lc.alignment = { horizontal:'right', vertical:'middle' };
+      const vc = ws1.getCell(vRef.split(':')[0]);
+      vc.value = vVal;
+      vc.numFmt = fmt;
+      vc.font = { name:'Calibri', size:11, bold:true, color:{argb:fgArgb} };
+      vc.fill = fill(bgArgb);
+      vc.alignment = { horizontal:'left', vertical:'middle' };
+    });
+    ws1.getRow(3).height = 22; ws1.getRow(4).height = 22;
+
+    ws1.addRow([]);
+
+    // En-tête colonnes
+    const hdrs = ['N°','Désignation (DCI)','Catégorie','Qté','Prix unit. (FCFA)','Coût global (FCFA)','Engagé (FCFA)','Payé (FCFA)','Écart (FCFA)','Taux %','Procédure','Statut'];
+    const hRow = ws1.addRow(hdrs);
+    hRow.height = 32;
+    hRow.eachCell(cell => {
+      cell.font = { name:'Calibri', size:9, bold:true, color:{argb:C.white} };
+      cell.fill = fill(C.navyL);
+      cell.alignment = { horizontal:'center', vertical:'middle', wrapText:true };
+      cell.border = border(C.navy);
+    });
+    ws1.autoFilter = { from:{row:hRow.number, column:1}, to:{row:hRow.number, column:12} };
+
+    // Données par catégorie
+    Object.entries(cats).forEach(([cat, items]) => {
+      const cbg = getCatBg(cat), cfg = getCatFg(cat);
+      // En-tête catégorie
+      const cr = ws1.addRow([]);
+      ws1.mergeCells(`A${cr.number}:L${cr.number}`);
+      const cc = ws1.getCell(`A${cr.number}`);
+      cc.value = '  ▸  ' + cat;
+      cc.font = { name:'Calibri', size:9, bold:true, color:{argb:cfg} };
+      cc.fill = fill(cbg);
+      cc.alignment = { horizontal:'left', vertical:'middle' };
+      cr.height = 18;
+
+      // Lignes produits
+      items.forEach((p, i) => {
+        const prevu = p.qte * p.prix_u;
+        const ecart = prevu - (p.paye||0);
+        const taux  = prevu > 0 ? (p.paye||0)/prevu : 0;
+        const r = ws1.addRow([p.id, p.dci, p.cat, p.qte, p.prix_u, prevu, p.engage||0, p.paye||0, ecart, taux, p.procedure||'', p.statut||'']);
+        r.height = 15;
+        r.eachCell(cell => {
+          cell.font = { name:'Calibri', size:8, color:{argb:C.grayD} };
+          cell.fill = fill(i%2===0 ? C.white : C.offwhite);
+          cell.border = border();
+          cell.alignment = { vertical:'middle' };
+        });
+        [5,6,7,8,9].forEach(c => r.getCell(c).numFmt = c===10?'0%':'#,##0');
+        r.getCell(10).numFmt = '0%';
+        r.getCell(10).font = { name:'Calibri', size:8, bold:true, color:{argb:tauxColor(taux)} };
+        r.getCell(10).fill = fill(tauxBg(taux));
+        [2,3,11,12].forEach(c => r.getCell(c).alignment = { horizontal:'left', vertical:'middle' });
+        [1,4,10].forEach(c => r.getCell(c).alignment = { horizontal:'center', vertical:'middle' });
+        [5,6,7,8,9].forEach(c => r.getCell(c).alignment = { horizontal:'right', vertical:'middle' });
+      });
+
+      // Sous-total
+      const sb = items.reduce((s,p)=>s+p.qte*p.prix_u,0);
+      const se = items.reduce((s,p)=>s+(p.engage||0),0);
+      const sp = items.reduce((s,p)=>s+(p.paye||0),0);
+      const st = sb>0?sp/sb:0;
+      const sr = ws1.addRow(['', 'Sous-total — '+cat, '', items.reduce((s,p)=>s+p.qte,0), '', sb, se, sp, sb-sp, st, '', '']);
+      sr.height = 18;
+      sr.eachCell(cell => {
+        cell.font = { name:'Calibri', size:9, bold:true, color:{argb:cfg} };
+        cell.fill = fill(cbg);
+        cell.border = border(cfg);
+        cell.alignment = { vertical:'middle' };
+      });
+      [6,7,8,9].forEach(c => sr.getCell(c).numFmt = '#,##0');
+      sr.getCell(10).numFmt = '0%';
+      sr.getCell(4).alignment = { horizontal:'center', vertical:'middle' };
+      [6,7,8,9].forEach(c => sr.getCell(c).alignment = { horizontal:'right', vertical:'middle' });
+    });
+
+    // Total général
+    const gt = ws1.addRow(['', 'TOTAL GÉNÉRAL', '', data.length+' lignes', '', totalBudget, totalEngage, totalPaye, totalBudget-totalPaye, tauxGlobal, '', '']);
+    gt.height = 24;
+    gt.eachCell(cell => {
+      cell.font = { name:'Calibri', size:10, bold:true, color:{argb:C.white} };
+      cell.fill = fill(C.navy);
+      cell.border = border(C.navy);
+      cell.alignment = { vertical:'middle' };
+    });
+    [6,7,8,9].forEach(c => { gt.getCell(c).numFmt='#,##0'; gt.getCell(c).alignment={horizontal:'right',vertical:'middle'}; });
+    gt.getCell(10).numFmt = '0%';
+    gt.getCell(10).alignment = { horizontal:'center', vertical:'middle' };
+
+    /* ── FEUILLE 2 : Calendrier trimestriel ── */
+    const ws2 = wb.addWorksheet('Calendrier trimestriel', {
+      pageSetup:{ paperSize:9, orientation:'landscape' }
+    });
+    ws2.columns = [{width:5},{width:34},{width:22},{width:10},{width:10},{width:10},{width:10},{width:12},{width:16},{width:16}];
+
+    ws2.mergeCells('A1:J1');
+    Object.assign(ws2.getCell('A1'), {
+      value: 'CALENDRIER TRIMESTRIEL DE LIVRAISON — EXERCICE 2026',
+      font:{ name:'Calibri', size:13, bold:true, color:{argb:C.white} },
+      fill: fill(C.navy),
+      alignment:{ horizontal:'center', vertical:'middle' }
+    });
+    ws2.getRow(1).height = 30;
+
+    const tColors  = ['FF3D5A8A','FF2D6A4F','FF92400E','FF6B21A8'];
+    const tBg      = ['FFE0F2FE','FFDCFCE7','FFFEF3C7','FFF3E8FF'];
+    const calHdrs  = ['N°','Désignation (DCI)','Catégorie','T1','T2','T3','T4','Qté totale','Procédure','Statut'];
+    const chRow = ws2.addRow(calHdrs);
+    chRow.height = 28;
+    chRow.eachCell((cell, i) => {
+      const bg = (i>=4&&i<=7) ? tColors[i-4] : C.navyL;
+      cell.font = { name:'Calibri', size:9, bold:true, color:{argb:C.white} };
+      cell.fill = fill(bg);
+      cell.alignment = { horizontal:'center', vertical:'middle', wrapText:true };
+      cell.border = border(C.navy);
+    });
+
+    data.forEach((p, i) => {
+      const tot = (p.T1||0)+(p.T2||0)+(p.T3||0)+(p.T4||0);
+      const r = ws2.addRow([p.id, p.dci, p.cat, p.T1||0, p.T2||0, p.T3||0, p.T4||0, tot, p.procedure||'', p.statut||'']);
+      r.height = 15;
+      r.eachCell(cell => {
+        cell.font = { name:'Calibri', size:8, color:{argb:C.grayD} };
+        cell.fill = fill(i%2===0?C.white:C.offwhite);
+        cell.border = border();
+        cell.alignment = { horizontal:'center', vertical:'middle' };
+      });
+      r.getCell(2).alignment = { horizontal:'left', vertical:'middle' };
+      r.getCell(3).alignment = { horizontal:'left', vertical:'middle' };
+      [4,5,6,7].forEach((col,idx)=>{
+        const val=[p.T1||0,p.T2||0,p.T3||0,p.T4||0][idx];
+        if (val>0) {
+          r.getCell(col).fill = fill(tBg[idx]);
+          r.getCell(col).font = { name:'Calibri', size:8, bold:true, color:{argb:tColors[idx]} };
+        }
+      });
+    });
+
+    /* ── FEUILLE 3 : Synthèse budgétaire ── */
+    const ws3 = wb.addWorksheet('Synthèse budgétaire', {
+      pageSetup:{ paperSize:9, orientation:'portrait' }
+    });
+    ws3.columns = [{width:28},{width:9},{width:18},{width:18},{width:18},{width:10}];
+
+    ws3.mergeCells('A1:F1');
+    Object.assign(ws3.getCell('A1'), {
+      value: 'SYNTHÈSE BUDGÉTAIRE PAR CATÉGORIE — EXERCICE 2026',
+      font:{ name:'Calibri', size:13, bold:true, color:{argb:C.white} },
+      fill: fill(C.navy),
+      alignment:{ horizontal:'center', vertical:'middle' }
+    });
+    ws3.getRow(1).height = 30;
+
+    const sh = ws3.addRow(['Catégorie','Lignes','Budget (FCFA)','Payé (FCFA)','Écart (FCFA)','Taux %']);
+    sh.height = 24;
+    sh.eachCell(cell => {
+      cell.font = { name:'Calibri', size:9, bold:true, color:{argb:C.white} };
+      cell.fill = fill(C.navyL);
+      cell.alignment = { horizontal:'center', vertical:'middle' };
+      cell.border = border(C.navy);
+    });
+
+    Object.entries(cats).forEach(([cat, items]) => {
+      const b  = items.reduce((s,p)=>s+p.qte*p.prix_u,0);
+      const py = items.reduce((s,p)=>s+(p.paye||0),0);
+      const t  = b>0?py/b:0;
+      const cbg = getCatBg(cat), cfg = getCatFg(cat);
+      const r = ws3.addRow([cat, items.length, b, py, b-py, t]);
+      r.height = 20;
+      r.eachCell((cell, col) => {
+        cell.font = { name:'Calibri', size:9, bold:(col===1), color:{argb:col===1?cfg:C.grayD} };
+        cell.fill = fill(cbg);
+        cell.border = border();
+        cell.alignment = { horizontal:col>1?'center':'left', vertical:'middle' };
+      });
+      [3,4,5].forEach(c => { r.getCell(c).numFmt='#,##0'; r.getCell(c).alignment={horizontal:'right',vertical:'middle'}; });
+      r.getCell(6).numFmt = '0%';
+      r.getCell(6).font = { name:'Calibri', size:9, bold:true, color:{argb:tauxColor(t)} };
+      r.getCell(6).fill = fill(tauxBg(t));
+    });
+
+    // Total général
+    const gt3 = ws3.addRow(['TOTAL GÉNÉRAL', data.length, totalBudget, totalPaye, totalBudget-totalPaye, tauxGlobal]);
+    gt3.height = 24;
+    gt3.eachCell(cell => {
+      cell.font = { name:'Calibri', size:10, bold:true, color:{argb:C.white} };
+      cell.fill = fill(C.navy);
+      cell.border = border(C.navy);
+      cell.alignment = { horizontal:'right', vertical:'middle' };
+    });
+    gt3.getCell(1).alignment = { horizontal:'left', vertical:'middle' };
+    gt3.getCell(2).alignment = { horizontal:'center', vertical:'middle' };
+    [3,4,5].forEach(c => gt3.getCell(c).numFmt='#,##0');
+    gt3.getCell(6).numFmt = '0%';
+
+    // Téléchargement
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const isFiltered = data.length < PRODUITS.length;
+    a.download = isFiltered
+      ? `Plan-Achat-2026_filtre_${data.length}produits.xlsx`
+      : 'Plan-Achat-PSLSH-2026_complet.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     AJOUTER — MODAL
+  ═══════════════════════════════════════════════════════════════ */
+  function openModalAjouter() {
+    // Réinitialiser tous les champs
+    ['aDci','aDosage','aUnite','aFourn'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('aCat').value       = '';
+    document.getElementById('aPao').value       = 'PSLSH-032';
+    document.getElementById('aProcedure').value = 'BC';
+    document.getElementById('aStatutRx').value  = 'En attente';
+    ['aQte','aPrixU','aT1','aT2','aT3','aT4','aEngage','aPaye'].forEach(id => document.getElementById(id).value = 0);
+    document.getElementById('aCoutGlobal').textContent = '0 FCFA';
+    document.getElementById('aTauxExec').textContent   = '0 %';
+    document.getElementById('aTauxExec').style.color   = '#64748b';
+    new bootstrap.Modal(document.getElementById('modalAjouterProduit')).show();
+  }
+
+  function recalcAdd() {
+    const qte  = parseFloat(document.getElementById('aQte').value)   || 0;
+    const prix = parseFloat(document.getElementById('aPrixU').value)  || 0;
+    const paye = parseFloat(document.getElementById('aPaye').value)   || 0;
+    const global = qte * prix;
+    const taux   = global > 0 ? ((paye / global) * 100).toFixed(1) : 0;
+    const col    = taux >= 75 ? '#15803d' : taux >= 40 ? '#b45309' : taux > 0 ? '#b91c1c' : '#64748b';
+    document.getElementById('aCoutGlobal').textContent = global > 0 ? fmtPlain(global) + ' FCFA' : '0 FCFA';
+    document.getElementById('aTauxExec').textContent   = taux + ' %';
+    document.getElementById('aTauxExec').style.color   = col;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     MODIFIER — MODAL
+  ═══════════════════════════════════════════════════════════════ */
+  let _editId = null;
+
+  function openModalEdit(id) {
+    const p = PRODUITS.find(x => x.id === id);
+    if (!p) return;
+    _editId = id;
+
+    document.getElementById('mProdId').textContent       = p.id;
+    document.getElementById('mProdCatLabel').textContent = p.cat;
+    document.getElementById('mDci').value      = p.dci;
+    document.getElementById('mDosage').value   = p.dosage  || '';
+    document.getElementById('mUnite').value    = p.unite   || '';
+    document.getElementById('mFourn').value    = p.fourn   || '';
+    document.getElementById('mPao').value      = p.pao     || 'PSLSH-032';
+    document.getElementById('mCat').value      = p.cat;
+    document.getElementById('mProcedure').value = p.procedure || 'BC';
+    document.getElementById('mStatutRx').value  = p.statut  || 'En attente';
+    document.getElementById('mQte').value      = p.qte    || 0;
+    document.getElementById('mPrixU').value    = p.prix_u || 0;
+    document.getElementById('mT1').value       = p.T1 || 0;
+    document.getElementById('mT2').value       = p.T2 || 0;
+    document.getElementById('mT3').value       = p.T3 || 0;
+    document.getElementById('mT4').value       = p.T4 || 0;
+    document.getElementById('mEngage').value   = p.engage || 0;
+    document.getElementById('mPaye').value     = p.paye   || 0;
+    recalcEdit();
+    new bootstrap.Modal(document.getElementById('modalModifierProduit')).show();
+  }
+
+  function recalcEdit() {
+    const qte  = parseFloat(document.getElementById('mQte').value)   || 0;
+    const prix = parseFloat(document.getElementById('mPrixU').value)  || 0;
+    const paye = parseFloat(document.getElementById('mPaye').value)   || 0;
+    const global = qte * prix;
+    const taux   = global > 0 ? ((paye / global) * 100).toFixed(1) : 0;
+    const col    = taux >= 75 ? '#15803d' : taux >= 40 ? '#b45309' : taux > 0 ? '#b91c1c' : '#64748b';
+    document.getElementById('mCoutGlobal').textContent = global > 0 ? fmtPlain(global) + ' FCFA' : '0 FCFA';
+    document.getElementById('mTauxExec').textContent   = taux + ' %';
+    document.getElementById('mTauxExec').style.color   = col;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ENREGISTRER (ajouter ou modifier)
+  ═══════════════════════════════════════════════════════════════ */
+  function saveProduit(mode) {
+    const prefix = mode === 'add' ? 'a' : 'm';
+    const dci    = document.getElementById(prefix + 'Dci').value.trim();
+    const cat    = document.getElementById(prefix + 'Cat').value;
+    const qte    = parseFloat(document.getElementById(prefix + 'Qte').value)    || 0;
+    const prix_u = parseFloat(document.getElementById(prefix + 'PrixU').value)  || 0;
+
+    if (!dci)    { alert('La désignation (DCI) est obligatoire.'); return; }
+    if (!cat)    { alert('La catégorie est obligatoire.'); return; }
+    if (qte <= 0){ alert('La quantité doit être supérieure à zéro.'); return; }
+    if (prix_u <= 0){ alert('Le prix unitaire doit être supérieur à zéro.'); return; }
+
+    const obj = {
+      dci,
+      dosage:    document.getElementById(prefix + 'Dosage').value.trim(),
+      unite:     document.getElementById(prefix + 'Unite').value.trim(),
+      cat,
+      pao:       document.getElementById(prefix + 'Pao').value,
+      procedure: document.getElementById(prefix + 'Procedure').value,
+      statut:    document.getElementById(prefix + 'StatutRx').value,
+      fourn:     document.getElementById(prefix + 'Fourn').value.trim() || '',
+      qte,
+      prix_u,
+      T1:        parseFloat(document.getElementById(prefix + 'T1').value) || 0,
+      T2:        parseFloat(document.getElementById(prefix + 'T2').value) || 0,
+      T3:        parseFloat(document.getElementById(prefix + 'T3').value) || 0,
+      T4:        parseFloat(document.getElementById(prefix + 'T4').value) || 0,
+      engage:    parseFloat(document.getElementById(prefix + 'Engage').value) || 0,
+      paye:      parseFloat(document.getElementById(prefix + 'Paye').value)   || 0,
+    };
+
+    if (mode === 'add') {
+      obj.id = nextId();
+      PRODUITS.push(obj);
+      bootstrap.Modal.getInstance(document.getElementById('modalAjouterProduit')).hide();
+      toast('✓ Produit ajouté : ' + obj.dci.substring(0, 40));
+    } else {
+      const idx = PRODUITS.findIndex(x => x.id === _editId);
+      if (idx !== -1) PRODUITS[idx] = { ...PRODUITS[idx], ...obj };
+      bootstrap.Modal.getInstance(document.getElementById('modalModifierProduit')).hide();
+      toast('✓ Produit modifié : ' + obj.dci.substring(0, 40));
+    }
+    savePlanAchat();
+    _refreshAll();
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     SUPPRIMER — MODAL
+  ═══════════════════════════════════════════════════════════════ */
+  let _deleteId = null;
+
+  function openModalDel(id) {
+    const p = PRODUITS.find(x => x.id === id);
+    if (!p) return;
+    _deleteId = id;
+    document.getElementById('delProdLabel').innerHTML =
+      `<i class="fas fa-vials me-2"></i>#${p.id} · ${p.dci}<br>
+       <span style="font-size:.72rem;font-weight:400;color:#991b1b">${p.cat} · ${fmtPlain(p.qte * p.prix_u)} FCFA prévus</span>`;
+    new bootstrap.Modal(document.getElementById('modalConfirmDel')).show();
+  }
+
+  document.getElementById('btnConfirmDel').addEventListener('click', function () {
+    if (_deleteId === null) return;
+    const idx = PRODUITS.findIndex(x => x.id === _deleteId);
+    if (idx !== -1) PRODUITS.splice(idx, 1);
+    _deleteId = null;
+    bootstrap.Modal.getInstance(document.getElementById('modalConfirmDel')).hide();
+    savePlanAchat();
+    _refreshAll();
+    toast('Produit supprimé.', '#b91c1c');
+  });
+
+  /* ═══════════════════════════════════════════════════════════════
+     DCI DYNAMIQUE
+  ═══════════════════════════════════════════════════════════════ */
+  const DCI_COL = {
+    'Réactifs dépistage VIH':        '#92400e',
+    'Réactifs charge virale VIH':    '#7e22ce',
+    'Réactifs hépatites & syphilis': '#0e7490',
+    'Charge virale hépatites':       '#bf360c',
+    'Sérologie hépatites':           '#880e4f',
+    'Réactifs IST':                  '#1b5e20',
+  };
+  const DCI_ICON = {
+    'Réactifs dépistage VIH':        'fa-vial',
+    'Réactifs charge virale VIH':    'fa-microscope',
+    'Réactifs hépatites & syphilis': 'fa-vials',
+    'Charge virale hépatites':       'fa-dna',
+    'Sérologie hépatites':           'fa-microscope',
+    'Réactifs IST':                  'fa-bacteria',
+  };
+
+  function renderDci(data) {
+    const el = document.getElementById('dciGrid');
+    if (!el) return;
+    // Parcourir toutes les catégories connues (ordre fixe)
+    const cats = Object.keys(DCI_COL);
+    el.innerHTML = cats.map(cat => {
+      const items = data.filter(p => p.cat === cat);
+      const col   = DCI_COL[cat] || '#1b2f52';
+      const icon  = DCI_ICON[cat] || 'fa-vial';
+      const prevu = items.reduce((s, p) => s + p.qte * p.prix_u, 0);
+      const paye  = items.reduce((s, p) => s + (p.paye || 0), 0);
+      const taux  = prevu > 0 ? Math.round((paye / prevu) * 100) : 0;
+      const barCol = taux >= 75 ? '#15803d' : taux >= 40 ? '#f59e0b' : '#94a3b8';
+      const txCol  = taux >= 75 ? '#15803d' : taux >= 40 ? '#b45309' : '#64748b';
+      return `<div class="dci-cat">
+        <div class="dci-cat-title" style="color:${col};display:flex;justify-content:space-between;align-items:center">
+          <span><i class="fas ${icon} me-1"></i>${cat}</span>
+          <span style="font-size:.63rem;color:#94a3b8;font-weight:500">${items.length} produit${items.length > 1 ? 's' : ''}</span>
+        </div>
+        ${items.length === 0
+          ? '<div style="font-size:.7rem;color:#94a3b8;font-style:italic;padding:4px 0">Aucun produit dans ce filtre</div>'
+          : items.map(p => {
+              const pv = p.qte * p.prix_u;
+              const tx = pv > 0 ? Math.round(((p.paye || 0) / pv) * 100) : 0;
+              return `<div style="padding:4px 0;border-bottom:1px solid #f1f5f9;font-size:.71rem;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+                  <span style="color:#2d3748;flex:1;line-height:1.3" title="${p.dci}">${p.dci.length > 55 ? p.dci.substring(0,55) + '…' : p.dci}</span>
+                  ${statutBadge(p.statut)}
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px;gap:6px">
+                  <span style="font-size:.63rem;color:#94a3b8">${p.unite}</span>
+                  <span style="font-family:monospace;font-size:.63rem;color:#64748b">${p.qte.toLocaleString('fr-FR')} u. · ${fmtPlain(pv)} FCFA</span>
+                  <span style="font-size:.63rem;font-weight:700;color:${tx>=75?'#15803d':tx>=40?'#b45309':'#94a3b8'}">${tx}%</span>
+                </div>
+              </div>`;
+            }).join('')}
+        <div style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:.66rem;color:${txCol}">
+          <div style="flex:1;height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden">
+            <div style="width:${taux}%;height:100%;background:${barCol};border-radius:2px;transition:width .3s"></div>
+          </div>
+          <strong>${taux}%</strong> exécuté · ${fmtPlain(prevu)} FCFA prévus
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     IMPRESSION — construction du document multi-pages
+  ═══════════════════════════════════════════════════════════════ */
+
+  /* ── Helpers impression ── */
+  function ppTauxColor(t) {
+    return t >= 75 ? '#15803d' : t >= 40 ? '#b45309' : t > 0 ? '#b91c1c' : '#94a3b8';
+  }
+
+  /* ────────────────────────────────────────────────────────────────
+     Section I — Objet, contexte budgétaire et répartition
+  ──────────────────────────────────────────────────────────────── */
+  function buildPpPreamble() {
+    const totPrevu  = PRODUITS.reduce((s, p) => s + p.qte * p.prix_u, 0);
+    const totPaye   = PRODUITS.reduce((s, p) => s + (p.paye  || 0), 0);
+    const totEngage = PRODUITS.reduce((s, p) => s + (p.engage || 0), 0);
+    const totTaux   = totPrevu > 0 ? ((totPaye / totPrevu) * 100).toFixed(1) : 0;
+    const ecart     = totPrevu - totPaye;
+
+    const d032 = PRODUITS.filter(p => p.pao === 'PSLSH-032');
+    const d033 = PRODUITS.filter(p => p.pao === 'PSLSH-033');
+    const m032 = d032.reduce((s, p) => s + p.qte * p.prix_u, 0);
+    const m033 = d033.reduce((s, p) => s + p.qte * p.prix_u, 0);
+    const p032 = d032.reduce((s, p) => s + (p.paye || 0), 0);
+    const p033 = d033.reduce((s, p) => s + (p.paye || 0), 0);
+    const t032 = m032 > 0 ? Math.round(p032 / m032 * 100) : 0;
+    const t033 = m033 > 0 ? Math.round(p033 / m033 * 100) : 0;
+    const pct032 = totPrevu > 0 ? Math.round(m032 / totPrevu * 100) : 0;
+    const pct033 = totPrevu > 0 ? Math.round(m033 / totPrevu * 100) : 0;
+
+    const catRows = Object.keys(DCI_COL).map(cat => {
+      const items = PRODUITS.filter(p => p.cat === cat);
+      if (!items.length) return '';
+      const cp = items.reduce((s, p) => s + p.qte * p.prix_u, 0);
+      const cy = items.reduce((s, p) => s + (p.paye || 0), 0);
+      const ct = cp > 0 ? Math.round(cy / cp * 100) : 0;
+      return `<tr>
+        <td>${cat}</td>
+        <td class="tc" style="color:#475569">${items.length}</td>
+        <td class="te">${fmtPlain(cp)}</td>
+        <td class="te" style="color:#15803d">${fmtPlain(cy)}</td>
+        <td class="tc" style="font-weight:700;color:${ppTauxColor(ct)}">${ct}%</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('ppPreamble').innerHTML = `
+      <div class="pp-section-title">I. Objet du document et situation budgétaire</div>
+
+      <p class="pp-text" style="margin-bottom:8pt">
+        Le Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les Infections
+        Sexuellement Transmissibles (PSLSH/IST) a établi, pour l'exercice budgétaire 2026, le présent
+        plan d'achat des intrants médicaux. Ce document porte sur <strong>${PRODUITS.length} réactifs
+        et consommables</strong> répartis en six catégories diagnostiques, financés par les activités
+        PAO <strong>PSLSH-032</strong> (réactifs VIH, dépistage et charge virale) et
+        <strong>PSLSH-033</strong> (réactifs hépatites, IST et consommables médicaux associés).
+      </p>
+
+      <p class="pp-text" style="margin-bottom:10pt">
+        Il constitue le document de référence pour le suivi de la passation des marchés, la gestion des
+        livraisons et le contrôle de l'exécution financière, conformément aux dispositions du Manuel de
+        procédures administratives, financières et comptables du PSLSH/IST. La présente situation est
+        arrêtée au <strong>05/04/2026</strong>, à la clôture du premier trimestre d'exécution.
+        À cette date, <strong>${fmtPlain(totPaye)} FCFA</strong> ont été décaissés sur un budget total
+        de <strong>${fmtPlain(totPrevu)} FCFA</strong>, soit un taux d'exécution global de
+        <strong style="color:${ppTauxColor(parseFloat(totTaux))}">${totTaux}%</strong>.
+        Le solde non exécuté de <strong>${fmtPlain(ecart)} FCFA</strong> correspond aux achats programmés
+        aux trimestres T3 et T4, dont les marchés sont en cours d'instruction.
+      </p>
+
+      <div class="pp-grid2">
+        <div class="pp-box">
+          <div class="pp-box-title">Répartition du budget par source de financement PAO</div>
+          <table>
+            <thead><tr>
+              <th>Activité PAO</th>
+              <th class="tc">Part</th>
+              <th class="te">Budget prévu (FCFA)</th>
+              <th class="te">Montant payé (FCFA)</th>
+              <th class="tc">Taux</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td>PSLSH-032 &mdash; Réactifs VIH<br><span style="font-size:5.5pt;color:#64748b">Dépistage rapide, charge virale VIH</span></td>
+                <td class="tc" style="color:#475569">${pct032}%</td>
+                <td class="te">${fmtPlain(m032)}</td>
+                <td class="te" style="color:#15803d">${fmtPlain(p032)}</td>
+                <td class="tc" style="font-weight:700;color:${ppTauxColor(t032)}">${t032}%</td>
+              </tr>
+              <tr>
+                <td>PSLSH-033 &mdash; Réactifs hépatites &amp; IST<br><span style="font-size:5.5pt;color:#64748b">Hépatites B/C, IST, syphilis, consommables</span></td>
+                <td class="tc" style="color:#475569">${pct033}%</td>
+                <td class="te">${fmtPlain(m033)}</td>
+                <td class="te" style="color:#15803d">${fmtPlain(p033)}</td>
+                <td class="tc" style="font-weight:700;color:${ppTauxColor(t033)}">${t033}%</td>
+              </tr>
+              <tr class="tot">
+                <td>TOTAL GÉNÉRAL</td>
+                <td class="tc">100%</td>
+                <td class="te">${fmtPlain(totPrevu)}</td>
+                <td class="te" style="color:#15803d">${fmtPlain(totPaye)}</td>
+                <td class="tc" style="color:${ppTauxColor(parseFloat(totTaux))}">${totTaux}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pp-box">
+          <div class="pp-box-title">Exécution par catégorie de produits</div>
+          <table>
+            <thead><tr>
+              <th>Catégorie</th>
+              <th class="tc">Lignes</th>
+              <th class="te">Prévu (FCFA)</th>
+              <th class="te">Payé (FCFA)</th>
+              <th class="tc">Taux</th>
+            </tr></thead>
+            <tbody>${catRows}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ────────────────────────────────────────────────────────────────
+     Section II — Caractéristiques des produits et calendrier
+  ──────────────────────────────────────────────────────────────── */
+  function buildPpCalendrier() {
+    let rows = '';
+    let n = 0;
+    Object.keys(DCI_COL).forEach(cat => {
+      const items = PRODUITS.filter(p => p.cat === cat);
+      if (!items.length) return;
+      const cP = items.reduce((s, p) => s + p.qte * p.prix_u, 0);
+      rows += `<tr class="row-cat">
+        <td colspan="11">${cat} &nbsp;&mdash;&nbsp; ${items.length} produit${items.length > 1 ? 's' : ''} &nbsp;&mdash;&nbsp; Budget : ${fmtPlain(cP)} FCFA</td>
+      </tr>`;
+      items.forEach(p => {
+        n++;
+        const tCell = tk => p[tk] > 0
+          ? `<td class="tc"><span class="pp-x">&#10003;</span><br><span style="font-size:5pt;font-family:monospace">${p[tk].toLocaleString('fr-FR')}</span></td>`
+          : `<td class="tc" style="color:#d1d5db;font-size:7pt">—</td>`;
+        const freq = ['T1','T2','T3','T4'].filter(tk => p[tk] > 0).join(', ');
+        const proc = p.procedure === 'BC'
+          ? '<span class="pp-bc">BC</span>'
+          : '<span class="pp-mr">MR</span>';
+        rows += `<tr>
+          <td class="tc" style="color:#94a3b8;font-size:6pt">${n}</td>
+          <td style="font-size:6pt;line-height:1.35">${p.dci}<br><span style="color:#94a3b8;font-size:5.5pt">${p.unite}</span></td>
+          <td style="color:#64748b;font-size:6pt">${p.dosage}</td>
+          <td style="font-size:6pt">${p.qte.toLocaleString('fr-FR')}</td>
+          ${tCell('T1')}${tCell('T2')}${tCell('T3')}${tCell('T4')}
+          <td class="tc" style="font-size:6pt;color:#475569">${freq}</td>
+          <td class="tc">${proc}</td>
+          <td style="color:#64748b;font-size:5.5pt;line-height:1.3">${p.fourn}</td>
+        </tr>`;
+      });
+    });
+
+    document.getElementById('ppCalendrier').innerHTML = `
+      <div class="pp-section-title">II. Caractéristiques des produits et calendrier de livraison</div>
+
+      <p class="pp-text" style="margin-bottom:6pt">
+        Les ${PRODUITS.length} produits retenus au présent plan sont répartis en six catégories diagnostiques.
+        Pour chaque ligne, le tableau indique le dosage, le conditionnement, la quantité totale prévue
+        et la répartition des livraisons sur les quatre trimestres de l'exercice 2026 (&#10003; = livraison programmée,
+        avec la quantité correspondante). La procédure de passation applicable (BC ou MR) et le fournisseur
+        pressenti ou contractualisé sont également précisés. Toute réception physique donne obligatoirement
+        lieu à un procès-verbal signé, un bon d'entrée stock et l'enregistrement comptable correspondant.
+      </p>
+
+      <table class="pp-table">
+        <thead><tr>
+          <th class="tc" style="width:18pt">N°</th>
+          <th style="min-width:100pt">Désignation (DCI) / Conditionnement</th>
+          <th style="width:55pt">Dosage</th>
+          <th class="tc" style="width:30pt">Qté totale</th>
+          <th class="tc" style="background:#1e3a8a !important;width:30pt">T1<br><span style="font-weight:400;font-size:5pt">Jan&ndash;Mar</span></th>
+          <th class="tc" style="background:#14532d !important;width:30pt">T2<br><span style="font-weight:400;font-size:5pt">Avr&ndash;Jun</span></th>
+          <th class="tc" style="background:#78350f !important;width:30pt">T3<br><span style="font-weight:400;font-size:5pt">Jul&ndash;Sep</span></th>
+          <th class="tc" style="background:#7f1d1d !important;width:30pt">T4<br><span style="font-weight:400;font-size:5pt">Oct&ndash;Déc</span></th>
+          <th class="tc" style="width:25pt">Fréq.</th>
+          <th class="tc" style="width:22pt">Proc.</th>
+          <th>Fournisseur / Source</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  /* ────────────────────────────────────────────────────────────────
+     Section III — Procédures et cadre réglementaire
+  ──────────────────────────────────────────────────────────────── */
+  function buildPpProcedures() {
+    const nBC  = PRODUITS.filter(p => p.procedure === 'BC').length;
+    const nMR  = PRODUITS.filter(p => p.procedure === 'MR').length;
+    const mtBC = PRODUITS.filter(p => p.procedure === 'BC').reduce((s, p) => s + p.qte * p.prix_u, 0);
+    const mtMR = PRODUITS.filter(p => p.procedure === 'MR').reduce((s, p) => s + p.qte * p.prix_u, 0);
+    const pctBC = (mtBC + mtMR) > 0 ? Math.round(mtBC / (mtBC + mtMR) * 100) : 0;
+    const pctMR = 100 - pctBC;
+
+    document.getElementById('ppProcedures').innerHTML = `
+      <div class="pp-section-title">III. Procédures d'approvisionnement et cadre réglementaire</div>
+
+      <p class="pp-text" style="margin-bottom:6pt">
+        Les achats d'intrants médicaux du PSLSH/IST obéissent au Code des marchés publics de la République
+        du Tchad et aux dispositions du Manuel de procédures du Programme. Selon le montant unitaire de
+        l'opération et la nature du produit, deux modes de passation sont appliqués. Le Bon de Commande
+        (BC) couvre <strong>${nBC} ligne${nBC > 1 ? 's' : ''}</strong> pour un montant de
+        <strong>${fmtPlain(mtBC)} FCFA</strong> (${pctBC}% du budget total) ; le Marché Restreint (MR)
+        concerne <strong>${nMR} ligne${nMR > 1 ? 's' : ''}</strong> pour
+        <strong>${fmtPlain(mtMR)} FCFA</strong> (${pctMR}%).
+      </p>
+
+      <table class="pp-table" style="margin-bottom:8pt">
+        <thead><tr>
+          <th style="width:70pt">Procédure</th>
+          <th>Produits concernés</th>
+          <th>Circuit de traitement</th>
+          <th class="tc" style="width:35pt">Délai indicatif</th>
+          <th class="tc" style="width:25pt">Lignes</th>
+          <th class="te" style="width:80pt">Montant prévu (FCFA)</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:700"><span class="pp-bc">Bon de Commande</span><br><span style="font-size:5.5pt;color:#64748b;font-weight:400">(BC)</span></td>
+            <td style="font-size:6pt">Tests rapides de dépistage (RDT), réactifs sérologie et IST en provenance de la Centrale Pharmaceutique d'Achats (CPA), dans la limite du seuil réglementaire</td>
+            <td style="font-size:6pt">Expression de besoin &rarr; Visa disponibilité budgétaire &rarr; BC signé (ordonnateur + comptable) &rarr; Livraison CPA &rarr; PV réception &rarr; BSE &rarr; Facture &rarr; Liquidation &rarr; Paiement</td>
+            <td class="tc" style="font-size:6.5pt">15 à 30 jours</td>
+            <td class="tc">${nBC}</td>
+            <td class="te">${fmtPlain(mtBC)}</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700"><span class="pp-mr">Marché Restreint</span><br><span style="font-size:5.5pt;color:#64748b;font-weight:400">(MR)</span></td>
+            <td style="font-size:6pt">Réactifs PCR et charge virale (VIH, hépatites B/C), cartouches GeneXpert, kits ELISA et tout réactif dont le montant dépasse le seuil du BC</td>
+            <td style="font-size:6pt">Dossier d'appel d'offres (DAO) &rarr; Publication restreinte &rarr; Réception et analyse des offres &rarr; Commission d'attribution &rarr; Approbation organe de contrôle &rarr; Contrat signé &rarr; Livraison &rarr; PV réception &rarr; Décompte &rarr; Paiement</td>
+            <td class="tc" style="font-size:6.5pt">45 à 90 jours</td>
+            <td class="tc">${nMR}</td>
+            <td class="te">${fmtPlain(mtMR)}</td>
+          </tr>
+          <tr class="row-total">
+            <td colspan="4" style="text-align:left">TOTAL &mdash; Ensemble des intrants médicaux 2026</td>
+            <td class="tc">${PRODUITS.length}</td>
+            <td class="te">${fmtPlain(mtBC + mtMR)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="display:table;width:100%;border-spacing:8pt 0;margin-bottom:8pt">
+        <div style="display:table-cell;vertical-align:top;width:50%">
+          <div style="border:0.5pt solid #cbd5e1;padding:6pt 8pt">
+            <div style="font-size:6.5pt;font-weight:800;color:#1b2f52;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5pt">Pièces justificatives exigées</div>
+            <div style="font-size:6.5pt;color:#374151;line-height:1.7">
+              Pour toute opération d'achat, le dossier de paiement doit comporter :<br>
+              (1) le bon de commande ou le contrat signé ; (2) la facture du fournisseur ; (3) le procès-verbal
+              de réception signé par la commission ; (4) le bon d'entrée stock (BES) ; (5) le visa du
+              contrôle interne ; (6) l'ordre de paiement signé par l'ordonnateur et le comptable.
+              Aucun paiement ne peut être effectué si l'une de ces pièces est manquante.
+            </div>
+          </div>
+        </div>
+        <div style="display:table-cell;vertical-align:top;width:50%">
+          <div style="border:0.5pt solid #cbd5e1;padding:6pt 8pt">
+            <div style="font-size:6.5pt;font-weight:800;color:#1b2f52;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5pt">Contraintes de gestion et de contrôle</div>
+            <div style="font-size:6.5pt;color:#374151;line-height:1.7">
+              Le Manuel de procédures impose les règles suivantes, sans dérogation possible :<br>
+              aucun engagement sans ligne budgétaire disponible et visa de l'agent comptable ;
+              séparation stricte des fonctions d'ordonnateur et de comptable ; inventaire physique des
+              stocks à chaque fin de trimestre ; rapport mensuel de gestion des stocks transmis au
+              Coordinateur ; contrôle interne préalable à tout paiement.
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ────────────────────────────────────────────────────────────────
+     Section IV — Compte financier, analyse et signatures
+  ──────────────────────────────────────────────────────────────── */
+  function buildPpCompte() {
+    const totPrevu  = PRODUITS.reduce((s, p) => s + p.qte * p.prix_u, 0);
+    const totEngage = PRODUITS.reduce((s, p) => s + (p.engage || 0), 0);
+    const totPaye   = PRODUITS.reduce((s, p) => s + (p.paye  || 0), 0);
+    const totEcart  = totPrevu - totPaye;
+    const totTaux   = totPrevu > 0 ? ((totPaye / totPrevu) * 100).toFixed(1) : 0;
+
+    // Pré-calculer les stats par catégorie pour le commentaire
+    const catStats = {};
+    Object.keys(DCI_COL).forEach(cat => {
+      const items = PRODUITS.filter(p => p.cat === cat);
+      if (!items.length) return;
+      const cp = items.reduce((s, p) => s + p.qte * p.prix_u, 0);
+      const ce = items.reduce((s, p) => s + (p.engage || 0), 0);
+      const cy = items.reduce((s, p) => s + (p.paye  || 0), 0);
+      catStats[cat] = { n: items.length, cp, ce, cy, ct: cp > 0 ? Math.round(cy / cp * 100) : 0 };
+    });
+
+    // Construction des lignes du tableau
+    let rows = '';
+    Object.keys(DCI_COL).forEach(cat => {
+      const st = catStats[cat];
+      if (!st) return;
+      const items = PRODUITS.filter(p => p.cat === cat);
+      const cc = st.cp - st.cy;
+
+      rows += `<tr class="row-cat">
+        <td colspan="6">${cat} &nbsp;&mdash;&nbsp; ${st.n} produit${st.n > 1 ? 's' : ''} &nbsp;&mdash;&nbsp; Taux d'exécution : <strong style="color:${ppTauxColor(st.ct)}">${st.ct}%</strong></td>
+      </tr>`;
+
+      items.forEach((p, i) => {
+        const pv = p.qte * p.prix_u;
+        const ec = pv - (p.paye || 0);
+        rows += `<tr>
+          <td class="tc" style="color:#94a3b8;font-size:6pt">${i + 1}</td>
+          <td style="font-size:6pt;line-height:1.35">${p.dci.length > 62 ? p.dci.substring(0, 62) + '&hellip;' : p.dci}
+            <span style="display:block;color:#94a3b8;font-size:5pt">${p.unite}</span>
+          </td>
+          <td class="te">${fmtPlain(pv)}</td>
+          <td class="te" style="color:#1d4ed8">${fmtPlain(p.engage || 0)}</td>
+          <td class="te" style="color:#15803d">${fmtPlain(p.paye || 0)}</td>
+          <td class="te" style="color:#b91c1c">${fmtPlain(ec)}</td>
+        </tr>`;
+      });
+
+      rows += `<tr class="row-sub">
+        <td colspan="2" style="text-align:right;font-size:6pt;color:#64748b;font-style:normal;font-weight:700">Sous-total &mdash; ${cat}</td>
+        <td class="te" style="font-weight:700">${fmtPlain(st.cp)}</td>
+        <td class="te" style="font-weight:700;color:#1d4ed8">${fmtPlain(st.ce)}</td>
+        <td class="te" style="font-weight:700;color:#15803d">${fmtPlain(st.cy)}</td>
+        <td class="te" style="font-weight:700;color:#b91c1c">${fmtPlain(cc)}</td>
+      </tr>`;
+    });
+
+    // Génération du commentaire analytique — prose variée, ton officiel
+    const cats = Object.keys(catStats);
+    const catsSorted = [...cats].sort((a, b) => catStats[b].ct - catStats[a].ct);
+    const best  = catsSorted[0];
+    const worst = catsSorted[catsSorted.length - 1];
+    const atZero = cats.filter(c => catStats[c].ct === 0);
+    const above75 = cats.filter(c => catStats[c].ct >= 75);
+    const below40 = cats.filter(c => catStats[c].ct < 40 && catStats[c].ct > 0);
+
+    let commentBody = '';
+
+    // Phrase d'ouverture — synthèse globale
+    commentBody += `Au 05 avril 2026, soit à la clôture du premier trimestre d'exécution budgétaire, le
+      plan d'achat des intrants médicaux du PSLSH/IST enregistre un taux d'exécution global de
+      <strong style="color:${ppTauxColor(parseFloat(totTaux))}">${totTaux}%</strong>, représentant
+      <strong>${fmtPlain(totPaye)} FCFA</strong> décaissés sur une enveloppe totale de
+      <strong>${fmtPlain(totPrevu)} FCFA</strong>. Le montant engagé s'élève à
+      <strong>${fmtPlain(totEngage)} FCFA</strong>, confirmant que la majorité des marchés ont été
+      attribués ou sont en cours de finalisation contractuelle.`;
+
+    commentBody += `<br><br>`;
+
+    // Analyse par catégorie — prose différenciée selon performance
+    cats.forEach(cat => {
+      const st = catStats[cat];
+      if (!st) return;
+      const cc = st.cp - st.cy;
+      if (st.ct >= 75) {
+        commentBody += `Pour les <strong>${cat}</strong> (${st.n} ligne${st.n > 1 ? 's' : ''},
+          ${fmtPlain(st.cp)} FCFA prévus), le taux d'exécution atteint
+          <strong style="color:#15803d">${st.ct}%</strong> : les marchés ont été exécutés sans
+          difficulté notable et les livraisons ont été réceptionnées dans les délais. `;
+      } else if (st.ct >= 40) {
+        commentBody += `Les <strong>${cat}</strong> affichent un taux de
+          <strong style="color:#b45309">${st.ct}%</strong> sur ${fmtPlain(st.cp)} FCFA prévus ;
+          ${fmtPlain(st.cy)} FCFA ont été payés, le reliquat de ${fmtPlain(cc)} FCFA étant
+          rattaché aux livraisons partielles dont la réception est attendue au T2. `;
+      } else if (st.ct > 0) {
+        commentBody += `S'agissant des <strong>${cat}</strong>, le taux d'exécution reste limité à
+          <strong style="color:#b91c1c">${st.ct}%</strong> (${fmtPlain(st.cy)} FCFA décaissés sur
+          ${fmtPlain(st.cp)} FCFA) ; les marchés restreints concernés sont en cours d'instruction
+          et les livraisons ne sont pas encore intervenues. `;
+      } else {
+        commentBody += `Aucun décaissement n'a été enregistré à ce stade pour les
+          <strong>${cat}</strong> (${fmtPlain(st.cp)} FCFA prévus) ; les procédures de passation
+          seront engagées au cours du deuxième trimestre. `;
+      }
+    });
+
+    commentBody += `<br><br>`;
+
+    // Clôture analytique
+    commentBody += `Le solde non exécuté de <strong>${fmtPlain(totEcart)} FCFA</strong> ne traduit
+      pas une sous-consommation structurelle, mais reflète la saisonnalité des approvisionnements en
+      intrants diagnostiques : les achats par bon de commande auprès de la CPA sont déjà soldés à des
+      taux satisfaisants, tandis que les marchés restreints portant sur les réactifs de haute technicité
+      (charge virale, PCR, GeneXpert) suivent des délais d'attribution incompressibles de 45 à 90 jours.
+      Sous réserve du bon déroulement des procédures en cours, les objectifs d'approvisionnement de
+      l'exercice 2026 restent pleinement atteignables.`;
+
+    document.getElementById('ppCompte').innerHTML = `
+      <div class="pp-section-title">IV. Compte financier &mdash; Réactifs et consommables médicaux, exercice 2026</div>
+
+      <p class="pp-text" style="margin-bottom:7pt">
+        Le tableau ci-dessous récapitule l'exécution financière, ligne par ligne et par catégorie, sur la
+        base de la situation arrêtée au <strong>05/04/2026</strong>. Les colonnes indiquent successivement
+        le montant prévu au plan d'achat, le montant engagé (marchés attribués ou contrats signés),
+        le montant effectivement payé et l'écart résiduel à décaisser.
+      </p>
+
+      <table class="pp-table">
+        <thead><tr>
+          <th class="tc" style="width:18pt">N°</th>
+          <th>Désignation du produit / Conditionnement</th>
+          <th class="te" style="width:72pt">Budget prévu (FCFA)</th>
+          <th class="te" style="width:68pt">Engagé (FCFA)</th>
+          <th class="te" style="width:68pt">Payé (FCFA)</th>
+          <th class="te" style="width:68pt">Écart (FCFA)</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr class="row-total">
+            <td colspan="2">TOTAL GÉNÉRAL &mdash; ${PRODUITS.length} produits, exercice 2026</td>
+            <td class="te">${fmtPlain(totPrevu)}</td>
+            <td class="te">${fmtPlain(totEngage)}</td>
+            <td class="te">${fmtPlain(totPaye)}</td>
+            <td class="te">${fmtPlain(totEcart)}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="pp-commentaire pp-no-break">
+        <div class="comm-title">Analyse de l'exécution financière &mdash; Arrêtée au 05 avril 2026</div>
+        ${commentBody}
+      </div>
+
+      <div class="pp-signatures pp-no-break">
+        <div class="pp-sig-bloc">
+          <div class="pp-sig-date">Fait à N'Djaména, le &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;</div>
+          <div style="height:40pt"></div>
+          <div class="pp-sig-line">Le Coordonnateur National</div>
+          <div class="pp-sig-sous">du Programme Sectoriel de Lutte contre le Sida,<br>les Hépatites Virales et les IST (PSLSH/IST)</div>
+        </div>
+        <div class="pp-sig-bloc">
+          <div class="pp-sig-date">Fait à N'Djaména, le &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;</div>
+          <div style="height:40pt"></div>
+          <div class="pp-sig-line">L'Agent Comptable</div>
+          <div class="pp-sig-sous">du Programme Sectoriel de Lutte contre le Sida,<br>les Hépatites Virales et les IST (PSLSH/IST)</div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ── Orchestrateur ── */
+  function buildPrintDoc() {
+    buildPpPreamble();
+    buildPpCalendrier();
+    buildPpProcedures();
+    buildPpCompte();
+  }
+
+  function doPrint() {
+    const wasFiltered = _currentFiltered.length !== PRODUITS.length;
+    if (wasFiltered) resetFilters();
+    // Construire le document, laisser le navigateur rendre avant d'ouvrir la boîte d'impression
+    buildPrintDoc();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.print();
+      });
+    });
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     TOAST
+  ═══════════════════════════════════════════════════════════════ */
+  function toast(msg, bg) {
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${bg||'#15803d'};color:#fff;
+      border-radius:10px;padding:11px 18px;font-size:.78rem;font-weight:700;z-index:9999;
+      display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.25);max-width:360px`;
+    t.innerHTML = `<i class="fas fa-check-circle"></i><span>${msg}</span>`;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.transition='opacity .3s'; t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 2800);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     RAFRAÎCHISSEMENT GLOBAL
+     Appelé après tout ajout / modification / suppression.
+     Remet les filtres à zéro pour montrer l'ensemble des données.
+  ═══════════════════════════════════════════════════════════════ */
+  function _refreshAll() {
+    _currentFiltered = [...PRODUITS];
+    // Réinitialiser les filtres visuellement
+    ['fCat','fStatut','fPao'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    const fs = document.getElementById('fSearch'); if (fs) fs.value = '';
+    const badge = document.getElementById('filterBadge'); if (badge) badge.style.display = 'none';
+    // Rafraîchir tous les composants
+    updateKpis(PRODUITS);
+    renderTauxCat(PRODUITS);
+    renderTrimCards(PRODUITS);
+    renderTable(PRODUITS);
+    renderCalendrier(PRODUITS);
+    renderDci(PRODUITS);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     INIT
+  ═══════════════════════════════════════════════════════════════ */
+  updateKpis(PRODUITS);
+  renderTauxCat(PRODUITS);
+  renderTrimCards(PRODUITS);
+  renderTable(PRODUITS);
+  renderCalendrier(PRODUITS);
+  renderDci(PRODUITS);
+  // Synchroniser les budgets vers pslsh_pao_v1 au démarrage
+  syncPaoShared();
+</script>
+</body>
+</html>

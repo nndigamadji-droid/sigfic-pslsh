@@ -1,0 +1,2602 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Détail dossier</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    /* ── Stepper ── */
+    .stepper-wrap {
+      display: flex; align-items: center; flex-wrap: wrap;
+      gap: 0; overflow-x: auto; padding: 6px 4px;
+    }
+    .step-item {
+      display: flex; align-items: center; gap: 0;
+      flex-shrink: 0;
+    }
+    .step-node {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 6px;
+      font-size: .68rem; font-weight: 700;
+      white-space: nowrap; cursor: pointer;
+      border: 2px solid transparent;
+      transition: all .2s;
+      position: relative;
+    }
+    .step-node.done     { background: #dcfce7; color: #15803d; border-color: #86efac; }
+    .step-node.done:hover { background: #bbf7d0; border-color: #4ade80; }
+    .step-node.active   { background: #1b3a6b; color: #fff; border-color: #1b3a6b; box-shadow: 0 2px 8px rgba(27,58,107,.35); }
+    .step-node.active:hover { background: #254d8f; }
+    .step-node.upcoming { background: #f8fafc; color: #94a3b8; border-color: #e2e8f0; cursor: default; }
+    .step-node.rejete   { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+    .step-node.selected { outline: 2px solid #1b3a6b; outline-offset: 2px; }
+    .step-node.done.selected, .step-node.active.selected { box-shadow: 0 0 0 3px rgba(27,58,107,.25); }
+    .step-arrow {
+      color: #cbd5e1; font-size: .8rem; padding: 0 3px; flex-shrink: 0;
+    }
+
+    /* ── Panneau détail étape ── */
+    .step-detail-panel {
+      border-top: 1px solid #e2e8f0;
+      margin-top: 8px; padding-top: 12px;
+      display: none;
+      animation: fadeSlideIn .18s ease;
+    }
+    .step-detail-panel.open { display: block; }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .sdp-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .sdp-title {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: #1b3a6b;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .sdp-close {
+      font-size: .68rem; color: #94a3b8; cursor: pointer; padding: 2px 6px;
+      border-radius: 4px; border: 1px solid #e2e8f0; background: #f8fafc;
+      transition: all .1s;
+    }
+    .sdp-close:hover { color: #475569; border-color: #94a3b8; }
+    .sdp-empty {
+      font-size: .8rem; color: #94a3b8; font-style: italic; padding: 8px 0;
+    }
+    .sdp-badge-statut {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: .65rem; font-weight: 700; padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .sdp-stat { font-size: .72rem; color: #64748b; }
+    .sdp-pieces-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px;
+    }
+    .sdp-piece-item {
+      display: flex; align-items: center; gap: 10px;
+      background: #f8fafc; border: 1px solid #e8edf3;
+      border-radius: 8px; padding: 8px 12px;
+      border-left: 4px solid #e2e8f0;
+      transition: border-color .15s;
+    }
+    .sdp-piece-item.spi-valide  { border-left-color: #22c55e; }
+    .sdp-piece-item.spi-genere  { border-left-color: #3b82f6; }
+    .sdp-piece-item.spi-ajoute  { border-left-color: #f59e0b; }
+    .sdp-piece-item.spi-rejete  { border-left-color: #ef4444; }
+    .sdp-piece-item.spi-attente { border-left-color: #e2e8f0; }
+    .sdp-piece-icon {
+      width: 32px; height: 32px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem; flex-shrink: 0;
+      background: #e8f0fb; color: #1b3a6b;
+    }
+    .sdp-piece-label { font-size: .78rem; font-weight: 600; color: #1e293b; flex: 1; line-height: 1.3; }
+    .sdp-piece-code  { font-size: .62rem; font-family: monospace; color: #94a3b8; }
+    .sdp-piece-tag   { font-size: .62rem; font-weight: 700; padding: 2px 7px; border-radius: 10px; white-space: nowrap; }
+    .spt-valide  { background: #dcfce7; color: #15803d; }
+    .spt-genere  { background: #dbeafe; color: #1d4ed8; }
+    .spt-ajoute  { background: #fef3c7; color: #92400e; }
+    .spt-rejete  { background: #fee2e2; color: #b91c1c; }
+    .spt-attente { background: #f1f5f9; color: #64748b; }
+    .spt-absent  { background: #f1f5f9; color: #94a3b8; font-style: italic; }
+    .sdp-piece-btn {
+      font-size: .65rem; font-weight: 700; padding: 3px 9px; border-radius: 5px;
+      border: 1px solid; cursor: pointer; white-space: nowrap; transition: all .15s;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+    }
+
+    /* ── Tabs ── */
+    .det-tabs { border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
+    .det-tabs .nav-link {
+      font-size: .78rem; font-weight: 600; color: #64748b;
+      padding: 8px 18px; border: none; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; border-radius: 0; background: none;
+    }
+    .det-tabs .nav-link.active {
+      color: #1b3a6b; border-bottom-color: #1b3a6b; background: none;
+    }
+    .det-tabs .nav-link:hover:not(.active) { color: #1b3a6b; }
+
+    /* ── Info card ── */
+    .info-card {
+      background: #fff; border: 1px solid #e2e8f0;
+      border-radius: 10px; overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,.06);
+    }
+    .info-card-header {
+      background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+      padding: 10px 16px; font-size: .73rem;
+      font-weight: 700; text-transform: uppercase;
+      letter-spacing: .05em; color: #475569;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .info-card-body { padding: 14px 16px; }
+    .info-row {
+      display: flex; justify-content: space-between;
+      align-items: baseline; padding: 5px 0;
+      border-bottom: 1px dashed #f1f5f9; font-size: .8rem;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #64748b; flex-shrink: 0; min-width: 130px; }
+    .info-val   { font-weight: 600; color: #1e293b; text-align: right; }
+
+    /* ── Pièces ── */
+    .pieces-section-title {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: #475569;
+      padding: 8px 0 6px; margin-bottom: 6px;
+      border-bottom: 2px solid #e2e8f0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .piece-card {
+      background: #fff; border: 1px solid #e2e8f0;
+      border-radius: 8px; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 0;
+      overflow: hidden; transition: box-shadow .15s;
+    }
+    .piece-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .piece-left {
+      width: 5px; align-self: stretch; flex-shrink: 0;
+    }
+    .piece-left.done     { background: #22c55e; }
+    .piece-left.pending  { background: #e2e8f0; }
+    .piece-left.rejete   { background: #ef4444; }
+    .piece-left.nr       { background: #f59e0b; }
+    .piece-body {
+      flex: 1; padding: 10px 14px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .piece-type-badge {
+      font-family: monospace; font-size: .72rem; font-weight: 800;
+      background: #e0e7ff; color: #3730a3;
+      padding: 3px 8px; border-radius: 5px;
+      min-width: 42px; text-align: center; flex-shrink: 0;
+    }
+    .piece-type-badge.ext { background: #fef3c7; color: #92400e; }
+    .piece-label  { flex: 1; font-size: .8rem; font-weight: 600; color: #1e293b; }
+    .piece-statut { font-size: .67rem; padding: 3px 9px; border-radius: 20px; font-weight: 700; white-space: nowrap; }
+    .ps-attente  { background: #f1f5f9; color: #64748b; }
+    .ps-genere   { background: #dbeafe; color: #1d4ed8; }
+    .ps-valide   { background: #dcfce7; color: #15803d; }
+    .ps-rejete   { background: #fee2e2; color: #b91c1c; }
+    .ps-ajoute   { background: #fef3c7; color: #92400e; }
+    .ps-nr       { background: #fef9c3; color: #a16207; }
+    .piece-date  { font-size: .67rem; color: #94a3b8; white-space: nowrap; }
+    .piece-actions { padding: 10px 12px; display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-piece {
+      font-size: .68rem; font-weight: 700;
+      padding: 4px 10px; border-radius: 5px;
+      border: 1px solid; cursor: pointer;
+      white-space: nowrap; transition: all .15s;
+    }
+    .btn-gen  { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .btn-gen:hover  { background: #1d4ed8; color: #fff; }
+    .btn-voir { background: #f0fdf4; color: #15803d; border-color: #86efac; }
+    .btn-voir:hover { background: #15803d; color: #fff; }
+    .btn-add  { background: #fffbeb; color: #b45309; border-color: #fcd34d; }
+    .btn-add:hover  { background: #b45309; color: #fff; }
+    .btn-val  { background: #f0fdf4; color: #15803d; border-color: #86efac; }
+    .btn-val:hover  { background: #15803d; color: #fff; }
+    .btn-valider { background: #ecfdf5; color: #059669; border-color: #6ee7b7; }
+    .btn-valider:hover { background: #059669; color: #fff; }
+    .btn-imprimer { background: #f8fafc; color: #475569; border-color: #cbd5e1; }
+    .btn-imprimer:hover { background: #475569; color: #fff; }
+
+    /* ── Timeline ── */
+    .timeline-item {
+      display: flex; gap: 12px; padding: 10px 0;
+      border-bottom: 1px dashed #f1f5f9;
+    }
+    .timeline-item:last-child { border-bottom: none; }
+    .tl-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #1b3a6b; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; flex-shrink: 0;
+    }
+    .tl-content { flex: 1; }
+    .tl-action  { font-size: .8rem; font-weight: 600; color: #1e293b; }
+    .tl-meta    { font-size: .67rem; color: #94a3b8; margin-top: 1px; }
+
+    /* ── Statut badges (dossier) ── */
+    .st-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: .7rem; font-weight: 700;
+      padding: 4px 11px; border-radius: 20px;
+    }
+    .st-brouillon   { background: #f1f5f9; color: #64748b; }
+    .st-soumis      { background: #dbeafe; color: #1d4ed8; }
+    .st-valide      { background: #cffafe; color: #0e7490; }
+    .st-en_cotation { background: #f3e8ff; color: #7e22ce; }
+    .st-commande    { background: #e0e7ff; color: #4338ca; }
+    .st-receptionne { background: #ffedd5; color: #c2410c; }
+    .st-service_fait{ background: #fef9c3; color: #a16207; }
+    .st-liquide     { background: #ede9fe; color: #6d28d9; }
+    .st-ordonnance  { background: #fce7f3; color: #be185d; }
+    .st-paye        { background: #dcfce7; color: #15803d; }
+    .st-rejete      { background: #fee2e2; color: #b91c1c; }
+    .st-archive     { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; }
+
+    /* ── Workflow actions ── */
+    .wf-btn {
+      font-size: .73rem; font-weight: 700;
+      padding: 6px 14px; border-radius: 6px; cursor: pointer;
+      border: none; transition: all .15s;
+    }
+    .wf-avancer { background: #1b3a6b; color: #fff; }
+    .wf-avancer:hover { background: #254d8f; }
+    .wf-rejeter { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .wf-rejeter:hover { background: #b91c1c; color: #fff; }
+
+    /* ── PDF Viewer (modal Voir) ── */
+    #modalVoirBody {
+      background: #525659;
+      padding: 24px 16px;
+      min-height: 360px;
+    }
+    .doc-preview {
+      background: #fff;
+      width: 794px;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 50px 56px 72px;
+      box-shadow: 0 6px 36px rgba(0,0,0,.6);
+      font-size: .78rem;
+      line-height: 1.6;
+      position: relative;
+    }
+    /* Filigrane de fond */
+    .doc-preview::before {
+      content: 'SIGFIC-PSLSH';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%) rotate(-35deg);
+      font-size: 5rem; font-weight: 900;
+      color: rgba(27,58,107,.04);
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: .3em;
+    }
+    /* QR code flottant */
+    .doc-qr-block {
+      position: absolute;
+      bottom: 22px; right: 48px;
+      text-align: center;
+    }
+    .doc-qr-label {
+      font-size: .44rem;
+      color: #94a3b8;
+      margin-top: 3px;
+      font-family: monospace;
+      line-height: 1.4;
+    }
+    .doc-header {
+      text-align: center; border-bottom: 2px solid #1b3a6b;
+      padding-bottom: 12px; margin-bottom: 16px;
+    }
+    .doc-header-org   { font-size: .65rem; color: #64748b; text-transform: uppercase; letter-spacing: .06em; }
+    .doc-header-title { font-size: 1rem; font-weight: 800; color: #1b3a6b; margin: 6px 0 2px; }
+    .doc-header-ref   { font-size: .7rem; color: #475569; font-family: monospace; }
+    .doc-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: .75rem; }
+    .doc-table th { background: #1b3a6b; color: #fff; padding: 6px 10px; text-align: left; }
+    .doc-table td { padding: 5px 10px; border-bottom: 1px solid #e2e8f0; }
+    .doc-table tr:nth-child(even) td { background: #f8fafc; }
+    .doc-sign { margin-top: 24px; display: flex; justify-content: flex-end; }
+    .doc-sign-box {
+      border-top: 1px solid #1b3a6b; min-width: 200px;
+      text-align: center; padding-top: 6px;
+      font-size: .7rem; color: #475569;
+    }
+    .doc-field { margin-bottom: 8px; }
+    .doc-field-label { font-size: .65rem; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+    .doc-field-value { font-weight: 600; color: #1e293b; }
+
+    /* ── Progress bar pièces ── */
+    .pieces-progress-bar {
+      height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin: 6px 0;
+    }
+    .pieces-progress-fill { height: 100%; border-radius: 3px; background: #1b3a6b; transition: width .3s; }
+
+    /* ── Toast ── */
+    #dosToast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #1e3a5f; color: #fff;
+      padding: 10px 18px; border-radius: 8px;
+      font-size: .83rem; z-index: 9999;
+      opacity: 0; transition: opacity .3s;
+      pointer-events: none; max-width: 340px;
+    }
+    #dosToast.show { opacity: 1; }
+
+    /* ── Modal header ── */
+    .modal-header-dos {
+      background: linear-gradient(135deg, #0f2944, #1b3a6b);
+      color: #fff; border-bottom: none; padding: 14px 20px;
+    }
+    .modal-header-dos .btn-close { filter: invert(1); opacity: .7; }
+    .modal-header-dos .modal-title { font-size: .9rem; font-weight: 700; }
+
+    /* ── Print ── */
+    @media print {
+      .sidebar, .topbar, .det-tabs, .piece-actions,
+      .wf-actions, #dosToast { display: none !important; }
+      .modal-header-dos, .modal-footer { display: none !important; }
+      #modalVoirBody { background: #fff !important; padding: 0 !important; }
+      .doc-preview {
+        box-shadow: none !important;
+        padding: 10mm 15mm !important;
+        width: 100% !important;
+      }
+      .doc-preview::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo"
+           onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="index.html">Dossiers</a></li>
+            <li class="breadcrumb-item active" id="bcRef">—</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-secondary me-1" onclick="window.print()" title="Imprimer">
+          <i class="fas fa-print"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Page ── -->
+    <div class="page-content" style="padding:22px 28px 40px;">
+
+      <!-- ── En-tête dossier ── -->
+      <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+        <div>
+          <div class="d-flex align-items-center gap-10 flex-wrap" style="gap:10px;">
+            <h4 class="mb-0 fw-800" style="font-size:1.05rem;color:#1b3a6b;" id="dosRef">—</h4>
+            <span id="dosStatutBadge"></span>
+          </div>
+          <div style="font-size:.8rem;color:#475569;margin-top:3px;" id="dosObjet"></div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+          <button class="wf-btn" onclick="history.back()"
+                  style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">
+            <i class="fas fa-arrow-left me-1"></i>Retour
+          </button>
+          <a href="index.html" class="wf-btn"
+             style="background:#fff;color:#1b3a6b;border:1px solid #bfdbfe;text-decoration:none;">
+            <i class="fas fa-folder-open me-1"></i>Dossiers
+          </a>
+          <div class="d-flex gap-2 flex-wrap" id="wfActions"></div>
+        </div>
+      </div>
+
+      <!-- ── Stepper ── -->
+      <div class="info-card mb-3">
+        <div class="info-card-body py-2">
+          <div class="stepper-wrap" id="stepper"></div>
+          <!-- Panneau pièces par étape -->
+          <div class="step-detail-panel" id="stepDetailPanel">
+            <div class="sdp-header">
+              <div class="sdp-title" id="sdpTitle">
+                <i class="fas fa-paperclip"></i>
+                <span id="sdpTitleText"></span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="sdp-stat" id="sdpStat"></span>
+                <span class="sdp-close" onclick="fermerStepDetail()"><i class="fas fa-times me-1"></i>Fermer</span>
+              </div>
+            </div>
+            <div class="sdp-pieces-grid" id="sdpPiecesList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tabs ── -->
+      <ul class="nav det-tabs" id="detTabs">
+        <li class="nav-item">
+          <button class="nav-link active" data-tab="tab-info">
+            <i class="fas fa-info-circle me-1"></i>Informations
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-tab="tab-pieces">
+            <i class="fas fa-paperclip me-1"></i>Pièces du dossier
+            <span class="ms-1" id="piecesTabBadge"
+                  style="font-size:.63rem;background:#e0e7ff;color:#3730a3;
+                         padding:1px 6px;border-radius:10px;font-weight:700;"></span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-tab="tab-histo">
+            <i class="fas fa-history me-1"></i>Historique
+          </button>
+        </li>
+      </ul>
+
+      <!-- ── Tab: Informations ── -->
+      <div id="tab-info" class="tab-pane-det active">
+        <div class="row g-3">
+
+          <!-- Détails -->
+          <div class="col-md-6">
+            <div class="info-card h-100">
+              <div class="info-card-header">
+                <i class="fas fa-folder text-primary"></i> Détails du dossier
+              </div>
+              <div class="info-card-body">
+                <div class="info-row"><span class="info-label">Type de dossier</span><span class="info-val" id="iType">—</span></div>
+                <div class="info-row"><span class="info-label">Référence</span><span class="info-val mono" id="iRef">—</span></div>
+                <div class="info-row"><span class="info-label">Exercice</span><span class="info-val" id="iExercice">2026</span></div>
+                <div class="info-row"><span class="info-label">Activité</span><span class="info-val" id="iActivite">—</span></div>
+                <div class="info-row"><span class="info-label">Ligne budgétaire</span><span class="info-val" id="iLigne">—</span></div>
+                <div class="info-row"><span class="info-label">Source financement</span><span class="info-val" id="iSource">—</span></div>
+                <div class="info-row"><span class="info-label">Bénéficiaire</span><span class="info-val" id="iBenef">—</span></div>
+                <div class="info-row"><span class="info-label">Créé par</span><span class="info-val" id="iCreateur">—</span></div>
+                <div class="info-row"><span class="info-label">Date création</span><span class="info-val" id="iDate">—</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Suivi financier -->
+          <div class="col-md-6">
+            <div class="info-card mb-3">
+              <div class="info-card-header">
+                <i class="fas fa-chart-pie text-warning"></i> Suivi financier
+              </div>
+              <div class="info-card-body">
+                <div class="info-row"><span class="info-label">Montant estimé</span><span class="info-val" id="fEstime">—</span></div>
+                <div class="info-row"><span class="info-label">Montant engagé</span><span class="info-val text-info" id="fEngage">—</span></div>
+                <div class="info-row"><span class="info-label">Montant liquidé</span><span class="info-val text-warning" id="fLiquide">—</span></div>
+                <div class="info-row" style="border-bottom:none;">
+                  <span class="info-label fw-bold">Montant payé</span>
+                  <span class="info-val text-success fw-bold" id="fPaye">—</span>
+                </div>
+                <div class="pieces-progress-bar mt-2">
+                  <div class="pieces-progress-fill" id="fBar" style="width:0%;"></div>
+                </div>
+                <div style="font-size:.67rem;color:#94a3b8;" id="fTaux">Taux d'exécution : 0%</div>
+              </div>
+            </div>
+
+            <!-- Note -->
+            <div class="info-card">
+              <div class="info-card-header"><i class="fas fa-sticky-note text-muted"></i> Note / Observations</div>
+              <div class="info-card-body">
+                <div style="font-size:.8rem;color:#475569;white-space:pre-wrap;" id="iNote">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Avancement pièces -->
+          <div class="col-12">
+            <div class="info-card">
+              <div class="info-card-header"><i class="fas fa-tasks text-primary"></i> Avancement des pièces</div>
+              <div class="info-card-body">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span style="font-size:.78rem;color:#475569;" id="piecesInfoTxt">—</span>
+                  <span style="font-size:.78rem;font-weight:700;color:#1b3a6b;" id="piecesInfoPct">—</span>
+                </div>
+                <div class="pieces-progress-bar" style="height:10px;">
+                  <div class="pieces-progress-fill" id="piecesInfoBar" style="width:0%;height:100%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Tab: Pièces ── -->
+      <div id="tab-pieces" class="tab-pane-det" style="display:none;">
+
+        <!-- Pièces internes -->
+        <div class="pieces-section-title">
+          <i class="fas fa-cog text-primary"></i>
+          Pièces internes : <span id="piecesTypeLabel" style="color:#1b3a6b;"></span>
+          <span style="font-size:.65rem;font-weight:500;color:#94a3b8;">(selon le type d'opération)</span>
+        </div>
+        <div id="listPiecesInternes"></div>
+
+        <!-- Pièces externes -->
+        <div class="pieces-section-title mt-3">
+          <i class="fas fa-paperclip text-warning"></i>
+          Pièces externes à joindre
+          <span style="font-size:.65rem;font-weight:500;color:#94a3b8;">(2 pièces, ajoutées par l'utilisateur)</span>
+        </div>
+        <div id="listPiecesExternes"></div>
+
+      </div>
+
+      <!-- ── Tab: Historique ── -->
+      <div id="tab-histo" class="tab-pane-det" style="display:none;">
+        <div class="info-card">
+          <div class="info-card-header"><i class="fas fa-history"></i> Journal des actions</div>
+          <div class="info-card-body" id="timeline"></div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+
+<!-- ═══════════════════════════════════════════════════
+     MODAL — Générer une pièce interne
+═══════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalGen" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header modal-header-dos">
+        <h5 class="modal-title" id="modalGenTitle">Générer la pièce</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalGenBody">
+        <!-- Formulaire injecté dynamiquement -->
+      </div>
+      <div class="modal-footer border-top">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="sauvegarderPiece()" id="btnSauvegarderPiece">
+          <i class="fas fa-save me-1"></i>Enregistrer la pièce
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     MODAL — Voir une pièce (aperçu document)
+═══════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalVoir" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header modal-header-dos">
+        <h5 class="modal-title" id="modalVoirTitle">Aperçu du document</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalVoirBody">
+        <!-- Aperçu injecté -->
+      </div>
+      <div class="modal-footer border-top">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+        <button type="button" class="btn btn-sm btn-outline-primary" onclick="imprimerDoc()">
+          <i class="fas fa-print me-1"></i>Imprimer
+        </button>
+        <button type="button" class="btn btn-sm btn-success" id="btnValiderPiece" onclick="validerPieceCourante()">
+          <i class="fas fa-check me-1"></i>Valider cette pièce
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     MODAL — Ajouter une pièce externe
+═══════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalExt" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header modal-header-dos">
+        <h5 class="modal-title" id="modalExtTitle">Ajouter une pièce externe</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="extTypeId">
+        <div class="mb-2" id="extRefWrap">
+          <label class="form-label form-label-sm fw-bold">Référence du document <span class="text-danger">*</span></label>
+          <input type="text" class="form-control form-control-sm" id="extRef" placeholder="Ex: FACT-2026-042">
+        </div>
+        <div class="mb-2">
+          <label class="form-label form-label-sm fw-bold">Date du document</label>
+          <input type="date" class="form-control form-control-sm" id="extDate">
+        </div>
+        <div class="mb-2" id="extEmetteurWrap">
+          <label class="form-label form-label-sm fw-bold">Émetteur / Fournisseur</label>
+          <input type="text" class="form-control form-control-sm" id="extEmetteur" placeholder="Nom du fournisseur ou émetteur">
+        </div>
+        <div class="mb-2" id="extMontantWrap">
+          <label class="form-label form-label-sm fw-bold">Montant (FCFA)</label>
+          <input type="number" class="form-control form-control-sm" id="extMontant" placeholder="0" min="0">
+        </div>
+        <!-- Champs spécifiques injectés dynamiquement selon le type -->
+        <div id="extExtraFields"></div>
+        <div class="mb-2">
+          <label class="form-label form-label-sm fw-bold">Observations</label>
+          <textarea class="form-control form-control-sm" id="extNote" rows="2" placeholder="Remarques éventuelles…"></textarea>
+        </div>
+        <div class="alert alert-info py-2 px-3 mb-0" style="font-size:.72rem;">
+          <i class="fas fa-info-circle me-1"></i>
+          Le fichier physique est archivé dans le classeur du dossier. Saisissez les métadonnées ci-dessus pour le suivi.
+        </div>
+      </div>
+      <div class="modal-footer border-top">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-warning" onclick="sauvegarderPieceExt()">
+          <i class="fas fa-plus me-1"></i>Ajouter la pièce
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     MODAL — Avancer le workflow
+═══════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalWF" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header modal-header-dos">
+        <h5 class="modal-title" id="modalWFTitle">Changer le statut</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="wfTargetStatut">
+        <div class="alert alert-warning py-2 px-3 mb-3" style="font-size:.78rem;" id="wfAlerte"></div>
+        <div class="mb-2">
+          <label class="form-label form-label-sm fw-bold">Commentaire (optionnel)</label>
+          <textarea class="form-control form-control-sm" id="wfComment" rows="3" placeholder="Justification ou remarque…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer border-top">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="confirmerWF()" id="btnConfWF">
+          <i class="fas fa-arrow-right me-1"></i>Confirmer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="dosToast"></div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CONSTANTES
+═══════════════════════════════════════════════════════════ */
+const LS_KEY = 'pslsh_dossiers_v1';
+
+/* Métadonnées des pièces — tous types confondus */
+const PIECES_META = {
+  /* ── Achat ── */
+  EB:  { label: 'Expression de besoin',          type: 'interne', icon: 'fa-file-alt',            ordre: 1  },
+  DC:  { label: 'Demande de cotation',            type: 'interne', icon: 'fa-envelope-open-text',  ordre: 2  },
+  TC:  { label: 'Tableau comparatif des offres',  type: 'interne', icon: 'fa-table',               ordre: 3  },
+  BC:  { label: 'Bon de commande',                type: 'interne', icon: 'fa-shopping-bag',        ordre: 4  },
+  PVR: { label: 'PV de réception',                type: 'interne', icon: 'fa-clipboard-check',     ordre: 5  },
+  ASF: { label: 'Attestation de service fait',    type: 'interne', icon: 'fa-certificate',         ordre: 6  },
+  BDS: { label: 'Bordereau de sortie stock',      type: 'interne', icon: 'fa-sign-out-alt',        ordre: 7  },
+  OP:  { label: 'Ordre de paiement',              type: 'interne', icon: 'fa-file-invoice-dollar', ordre: 8  },
+  OV:  { label: 'Ordre de virement immédiat',    type: 'interne', icon: 'fa-university',           ordre: 9  },
+  FP:  { label: 'Facture proforma',               type: 'externe', icon: 'fa-file-invoice',        ordre: 9  },
+  PA:  { label: 'Pièces admin. fournisseur',      type: 'externe', icon: 'fa-folder-open',         ordre: 10 },
+  FAC: { label: 'Facture / Note d\'honoraires',   type: 'externe', icon: 'fa-receipt',             ordre: 11 },
+  BL:  { label: 'Bordereau de livraison',         type: 'externe', icon: 'fa-truck',               ordre: 12 },
+  /* ── Mission / Prestation ── */
+  TDR: { label: 'Termes de référence',            type: 'interne', icon: 'fa-scroll',              ordre: 11 },
+  CTR: { label: 'Contrat / Marché',               type: 'interne', icon: 'fa-file-signature',      ordre: 12 },
+  OM:  { label: 'Ordre de mission',               type: 'interne', icon: 'fa-plane-departure',     ordre: 13 },
+  PVV: { label: 'PV de validation',               type: 'interne', icon: 'fa-stamp',               ordre: 14 },
+  RM:  { label: 'Rapport de mission',             type: 'externe', icon: 'fa-file-alt',            ordre: 15 },
+  /* ── Formation ── */
+  NC:  { label: 'Note conceptuelle',              type: 'interne', icon: 'fa-lightbulb',           ordre: 16 },
+  AGE: { label: 'Agenda / Programme',             type: 'interne', icon: 'fa-calendar-check',      ordre: 17 },
+  LP:  { label: 'Liste des participants',         type: 'interne', icon: 'fa-users',               ordre: 18 },
+  ATT: { label: 'Attestations de participation',  type: 'interne', icon: 'fa-award',               ordre: 19 },
+  RF:  { label: 'Rapport de formation',           type: 'externe', icon: 'fa-graduation-cap',      ordre: 20 },
+  /* ── Atelier ── */
+  BD:  { label: 'Budget détaillé',                type: 'interne', icon: 'fa-coins',               ordre: 21 },
+  INV: { label: 'Invitations',                    type: 'interne', icon: 'fa-envelope',            ordre: 22 },
+  RA:  { label: 'Rapport d\'atelier',             type: 'externe', icon: 'fa-flag-checkered',      ordre: 23 },
+};
+
+const TYPE_DOSSIER_LABELS = {
+  achat:     'Achat / Fournitures / Services',
+  mission:   'Mission / Prestation intellectuelle',
+  formation: 'Formation',
+  atelier:   'Atelier / Événement',
+};
+
+const SOURCE_LABELS = {
+  S1: 'Fonctionnement État-PSLSH',
+  S2: 'Contrepartie État-PSLSH',
+  S3: 'Charges Personnel État-PSLSH',
+  S4: 'Subvention FM/GC7',
+};
+
+const STATUT_META = {
+  brouillon:    { label: 'Brouillon',      cls: 'st-brouillon',    icon: 'fa-file' },
+  soumis:       { label: 'Soumis',         cls: 'st-soumis',       icon: 'fa-paper-plane' },
+  valide:       { label: 'Validé',         cls: 'st-valide',       icon: 'fa-check-circle' },
+  en_cotation:  { label: 'En cotation',    cls: 'st-en_cotation',  icon: 'fa-tags' },
+  commande:     { label: 'Commandé',       cls: 'st-commande',     icon: 'fa-shopping-cart' },
+  receptionne:  { label: 'Réceptionné',    cls: 'st-receptionne',  icon: 'fa-box-open' },
+  service_fait: { label: 'Service fait',   cls: 'st-service_fait', icon: 'fa-handshake' },
+  liquide:      { label: 'Liquidé',        cls: 'st-liquide',      icon: 'fa-balance-scale' },
+  ordonnance:   { label: 'Ordonnancé',     cls: 'st-ordonnance',   icon: 'fa-stamp' },
+  paye:         { label: 'Payé',           cls: 'st-paye',         icon: 'fa-check-double' },
+  rejete:       { label: 'Rejeté',         cls: 'st-rejete',       icon: 'fa-times-circle' },
+  archive:      { label: 'Archivé',        cls: 'st-archive',      icon: 'fa-archive' },
+};
+
+/* Transitions autorisées par statut */
+const TRANSITIONS = {
+  brouillon:    [{ to: 'soumis',       label: 'Soumettre',       cls: 'wf-avancer' }],
+  soumis:       [{ to: 'valide',       label: 'Valider',         cls: 'wf-avancer' },
+                 { to: 'rejete',       label: 'Rejeter',         cls: 'wf-rejeter' }],
+  valide:       [{ to: 'en_cotation',  label: 'Lancer cotation', cls: 'wf-avancer' }],
+  en_cotation:  [{ to: 'commande',     label: 'Commander',       cls: 'wf-avancer' }],
+  commande:     [{ to: 'receptionne',  label: 'Réceptionner',    cls: 'wf-avancer' }],
+  receptionne:  [{ to: 'service_fait', label: 'Service fait',    cls: 'wf-avancer' }],
+  service_fait: [{ to: 'liquide',      label: 'Liquider',        cls: 'wf-avancer' }],
+  liquide:      [{ to: 'ordonnance',   label: 'Ordonnancer',     cls: 'wf-avancer' }],
+  ordonnance:   [{ to: 'paye',         label: 'Marquer payé',    cls: 'wf-avancer' }],
+  paye:         [{ to: 'archive',      label: 'Archiver',        cls: 'wf-avancer' }],
+  rejete:       [{ to: 'brouillon',    label: 'Réouvrir',        cls: 'wf-avancer' }],
+  archive:      [],
+};
+
+const STEPS_ORDRE = ['brouillon','soumis','valide','en_cotation','commande',
+                     'receptionne','service_fait','liquide','ordonnance','paye','archive'];
+
+/* Pièces attendues à chaque étape du workflow */
+const STEP_PIECES = {
+  brouillon:    { label: 'Initiation — Expression du besoin',  pieces: ['EB'] },
+  soumis:       { label: 'Demande de cotation',                pieces: ['DC', 'FP'] },
+  valide:       { label: 'Analyse des offres',                 pieces: ['TC'] },
+  en_cotation:  { label: 'Passation — Commande / Contrat',     pieces: ['BC', 'CTR', 'TDR', 'OM', 'NC', 'BD', 'INV', 'AGE'] },
+  commande:     { label: 'Livraison / Réalisation',            pieces: ['PVR', 'BL', 'BDS', 'RM', 'RF', 'RA', 'LP', 'ATT'] },
+  receptionne:  { label: 'Constat de service fait',            pieces: ['ASF', 'PVV'] },
+  service_fait: { label: 'Liquidation — Factures',             pieces: ['FAC', 'PA'] },
+  liquide:      { label: 'Ordonnancement',                     pieces: ['OP'] },
+  ordonnance:   { label: 'Paiement',                           pieces: ['OV'] },
+  paye:         { label: 'Dossier payé — en cours d\'archivage', pieces: [] },
+  archive:      { label: 'Dossier archivé',                    pieces: [] },
+};
+
+/* ═══════════════════════════════════════════════════════════
+   STORE
+═══════════════════════════════════════════════════════════ */
+let store = null;
+let dossier = null;
+
+const dosId = (() => {
+  const p = new URLSearchParams(location.search);
+  return p.get('id');
+})();
+
+const STORE_VERSION_MIN = 4; /* doit correspondre à DEMO_VERSION dans index.html */
+
+function chargerStore() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed._ok && Array.isArray(parsed.data)) {
+        /* Version trop ancienne → forcer reset via index.html */
+        if ((parsed._version || 0) < STORE_VERSION_MIN) {
+          localStorage.removeItem(LS_KEY);
+          location.href = 'index.html';
+          return { _ok: true, nid: 0, data: [] };
+        }
+        return parsed;
+      }
+    }
+  } catch(e) { /* ignore */ }
+  return { _ok: true, nid: 0, data: [] };
+}
+
+function sauvegarderStore() {
+  localStorage.setItem(LS_KEY, JSON.stringify(store));
+}
+
+function chargerDossier() {
+  store = chargerStore();
+  if (!dosId) { location.href = 'index.html'; return; }
+  dossier = store.data.find(d => d.id === dosId);
+  if (!dossier) { showToast('Dossier introuvable.'); setTimeout(() => location.href = 'index.html', 1500); return; }
+  renderPage();
+}
+
+function renderPage() {
+  /* Breadcrumb & titre */
+  document.getElementById('bcRef').textContent = dossier.reference;
+  document.getElementById('dosRef').textContent = dossier.reference;
+  document.getElementById('dosObjet').textContent = dossier.objet;
+
+  /* Badge statut */
+  const sm = STATUT_META[dossier.statut] || { label: dossier.statut, cls: 'st-brouillon', icon: 'fa-circle' };
+  document.getElementById('dosStatutBadge').innerHTML =
+    `<span class="st-badge ${sm.cls}"><i class="fas ${sm.icon}"></i> ${sm.label}</span>`;
+
+  /* Infos générales */
+  document.getElementById('iType').textContent     = TYPE_DOSSIER_LABELS[dossier.typeDossier] || dossier.typeDossier || '—';
+  document.getElementById('iRef').textContent      = dossier.reference;
+  document.getElementById('iActivite').textContent = dossier.activite || '—';
+  document.getElementById('iLigne').textContent    = dossier.ligneBudgetaire || '—';
+  document.getElementById('iSource').textContent   = SOURCE_LABELS[dossier.source] || dossier.source || '—';
+  document.getElementById('iBenef').textContent    = dossier.beneficiaire || '—';
+  document.getElementById('iCreateur').textContent = dossier.createdBy || '—';
+  document.getElementById('iDate').textContent     = fmtDate(dossier.dateCreation);
+  document.getElementById('iNote').textContent     = dossier.note || '(aucune note)';
+
+  /* Suivi financier */
+  const estime = dossier.montantEstime || 0;
+  const paye   = dossier.montantPaye   || 0;
+  document.getElementById('fEstime').textContent  = fmtXOF(estime);
+  document.getElementById('fEngage').textContent  = fmtXOF(dossier.montantEngage || 0);
+  document.getElementById('fLiquide').textContent = fmtXOF(dossier.montantLiquide || 0);
+  document.getElementById('fPaye').textContent    = fmtXOF(paye);
+  const taux = estime > 0 ? Math.min(100, Math.round(paye * 100 / estime)) : 0;
+  document.getElementById('fBar').style.width    = taux + '%';
+  document.getElementById('fTaux').textContent   = `Taux d'exécution : ${taux}%`;
+
+  /* Stepper */
+  renderStepper();
+
+  /* Workflow actions */
+  renderWFActions();
+
+  /* Pièces */
+  renderPieces();
+  renderPiecesInfo();
+
+  /* Historique */
+  renderHistorique();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STEPPER
+═══════════════════════════════════════════════════════════ */
+let _selectedStep = null;
+
+function renderStepper() {
+  const idxCourant = STEPS_ORDRE.indexOf(dossier.statut);
+  const isRejete   = dossier.statut === 'rejete';
+
+  let html = '';
+  STEPS_ORDRE.forEach((s, i) => {
+    if (i > 0) html += '<span class="step-arrow">›</span>';
+    let cls = 'upcoming';
+    if (isRejete && s === 'rejete') cls = 'rejete';
+    else if (i < idxCourant) cls = 'done';
+    else if (i === idxCourant) cls = 'active';
+
+    const sm      = STATUT_META[s] || { label: s, icon: 'fa-circle' };
+    const clickable = (cls === 'done' || cls === 'active') ? `onclick="showStepDetail('${s}')"` : '';
+    const selCls  = (_selectedStep === s) ? ' selected' : '';
+    const tooltip = (cls !== 'upcoming') ? `title="Voir les pièces de cette étape"` : '';
+
+    html += `<div class="step-item">
+      <div class="step-node ${cls}${selCls}" ${clickable} ${tooltip} data-step="${s}">
+        <i class="fas ${cls === 'done' ? 'fa-check' : sm.icon}" style="font-size:.6rem;"></i>
+        ${sm.label}
+      </div>
+    </div>`;
+  });
+
+  if (isRejete) {
+    html += `<span class="step-arrow">›</span>
+      <div class="step-item">
+        <div class="step-node rejete" onclick="showStepDetail('rejete')" title="Voir les pièces">
+          <i class="fas fa-times" style="font-size:.6rem;"></i> Rejeté
+        </div>
+      </div>`;
+  }
+
+  document.getElementById('stepper').innerHTML = html;
+}
+
+function showStepDetail(step) {
+  const panel   = document.getElementById('stepDetailPanel');
+  const sp      = STEP_PIECES[step];
+
+  /* Fermer si même étape re-cliquée */
+  if (_selectedStep === step && panel.classList.contains('open')) {
+    fermerStepDetail();
+    return;
+  }
+
+  _selectedStep = step;
+
+  /* Mettre à jour les classes selected sur les noeuds */
+  document.querySelectorAll('.step-node').forEach(n => {
+    n.classList.toggle('selected', n.dataset.step === step);
+  });
+
+  /* Titre */
+  const sm = STATUT_META[step] || { label: step, icon: 'fa-circle' };
+  document.getElementById('sdpTitleText').textContent =
+    (sp?.label || sm.label) + ' — ' + sm.label;
+
+  /* Filtrer les pièces du dossier correspondant à cette étape */
+  const attendues   = sp?.pieces || [];
+  const toutesLePieces = dossier.pieces || [];
+
+  /* Pièces du dossier qui appartiennent à cette étape */
+  const piecesDuStep = attendues
+    .map(tid => {
+      const existing = toutesLePieces.find(p => p.typeId === tid);
+      const meta = PIECES_META[tid];
+      if (!meta) return null;
+      return { tid, meta, piece: existing || null };
+    })
+    .filter(Boolean);
+
+  /* Stat */
+  const validees = piecesDuStep.filter(x => x.piece && (x.piece.statut === 'valide' || x.piece.statut === 'ajoute')).length;
+  const total    = piecesDuStep.length;
+  document.getElementById('sdpStat').textContent =
+    total > 0 ? `${validees}/${total} validée${validees > 1 ? 's' : ''}` : '';
+
+  /* Rendu des pièces */
+  if (piecesDuStep.length === 0) {
+    document.getElementById('sdpPiecesList').innerHTML =
+      `<div class="sdp-empty"><i class="fas fa-info-circle me-1"></i>
+        ${step === 'archive' ? 'Dossier archivé — toutes les pièces sont conservées.' :
+          step === 'paye' ? 'Paiement effectué — dossier en attente d\'archivage.' :
+          'Aucune pièce spécifique attendue à cette étape.'}
+      </div>`;
+  } else {
+    document.getElementById('sdpPiecesList').innerHTML = piecesDuStep.map(({ tid, meta, piece }) => {
+      const statut  = piece ? piece.statut : 'absent';
+      let spiCls    = 'spi-attente';
+      let tagCls    = 'spt-absent';
+      let tagLabel  = 'Non produite';
+      let iconClr   = '#94a3b8';
+
+      if (statut === 'valide')    { spiCls = 'spi-valide';  tagCls = 'spt-valide';  tagLabel = '✓ Validée';  iconClr = '#15803d'; }
+      else if (statut === 'ajoute')  { spiCls = 'spi-ajoute';  tagCls = 'spt-ajoute';  tagLabel = '✓ Ajoutée';  iconClr = '#b45309'; }
+      else if (statut === 'genere')  { spiCls = 'spi-genere';  tagCls = 'spt-genere';  tagLabel = '⏳ Générée'; iconClr = '#1d4ed8'; }
+      else if (statut === 'rejete')  { spiCls = 'spi-rejete';  tagCls = 'spt-rejete';  tagLabel = '✗ Rejetée'; iconClr = '#b91c1c'; }
+      else if (statut === 'en_attente') { spiCls = 'spi-attente'; tagCls = 'spt-attente'; tagLabel = 'En attente'; iconClr = '#64748b'; }
+
+      /* Bouton action selon statut */
+      let actionBtn = '';
+      if (meta.type === 'interne') {
+        if (!piece || statut === 'en_attente' || statut === 'rejete') {
+          actionBtn = `<button class="sdp-piece-btn" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;"
+            onclick="switchTab('tab-pieces');ouvrirGenerer('${tid}')">
+            <i class="fas fa-magic"></i> Générer
+          </button>`;
+        } else if (statut === 'genere') {
+          actionBtn = `<button class="sdp-piece-btn" style="background:#f0fdf4;color:#15803d;border-color:#86efac;"
+            onclick="switchTab('tab-pieces');ouvrirVoir('${tid}')">
+            <i class="fas fa-eye"></i> Voir
+          </button>`;
+        } else if (statut === 'valide') {
+          actionBtn = `<button class="sdp-piece-btn" style="background:#f0fdf4;color:#15803d;border-color:#86efac;"
+            onclick="switchTab('tab-pieces');ouvrirVoir('${tid}')">
+            <i class="fas fa-eye"></i> Voir
+          </button>`;
+        }
+      } else {
+        if (!piece || statut === 'en_attente') {
+          actionBtn = `<button class="sdp-piece-btn" style="background:#fffbeb;color:#b45309;border-color:#fcd34d;"
+            onclick="switchTab('tab-pieces');ouvrirExt('${tid}')">
+            <i class="fas fa-plus"></i> Ajouter
+          </button>`;
+        } else if (statut === 'ajoute') {
+          actionBtn = `<button class="sdp-piece-btn" style="background:#f0fdf4;color:#15803d;border-color:#86efac;"
+            onclick="switchTab('tab-pieces')">
+            <i class="fas fa-eye"></i> Voir
+          </button>`;
+        }
+      }
+
+      return `<div class="sdp-piece-item ${spiCls}">
+        <div class="sdp-piece-icon" style="color:${iconClr}">
+          <i class="fas ${meta.icon}"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div class="sdp-piece-label">${meta.label}</div>
+          <div class="sdp-piece-code">${tid} · ${meta.type === 'interne' ? 'Pièce interne' : 'Pièce externe'}</div>
+        </div>
+        <span class="sdp-piece-tag ${tagCls}">${tagLabel}</span>
+        ${actionBtn}
+      </div>`;
+    }).join('');
+  }
+
+  panel.classList.add('open');
+}
+
+function fermerStepDetail() {
+  _selectedStep = null;
+  document.getElementById('stepDetailPanel').classList.remove('open');
+  document.querySelectorAll('.step-node').forEach(n => n.classList.remove('selected'));
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-pane-det').forEach(t => t.style.display = 'none');
+  document.getElementById(tabId).style.display = 'block';
+  document.querySelectorAll('#detTabs .nav-link').forEach(l => {
+    l.classList.toggle('active', l.dataset.tab === tabId);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WORKFLOW ACTIONS
+═══════════════════════════════════════════════════════════ */
+function renderWFActions() {
+  const zone = document.getElementById('wfActions');
+  const transitions = TRANSITIONS[dossier.statut] || [];
+  zone.innerHTML = transitions.map(t =>
+    `<button class="wf-btn ${t.cls}" onclick="ouvrirWF('${t.to}','${escHtml(t.label)}')">
+      <i class="fas fa-arrow-right me-1"></i>${t.label}
+    </button>`
+  ).join('');
+}
+
+function ouvrirWF(toStatut, label) {
+  document.getElementById('wfTargetStatut').value = toStatut;
+  document.getElementById('modalWFTitle').textContent = label + ' le dossier';
+  document.getElementById('wfAlerte').textContent =
+    `Vous êtes sur le point de faire passer ce dossier au statut : « ${STATUT_META[toStatut]?.label || toStatut} ».`;
+  document.getElementById('wfComment').value = '';
+  new bootstrap.Modal(document.getElementById('modalWF')).show();
+}
+
+function confirmerWF() {
+  const toStatut = document.getElementById('wfTargetStatut').value;
+  const comment  = document.getElementById('wfComment').value.trim();
+  const today    = new Date().toISOString().slice(0, 10);
+  const user     = currentUser();
+
+  dossier.statut = toStatut;
+  dossier.historique = dossier.historique || [];
+  dossier.historique.push({
+    date: today,
+    action: `Statut → ${STATUT_META[toStatut]?.label || toStatut}${comment ? ' — ' + comment : ''}`,
+    user
+  });
+
+  sauvegarderStore();
+  bootstrap.Modal.getInstance(document.getElementById('modalWF')).hide();
+  showToast(`Statut mis à jour : ${STATUT_META[toStatut]?.label || toStatut}`);
+  renderPage();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PIÈCES — RENDU
+═══════════════════════════════════════════════════════════ */
+function renderPieces() {
+  const internes = (dossier.pieces || []).filter(p => PIECES_META[p.typeId]?.type === 'interne');
+  const externes = (dossier.pieces || []).filter(p => PIECES_META[p.typeId]?.type === 'externe');
+
+  /* Afficher le type de dossier dans le titre de section */
+  const typeLabel = TYPE_DOSSIER_LABELS[dossier.typeDossier] || 'Dossier';
+  const el = document.getElementById('piecesTypeLabel');
+  if (el) el.textContent = typeLabel;
+
+  document.getElementById('listPiecesInternes').innerHTML =
+    internes.map(p => cardPiece(p, 'interne')).join('') || '<div class="text-muted small py-2">Aucune pièce.</div>';
+
+  document.getElementById('listPiecesExternes').innerHTML =
+    externes.map(p => cardPiece(p, 'externe')).join('') || '<div class="text-muted small py-2">Aucune pièce.</div>';
+
+  /* Badge dans l'onglet */
+  const done = (dossier.pieces || []).filter(p => p.statut === 'valide' || p.statut === 'ajoute').length;
+  const total = (dossier.pieces || []).length;
+  document.getElementById('piecesTabBadge').textContent = `${done}/${total}`;
+}
+
+/* Retourne un bouton "Imprimer" — page dédiée ou impression modale */
+function getBtnImprimer(typeId, dos) {
+  const id = encodeURIComponent(dos.id);
+  const pages = {
+    DC: `../passation/demande-cotation.html?dossier_id=${id}`,
+    TC: `../passation/tableau-comparatif.html?dossier_id=${id}`,
+    BC: `../commandes/bon-commande.html?dossier_id=${id}`,
+    OP: `../paiement/ordre-paiement.html?dossier_id=${id}`,
+    OV: `../paiement/ordre-virement.html?dossier_id=${id}`,
+  };
+  const url = pages[typeId];
+  if (url) {
+    return `<a class="btn-piece btn-imprimer" href="${url}" target="_blank"
+               style="text-decoration:none" title="Imprimer">
+              <i class="fas fa-print me-1"></i>Imprimer
+            </a>`;
+  }
+  /* Pour toutes les autres pièces : impression via la modale */
+  return `<button class="btn-piece btn-imprimer" onclick="imprimerPiece('${typeId}')" title="Imprimer">
+            <i class="fas fa-print me-1"></i>Imprimer
+          </button>`;
+}
+
+function cardPiece(p, type) {
+  const meta = PIECES_META[p.typeId] || { icon: 'fa-file', label: p.label };
+  let statCls = 'ps-attente';
+  let statLabel = 'En attente';
+
+  if      (p.statut === 'genere')    { statCls = 'ps-genere';  statLabel = 'Généré';     }
+  else if (p.statut === 'valide')    { statCls = 'ps-valide';  statLabel = 'Validé';     }
+  else if (p.statut === 'rejete')    { statCls = 'ps-rejete';  statLabel = 'Rejeté';     }
+  else if (p.statut === 'ajoute')    { statCls = 'ps-ajoute';  statLabel = 'Ajouté';     }
+  else if (p.statut === 'non_requis'){ statCls = 'ps-nr';      statLabel = 'Non requis'; }
+
+  const leftCls = (p.statut === 'valide' || p.statut === 'ajoute') ? 'done'
+                : p.statut === 'rejete' ? 'rejete'
+                : p.statut === 'non_requis' ? 'nr' : 'pending';
+
+  /* Boutons */
+  let btns = '';
+  if (type === 'interne') {
+    const tid = p.typeId;
+    if (p.statut === 'en_attente' || p.statut === 'rejete') {
+      btns = `<button class="btn-piece btn-gen" onclick="ouvrirGenerer('${tid}')">
+                <i class="fas fa-magic me-1"></i>Générer
+              </button>`;
+    } else if (p.statut === 'genere') {
+      btns = `<button class="btn-piece btn-voir" onclick="ouvrirVoir('${tid}')">
+                <i class="fas fa-eye me-1"></i>Voir
+              </button>
+              <button class="btn-piece btn-gen" onclick="ouvrirGenerer('${tid}')">
+                <i class="fas fa-edit me-1"></i>Modifier
+              </button>
+              <button class="btn-piece btn-valider" onclick="validerPiece('${tid}')">
+                <i class="fas fa-check me-1"></i>Valider
+              </button>
+              ${getBtnImprimer(tid, dossier)}`;
+    } else if (p.statut === 'valide') {
+      btns = `<button class="btn-piece btn-voir" onclick="ouvrirVoir('${tid}')">
+                <i class="fas fa-eye me-1"></i>Voir
+              </button>
+              <button class="btn-piece btn-gen" onclick="ouvrirGenerer('${tid}')">
+                <i class="fas fa-edit me-1"></i>Modifier
+              </button>
+              ${getBtnImprimer(tid, dossier)}`;
+    } else if (p.statut === 'suspendu') {
+      btns = `<button class="btn-piece btn-voir" onclick="ouvrirVoir('${tid}')">
+                <i class="fas fa-eye me-1"></i>Voir
+              </button>`;
+    }
+  } else {
+    /* externe */
+    if (p.statut === 'en_attente') {
+      btns = `<button class="btn-piece btn-add" onclick="ouvrirExt('${p.typeId}')">
+                <i class="fas fa-plus me-1"></i>Ajouter
+              </button>`;
+    } else if (p.statut === 'ajoute') {
+      btns = `<button class="btn-piece btn-voir" onclick="ouvrirVoir('${p.typeId}')">
+                <i class="fas fa-eye me-1"></i>Voir
+              </button>
+              <button class="btn-piece btn-add" onclick="ouvrirExt('${p.typeId}')" title="Modifier">
+                <i class="fas fa-edit me-1"></i>Modifier
+              </button>`;
+    }
+  }
+
+  const dateAff = p.date ? `<span class="piece-date">${fmtDate(p.date)}</span>` : '';
+
+  return `<div class="piece-card">
+    <div class="piece-left ${leftCls}"></div>
+    <div class="piece-body">
+      <span class="piece-type-badge ${type === 'externe' ? 'ext' : ''}">${p.typeId}</span>
+      <span class="piece-label">
+        <i class="fas ${meta.icon} me-1 text-muted" style="font-size:.7rem;"></i>${p.label || meta.label}
+      </span>
+      <span class="piece-statut ${statCls}">${statLabel}</span>
+      ${dateAff}
+    </div>
+    <div class="piece-actions">${btns}</div>
+  </div>`;
+}
+
+function renderPiecesInfo() {
+  const done  = (dossier.pieces || []).filter(p => p.statut === 'valide' || p.statut === 'ajoute').length;
+  const total = (dossier.pieces || []).length;
+  const pct   = total > 0 ? Math.round(done * 100 / total) : 0;
+  document.getElementById('piecesInfoTxt').textContent = `${done} pièce(s) validée(s) sur ${total}`;
+  document.getElementById('piecesInfoPct').textContent = `${pct}%`;
+  document.getElementById('piecesInfoBar').style.width = pct + '%';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL — GÉNÉRER PIÈCE INTERNE
+═══════════════════════════════════════════════════════════ */
+let typeIdCourant = null;
+
+function ouvrirGenerer(typeId) {
+  typeIdCourant = typeId;
+  const meta = PIECES_META[typeId];
+  const p    = getPiece(typeId);
+
+  document.getElementById('modalGenTitle').innerHTML =
+    `<i class="fas ${meta?.icon || 'fa-file'} me-2"></i>Générer — ${meta?.label || typeId}`;
+
+  document.getElementById('modalGenBody').innerHTML = buildFormGen(typeId, p?.data || {});
+  if (typeId === 'PVR') refreshArticlesPVR();
+  new bootstrap.Modal(document.getElementById('modalGen')).show();
+}
+
+/* ── Gestion dynamique du tableau articles PVR ── */
+function addArticlePVR() {
+  if (!window._pvrArticles) window._pvrArticles = [];
+  window._pvrArticles.push({ designation:'', qteBL:'', qteRecue:'', ecarts:'', peremption:'', fabricant:'' });
+  refreshArticlesPVR();
+}
+
+function removeArticlePVR(idx) {
+  if (!window._pvrArticles) return;
+  window._pvrArticles.splice(idx, 1);
+  refreshArticlesPVR();
+}
+
+function refreshArticlesPVR() {
+  const tbody = document.getElementById('pvr_articles_body');
+  if (!tbody || !window._pvrArticles) return;
+  const tdS = 'padding:2px 3px;border:1px solid #e2e8f0;';
+  tbody.innerHTML = window._pvrArticles.map((a, i) => `
+    <tr>
+      <td style="${tdS}text-align:center;color:#64748b;font-size:.7rem;">${i+1}</td>
+      <td style="${tdS}"><input type="text" class="form-control form-control-sm border-0 p-0 px-1" style="font-size:.72rem;"
+          value="${escHtml(a.designation||'')}"
+          oninput="window._pvrArticles[${i}].designation=this.value" placeholder="Désignation"></td>
+      <td style="${tdS}"><input type="number" class="form-control form-control-sm border-0 p-0 px-1" style="font-size:.72rem;width:60px;"
+          value="${a.qteBL||''}"
+          oninput="window._pvrArticles[${i}].qteBL=this.value" placeholder="0"></td>
+      <td style="${tdS}"><input type="number" class="form-control form-control-sm border-0 p-0 px-1" style="font-size:.72rem;width:60px;"
+          value="${a.qteRecue||''}"
+          oninput="window._pvrArticles[${i}].qteRecue=this.value" placeholder="0"></td>
+      <td style="${tdS}"><input type="text" class="form-control form-control-sm border-0 p-0 px-1" style="font-size:.72rem;width:50px;"
+          value="${escHtml(String(a.ecarts||''))}"
+          oninput="window._pvrArticles[${i}].ecarts=this.value" placeholder="—"></td>
+      <td style="${tdS}"><input type="text" class="form-control form-control-sm border-0 p-0 px-1" style="font-size:.72rem;width:80px;"
+          value="${escHtml(a.peremption||'')}"
+          oninput="window._pvrArticles[${i}].peremption=this.value" placeholder="jj/mm/aa"></td>
+      <td style="${tdS}"><input type="text" class="form-control form-control-sm border-0 p-0 px-1" style="font-size:.72rem;width:80px;"
+          value="${escHtml(a.fabricant||'')}"
+          oninput="window._pvrArticles[${i}].fabricant=this.value" placeholder="Fabricant"></td>
+      <td style="${tdS}text-align:center;">
+        <button type="button" onclick="removeArticlePVR(${i})"
+                style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:.75rem;padding:0 3px;">✕</button>
+      </td>
+    </tr>`).join('');
+}
+
+function buildFormGen(typeId, data) {
+  /* Préfixe d: données pré-remplies */
+  const d = data || {};
+  const today = new Date().toISOString().slice(0, 10);
+
+  const field = (id, label, type, placeholder, val, req) => `
+    <div class="mb-3">
+      <label class="form-label form-label-sm fw-bold">${label}${req ? ' <span class="text-danger">*</span>' : ''}</label>
+      <input type="${type}" class="form-control form-control-sm" id="gf_${id}"
+             placeholder="${placeholder}" value="${escHtml(String(val || ''))}"
+             ${type === 'date' && !val ? `value="${today}"` : ''}>
+    </div>`;
+
+  const textarea = (id, label, placeholder, val, rows) => `
+    <div class="mb-3">
+      <label class="form-label form-label-sm fw-bold">${label}</label>
+      <textarea class="form-control form-control-sm" id="gf_${id}" rows="${rows || 3}"
+                placeholder="${placeholder}">${escHtml(String(val || ''))}</textarea>
+    </div>`;
+
+  const sel = (id, label, options, val) => `
+    <div class="mb-3">
+      <label class="form-label form-label-sm fw-bold">${label}</label>
+      <select class="form-select form-select-sm" id="gf_${id}">
+        ${options.map(o => `<option value="${o.v}" ${val === o.v ? 'selected' : ''}>${o.l}</option>`).join('')}
+      </select>
+    </div>`;
+
+  const note = (txt) => `<div class="alert alert-info py-2 px-3 mb-3" style="font-size:.72rem;">
+    <i class="fas fa-info-circle me-1"></i>${txt}</div>`;
+
+  if (typeId === 'EB') return `
+    ${note('Décrire précisément les besoins — c\'est la pièce déclencheuse du dossier.')}
+    ${field('designation', 'Désignation du besoin', 'text', 'Ex: Fournitures de bureau — Rames A4, Stylos…', d.designation, true)}
+    <div class="row g-2">
+      <div class="col-4">${field('quantite', 'Quantité', 'number', '1', d.quantite)}</div>
+      <div class="col-4">${field('unite', 'Unité', 'text', 'Ex: rame, pièce', d.unite)}</div>
+      <div class="col-4">${field('puEstime', 'P.U. estimé (FCFA)', 'number', '0', d.puEstime)}</div>
+    </div>
+    ${textarea('justification', 'Justification du besoin', 'Expliquer pourquoi ce besoin est nécessaire…', d.justification, 3)}
+    ${field('serviceDemandeur', 'Service demandeur', 'text', 'Ex: DAF, Coordination…', d.serviceDemandeur)}
+    ${field('dateEB', 'Date', 'date', '', d.dateEB)}
+    ${field('responsable', 'Responsable signataire', 'text', 'Nom et fonction', d.responsable)}`;
+
+  if (typeId === 'DC') return `
+    ${note('La demande de cotation est envoyée aux fournisseurs potentiels.')}
+    ${field('objet', 'Objet de la cotation', 'text', 'Ex: Fourniture de réactifs de laboratoire', d.objet, true)}
+    ${field('dateDC', 'Date de la demande', 'date', '', d.dateDC)}
+    ${field('dateLimite', 'Date limite de réponse', 'date', '', d.dateLimite)}
+    ${textarea('fournisseurs', 'Fournisseurs contactés (un par ligne)', 'Société Alpha\nSociété Beta\nSociété Gamma', d.fournisseurs, 3)}
+    ${textarea('documentsReqis', 'Documents requis des soumissionnaires', 'Offre technique + offre financière…', d.documentsReqis, 2)}
+    ${field('contactDC', 'Contact pour dépôt des offres', 'text', 'Nom / Email / Téléphone', d.contactDC)}`;
+
+  if (typeId === 'TC') return `
+    ${note('Comparer les offres reçues et justifier le choix du fournisseur retenu.')}
+    ${field('dateTC', 'Date d\'analyse', 'date', '', d.dateTC)}
+    <div class="row g-2 align-items-end">
+      <div class="col-6"><div class="mb-2"><label class="form-label form-label-sm fw-bold">Fournisseur 1</label>
+        <input type="text" class="form-control form-control-sm" id="gf_f1Nom" placeholder="Nom fournisseur" value="${escHtml(d.f1Nom||'')}"></div></div>
+      <div class="col-6"><div class="mb-2"><label class="form-label form-label-sm fw-bold">Offre (FCFA)</label>
+        <input type="number" class="form-control form-control-sm" id="gf_f1Mnt" placeholder="0" value="${d.f1Mnt||''}"></div></div>
+    </div>
+    <div class="row g-2 align-items-end">
+      <div class="col-6"><div class="mb-2"><label class="form-label form-label-sm fw-bold">Fournisseur 2</label>
+        <input type="text" class="form-control form-control-sm" id="gf_f2Nom" placeholder="Nom fournisseur" value="${escHtml(d.f2Nom||'')}"></div></div>
+      <div class="col-6"><div class="mb-2"><label class="form-label form-label-sm fw-bold">Offre (FCFA)</label>
+        <input type="number" class="form-control form-control-sm" id="gf_f2Mnt" placeholder="0" value="${d.f2Mnt||''}"></div></div>
+    </div>
+    <div class="row g-2 align-items-end mb-2">
+      <div class="col-6"><div class="mb-0"><label class="form-label form-label-sm fw-bold">Fournisseur 3</label>
+        <input type="text" class="form-control form-control-sm" id="gf_f3Nom" placeholder="Nom fournisseur (opt.)" value="${escHtml(d.f3Nom||'')}"></div></div>
+      <div class="col-6"><div class="mb-0"><label class="form-label form-label-sm fw-bold">Offre (FCFA)</label>
+        <input type="number" class="form-control form-control-sm" id="gf_f3Mnt" placeholder="0" value="${d.f3Mnt||''}"></div></div>
+    </div>
+    ${field('fRetenu', 'Fournisseur retenu', 'text', 'Nom du fournisseur sélectionné', d.fRetenu, true)}
+    ${field('critere', 'Critère de sélection', 'text', 'Ex: Mieux-disant, moins-disant…', d.critere)}
+    ${textarea('obsTC', 'Observations de la commission', 'Justification de l\'attribution…', d.obsTC, 2)}`;
+
+  if (typeId === 'BC') return `
+    ${note('Le bon de commande formalise la commande auprès du fournisseur retenu.')}
+    ${field('numBC', 'Numéro du bon de commande', 'text', 'Ex: BC-2026-042', d.numBC || `BC-2026-${String(Math.floor(Math.random()*900)+100)}`)}
+    ${field('fournisseurBC', 'Fournisseur', 'text', 'Raison sociale', d.fournisseurBC, true)}
+    ${field('dateBC', 'Date', 'date', '', d.dateBC)}
+    ${field('delai', 'Délai de livraison', 'text', 'Ex: 15 jours ouvrables', d.delai)}
+    ${textarea('articles', 'Désignation des articles / prestations', 'Rame A4 × 50 — 2 000 FCFA/rame…', d.articles, 3)}
+    <div class="row g-2">
+      <div class="col-6">${field('montantHT', 'Montant HT (FCFA)', 'number', '0', d.montantHT)}</div>
+      <div class="col-6">${field('tva', 'TVA (%)', 'number', '18', d.tva !== undefined ? d.tva : 18)}</div>
+    </div>
+    ${field('lieuLiv', 'Lieu de livraison', 'text', 'Adresse de livraison', d.lieuLiv)}`;
+
+  if (typeId === 'ASF') return `
+    ${note('L\'attestation de service fait confirme que la prestation a bien été réalisée.')}
+    ${field('dateASF', 'Date de l\'attestation', 'date', '', d.dateASF)}
+    ${field('responsableASF', 'Responsable signataire', 'text', 'Nom et fonction', d.responsableASF)}
+    ${sel('qualite', 'Qualité du service / livraison',
+      [{v:'satisfaisant',label:'Satisfaisant'},{v:'partiel',label:'Partiellement satisfaisant'},{v:'non_satisfaisant',label:'Non satisfaisant'}]
+        .map(o => ({v:o.v,l:o.label})), d.qualite)}
+    ${textarea('obsASF', 'Observations', 'Remarques sur la qualité, délais, conformité…', d.obsASF, 3)}`;
+
+  if (typeId === 'PVR') {
+    /* Initialiser les articles dans le store global */
+    window._pvrArticles = Array.isArray(d.articles) && d.articles.length
+      ? JSON.parse(JSON.stringify(d.articles))
+      : [{ designation:'', qteBL:'', qteRecue:'', ecarts:'', peremption:'', fabricant:'' }];
+    const defConstat = d.constatations ||
+      'Après vérification des conditions techniques et de livraison mentionnées dans le contrat et sur le Bon de Commande, la commission déclare : Les produits sont conformes en quantité et en qualité. Aucun écart ou rejet n\'a été constaté lors de l\'inspection physique et technique.';
+    const m = d.membres || [{},{},{},{},{}];
+    const mbRow = (i) => `
+      <div class="row g-1 mb-1 align-items-center">
+        <div class="col-auto" style="min-width:28px;text-align:center;font-size:.7rem;font-weight:700;color:#64748b;">${String(i+1).padStart(2,'0')}</div>
+        <div class="col"><input type="text" class="form-control form-control-sm" id="gf_m${i}nom" placeholder="Nom et Prénom" value="${escHtml(m[i]?.nom||'')}"></div>
+        <div class="col"><input type="text" class="form-control form-control-sm" id="gf_m${i}fonc" placeholder="Fonction" value="${escHtml(m[i]?.fonc||'')}"></div>
+      </div>`;
+    return `
+    ${note('Procès-Verbal officiel PSLSH/IST — Réf. N°/MSPP/SE/SG/PSLSH-IST/SAF/2026')}
+    <div class="row g-2 mb-2">
+      <div class="col-4">${field('refPVR', 'N° de référence', 'text', 'Ex: 012', d.refPVR)}</div>
+      <div class="col-4">${field('datePVR', 'Date du PV', 'date', '', d.datePVR)}</div>
+      <div class="col-4">${field('lieuPVR', 'Lieu', 'text', 'Ex: N\'Djamena', d.lieuPVR)}</div>
+    </div>
+    ${field('fournisseurPVR', 'Fournisseur', 'text', 'Raison sociale du fournisseur', d.fournisseurPVR, true)}
+    <div class="row g-2 mb-0">
+      <div class="col-6">${field('numBC', 'BC n°', 'text', 'Ex: BC-2026-042', d.numBC)}</div>
+      <div class="col-6">${field('dateBC', 'Date du BC', 'date', '', d.dateBC)}</div>
+    </div>
+    <div class="row g-2 mb-2">
+      <div class="col-6">${field('numBL', 'BL n°', 'text', 'Ex: BL-2026-018', d.numBL)}</div>
+      <div class="col-6">${field('dateBL', 'Date du BL', 'date', '', d.dateBL)}</div>
+    </div>
+
+    <div class="mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <label class="form-label form-label-sm fw-bold mb-0">Détail des articles reçus</label>
+        <button type="button" class="btn btn-xs btn-outline-primary btn-sm py-0 px-2" onclick="addArticlePVR()">
+          <i class="fas fa-plus me-1"></i>Ajouter ligne
+        </button>
+      </div>
+      <div class="table-responsive" style="border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;">
+        <table class="table table-sm table-bordered mb-0" style="font-size:.72rem;">
+          <thead style="background:#f8fafc;">
+            <tr>
+              <th style="width:32px;">N°</th>
+              <th>Désignation (DCI)</th>
+              <th style="width:72px;">Qté (BL)</th>
+              <th style="width:72px;">Qté Reçue</th>
+              <th style="width:60px;">Écarts</th>
+              <th style="width:90px;">Péremption</th>
+              <th style="width:90px;">Fabricant</th>
+              <th style="width:30px;"></th>
+            </tr>
+          </thead>
+          <tbody id="pvr_articles_body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label form-label-sm fw-bold">Constatations de la commission</label>
+      <textarea class="form-control form-control-sm" id="gf_constatations" rows="3">${escHtml(defConstat)}</textarea>
+    </div>
+
+    <div class="mb-2">
+      <label class="form-label form-label-sm fw-bold">Membres de la commission PSLSH/IST</label>
+      <div style="font-size:.67rem;color:#64748b;margin-bottom:6px;">N° · Nom et Prénom · Fonction</div>
+      ${[0,1,2,3,4].map(mbRow).join('')}
+    </div>
+
+    <div class="mb-2">
+      <label class="form-label form-label-sm fw-bold">Représentant du fournisseur</label>
+      <div class="row g-1">
+        <div class="col"><input type="text" class="form-control form-control-sm" id="gf_repNom" placeholder="Nom et Prénom" value="${escHtml(d.repNom||'')}"></div>
+        <div class="col"><input type="text" class="form-control form-control-sm" id="gf_repFonc" placeholder="Fonction" value="${escHtml(d.repFonc||'')}"></div>
+      </div>
+    </div>`;
+  }
+
+  if (typeId === 'BDS') return `
+    ${note('Le bordereau de sortie stock enregistre la cession physique des biens au service demandeur.')}
+    ${field('numBDS', 'Numéro du bordereau', 'text', 'Ex: BDS-2026-018', d.numBDS)}
+    ${field('dateBDS', 'Date de sortie', 'date', '', d.dateBDS)}
+    ${field('destinataire', 'Service destinataire', 'text', 'Ex: DAF, Coordination…', d.destinataire)}
+    ${textarea('articlesBDS', 'Articles cédés (désignation, quantité, unité)', 'Rame A4 × 50\nStylos × 100…', d.articlesBDS, 3)}
+    ${field('magasinier', 'Magasinier', 'text', 'Nom et signature', d.magasinier)}
+    ${field('receptionnaire', 'Réceptionnaire', 'text', 'Nom et signature', d.receptionnaire)}`;
+
+  if (typeId === 'CTR') return `
+    ${note('Le contrat ou marché formalise l\'engagement contractuel entre le PSLSH/IST et le prestataire.')}
+    ${field('numCTR', 'Numéro du contrat / marché', 'text', 'Ex: CTR-2026-007', d.numCTR)}
+    ${sel('typeCTR', 'Type d\'acte',
+      [{v:'contrat',l:'Contrat'},{v:'marche',l:'Marché'},{v:'convention',l:'Convention'},{v:'lettre_commande',l:'Lettre de commande'}], d.typeCTR)}
+    ${field('prestataire', 'Prestataire / Titulaire', 'text', 'Raison sociale du titulaire', d.prestataire, true)}
+    ${field('objetCTR', 'Objet du contrat', 'text', 'Description succincte de la prestation', d.objetCTR, true)}
+    <div class="row g-2">
+      <div class="col-4">${field('dateCTR', 'Date de signature', 'date', '', d.dateCTR)}</div>
+      <div class="col-4">${field('datePrisEffet', 'Prise d\'effet', 'date', '', d.datePrisEffet)}</div>
+      <div class="col-4">${field('dateEcheance', 'Échéance', 'date', '', d.dateEcheance)}</div>
+    </div>
+    <div class="row g-2">
+      <div class="col-6">${field('montantCTR', 'Montant du contrat (FCFA)', 'number', '0', d.montantCTR)}</div>
+      <div class="col-6">${sel('modePaiCTR', 'Mode de règlement',
+        [{v:'virement',l:'Virement'},{v:'cheque',l:'Chèque'},{v:'echeances',l:'Par échéances'}], d.modePaiCTR)}</div>
+    </div>
+    ${textarea('clausesCTR', 'Clauses particulières / Conditions', 'Pénalités de retard, garanties, résiliation…', d.clausesCTR, 3)}
+    ${field('visaCTR', 'Visa contrôle / Autorisation', 'text', 'Ex: Visé le … par …', d.visaCTR)}`;
+
+  if (typeId === 'OP') return `
+    ${note('L\'ordre de paiement autorise formellement le décaissement.')}
+    ${field('numOP', 'Numéro de l\'OP', 'text', 'Ex: OP-2026-025', d.numOP || `OP-2026-${String(Math.floor(Math.random()*900)+100)}`)}
+    ${field('dateOP', 'Date', 'date', '', d.dateOP)}
+    ${field('benefOP', 'Bénéficiaire', 'text', 'Nom complet ou raison sociale', d.benefOP, true)}
+    ${field('montantOP', 'Montant en chiffres (FCFA)', 'number', '0', d.montantOP)}
+    ${field('montantLettres', 'Montant en lettres', 'text', 'Cinq cent mille francs CFA', d.montantLettres)}
+    ${sel('modeOP', 'Mode de paiement',
+      [{v:'virement',l:'Virement bancaire'},{v:'cheque',l:'Chèque'},{v:'especes',l:'Espèces'},{v:'mobile',l:'Mobile Money'}], d.modeOP)}
+    ${field('compteOP', 'Référence compte / Numéro', 'text', 'Banque — Numéro de compte', d.compteOP)}
+    ${textarea('motifOP', 'Motif / Objet du paiement', 'Règlement facture n° … — Fournitures de bureau…', d.motifOP, 2)}`;
+
+  /* ── Mission / Prestation ── */
+  if (typeId === 'TDR') return `
+    ${note('Les Termes de Référence définissent le cadre et les exigences de la mission ou prestation.')}
+    ${field('titreTDR', 'Titre de la mission / prestation', 'text', 'Ex: Consultation pour audit financier PSLSH/IST', d.titreTDR, true)}
+    ${field('dateTDR', 'Date d\'élaboration', 'date', '', d.dateTDR)}
+    ${textarea('contexteTDR', 'Contexte et justification', 'Décrire le contexte dans lequel s\'inscrit la mission…', d.contexteTDR, 3)}
+    ${textarea('objectifsTDR', 'Objectifs de la mission', 'Objectif général et objectifs spécifiques…', d.objectifsTDR, 3)}
+    ${textarea('resultatsTDR', 'Résultats / Livrables attendus', 'Livrables et résultats attendus à l\'issue de la mission…', d.resultatsTDR, 3)}
+    <div class="row g-2">
+      <div class="col-6">${field('dureeTDR', 'Durée estimée', 'text', 'Ex: 10 jours ouvrables', d.dureeTDR)}</div>
+      <div class="col-6">${field('budgetTDR', 'Budget estimé (FCFA)', 'number', '0', d.budgetTDR)}</div>
+    </div>
+    ${field('expertiseTDR', 'Profil / Expertise requise', 'text', 'Ex: Expert financier — 5 ans d\'expérience', d.expertiseTDR)}`;
+
+  if (typeId === 'OM') return `
+    ${note('L\'ordre de mission autorise formellement le déplacement d\'un ou plusieurs agents.')}
+    ${field('numOM', 'N° Ordre de mission', 'text', 'Ex: OM-2026-015', d.numOM)}
+    ${field('dateOM', 'Date d\'émission', 'date', '', d.dateOM)}
+    ${field('agentsOM', 'Agent(s) concerné(s)', 'text', 'Nom Prénom — Fonction', d.agentsOM, true)}
+    ${field('destinationOM', 'Destination / Lieu', 'text', 'Ex: Moundou — Région Logone Occidental', d.destinationOM, true)}
+    ${field('motifOM', 'Objet / Motif', 'text', 'Ex: Supervision activités IST — Zone sanitaire', d.motifOM, true)}
+    <div class="row g-2">
+      <div class="col-6">${field('departOM', 'Date de départ', 'date', '', d.departOM)}</div>
+      <div class="col-6">${field('retourOM', 'Date de retour', 'date', '', d.retourOM)}</div>
+    </div>
+    <div class="row g-2">
+      <div class="col-6">${field('perdiem', 'Per diem journalier (FCFA)', 'number', '0', d.perdiem)}</div>
+      <div class="col-6">${field('nbrJoursOM', 'Nombre de jours', 'number', '1', d.nbrJoursOM)}</div>
+    </div>
+    ${field('autoriseOM', 'Autorisé par', 'text', 'Nom et fonction du signataire', d.autoriseOM)}`;
+
+  if (typeId === 'PVV') return `
+    ${note('Le PV de validation atteste de l\'acceptation formelle de la prestation ou du livrable.')}
+    ${field('refPVV', 'Référence du PV', 'text', 'Ex: PVV-2026-008', d.refPVV)}
+    ${field('datePVV', 'Date', 'date', '', d.datePVV)}
+    ${field('objetPVV', 'Objet de la validation', 'text', 'Ex: Validation rapport de formation IST — Koumra', d.objetPVV, true)}
+    ${field('presidentPVV', 'Président de la commission', 'text', 'Nom et fonction', d.presidentPVV)}
+    ${textarea('membresPVV', 'Membres de la commission (un par ligne)', 'Nom Prénom — Fonction\nNom Prénom — Fonction', d.membresPVV, 3)}
+    ${sel('decisionPVV', 'Décision',
+      [{v:'conforme',l:'Conforme — Accepté sans réserve'},{v:'reserve',l:'Accepté avec réserves'},{v:'non_conforme',l:'Non conforme — Rejeté'}], d.decisionPVV)}
+    ${textarea('obsPVV', 'Observations / Réserves', 'Détailler les éventuelles corrections demandées…', d.obsPVV, 3)}`;
+
+  /* ── Formation ── */
+  if (typeId === 'NC') return `
+    ${note('La note conceptuelle présente le cadre, les objectifs et le budget prévisionnel de l\'activité.')}
+    ${field('titreNC', 'Titre de l\'activité', 'text', 'Ex: Formation protocoles IST — N\'Djamena', d.titreNC, true)}
+    ${field('dateNC', 'Date d\'élaboration', 'date', '', d.dateNC)}
+    ${textarea('contexteNC', 'Contexte et justification', 'Décrire le contexte et la pertinence de l\'activité…', d.contexteNC, 3)}
+    ${textarea('objectifsNC', 'Objectifs', 'Objectif général et objectifs spécifiques…', d.objectifsNC, 3)}
+    ${field('publicNC', 'Public cible', 'text', 'Ex: Agents de santé — 30 participants', d.publicNC)}
+    ${field('lieuNC', 'Lieu prévu', 'text', 'Ex: Hôtel Méridien, N\'Djamena', d.lieuNC)}
+    <div class="row g-2">
+      <div class="col-6">${field('dateDebNC', 'Date de début', 'date', '', d.dateDebNC)}</div>
+      <div class="col-6">${field('dateFinNC', 'Date de fin', 'date', '', d.dateFinNC)}</div>
+    </div>
+    <div class="row g-2">
+      <div class="col-6">${field('budgetNC', 'Budget prévisionnel (FCFA)', 'number', '0', d.budgetNC)}</div>
+      <div class="col-6">${field('responsableNC', 'Élaboré par', 'text', 'Nom et fonction', d.responsableNC)}</div>
+    </div>`;
+
+  if (typeId === 'AGE') return `
+    ${note('L\'agenda détaille le programme heure par heure de la formation ou de l\'atelier.')}
+    ${field('titreAGE', 'Titre', 'text', 'Ex: Programme de formation — Protocoles IST', d.titreAGE, true)}
+    ${field('dateAGE', 'Date', 'date', '', d.dateAGE)}
+    ${field('lieuAGE', 'Lieu', 'text', 'Ex: Salle de conférence PSLSH, N\'Djamena', d.lieuAGE)}
+    ${field('moderateurAGE', 'Modérateur / Facilitateur', 'text', 'Nom et fonction', d.moderateurAGE)}
+    <div class="mb-3">
+      <label class="form-label form-label-sm fw-bold">Programme / Déroulement</label>
+      <textarea class="form-control form-control-sm" id="gf_programmeAGE" rows="7"
+        placeholder="08h00 — Accueil et installation des participants&#10;08h30 — Mot d'ouverture du Coordinateur&#10;09h00 — Module 1 : Protocoles IST&#10;10h30 — Pause café&#10;...">${escHtml(d.programmeAGE||'')}</textarea>
+    </div>`;
+
+  if (typeId === 'LP') return `
+    ${note('La liste des participants / présence est signée par chaque participant lors de l\'activité.')}
+    ${field('titreLPV', 'Titre / Thème', 'text', 'Ex: Formation sur les protocoles IST', d.titreLPV, true)}
+    ${field('dateLPV', 'Date', 'date', '', d.dateLPV)}
+    ${field('lieuLPV', 'Lieu', 'text', 'Ex: Salle PSLSH, N\'Djamena', d.lieuLPV)}
+    <div class="row g-2">
+      <div class="col-6">${field('nombreLPV', 'Nombre total de participants', 'number', '0', d.nombreLPV)}</div>
+      <div class="col-6">${field('animateurLPV', 'Animateur / Formateur', 'text', 'Nom et fonction', d.animateurLPV)}</div>
+    </div>
+    <div class="alert alert-info py-2 px-3 mb-0" style="font-size:.72rem;">
+      <i class="fas fa-info-circle me-1"></i>La liste nominative (Nom, Fonction, Structure, Signature) est jointe en annexe physique au dossier.
+    </div>`;
+
+  if (typeId === 'ATT') return `
+    ${note('Les attestations sont délivrées aux participants à l\'issue de la formation.')}
+    ${field('titreATT', 'Titre de la formation', 'text', 'Ex: Formation sur les protocoles IST', d.titreATT, true)}
+    ${field('dateATT', 'Date de la formation', 'date', '', d.dateATT)}
+    ${field('lieuATT', 'Lieu', 'text', 'Ex: N\'Djamena', d.lieuATT)}
+    <div class="row g-2">
+      <div class="col-6">${field('formateurATT', 'Formateur / Facilitateur', 'text', 'Nom et qualification', d.formateurATT)}</div>
+      <div class="col-6">${field('dureeATT', 'Durée', 'text', 'Ex: 3 jours / 24 heures', d.dureeATT)}</div>
+    </div>
+    <div class="row g-2">
+      <div class="col-6">${field('nbAttestation', 'Nombre d\'attestations délivrées', 'number', '0', d.nbAttestation)}</div>
+      <div class="col-6">${field('signataireATT', 'Signataire', 'text', 'Nom et titre', d.signataireATT)}</div>
+    </div>`;
+
+  /* ── Atelier ── */
+  if (typeId === 'BD') return `
+    ${note('Le budget détaillé présente la ventilation prévisionnelle des dépenses de l\'atelier.')}
+    ${field('titreBD', 'Titre de l\'activité', 'text', 'Ex: Atelier de coordination trimestrielle PSLSH', d.titreBD, true)}
+    ${field('dateBD', 'Date d\'élaboration', 'date', '', d.dateBD)}
+    ${field('lieuBD', 'Lieu prévu', 'text', 'Ex: Hôtel La Résidence, N\'Djamena', d.lieuBD)}
+    <div class="row g-2">
+      <div class="col-6">${field('dateDebBD', 'Date de début', 'date', '', d.dateDebBD)}</div>
+      <div class="col-6">${field('dateFinBD', 'Date de fin', 'date', '', d.dateFinBD)}</div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label form-label-sm fw-bold">Lignes budgétaires</label>
+      <textarea class="form-control form-control-sm" id="gf_lignesBD" rows="6"
+        placeholder="Location salle | 2 jours | 150 000 | 300 000&#10;Pause-café | 30 pers × 2j | 5 000 | 300 000&#10;Per diem | 30 pers × 2j | 15 000 | 900 000">${escHtml(d.lignesBD||'')}</textarea>
+    </div>
+    ${field('totalBD', 'Budget total (FCFA)', 'number', '0', d.totalBD)}`;
+
+  if (typeId === 'INV') return `
+    ${note('Les invitations sont adressées aux participants et institutions partenaires.')}
+    ${field('objetINV', 'Objet de l\'invitation', 'text', 'Ex: Invitation à l\'atelier de coordination PSLSH', d.objetINV, true)}
+    <div class="row g-2">
+      <div class="col-6">${field('dateEnvoiINV', 'Date d\'envoi', 'date', '', d.dateEnvoiINV)}</div>
+      <div class="col-6">${field('dateEvenINV', 'Date de l\'événement', 'date', '', d.dateEvenINV)}</div>
+    </div>
+    ${field('lieuEvenINV', 'Lieu de l\'événement', 'text', 'Ex: Hôtel La Résidence — Salle Tchad, N\'Djamena', d.lieuEvenINV)}
+    ${field('heureINV', 'Heure', 'text', 'Ex: 08h30 précises', d.heureINV)}
+    ${field('organisateurINV', 'Organisateur / Signataire', 'text', 'Nom et fonction', d.organisateurINV)}
+    ${textarea('destinatairesINV', 'Destinataires (un par ligne)', 'Dr. Nom Prénom — Directeur Régional de Santé\nM. Nom Prénom — Chef de Zone Sanitaire', d.destinatairesINV, 4)}`;
+
+  if (typeId === 'OV') return `
+    ${note('L\'ordre de virement immédiat autorise le transfert bancaire vers le compte du bénéficiaire. Trois signatures requises.')}
+    <div class="row g-2">
+      <div class="col-6">${field('numOV',   'N° Ordre de virement', 'text',   'Ex: OV-2026-025', d.numOV || `OV-2026-${String(Math.floor(Math.random()*900)+100)}`)}</div>
+      <div class="col-6">${field('dateOV',  'Date', 'date', '', d.dateOV)}</div>
+    </div>
+    ${field('benefOV',  'Nom du bénéficiaire',  'text', 'Raison sociale ou nom complet', d.benefOV, true)}
+    ${field('adresseOV','Adresse bénéficiaire', 'text', 'Adresse complète', d.adresseOV)}
+    <div class="row g-2">
+      <div class="col-6">${field('montantOV',      'Montant en chiffres (FCFA)', 'number', '0', d.montantOV)}</div>
+      <div class="col-6">${field('montantLettresOV','Montant en lettres', 'text', 'Cinq cent mille francs CFA', d.montantLettresOV)}</div>
+    </div>
+    ${field('compteDebitOV', 'N° compte à débiter (PSLSH/IST)', 'text', 'Compte bancaire PSLSH', d.compteDebitOV)}
+    <div class="row g-2">
+      <div class="col-6">${field('numCpteOV', 'N° compte bénéficiaire', 'text', 'XX-XXXXX-XXXXXXXXXXX-XX', d.numCpteOV)}</div>
+      <div class="col-6">${field('ibanOV', 'Code IBAN', 'text', 'TD·· ···· ···· ···· ···· ··', d.ibanOV)}</div>
+    </div>
+    <div class="row g-2">
+      <div class="col-6">${field('banqueOV','Banque du bénéficiaire', 'text', 'Ex: CBT, SGCT, BCC…', d.banqueOV)}</div>
+      <div class="col-6">${field('swiftOV', 'Code Swift', 'text', 'Ex: CBTCTDND', d.swiftOV)}</div>
+    </div>
+    ${field('motifOV', 'Motif de l\'opération', 'text', 'Ex: Paiement facture N°… Dossier…', d.motifOV, true)}
+    <div class="alert alert-warning py-2 px-3 mb-0 mt-2" style="font-size:.72rem;">
+      <i class="fas fa-pen-nib me-1"></i><strong>3 signatures requises :</strong>
+      Le Coordinateur PSLSH/IST · Le Secrétaire Général du Ministère · L'Agent Comptable PSLSH/IST
+    </div>`;
+
+  return `<div class="alert alert-warning">Formulaire non défini pour ce type de pièce.</div>`;
+}
+
+function collectFormGen(typeId) {
+  const g = (id) => {
+    const el = document.getElementById(`gf_${id}`);
+    return el ? el.value.trim() : '';
+  };
+  const gn = (id) => parseFloat(g(id)) || 0;
+
+  if (typeId === 'EB')  return { designation: g('designation'), quantite: gn('quantite'), unite: g('unite'), puEstime: gn('puEstime'), justification: g('justification'), serviceDemandeur: g('serviceDemandeur'), dateEB: g('dateEB'), responsable: g('responsable') };
+  if (typeId === 'DC')  return { objet: g('objet'), dateDC: g('dateDC'), dateLimite: g('dateLimite'), fournisseurs: g('fournisseurs'), documentsReqis: g('documentsReqis'), contactDC: g('contactDC') };
+  if (typeId === 'TC')  return { dateTC: g('dateTC'), f1Nom: g('f1Nom'), f1Mnt: gn('f1Mnt'), f2Nom: g('f2Nom'), f2Mnt: gn('f2Mnt'), f3Nom: g('f3Nom'), f3Mnt: gn('f3Mnt'), fRetenu: g('fRetenu'), critere: g('critere'), obsTC: g('obsTC') };
+  if (typeId === 'BC')  return { numBC: g('numBC'), fournisseurBC: g('fournisseurBC'), dateBC: g('dateBC'), delai: g('delai'), articles: g('articles'), montantHT: gn('montantHT'), tva: gn('tva'), lieuLiv: g('lieuLiv') };
+  if (typeId === 'ASF') return { dateASF: g('dateASF'), responsableASF: g('responsableASF'), qualite: g('qualite'), obsASF: g('obsASF') };
+  if (typeId === 'PVR') {
+    const membres = [0,1,2,3,4].map(i => ({ nom: g(`m${i}nom`), fonc: g(`m${i}fonc`) }));
+    return {
+      refPVR: g('refPVR'), datePVR: g('datePVR'), lieuPVR: g('lieuPVR'),
+      fournisseurPVR: g('fournisseurPVR'), numBC: g('numBC'), dateBC: g('dateBC'),
+      numBL: g('numBL'), dateBL: g('dateBL'),
+      articles: window._pvrArticles ? JSON.parse(JSON.stringify(window._pvrArticles)) : [],
+      constatations: g('constatations'),
+      membres,
+      repNom: g('repNom'), repFonc: g('repFonc'),
+    };
+  }
+  if (typeId === 'BDS') return { numBDS: g('numBDS'), dateBDS: g('dateBDS'), destinataire: g('destinataire'), articlesBDS: g('articlesBDS'), magasinier: g('magasinier'), receptionnaire: g('receptionnaire') };
+  if (typeId === 'CTR') return { numCTR: g('numCTR'), typeCTR: g('typeCTR'), prestataire: g('prestataire'), objetCTR: g('objetCTR'), dateCTR: g('dateCTR'), datePrisEffet: g('datePrisEffet'), dateEcheance: g('dateEcheance'), montantCTR: gn('montantCTR'), modePaiCTR: g('modePaiCTR'), clausesCTR: g('clausesCTR'), visaCTR: g('visaCTR') };
+  if (typeId === 'OP')  return { numOP: g('numOP'), dateOP: g('dateOP'), benefOP: g('benefOP'), montantOP: gn('montantOP'), montantLettres: g('montantLettres'), modeOP: g('modeOP'), compteOP: g('compteOP'), motifOP: g('motifOP') };
+  if (typeId === 'OV')  return { numOV: g('numOV'), dateOV: g('dateOV'), benefOV: g('benefOV'), adresseOV: g('adresseOV'), montantOV: gn('montantOV'), montantLettresOV: g('montantLettresOV'), compteDebitOV: g('compteDebitOV'), numCpteOV: g('numCpteOV'), ibanOV: g('ibanOV'), banqueOV: g('banqueOV'), swiftOV: g('swiftOV'), motifOV: g('motifOV') };
+  /* ── Mission ── */
+  if (typeId === 'TDR') return { titreTDR: g('titreTDR'), dateTDR: g('dateTDR'), contexteTDR: g('contexteTDR'), objectifsTDR: g('objectifsTDR'), resultatsTDR: g('resultatsTDR'), dureeTDR: g('dureeTDR'), budgetTDR: gn('budgetTDR'), expertiseTDR: g('expertiseTDR') };
+  if (typeId === 'OM')  return { numOM: g('numOM'), dateOM: g('dateOM'), agentsOM: g('agentsOM'), destinationOM: g('destinationOM'), motifOM: g('motifOM'), departOM: g('departOM'), retourOM: g('retourOM'), perdiem: gn('perdiem'), nbrJoursOM: gn('nbrJoursOM'), autoriseOM: g('autoriseOM') };
+  if (typeId === 'PVV') return { refPVV: g('refPVV'), datePVV: g('datePVV'), objetPVV: g('objetPVV'), presidentPVV: g('presidentPVV'), membresPVV: g('membresPVV'), decisionPVV: g('decisionPVV'), obsPVV: g('obsPVV') };
+  /* ── Formation ── */
+  if (typeId === 'NC')  return { titreNC: g('titreNC'), dateNC: g('dateNC'), contexteNC: g('contexteNC'), objectifsNC: g('objectifsNC'), publicNC: g('publicNC'), lieuNC: g('lieuNC'), dateDebNC: g('dateDebNC'), dateFinNC: g('dateFinNC'), budgetNC: gn('budgetNC'), responsableNC: g('responsableNC') };
+  if (typeId === 'AGE') return { titreAGE: g('titreAGE'), dateAGE: g('dateAGE'), lieuAGE: g('lieuAGE'), moderateurAGE: g('moderateurAGE'), programmeAGE: g('programmeAGE') };
+  if (typeId === 'LP')  return { titreLPV: g('titreLPV'), dateLPV: g('dateLPV'), lieuLPV: g('lieuLPV'), nombreLPV: gn('nombreLPV'), animateurLPV: g('animateurLPV') };
+  if (typeId === 'ATT') return { titreATT: g('titreATT'), dateATT: g('dateATT'), lieuATT: g('lieuATT'), formateurATT: g('formateurATT'), dureeATT: g('dureeATT'), nbAttestation: gn('nbAttestation'), signataireATT: g('signataireATT') };
+  /* ── Atelier ── */
+  if (typeId === 'BD')  return { titreBD: g('titreBD'), dateBD: g('dateBD'), lieuBD: g('lieuBD'), dateDebBD: g('dateDebBD'), dateFinBD: g('dateFinBD'), lignesBD: g('lignesBD'), totalBD: gn('totalBD') };
+  if (typeId === 'INV') return { objetINV: g('objetINV'), dateEnvoiINV: g('dateEnvoiINV'), dateEvenINV: g('dateEvenINV'), lieuEvenINV: g('lieuEvenINV'), heureINV: g('heureINV'), organisateurINV: g('organisateurINV'), destinatairesINV: g('destinatairesINV') };
+  return {};
+}
+
+function sauvegarderPiece() {
+  if (!typeIdCourant) return;
+  const data = collectFormGen(typeIdCourant);
+
+  /* Validation minimale */
+  if (typeIdCourant === 'EB' && !data.designation) { showToast('La désignation est obligatoire.'); return; }
+  if (typeIdCourant === 'TC' && !data.fRetenu)      { showToast('Sélectionnez le fournisseur retenu.'); return; }
+  if (typeIdCourant === 'BC' && !data.fournisseurBC){ showToast('Le fournisseur est obligatoire.'); return; }
+  if (typeIdCourant === 'CTR' && !data.prestataire) { showToast('Le prestataire est obligatoire.'); return; }
+  if (typeIdCourant === 'CTR' && !data.objetCTR)   { showToast('L\'objet du contrat est obligatoire.'); return; }
+  if (typeIdCourant === 'OP'  && !data.benefOP)      { showToast('Le bénéficiaire est obligatoire.'); return; }
+  if (typeIdCourant === 'TDR' && !data.titreTDR)    { showToast('Le titre est obligatoire.'); return; }
+  if (typeIdCourant === 'OM'  && !data.agentsOM)    { showToast('L\'agent est obligatoire.'); return; }
+  if (typeIdCourant === 'OM'  && !data.motifOM)     { showToast('Le motif est obligatoire.'); return; }
+  if (typeIdCourant === 'PVV' && !data.objetPVV)    { showToast('L\'objet est obligatoire.'); return; }
+  if (typeIdCourant === 'NC'  && !data.titreNC)     { showToast('Le titre est obligatoire.'); return; }
+  if (typeIdCourant === 'AGE' && !data.titreAGE)    { showToast('Le titre est obligatoire.'); return; }
+  if (typeIdCourant === 'LP'  && !data.titreLPV)    { showToast('Le titre est obligatoire.'); return; }
+  if (typeIdCourant === 'ATT' && !data.titreATT)    { showToast('Le titre est obligatoire.'); return; }
+  if (typeIdCourant === 'BD'  && !data.titreBD)     { showToast('Le titre est obligatoire.'); return; }
+  if (typeIdCourant === 'INV' && !data.objetINV)    { showToast('L\'objet est obligatoire.'); return; }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const p = getPiece(typeIdCourant);
+  if (p) {
+    p.statut = 'genere';
+    p.date   = today;
+    p.data   = data;
+  }
+
+  /* Log historique */
+  const meta = PIECES_META[typeIdCourant];
+  ajouterHistorique(`Pièce générée : ${meta?.label || typeIdCourant}`);
+
+  sauvegarderStore();
+  bootstrap.Modal.getInstance(document.getElementById('modalGen')).hide();
+  showToast(`Pièce "${meta?.label || typeIdCourant}" enregistrée.`);
+  renderPage();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL — VOIR PIÈCE
+═══════════════════════════════════════════════════════════ */
+let typeIdVoir = null;
+
+/* Imprimer une pièce via la modale (ouvre Voir puis déclenche impression) */
+function imprimerPiece(typeId) {
+  ouvrirVoir(typeId);
+  /* Attendre que la modale soit visible puis lancer l'impression */
+  const modalEl = document.getElementById('modalVoir');
+  const handler = function() {
+    setTimeout(() => window.print(), 300);
+    modalEl.removeEventListener('shown.bs.modal', handler);
+  };
+  modalEl.addEventListener('shown.bs.modal', handler);
+}
+
+function ouvrirVoir(typeId) {
+  typeIdVoir = typeId;
+  const p    = getPiece(typeId);
+  const meta = PIECES_META[typeId];
+
+  document.getElementById('modalVoirTitle').innerHTML =
+    `<i class="fas ${meta?.icon || 'fa-file'} me-2"></i>${meta?.label || typeId} — Aperçu`;
+
+  document.getElementById('modalVoirBody').innerHTML = renderDocPreview(typeId, p?.data || {});
+
+  /* Bouton valider visible seulement si statut = genere */
+  const btnVal = document.getElementById('btnValiderPiece');
+  btnVal.style.display = (p?.statut === 'genere') ? '' : 'none';
+
+  /* ── Générer le QR code une fois le modal visible ── */
+  const modalEl = document.getElementById('modalVoir');
+  const qrData  = [
+    'SIGFIC-PSLSH',
+    dossier.reference,
+    typeId,
+    (p?.data?.refPVR || p?.data?.numBC || p?.data?.numDC || ''),
+    new Date().toISOString().slice(0,10)
+  ].filter(Boolean).join(' | ');
+
+  function genererQR() {
+    const el = document.getElementById('doc-qr-placeholder');
+    if (el && typeof QRCode !== 'undefined') {
+      el.innerHTML = '';
+      new QRCode(el, {
+        text: qrData,
+        width:  68,
+        height: 68,
+        colorDark:  '#1b3a6b',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+    modalEl.removeEventListener('shown.bs.modal', genererQR);
+  }
+
+  modalEl.addEventListener('shown.bs.modal', genererQR);
+  new bootstrap.Modal(modalEl).show();
+}
+
+function validerPieceCourante() {
+  const p = getPiece(typeIdVoir);
+  if (!p) return;
+  p.statut = 'valide';
+  p.date   = new Date().toISOString().slice(0, 10);
+
+  const meta = PIECES_META[typeIdVoir];
+  ajouterHistorique(`Pièce validée : ${meta?.label || typeIdVoir}`);
+
+  /* EB validée → dossier passe en soumis si brouillon */
+  if (typeIdVoir === 'EB' && dossier.statut === 'brouillon') {
+    dossier.statut = 'soumis';
+    ajouterHistorique('Statut → Soumis (déclenchement automatique par validation EB)');
+    showToast('EB validée — Dossier passé automatiquement en statut Soumis.');
+  } else {
+    showToast(`Pièce "${meta?.label || typeIdVoir}" validée.`);
+  }
+
+  sauvegarderStore();
+  bootstrap.Modal.getInstance(document.getElementById('modalVoir')).hide();
+  renderPage();
+}
+
+function renderDocPreview(typeId, d) {
+  const ref  = dossier.reference;
+  const org  = 'PROGRAMME SECTORIEL DE LUTTE CONTRE LE SIDA, LES HÉPATITES VIRALES ET LES IST — PSLSH/IST';
+  const fmtMnt = (n) => typeof n === 'number' ? n.toLocaleString('fr-FR') + ' FCFA' : (n || '—');
+  const fDate  = (s) => s ? fmtDate(s) : '—';
+  const row    = (l, v) => `<tr><td style="width:40%;color:#475569;">${l}</td><td class="fw-bold">${v || '—'}</td></tr>`;
+
+  const wrap = (title, body) => `
+    <div class="doc-preview">
+      <div class="doc-header">
+        <div class="doc-header-org">${org}</div>
+        <div class="doc-header-title">${title}</div>
+        <div class="doc-header-ref">Réf. dossier : ${ref}</div>
+      </div>
+      ${body}
+      <div class="doc-sign">
+        <div class="doc-sign-box">Le Responsable<br><br><br></div>
+      </div>
+      <div class="doc-qr-block">
+        <div id="doc-qr-placeholder"></div>
+        <div class="doc-qr-label">${ref}<br>${typeId} · ${new Date().getFullYear()}</div>
+      </div>
+    </div>`;
+
+  if (typeId === 'EB') return wrap('EXPRESSION DE BESOIN', `
+    <table class="doc-table">
+      ${row('Désignation du besoin', d.designation)}
+      ${row('Quantité', `${d.quantite || ''} ${d.unite || ''}`)}
+      ${row('Prix unitaire estimé', fmtMnt(d.puEstime))}
+      ${row('Total estimé', fmtMnt((d.quantite || 0) * (d.puEstime || 0)))}
+      ${row('Service demandeur', d.serviceDemandeur)}
+      ${row('Date', fDate(d.dateEB))}
+      ${row('Responsable', d.responsable)}
+    </table>
+    <div class="mt-3"><strong>Justification :</strong><br><span style="color:#475569;">${d.justification || '—'}</span></div>`);
+
+  if (typeId === 'DC') return wrap('DEMANDE DE COTATION', `
+    <table class="doc-table">
+      ${row('Objet de la cotation', d.objet)}
+      ${row('Date de la demande', fDate(d.dateDC))}
+      ${row('Date limite de réponse', fDate(d.dateLimite))}
+      ${row('Contact pour dépôt', d.contactDC)}
+    </table>
+    <div class="mt-3"><strong>Fournisseurs contactés :</strong><br>
+      <ul style="color:#475569;font-size:.78rem;">${(d.fournisseurs||'').split('\n').filter(Boolean).map(f=>`<li>${escHtml(f)}</li>`).join('')}</ul>
+    </div>
+    <div class="mt-2"><strong>Documents requis :</strong><br><span style="color:#475569;">${d.documentsReqis || '—'}</span></div>`);
+
+  if (typeId === 'TC') {
+    const offres = [
+      { nom: d.f1Nom, mnt: d.f1Mnt },
+      { nom: d.f2Nom, mnt: d.f2Mnt },
+      { nom: d.f3Nom, mnt: d.f3Mnt },
+    ].filter(o => o.nom);
+    return wrap('TABLEAU COMPARATIF DES OFFRES', `
+      <table class="doc-table">
+        <thead><tr><th>#</th><th>Fournisseur</th><th style="text-align:right">Montant offre</th><th>Sélectionné</th></tr></thead>
+        <tbody>${offres.map((o,i) => `<tr>
+          <td>${i+1}</td>
+          <td>${escHtml(o.nom)}</td>
+          <td style="text-align:right">${fmtMnt(o.mnt)}</td>
+          <td>${o.nom === d.fRetenu ? '<span style="color:#15803d;font-weight:700;">✓ Retenu</span>' : ''}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+      <table class="doc-table mt-2">
+        ${row('Fournisseur retenu', d.fRetenu)}
+        ${row('Critère de sélection', d.critere)}
+        ${row('Date d\'analyse', fDate(d.dateTC))}
+      </table>
+      <div class="mt-2"><strong>Observations :</strong> ${d.obsTC || '—'}</div>`);
+  }
+
+  if (typeId === 'BC') {
+    const ht  = d.montantHT  || 0;
+    const tva = d.tva        !== undefined ? d.tva : 18;
+    const ttc = ht * (1 + tva / 100);
+    return wrap('BON DE COMMANDE', `
+      <table class="doc-table">
+        ${row('N° Bon de commande', d.numBC)}
+        ${row('Date', fDate(d.dateBC))}
+        ${row('Fournisseur', d.fournisseurBC)}
+        ${row('Délai de livraison', d.delai)}
+        ${row('Lieu de livraison', d.lieuLiv)}
+        ${row('Montant HT', fmtMnt(ht))}
+        ${row(`TVA (${tva}%)`, fmtMnt(Math.round(ht * tva / 100)))}
+        ${row('Montant TTC', fmtMnt(Math.round(ttc)))}
+      </table>
+      <div class="mt-3"><strong>Articles / Prestations :</strong><br>
+        <pre style="font-size:.75rem;color:#475569;white-space:pre-wrap;">${escHtml(d.articles || '—')}</pre>
+      </div>`);
+  }
+
+  if (typeId === 'ASF') {
+    const qualLib = { satisfaisant: 'Satisfaisant', partiel: 'Partiellement satisfaisant', non_satisfaisant: 'Non satisfaisant' };
+    return wrap('ATTESTATION DE SERVICE FAIT', `
+      <table class="doc-table">
+        ${row('Date', fDate(d.dateASF))}
+        ${row('Responsable', d.responsableASF)}
+        ${row('Qualité du service', qualLib[d.qualite] || d.qualite || '—')}
+      </table>
+      <div class="mt-3"><strong>Observations :</strong><br><span style="color:#475569;">${d.obsASF || '—'}</span></div>
+      <div class="mt-3" style="font-size:.75rem;color:#475569;font-style:italic;">
+        Je soussigné(e) atteste que la prestation / livraison objet du dossier ${ref} a bien été réalisée/reçue dans les conditions indiquées ci-dessus.
+      </div>`);
+  }
+
+  if (typeId === 'PVR') {
+    const membres = Array.isArray(d.membres) ? d.membres : [{},{},{},{},{}];
+    const articles = Array.isArray(d.articles) ? d.articles : [];
+    const thS = 'background:#1b3a6b;color:#fff;padding:5px 7px;font-size:.67rem;font-weight:700;border:1px solid #1b3a6b;text-align:center;';
+    const tdS = 'padding:4px 7px;border:1px solid #d1d5db;font-size:.72rem;vertical-align:middle;';
+    const ul  = (s) => `<span style="text-decoration:underline;">${s}</span>`;
+
+    const artRows = articles.length
+      ? articles.map((a,i) => `<tr>
+          <td style="${tdS}text-align:center;">${i+1}</td>
+          <td style="${tdS}">${escHtml(a.designation||'')}</td>
+          <td style="${tdS}text-align:center;">${escHtml(String(a.qteBL||''))}</td>
+          <td style="${tdS}text-align:center;">${escHtml(String(a.qteRecue||''))}</td>
+          <td style="${tdS}text-align:center;">${escHtml(String(a.ecarts||''))}</td>
+          <td style="${tdS}text-align:center;">${escHtml(a.peremption||'')}</td>
+          <td style="${tdS}">${escHtml(a.fabricant||'')}</td>
+        </tr>`).join('')
+      : `<tr><td colspan="7" style="${tdS}text-align:center;color:#94a3b8;">Aucun article saisi</td></tr>`;
+
+    const memRows = [0,1,2,3,4].map(i => `<tr>
+        <td style="${tdS}text-align:center;">${String(i+1).padStart(2,'0')}</td>
+        <td style="${tdS}">${escHtml(membres[i]?.nom||'')}</td>
+        <td style="${tdS}">${escHtml(membres[i]?.fonc||'')}</td>
+        <td style="${tdS}min-width:80px;">&nbsp;</td>
+      </tr>`).join('');
+
+    return `<div class="doc-preview" style="font-size:.75rem;line-height:1.65;font-family:'Times New Roman',serif;">
+
+      <!-- ═══ EN-TÊTE INSTITUTIONNEL ═══ -->
+      <div style="display:grid;grid-template-columns:1fr 90px 1fr;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #1b3a6b;">
+        <div style="font-size:.6rem;font-weight:700;line-height:1.9;">
+          RÉPUBLIQUE DU TCHAD<br>
+          <span style="letter-spacing:.1em;">*************</span><br>
+          MINISTERE DE LA SANTE PUBLIQUE ET DE LA PREVENTION<br>
+          <span style="letter-spacing:.1em;">*************</span><br>
+          SECRÉTARIAT D'ÉTAT<br>
+          <span style="letter-spacing:.1em;">*************</span><br>
+          SECRÉTARIAT GÉNÉRAL<br>
+          <span style="letter-spacing:.1em;">*************</span><br>
+          PROGRAMME SECTORIEL DE LUTTE CONTRE LE SIDA, LES HEPATITES VIRALES ET LES INFECTIONS SEXUELLEMENT TRANSMISSIBLES<br>
+          <span style="letter-spacing:.1em;">*************</span><br>
+          <em>Unité-Travail-Progrès</em>
+        </div>
+        <div style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <div style="width:72px;height:72px;border:2.5px solid #1b3a6b;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+            <span style="font-size:.55rem;font-weight:900;color:#1b3a6b;line-height:1.3;text-align:center;">PSLSH<br>/IST</span>
+          </div>
+        </div>
+        <div style="font-size:.6rem;font-weight:700;line-height:1.9;text-align:right;direction:rtl;">
+          جمهورية تشاد<br>
+          <span>*******</span><br>
+          وزارة الصحة العامة والتضامن الوطني<br>
+          <span>*******</span><br>
+          أمانة الدولة<br>
+          <span>*******</span><br>
+          الأمانة العامة للوزارة<br>
+          <span>*******</span><br>
+          البرنامج الإقطاعي لمكافحة السيدا و التهابات الكبد الفيروسية والعدوى المنقولة جنسيا<br>
+          <span>*******</span>
+        </div>
+      </div>
+
+      <!-- ═══ TITRE ═══ -->
+      <h2 style="text-align:center;font-size:1.05rem;font-weight:900;text-decoration:underline;margin:0 0 14px;letter-spacing:.02em;">
+        PROCES VERBAL DE RECEPTION
+      </h2>
+
+      <!-- ═══ RÉFÉRENCE ═══ -->
+      <p style="font-weight:700;margin-bottom:10px;">
+        Réf N° : ${ul(d.refPVR ? d.refPVR : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')}/MSPP/SE/SG/PSLSH-IST/SAF/2026
+      </p>
+
+      <!-- ═══ TEXTE INTRODUCTIF ═══ -->
+      <p style="text-align:justify;margin-bottom:10px;">
+        L'an deux mille-vingt-six et le ${ul(d.datePVR ? fDate(d.datePVR) : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')}
+        à ${ul(d.lieuPVR || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')},
+        nous soussignés membre de la commission de réception du Programme Sectoriel de Lutte contre le Sida,
+        les Hépatites virales et les Infections Sexuellement Transmissibles (PSLSH/IST),
+        avons procédé à la réception des articles livrés selon les références ci-après :
+      </p>
+
+      <p style="margin-bottom:4px;">Fournisseur : ${ul(d.fournisseurPVR || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')}</p>
+      <p style="margin-bottom:4px;">Bon de Commande (BC) n° : ${ul(d.numBC || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')}
+        du ${ul(d.dateBC ? fDate(d.dateBC).replace(/\//g,'&nbsp;/&nbsp;') : '&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;/202&nbsp;&nbsp;')}</p>
+      <p style="margin-bottom:12px;">Bon de Livraison (BL) n° : ${ul(d.numBL || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')}
+        du ${ul(d.dateBL ? fDate(d.dateBL).replace(/\//g,'&nbsp;/&nbsp;') : '&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;/202&nbsp;&nbsp;')}</p>
+
+      <!-- ═══ TABLEAU ARTICLES ═══ -->
+      <p style="font-weight:700;text-decoration:underline;margin-bottom:6px;">DÉTAIL DES ARTICLES REÇUS :</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:14px;">
+        <thead>
+          <tr>
+            <th style="${thS}width:28px;">N°</th>
+            <th style="${thS}">Désignation (DCI)</th>
+            <th style="${thS}width:68px;">Quantité (BL)</th>
+            <th style="${thS}width:68px;">Quantité Reçue</th>
+            <th style="${thS}width:55px;">Ecarts</th>
+            <th style="${thS}width:80px;">Péremption</th>
+            <th style="${thS}width:80px;">Fabricant</th>
+          </tr>
+        </thead>
+        <tbody>${artRows}</tbody>
+      </table>
+
+      <!-- ═══ CONSTATATIONS ═══ -->
+      <p style="font-weight:700;text-decoration:underline;margin-bottom:6px;">CONSTATATIONS DE LA COMMISSION :</p>
+      <p style="text-align:justify;margin-bottom:14px;">
+        ${escHtml(d.constatations || 'Après vérification des conditions techniques et de livraison mentionnées dans le contrat et sur le Bon de Commande, la commission déclare : Les produits sont conformes en quantité et en qualité. Aucun écart ou rejet n\'a été constaté lors de l\'inspection physique et technique.')}
+      </p>
+
+      <!-- ═══ MEMBRES PRÉSENTS ═══ -->
+      <p style="text-decoration:underline;margin-bottom:4px;">Etaient présents :</p>
+      <p style="margin-bottom:6px;">Pour le PSLSH/IST, les membres de la commission de réception :</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:14px;">
+        <thead>
+          <tr>
+            <th style="${thS}width:30px;">N°</th>
+            <th style="${thS}">NOM ET PRENOM</th>
+            <th style="${thS}width:160px;">FONCTION</th>
+            <th style="${thS}width:100px;">SIGNATURE</th>
+          </tr>
+        </thead>
+        <tbody>${memRows}</tbody>
+      </table>
+
+      <!-- ═══ REPRÉSENTANT FOURNISSEUR ═══ -->
+      <p style="margin-bottom:6px;">
+        Pour ${ul('<strong>le Fournisseur</strong>')} :
+        ${ul(d.fournisseurPVR ? `&nbsp;${escHtml(d.fournisseurPVR)}&nbsp;` : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')}
+        représenté par :
+      </p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+        <thead>
+          <tr>
+            <th style="${thS}width:30px;">N°</th>
+            <th style="${thS}">NOM ET PRENOM</th>
+            <th style="${thS}width:160px;">FONCTION</th>
+            <th style="${thS}width:100px;">SIGNATURE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="${tdS}text-align:center;">1</td>
+            <td style="${tdS}">${escHtml(d.repNom||'')}</td>
+            <td style="${tdS}">${escHtml(d.repFonc||'')}</td>
+            <td style="${tdS}">&nbsp;</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ═══ FORMULE FINALE ═══ -->
+      <p style="text-align:justify;font-style:italic;">
+        En foi de quoi, ce procès-verbal est établi, le jour, mois et année ci-dessus, pour servir et valoir ce que de droit.
+      </p>
+
+      <!-- ═══ QR CODE AUTHENTIFICATION ═══ -->
+      <div class="doc-qr-block">
+        <div id="doc-qr-placeholder"></div>
+        <div class="doc-qr-label">${ref}<br>PVR · ${d.refPVR || '—'} · ${new Date().getFullYear()}</div>
+      </div>
+
+    </div>`;
+  }
+
+  if (typeId === 'BDS') return wrap('BORDEREAU DE SORTIE STOCK', `
+    <table class="doc-table">
+      ${row('N° Bordereau', d.numBDS)}
+      ${row('Date de sortie', fDate(d.dateBDS))}
+      ${row('Service destinataire', d.destinataire)}
+      ${row('Magasinier', d.magasinier)}
+      ${row('Réceptionnaire', d.receptionnaire)}
+    </table>
+    <div class="mt-3"><strong>Articles cédés :</strong><br>
+      <pre style="font-size:.75rem;color:#475569;white-space:pre-wrap;">${escHtml(d.articlesBDS || '—')}</pre>
+    </div>`);
+
+  if (typeId === 'CTR') {
+    const typeLib = { contrat: 'Contrat', marche: 'Marché', convention: 'Convention', lettre_commande: 'Lettre de commande' };
+    const modeLib = { virement: 'Virement', cheque: 'Chèque', echeances: 'Par échéances' };
+    return wrap(typeLib[d.typeCTR] || 'CONTRAT / MARCHÉ', `
+      <table class="doc-table">
+        ${row('N° Acte', d.numCTR)}
+        ${row('Type d\'acte', typeLib[d.typeCTR] || d.typeCTR || '—')}
+        ${row('Prestataire / Titulaire', d.prestataire)}
+        ${row('Objet', d.objetCTR)}
+        ${row('Date de signature', fDate(d.dateCTR))}
+        ${row('Prise d\'effet', fDate(d.datePrisEffet))}
+        ${row('Date d\'échéance', fDate(d.dateEcheance))}
+        ${row('Montant du contrat', fmtMnt(d.montantCTR))}
+        ${row('Mode de règlement', modeLib[d.modePaiCTR] || d.modePaiCTR || '—')}
+        ${row('Visa contrôle', d.visaCTR)}
+      </table>
+      ${d.clausesCTR ? `<div class="mt-3"><strong>Clauses particulières :</strong><br>
+        <span style="color:#475569;font-size:.75rem;">${escHtml(d.clausesCTR)}</span></div>` : ''}
+      <div class="mt-4" style="display:flex;justify-content:space-between;">
+        <div class="doc-sign-box">Le Prestataire<br><br><br></div>
+        <div class="doc-sign-box">Pour le PSLSH/IST<br><br><br></div>
+      </div>`);
+  }
+
+  if (typeId === 'OP') {
+    const modeLib = { virement: 'Virement bancaire', cheque: 'Chèque', especes: 'Espèces', mobile: 'Mobile Money' };
+    return wrap('ORDRE DE PAIEMENT', `
+      <table class="doc-table">
+        ${row('N° Ordre de paiement', d.numOP)}
+        ${row('Date', fDate(d.dateOP))}
+        ${row('Bénéficiaire', d.benefOP)}
+        ${row('Montant en chiffres', fmtMnt(d.montantOP))}
+        ${row('Montant en lettres', d.montantLettres)}
+        ${row('Mode de paiement', modeLib[d.modeOP] || d.modeOP || '—')}
+        ${row('Référence compte', d.compteOP)}
+      </table>
+      <div class="mt-3"><strong>Motif :</strong> ${d.motifOP || '—'}</div>`);
+  }
+
+  if (typeId === 'OV') {
+    const ovUrl = `ordre-virement.html?dossier_id=${encodeURIComponent(dossier.id)}&benef=${encodeURIComponent(d.benefOV||'')}&montant=${encodeURIComponent(d.montantOV||'')}&motif=${encodeURIComponent(d.motifOV||'')}&ref=${encodeURIComponent(d.numOV||'')}`;
+    return `<div class="doc-preview">
+      <div class="doc-header">
+        <div class="doc-header-org">${org}</div>
+        <div class="doc-header-title">ORDRE DE VIREMENT IMMÉDIAT</div>
+        <div class="doc-header-ref">Réf. dossier : ${ref} &nbsp;|&nbsp; ${d.numOV || '—'}</div>
+      </div>
+      <table class="doc-table">
+        ${row('N° Ordre de virement', d.numOV)}
+        ${row('Date', fDate(d.dateOV))}
+        ${row('Bénéficiaire', d.benefOV)}
+        ${row('Adresse bénéficiaire', d.adresseOV)}
+        ${row('Montant (chiffres)', fmtMnt(d.montantOV))}
+        ${row('Montant (lettres)', d.montantLettresOV)}
+        ${row('N° compte à débiter', d.compteDebitOV)}
+        ${row('N° compte bénéficiaire', d.numCpteOV)}
+        ${row('Code IBAN', d.ibanOV)}
+        ${row('Banque bénéficiaire', d.banqueOV)}
+        ${row('Code Swift', d.swiftOV)}
+        ${row('Motif', d.motifOV)}
+      </table>
+      <div class="mt-3 p-2 rounded" style="background:#fff8e1;border:1px solid #ffc107;font-size:.72rem;">
+        <strong><i class="fas fa-pen-nib me-1"></i>Signatures requises :</strong>
+        Le Coordinateur PSLSH/IST &nbsp;·&nbsp; Le Secrétaire Général du Ministère &nbsp;·&nbsp; L'Agent Comptable PSLSH/IST
+      </div>
+      <div class="mt-3 text-center">
+        <a href="${ovUrl}" target="_blank" class="btn btn-sm btn-primary">
+          <i class="fas fa-university me-1"></i>Ouvrir le formulaire complet (imprimable)
+        </a>
+      </div>
+    </div>`;
+  }
+
+  /* ── Mission / Prestation ── */
+  if (typeId === 'TDR') return wrap('TERMES DE RÉFÉRENCE', `
+    <table class="doc-table">
+      ${row('Titre', d.titreTDR)} ${row('Date', fDate(d.dateTDR))}
+      ${row('Durée estimée', d.dureeTDR)} ${row('Budget estimé', fmtMnt(d.budgetTDR))}
+      ${row('Profil requis', d.expertiseTDR)}
+    </table>
+    <div class="mt-3"><strong>Contexte :</strong><br><span style="color:#475569;">${escHtml(d.contexteTDR||'—')}</span></div>
+    <div class="mt-2"><strong>Objectifs :</strong><br><span style="color:#475569;">${escHtml(d.objectifsTDR||'—')}</span></div>
+    <div class="mt-2"><strong>Résultats / Livrables attendus :</strong><br><span style="color:#475569;">${escHtml(d.resultatsTDR||'—')}</span></div>`);
+
+  if (typeId === 'OM') {
+    const total = (d.perdiem||0) * (d.nbrJoursOM||0);
+    return wrap('ORDRE DE MISSION', `
+      <table class="doc-table">
+        ${row('N° OM', d.numOM)} ${row('Date d\'émission', fDate(d.dateOM))}
+        ${row('Agent(s)', d.agentsOM)} ${row('Destination', d.destinationOM)}
+        ${row('Objet / Motif', d.motifOM)} ${row('Date de départ', fDate(d.departOM))}
+        ${row('Date de retour', fDate(d.retourOM))} ${row('Durée', `${d.nbrJoursOM||'—'} jour(s)`)}
+        ${row('Per diem journalier', fmtMnt(d.perdiem))} ${row('Total per diem', fmtMnt(total))}
+        ${row('Autorisé par', d.autoriseOM)}
+      </table>
+      <div class="doc-sign mt-4"><div class="doc-sign-box">Signature autorisant<br><br><br></div></div>`);
+  }
+
+  if (typeId === 'PVV') {
+    const decLib = { conforme:'Conforme — Accepté sans réserve', reserve:'Accepté avec réserves', non_conforme:'Non conforme — Rejeté' };
+    const decColor = d.decisionPVV==='conforme' ? '#15803d' : d.decisionPVV==='non_conforme' ? '#b91c1c' : '#b45309';
+    return wrap('PROCÈS-VERBAL DE VALIDATION', `
+      <table class="doc-table">
+        ${row('Référence', d.refPVV)} ${row('Date', fDate(d.datePVV))}
+        ${row('Objet', d.objetPVV)} ${row('Président', d.presidentPVV)}
+        ${row('Décision', `<strong style="color:${decColor};">${decLib[d.decisionPVV]||d.decisionPVV||'—'}</strong>`)}
+      </table>
+      <div class="mt-3"><strong>Membres :</strong><ul style="color:#475569;font-size:.75rem;">${(d.membresPVV||'').split('\n').filter(Boolean).map(m=>`<li>${escHtml(m)}</li>`).join('')}</ul></div>
+      <div class="mt-2"><strong>Observations :</strong><br><span style="color:#475569;">${escHtml(d.obsPVV||'—')}</span></div>
+      <div class="doc-sign mt-4"><div class="doc-sign-box">Le Président de la commission<br><br><br></div></div>`);
+  }
+
+  /* ── Formation ── */
+  if (typeId === 'NC') return wrap('NOTE CONCEPTUELLE', `
+    <table class="doc-table">
+      ${row('Titre', d.titreNC)} ${row('Date', fDate(d.dateNC))}
+      ${row('Public cible', d.publicNC)} ${row('Lieu prévu', d.lieuNC)}
+      ${row('Période', `${fDate(d.dateDebNC)} → ${fDate(d.dateFinNC)}`)}
+      ${row('Budget prévisionnel', fmtMnt(d.budgetNC))} ${row('Élaboré par', d.responsableNC)}
+    </table>
+    <div class="mt-3"><strong>Contexte :</strong><br><span style="color:#475569;">${escHtml(d.contexteNC||'—')}</span></div>
+    <div class="mt-2"><strong>Objectifs :</strong><br><span style="color:#475569;">${escHtml(d.objectifsNC||'—')}</span></div>`);
+
+  if (typeId === 'AGE') return wrap('AGENDA / PROGRAMME', `
+    <table class="doc-table">
+      ${row('Titre', d.titreAGE)} ${row('Date', fDate(d.dateAGE))}
+      ${row('Lieu', d.lieuAGE)} ${row('Modérateur', d.moderateurAGE)}
+    </table>
+    <div class="mt-3"><strong>Programme :</strong><br>
+      <pre style="font-size:.75rem;color:#475569;white-space:pre-wrap;background:#f8fafc;padding:10px;border-radius:4px;">${escHtml(d.programmeAGE||'—')}</pre>
+    </div>`);
+
+  if (typeId === 'LP') return wrap('LISTE DES PARTICIPANTS / PRÉSENCE', `
+    <table class="doc-table">
+      ${row('Titre / Thème', d.titreLPV)} ${row('Date', fDate(d.dateLPV))}
+      ${row('Lieu', d.lieuLPV)} ${row('Animateur / Formateur', d.animateurLPV)}
+      ${row('Nombre de participants', d.nombreLPV||'—')}
+    </table>
+    <div class="mt-3" style="font-size:.72rem;color:#475569;font-style:italic;">
+      La liste nominative complète avec signatures est jointe en annexe physique au dossier.
+    </div>`);
+
+  if (typeId === 'ATT') return wrap('ATTESTATIONS DE PARTICIPATION', `
+    <table class="doc-table">
+      ${row('Formation', d.titreATT)} ${row('Date', fDate(d.dateATT))}
+      ${row('Lieu', d.lieuATT)} ${row('Formateur', d.formateurATT)}
+      ${row('Durée', d.dureeATT)} ${row('Nombre d\'attestations', d.nbAttestation||'—')}
+      ${row('Signataire', d.signataireATT)}
+    </table>
+    <div class="doc-sign mt-4"><div class="doc-sign-box">Le Signataire<br><br><br></div></div>`);
+
+  /* ── Atelier ── */
+  if (typeId === 'BD') return wrap('BUDGET DÉTAILLÉ', `
+    <table class="doc-table">
+      ${row('Titre', d.titreBD)} ${row('Date', fDate(d.dateBD))}
+      ${row('Lieu', d.lieuBD)} ${row('Période', `${fDate(d.dateDebBD)} → ${fDate(d.dateFinBD)}`)}
+      ${row('Budget total', `<strong style="color:#1b3a6b;">${fmtMnt(d.totalBD)}</strong>`)}
+    </table>
+    <div class="mt-3"><strong>Ventilation des dépenses :</strong><br>
+      <pre style="font-size:.75rem;color:#475569;white-space:pre-wrap;background:#f8fafc;padding:10px;border-radius:4px;">${escHtml(d.lignesBD||'—')}</pre>
+    </div>`);
+
+  if (typeId === 'INV') return wrap('INVITATION', `
+    <table class="doc-table">
+      ${row('Objet', d.objetINV)} ${row('Date d\'envoi', fDate(d.dateEnvoiINV))}
+      ${row('Date événement', fDate(d.dateEvenINV))} ${row('Lieu', d.lieuEvenINV)}
+      ${row('Heure', d.heureINV)} ${row('Organisateur', d.organisateurINV)}
+    </table>
+    <div class="mt-3"><strong>Destinataires :</strong><ul style="color:#475569;font-size:.75rem;">${(d.destinatairesINV||'').split('\n').filter(Boolean).map(m=>`<li>${escHtml(m)}</li>`).join('')}</ul></div>`);
+
+  /* Pièce externe */
+  const p = getPiece(typeId);
+  const ext = p?.data || {};
+  return `<div class="doc-preview">
+    <div class="doc-header">
+      <div class="doc-header-org">${org}</div>
+      <div class="doc-header-title">PIÈCE EXTERNE — ${PIECES_META[typeId]?.label || typeId}</div>
+      <div class="doc-header-ref">Réf. dossier : ${ref}</div>
+    </div>
+    <table class="doc-table">
+      ${row('Référence du document', ext.ref)}
+      ${row('Date du document', fDate(ext.date))}
+      ${row('Émetteur / Fournisseur', ext.emetteur)}
+      ${row('Montant', fmtMnt(ext.montant))}
+      ${row('Observations', ext.note)}
+    </table>
+  </div>`;
+}
+
+function imprimerDoc() {
+  window.print();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL — PIÈCE EXTERNE
+═══════════════════════════════════════════════════════════ */
+function ouvrirExt(typeId) {
+  typeIdCourant = typeId;
+  const meta = PIECES_META[typeId];
+  const p    = getPiece(typeId);
+  const d    = p?.data || {};
+
+  document.getElementById('modalExtTitle').innerHTML =
+    `<i class="fas ${meta?.icon || 'fa-paperclip'} me-2"></i>Ajouter — ${meta?.label || typeId}`;
+  document.getElementById('extTypeId').value   = typeId;
+  document.getElementById('extRef').value      = d.ref      || '';
+  document.getElementById('extDate').value     = d.date     || new Date().toISOString().slice(0, 10);
+  document.getElementById('extEmetteur').value = d.emetteur || '';
+  document.getElementById('extMontant').value  = d.montant  || '';
+  document.getElementById('extNote').value     = d.note     || '';
+
+  /* ── Champs spécifiques par type ── */
+  const extra = document.getElementById('extExtraFields');
+  extra.innerHTML = '';
+
+  if (typeId === 'FP') {
+    /* Masquer le champ montant générique (remplacé par HT/TVA/TTC) */
+    document.getElementById('extMontantWrap').style.display = 'none';
+    extra.innerHTML = `
+      <hr class="my-2">
+      <p class="fw-bold mb-2" style="font-size:.73rem;color:#1b3a6b;"><i class="fas fa-calculator me-1"></i>Détail financier de la proforma</p>
+      <div class="row g-2 mb-2">
+        <div class="col-6">
+          <label class="form-label form-label-sm fw-bold">Montant HT (FCFA)</label>
+          <input type="number" class="form-control form-control-sm" id="fp_ht" value="${d.fp_ht||''}" oninput="calcFPTTC()" min="0" placeholder="0">
+        </div>
+        <div class="col-6">
+          <label class="form-label form-label-sm fw-bold">TVA (%)</label>
+          <input type="number" class="form-control form-control-sm" id="fp_tva" value="${d.fp_tva||'0'}" oninput="calcFPTTC()" min="0" max="100" step="0.5">
+        </div>
+      </div>
+      <div class="mb-2">
+        <label class="form-label form-label-sm fw-bold">Montant TTC (FCFA)</label>
+        <input type="number" class="form-control form-control-sm" id="fp_ttc" value="${d.fp_ttc||''}" readonly style="background:#f1f5f9;font-weight:700;color:#1b3a6b;">
+      </div>
+      <div class="mb-2">
+        <label class="form-label form-label-sm fw-bold">Validité de la proforma jusqu'au</label>
+        <input type="date" class="form-control form-control-sm" id="fp_validite" value="${d.fp_validite||''}">
+      </div>
+      <hr class="my-2">`;
+  } else if (typeId === 'PA') {
+    /* Masquer ref et montant — PA = checklist de documents */
+    document.getElementById('extRefWrap').style.display     = 'none';
+    document.getElementById('extMontantWrap').style.display = 'none';
+    const chk = (id, label, val) =>
+      `<div class="form-check form-check-sm mb-1">
+         <input class="form-check-input" type="checkbox" id="${id}" ${val?'checked':''}>
+         <label class="form-check-label" for="${id}" style="font-size:.78rem;">${label}</label>
+       </div>`;
+    extra.innerHTML = `
+      <hr class="my-2">
+      <p class="fw-bold mb-2" style="font-size:.73rem;color:#1b3a6b;"><i class="fas fa-check-square me-1"></i>Documents administratifs reçus</p>
+      <div class="border rounded p-2 mb-2" style="background:#f8fafc;">
+        ${chk('pa_rcm',     'RCM — Registre du Commerce et du Crédit Mobilier', d.pa_rcm)}
+        ${chk('pa_patente', 'Attestation de patente / carte d\'imposition',      d.pa_patente)}
+        ${chk('pa_fiscale', 'Attestation fiscale DGI (non-redevance)',            d.pa_fiscale)}
+        ${chk('pa_cnps',    'Attestation de non-redevance CNPS',                 d.pa_cnps)}
+        ${chk('pa_ci',      'Carte d\'identité du dirigeant / Statuts',           d.pa_ci)}
+        ${chk('pa_autres',  'Autres documents complémentaires',                  d.pa_autres)}
+      </div>
+      <div class="mb-2">
+        <label class="form-label form-label-sm fw-bold">Date d'expiration la plus proche</label>
+        <input type="date" class="form-control form-control-sm" id="pa_expiration" value="${d.pa_expiration||''}">
+      </div>
+      <hr class="my-2">`;
+  } else {
+    document.getElementById('extMontantWrap').style.display = '';
+    document.getElementById('extRefWrap').style.display     = '';
+  }
+
+  new bootstrap.Modal(document.getElementById('modalExt')).show();
+}
+
+function calcFPTTC() {
+  const ht  = parseFloat(document.getElementById('fp_ht')?.value)  || 0;
+  const tva = parseFloat(document.getElementById('fp_tva')?.value) || 0;
+  const ttc = document.getElementById('fp_ttc');
+  if (ttc) ttc.value = Math.round(ht * (1 + tva / 100));
+}
+
+function sauvegarderPieceExt() {
+  const typeId = document.getElementById('extTypeId').value;
+  const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  const gc = id => { const el = document.getElementById(id); return el ? el.checked : false; };
+
+  /* Validation spécifique PA — au moins un document coché */
+  if (typeId === 'PA') {
+    const anyChecked = ['pa_rcm','pa_patente','pa_fiscale','pa_cnps','pa_ci','pa_autres'].some(id => gc(id));
+    if (!anyChecked) { showToast('Cochez au moins un document administratif reçu.'); return; }
+  } else {
+    const ref = g('extRef');
+    if (!ref) { showToast('La référence du document est obligatoire.'); return; }
+  }
+
+  /* Construction du data selon le type */
+  let data = {
+    ref:      g('extRef'),
+    date:     g('extDate'),
+    emetteur: g('extEmetteur'),
+    montant:  parseFloat(g('extMontant')) || 0,
+    note:     g('extNote'),
+  };
+
+  if (typeId === 'FP') {
+    data.fp_ht       = parseFloat(g('fp_ht'))  || 0;
+    data.fp_tva      = parseFloat(g('fp_tva')) || 0;
+    data.fp_ttc      = parseFloat(g('fp_ttc')) || 0;
+    data.fp_validite = g('fp_validite');
+    data.montant     = data.fp_ttc; /* montant = TTC pour cohérence */
+  }
+
+  if (typeId === 'PA') {
+    data.ref          = 'PA-' + dossier.reference;
+    data.pa_rcm       = gc('pa_rcm');
+    data.pa_patente   = gc('pa_patente');
+    data.pa_fiscale   = gc('pa_fiscale');
+    data.pa_cnps      = gc('pa_cnps');
+    data.pa_ci        = gc('pa_ci');
+    data.pa_autres    = gc('pa_autres');
+    data.pa_expiration = g('pa_expiration');
+    /* Construire un résumé lisible */
+    const docs = [
+      data.pa_rcm     ? 'RCM'      : null,
+      data.pa_patente ? 'Patente'  : null,
+      data.pa_fiscale ? 'Fisc.DGI' : null,
+      data.pa_cnps    ? 'CNPS'     : null,
+      data.pa_ci      ? 'CI/Stat.' : null,
+      data.pa_autres  ? 'Autres'   : null,
+    ].filter(Boolean);
+    data.ref = docs.join(' · ');
+  }
+
+  const p = getPiece(typeId);
+  if (p) {
+    p.statut = 'ajoute';
+    p.date   = new Date().toISOString().slice(0, 10);
+    p.data   = data;
+  }
+
+  const meta = PIECES_META[typeId];
+  ajouterHistorique(`Pièce externe ajoutée : ${meta?.label || typeId} (réf. ${data.ref || typeId})`);
+
+  sauvegarderStore();
+  bootstrap.Modal.getInstance(document.getElementById('modalExt')).hide();
+  showToast(`Pièce "${meta?.label || typeId}" ajoutée.`);
+  renderPage();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HISTORIQUE
+═══════════════════════════════════════════════════════════ */
+function renderHistorique() {
+  const tl   = document.getElementById('timeline');
+  const hist = dossier.historique || [];
+  if (!hist.length) {
+    tl.innerHTML = '<div class="text-muted small py-2">Aucune action enregistrée.</div>';
+    return;
+  }
+  tl.innerHTML = [...hist].reverse().map(h => `
+    <div class="timeline-item">
+      <div class="tl-icon"><i class="fas fa-arrow-right" style="font-size:.6rem;"></i></div>
+      <div class="tl-content">
+        <div class="tl-action">${escHtml(h.action)}</div>
+        <div class="tl-meta"><i class="fas fa-user me-1"></i>${escHtml(h.user || '—')} &nbsp;·&nbsp; <i class="fas fa-calendar me-1"></i>${fmtDate(h.date)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function ajouterHistorique(action) {
+  dossier.historique = dossier.historique || [];
+  dossier.historique.push({
+    date: new Date().toISOString().slice(0, 10),
+    action,
+    user: currentUser()
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════════════════ */
+document.querySelectorAll('#detTabs .nav-link').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#detTabs .nav-link').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane-det').forEach(p => p.style.display = 'none');
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).style.display = '';
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITAIRES
+═══════════════════════════════════════════════════════════ */
+function getPiece(typeId) {
+  return (dossier.pieces || []).find(p => p.typeId === typeId);
+}
+
+function currentUser() {
+  try {
+    const u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+    return u.name || u.prenom || 'Admin';
+  } catch(e) { return 'Admin'; }
+}
+
+function fmtDate(s) {
+  if (!s) return '—';
+  try { const [y,m,d] = s.split('-'); return `${d}/${m}/${y}`; } catch(e) { return s; }
+}
+
+function fmtXOF(n) {
+  if (n === undefined || n === null || n === 0) return '0 FCFA';
+  return Number(n).toLocaleString('fr-FR') + ' FCFA';
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let _toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('dosToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function logout() {
+  localStorage.removeItem('pslsh_user');
+  localStorage.removeItem('pslsh_token');
+  location.href = '../auth/login.html';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+(function init() {
+  /* Afficher l'utilisateur */
+  try {
+    const u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+    if (u.prenom || u.name) {
+      document.getElementById('userName').textContent = u.prenom || u.name;
+    }
+  } catch(e) { /* ignore */ }
+
+  chargerDossier();
+})();
+</script>
+
+</body>
+</html>

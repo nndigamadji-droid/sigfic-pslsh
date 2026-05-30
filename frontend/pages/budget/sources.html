@@ -1,0 +1,787 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Sources de financement</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .src-page { padding:22px 28px 48px; }
+
+    /* ── KPI bar ── */
+    .src-kpi-bar { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px; }
+    .src-kpi { background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 15px;position:relative;overflow:hidden; }
+    .src-kpi::before { content:'';position:absolute;top:0;left:0;right:0;height:3px; }
+    .sk-blue::before   { background:#1b3a6b; }
+    .sk-green::before  { background:#15803d; }
+    .sk-orange::before { background:#b45309; }
+    .sk-teal::before   { background:#0f766e; }
+    .src-kpi .sk-lbl { font-size:.67rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em; }
+    .src-kpi .sk-val { font-size:.93rem;font-weight:800;color:#1b2f52;font-family:monospace;margin-top:2px; }
+    .src-kpi .sk-sub { font-size:.67rem;color:#94a3b8;margin-top:1px; }
+
+    /* ── Toolbar ── */
+    .src-toolbar { background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 16px;margin-bottom:14px;
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
+    .src-toolbar select, .src-toolbar input { font-size:.78rem;padding:5px 10px;border:1px solid #d1d5db;border-radius:7px;
+      background:#f8fafc;color:#1b2f52;height:32px; }
+    .src-spacer { flex:1; }
+    .btn-src-add { font-size:.75rem;font-weight:700;padding:6px 15px;border-radius:8px;border:none;
+      background:#1b2f52;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px; }
+    .btn-src-add:hover { background:#1b3a6b; }
+    .btn-src-export { font-size:.72rem;font-weight:600;padding:5px 11px;border-radius:7px;
+      border:1px solid #d1d5db;background:#fff;color:#374151;cursor:pointer;display:flex;align-items:center;gap:5px; }
+    .btn-src-export:hover { background:#f8fafc; }
+
+    /* ── Vue selector ── */
+    .vue-sel { display:flex;gap:6px; }
+    .btn-vue { font-size:.72rem;font-weight:600;padding:4px 11px;border-radius:7px;border:1px solid #d1d5db;
+      background:#fff;color:#374151;cursor:pointer;transition:all .12s; }
+    .btn-vue.active, .btn-vue:hover { background:#1b2f52;color:#fff;border-color:#1b2f52; }
+
+    /* ── Cards grid ── */
+    .src-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:14px; }
+    @media(max-width:1200px){ .src-grid { grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:768px) { .src-grid { grid-template-columns:1fr; } }
+
+    .src-card { background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;
+      transition:box-shadow .15s; }
+    .src-card:hover { box-shadow:0 4px 18px rgba(0,0,0,.09); }
+    .src-card-head { padding:14px 16px 10px;border-bottom:1px solid #f1f5f9;position:relative; }
+    .sc-badge-wrap { display:flex;align-items:center;gap:8px;margin-bottom:8px; }
+    .sc-code { font-size:1.05rem;font-weight:800;color:#1b2f52; }
+    .sc-type-badge { font-size:.65rem;font-weight:700;border-radius:20px;padding:2px 9px; }
+    .sct-etat    { background:#dbeafe;color:#1d4ed8; }
+    .sct-bailleur{ background:#dcfce7;color:#15803d; }
+    .sct-propre  { background:#f3e8ff;color:#7e22ce; }
+    .sct-ptf     { background:#fef3c7;color:#b45309; }
+    .sc-libelle { font-size:.83rem;font-weight:700;color:#1b2f52;line-height:1.3; }
+    .sc-partenaire { font-size:.72rem;color:#64748b;margin-top:3px;display:flex;align-items:center;gap:5px; }
+    .sc-active-dot { width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0; }
+    .dot-on  { background:#15803d; }
+    .dot-off { background:#b91c1c; }
+
+    .src-card-body { padding:14px 16px; }
+    .sc-row { display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;font-size:.77rem; }
+    .sc-row-lbl { color:#64748b;font-weight:600; }
+    .sc-row-val { font-weight:700;color:#1b2f52;font-family:monospace;font-size:.75rem; }
+    .sc-row-val.green { color:#15803d; }
+    .sc-row-val.orange{ color:#b45309; }
+    .sc-row-val.red   { color:#b91c1c; }
+
+    .sc-prog-bar { height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin:8px 0 4px; }
+    .sc-prog-fill { height:100%;border-radius:3px;transition:width .4s; }
+    .spf-green  { background:#15803d; }
+    .spf-orange { background:#b45309; }
+    .spf-red    { background:#b91c1c; }
+    .sc-prog-info { display:flex;justify-content:space-between;font-size:.65rem;color:#94a3b8; }
+
+    .src-card-foot { padding:9px 16px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:6px;background:#f8fafc; }
+    .sc-conv { font-size:.67rem;color:#64748b;flex:1;font-style:italic;overflow:hidden;
+      text-overflow:ellipsis;white-space:nowrap; }
+
+    /* ── Boutons action card ── */
+    .btn-sc { font-size:.65rem;padding:3px 8px;border-radius:5px;cursor:pointer;
+      display:inline-flex;align-items:center;gap:3px;font-weight:700;border:1px solid;transition:all .12s; }
+    .bsc-edit { border-color:#93c5fd;background:#eff6ff;color:#1d4ed8; }
+    .bsc-edit:hover { background:#dbeafe; }
+    .bsc-del  { border-color:#fca5a5;background:#fff5f5;color:#b91c1c; }
+    .bsc-del:hover  { background:#fee2e2; }
+
+    /* ── Vue table ── */
+    .src-table-wrap { display:none; }
+    .src-table { width:100%;border-collapse:collapse;font-size:.77rem; }
+    .src-table thead th { background:#f1f5f9;color:#1b2f52;font-size:.65rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.03em;padding:9px 12px;border-bottom:2px solid #e2e8f0;white-space:nowrap; }
+    .src-table tbody td { padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle; }
+    .src-table tbody tr:hover td { background:#f8fafc; }
+    .src-table .text-end { text-align:right; }
+    .src-table .mono { font-family:'Cascadia Code','Consolas',monospace;font-size:.74rem; }
+    .src-table tfoot td { font-weight:800;background:#1b2f52;color:#fff;padding:8px 12px; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/budget/synthese.html">Budget</a></li>
+            <li class="breadcrumb-item active">Sources de financement</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i> Exercice :
+        <select id="selEx" class="form-select form-select-sm d-inline-block w-auto ms-1">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+
+    <div class="page-content src-page">
+
+      <!-- Titre -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0"><i class="fas fa-hand-holding-usd text-primary me-2"></i>Sources de Financement</h4>
+          <small class="text-muted">PSLSH/IST, exercice 2026 : bailleurs, État, ressources propres, conventions et engagements financiers</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-src-export" onclick="exportCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+          <button class="btn-src-export" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+          <button class="btn-src-export" style="color:#fff;background:#15803d;border-color:#15803d" onclick="sauvegarder()" title="Sauvegarder comme référence"><i class="fas fa-save"></i> Sauvegarder</button>
+          <button class="btn-src-export" style="color:#b91c1c;border-color:#fca5a5" onclick="reinitialiserDonnees()" title="Réinitialiser"><i class="fas fa-undo"></i> Réinitialiser</button>
+        </div>
+      </div>
+
+      <!-- Liens rapides -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+        <a href="synthese.html"  style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#e0e7ff;color:#3730a3;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-chart-pie"></i> Synthèse</a>
+        <a href="recettes.html"  style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#dcfce7;color:#15803d;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-arrow-trend-up"></i> Recettes</a>
+        <a href="lignes.html"    style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#dbeafe;color:#1e40af;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-list"></i> Lignes budgétaires</a>
+        <a href="suivi.html"     style="font-size:.71rem;font-weight:700;padding:5px 12px;border-radius:7px;background:#fef3c7;color:#b45309;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-chart-bar"></i> Suivi d'exécution</a>
+      </div>
+
+      <!-- KPI bar -->
+      <div class="src-kpi-bar mb-3">
+        <div class="src-kpi sk-blue">
+          <div class="sk-lbl">Budget total mobilisé</div>
+          <div class="sk-val" id="kMobilise">-</div>
+          <div class="sk-sub" id="kSources">-</div>
+        </div>
+        <div class="src-kpi sk-green">
+          <div class="sk-lbl">Fonds décaissés</div>
+          <div class="sk-val" id="kDecaisse">-</div>
+          <div class="sk-sub" id="kDecRate">-</div>
+        </div>
+        <div class="src-kpi sk-orange">
+          <div class="sk-lbl">Solde disponible</div>
+          <div class="sk-val" id="kSolde">-</div>
+          <div class="sk-sub">Non décaissé</div>
+        </div>
+        <div class="src-kpi sk-teal">
+          <div class="sk-lbl">Sources actives</div>
+          <div class="sk-val" id="kActives">-</div>
+          <div class="sk-sub" id="kExpirant">-</div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="src-toolbar">
+        <select id="filtreType" onchange="renderAll()">
+          <option value="">Tous types</option>
+          <option value="Etat">État</option>
+          <option value="Bailleur">Bailleur</option>
+          <option value="PTF">PTF</option>
+          <option value="Propre">Ressources propres</option>
+        </select>
+        <select id="filtreStatut" onchange="renderAll()">
+          <option value="">Tous statuts</option>
+          <option value="Active">Active</option>
+          <option value="Suspendue">Suspendue</option>
+          <option value="Clôturée">Clôturée</option>
+        </select>
+        <input type="text" id="filtreSearch" placeholder="Rechercher..." oninput="renderAll()">
+        <div class="src-spacer"></div>
+        <div class="vue-sel">
+          <button class="btn-vue active" id="btnVueCards" onclick="setVue('cards')"><i class="fas fa-th-large me-1"></i>Cartes</button>
+          <button class="btn-vue" id="btnVueTable" onclick="setVue('table')"><i class="fas fa-list me-1"></i>Tableau</button>
+        </div>
+        <button class="btn-src-add" onclick="openModal('add', null)">
+          <i class="fas fa-plus"></i> Nouvelle source
+        </button>
+      </div>
+
+      <!-- Vue cartes -->
+      <div id="vueCards">
+        <div class="src-grid" id="srcGrid">
+          <div class="text-center text-muted py-5 col-span-3">Chargement...</div>
+        </div>
+      </div>
+
+      <!-- Vue tableau -->
+      <div class="src-table-wrap" id="vueTable">
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">
+          <div style="overflow-x:auto">
+            <table class="src-table">
+              <thead>
+                <tr>
+                  <th style="width:70px">Code</th>
+                  <th style="min-width:200px">Libellé</th>
+                  <th style="width:90px">Type</th>
+                  <th style="min-width:150px">Partenaire / Bailleur</th>
+                  <th class="text-end">Budget alloué (FCFA)</th>
+                  <th class="text-end">Décaissé (FCFA)</th>
+                  <th class="text-end">Solde (FCFA)</th>
+                  <th style="width:90px">Taux</th>
+                  <th style="width:80px">Statut</th>
+                  <th style="width:90px">Échéance</th>
+                  <th class="text-end" style="width:90px">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbodySources"></tbody>
+              <tfoot id="tfootSources"></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ═══ MODAL Ajouter / Modifier ═══ -->
+<div class="modal fade" id="modalSource" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1b2f52;color:#fff;padding:12px 20px">
+        <h5 class="modal-title" id="modalSrcTitle" style="font-size:.9rem">
+          <i class="fas fa-hand-holding-usd me-2"></i>Source de financement
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:22px">
+        <input type="hidden" id="sId">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label fw-bold small">Code source <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="sCode" placeholder="Ex : FM, ETAT, OMS">
+          </div>
+          <div class="col-md-9">
+            <label class="form-label fw-bold small">Libellé / Intitulé <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="sLibelle" placeholder="Intitulé complet de la source de financement">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Type <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="sType">
+              <option value="Etat">État</option>
+              <option value="Bailleur">Bailleur de fonds</option>
+              <option value="PTF">Partenaire technique et financier (PTF)</option>
+              <option value="Propre">Ressources propres</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Partenaire / Organisme</label>
+            <input type="text" class="form-control form-control-sm" id="sPartenaire" placeholder="Nom du bailleur ou partenaire">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Statut</label>
+            <select class="form-select form-select-sm" id="sStatut">
+              <option value="Active">Active</option>
+              <option value="Suspendue">Suspendue</option>
+              <option value="Clôturée">Clôturée</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Budget alloué (FCFA) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control form-control-sm" id="sBudget" min="0" oninput="calcSource()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Montant décaissé (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="sDecaisse" min="0" value="0" oninput="calcSource()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Solde disponible - calculé</label>
+            <input type="number" class="form-control form-control-sm" id="sSolde" readonly style="background:#f8fafc">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Devise</label>
+            <select class="form-select form-select-sm" id="sDevise">
+              <option value="FCFA">FCFA</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Date de début</label>
+            <input type="date" class="form-control form-control-sm" id="sDebut">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small">Date d'échéance</label>
+            <input type="date" class="form-control form-control-sm" id="sEcheance">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Référence convention / Accord</label>
+            <input type="text" class="form-control form-control-sm" id="sConvention" placeholder="N° de convention, accord ou protocole">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Observations</label>
+            <textarea class="form-control form-control-sm" id="sNote" rows="2" placeholder="Conditions particulières, restrictions d'utilisation..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="background:#f8fafc;padding:10px 18px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-sm" style="background:#1b2f52;color:#fff;border:none;border-radius:7px;padding:6px 18px;font-size:.78rem;font-weight:700" onclick="saveSource()">
+          <i class="fas fa-save me-1"></i>Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL Confirmer suppression ═══ -->
+<div class="modal fade" id="modalDel" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#b91c1c;color:#fff;padding:10px 16px">
+        <h6 class="modal-title" style="font-size:.85rem"><i class="fas fa-exclamation-triangle me-2"></i>Confirmer</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center" style="padding:18px">
+        <p style="font-size:.82rem;color:#1b2f52;margin:0" id="delMsg">Supprimer cette source ?</p>
+      </div>
+      <div class="modal-footer" style="padding:8px 16px;gap:8px">
+        <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Non</button>
+        <button class="btn btn-sm btn-danger" id="btnDel"><i class="fas fa-trash-alt me-1"></i>Supprimer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  else if (window.SIGFIC?.renderSidebarNav) SIGFIC.renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+
+  const u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+  document.getElementById('userName').textContent = u.nom || u.name || u.email || '';
+  function logout() {
+    localStorage.removeItem('pslsh_token');
+    localStorage.removeItem('pslsh_user');
+    window.location.href = '/pages/auth/login.html';
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     DONNÉES - SOURCES DE FINANCEMENT
+  ══════════════════════════════════════════════════════════════ */
+  let _nextId = 10;
+  const DEFAULT_SOURCES = [
+    {
+      id:'S1', code:'ETAT', libelle:'Budget de l\'État - Trésor National',
+      type:'Etat', partenaire:'République du Tchad - Ministère des Finances',
+      budget:1236624278, decaisse:908736479, devise:'FCFA',
+      debut:'2026-01-01', echeance:'2026-12-31',
+      convention:'Loi de finances 2026 - Programme PSLSH/IST',
+      statut:'Active', note:'Financement principal sur ressources propres de l\'État.'
+    },
+    {
+      id:'S2', code:'FM', libelle:'Fonds Mondial de Lutte contre le SIDA, la Tuberculose et le Paludisme',
+      type:'Bailleur', partenaire:'The Global Fund - Genève (Suisse)',
+      budget:6250000000, decaisse:621830393, devise:'FCFA',
+      debut:'2024-07-01', echeance:'2027-06-30',
+      convention:'Convention FM/CHD-S-TNP-01 - Cycle 7 (2024-2027)',
+      statut:'Active', note:'Subvention principale ARV, intrants et renforcement système.'
+    },
+    {
+      id:'S3', code:'OMS', libelle:'Organisation Mondiale de la Santé - Appui Technique',
+      type:'PTF', partenaire:'OMS Bureau Régional Afrique - AFRO',
+      budget:554772050, decaisse:106840679, devise:'FCFA',
+      debut:'2026-01-01', echeance:'2026-12-31',
+      convention:'Accord Biennal de Collaboration OMS-Tchad 2026-2027',
+      statut:'Active', note:'Appui technique formations, supervisions et ateliers.'
+    },
+    {
+      id:'S4', code:'UNICEF', libelle:'Fonds des Nations Unies pour l\'Enfance',
+      type:'PTF', partenaire:'UNICEF Tchad - Bureau de N\'Djamena',
+      budget:579389500, decaisse:91203350, devise:'FCFA',
+      debut:'2026-01-01', echeance:'2026-12-31',
+      convention:'Plan de travail conjoint UNICEF-PSLSH 2026',
+      statut:'Active', note:'Financement campagnes de sensibilisation et communication.'
+    },
+    {
+      id:'S5', code:'PROPRE', libelle:'Ressources Propres - Redevances Centrale Pharmaceutique',
+      type:'Propre', partenaire:'Centrale Pharmaceutique Nationale (CPN)',
+      budget:200000000, decaisse:199669073, devise:'FCFA',
+      debut:'2026-01-01', echeance:'2026-12-31',
+      convention:'Convention CPN-PSLSH N°2026-001',
+      statut:'Active', note:'Redevances sur achats médicaments - circuit interne.'
+    },
+    {
+      id:'S6', code:'USAID', libelle:'Agence des États-Unis pour le Développement International',
+      type:'Bailleur', partenaire:'USAID Mission Tchad',
+      budget:0, decaisse:0, devise:'USD',
+      debut:'', echeance:'',
+      convention:'En cours de négociation - protocole d\'accord 2026',
+      statut:'Suspendue', note:'Financement en attente de signature de l\'accord.'
+    },
+  ];
+
+  /* ══════════════════════════════════════════════════════════════
+     DONNÉES ACTIVES + PERSISTENCE localStorage
+  ══════════════════════════════════════════════════════════════ */
+  let SOURCES = [];
+  const STORAGE_KEY = 'pslsh_sources_v1';
+  const SAVED_KEY   = 'pslsh_sources_saved';
+  function saveStorage(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({ _ok:true, data:SOURCES, nextId:_nextId })); }
+  function sauvegarder(){
+    const p = JSON.stringify({ _ok:true, data:SOURCES, nextId:_nextId });
+    localStorage.setItem(STORAGE_KEY, p); localStorage.setItem(SAVED_KEY, p);
+    toast('✓ Sources sauvegardées comme nouvelle référence.');
+  }
+  (function(){
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(SAVED_KEY);
+    if(raw){ try{ const s=JSON.parse(raw); if(s&&s._ok){ SOURCES.splice(0,SOURCES.length,...(s.data||[])); _nextId=s.nextId||10; return; } }catch(e){} }
+    SOURCES.splice(0,SOURCES.length,...DEFAULT_SOURCES); saveStorage();
+  })();
+
+  /* ══════════════════════════════════════════════════════════════
+     HELPERS
+  ══════════════════════════════════════════════════════════════ */
+  let _vue = 'cards';
+
+  function fmt(n) {
+    if (!n && n !== 0) return '-';
+    return Math.round(n).toLocaleString('fr-FR');
+  }
+  function typeBadgeCls(t) {
+    return { Etat:'sct-etat', Bailleur:'sct-bailleur', PTF:'sct-ptf', Propre:'sct-propre' }[t] || 'sct-ptf';
+  }
+  function typeLabel(t) {
+    return { Etat:'État', Bailleur:'Bailleur', PTF:'PTF', Propre:'Ressources propres' }[t] || t;
+  }
+  function statutColor(s) {
+    return { Active:'#15803d', Suspendue:'#b45309', 'Clôturée':'#64748b' }[s] || '#94a3b8';
+  }
+  function progressCls(pct) {
+    return pct > 90 ? 'spf-red' : pct > 60 ? 'spf-orange' : 'spf-green';
+  }
+  function toast(msg, ok = true) {
+    const col  = ok ? '#15803d' : '#b91c1c';
+    const icon = ok ? 'check-circle' : 'times-circle';
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${col};color:#fff;border-radius:10px;
+      padding:11px 18px;font-size:.8rem;font-weight:700;z-index:9999;display:flex;align-items:center;gap:9px;
+      box-shadow:0 4px 20px rgba(0,0,0,.25)`;
+    t.innerHTML = `<i class="fas fa-${icon}"></i><span>${msg}</span>`;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 3000);
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     VUE SWITCHER
+  ══════════════════════════════════════════════════════════════ */
+  function setVue(v) {
+    _vue = v;
+    document.getElementById('vueCards').style.display     = v === 'cards' ? '' : 'none';
+    document.getElementById('vueTable').style.display     = v === 'table' ? '' : 'none';
+    document.getElementById('btnVueCards').classList.toggle('active', v === 'cards');
+    document.getElementById('btnVueTable').classList.toggle('active', v === 'table');
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     FILTRAGE
+  ══════════════════════════════════════════════════════════════ */
+  function getFiltered() {
+    const type   = document.getElementById('filtreType').value;
+    const stat   = document.getElementById('filtreStatut').value;
+    const search = document.getElementById('filtreSearch').value.toLowerCase();
+    return SOURCES.filter(s => {
+      if (type   && s.type   !== type)   return false;
+      if (stat   && s.statut !== stat)   return false;
+      if (search && !s.libelle.toLowerCase().includes(search) && !s.code.toLowerCase().includes(search)) return false;
+      return true;
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     RENDU - CARTES
+  ══════════════════════════════════════════════════════════════ */
+  function renderCards(data) {
+    const grid = document.getElementById('srcGrid');
+    if (!data.length) {
+      grid.innerHTML = '<div class="text-center text-muted py-5" style="grid-column:1/-1">Aucune source correspondante</div>';
+      return;
+    }
+    grid.innerHTML = data.map(s => {
+      const solde = s.budget - s.decaisse;
+      const pct   = s.budget > 0 ? Math.round((s.decaisse / s.budget) * 100) : 0;
+      const pCls  = progressCls(pct);
+      const isActive = s.statut === 'Active';
+      return `<div class="src-card">
+        <div class="src-card-head">
+          <div class="sc-badge-wrap">
+            <span class="sc-code">${s.code}</span>
+            <span class="sc-type-badge ${typeBadgeCls(s.type)}">${typeLabel(s.type)}</span>
+            <span style="margin-left:auto;font-size:.68rem;font-weight:700;color:${statutColor(s.statut)}">
+              <span class="sc-active-dot ${isActive?'dot-on':'dot-off'}"></span> ${s.statut}
+            </span>
+          </div>
+          <div class="sc-libelle">${s.libelle}</div>
+          <div class="sc-partenaire"><i class="fas fa-building"></i>${s.partenaire}</div>
+        </div>
+        <div class="src-card-body">
+          <div class="sc-row">
+            <span class="sc-row-lbl">Budget alloué</span>
+            <span class="sc-row-val">${fmt(s.budget)} ${s.devise}</span>
+          </div>
+          <div class="sc-row">
+            <span class="sc-row-lbl">Décaissé</span>
+            <span class="sc-row-val ${pct>90?'red':pct>60?'orange':'green'}">${fmt(s.decaisse)} ${s.devise}</span>
+          </div>
+          <div class="sc-row">
+            <span class="sc-row-lbl">Solde disponible</span>
+            <span class="sc-row-val ${solde<0?'red':''}">${fmt(solde)} ${s.devise}</span>
+          </div>
+          <div class="sc-prog-bar">
+            <div class="sc-prog-fill ${pCls}" style="width:${Math.min(pct,100)}%"></div>
+          </div>
+          <div class="sc-prog-info">
+            <span>${pct}% décaissé</span>
+            ${s.echeance ? `<span>Échéance : ${s.echeance}</span>` : '<span>-</span>'}
+          </div>
+        </div>
+        <div class="src-card-foot">
+          <span class="sc-conv"><i class="fas fa-file-contract me-1"></i>${s.convention || 'Convention non renseignée'}</span>
+          <button class="btn-sc bsc-edit" onclick="openModal('edit','${s.id}')" title="Modifier"><i class="fas fa-pencil-alt"></i></button>
+          <button class="btn-sc bsc-del" onclick="confirmDel('${s.id}','${s.libelle.substring(0,40).replace(/'/g,"&#39;")}')" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     RENDU - TABLEAU
+  ══════════════════════════════════════════════════════════════ */
+  function renderTable(data) {
+    const tbody = document.getElementById('tbodySources');
+    const tfoot = document.getElementById('tfootSources');
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center py-4 text-muted">Aucune source correspondante</td></tr>';
+      tfoot.innerHTML = '';
+      return;
+    }
+    tbody.innerHTML = data.map(s => {
+      const solde = s.budget - s.decaisse;
+      const pct   = s.budget > 0 ? Math.round((s.decaisse/s.budget)*100) : 0;
+      const pCol  = pct > 90 ? '#b91c1c' : pct > 60 ? '#b45309' : '#15803d';
+      return `<tr>
+        <td style="font-weight:800;color:#1b2f52">${s.code}</td>
+        <td>
+          <div style="font-weight:600">${s.libelle}</div>
+          <div style="font-size:.65rem;color:#64748b">${s.partenaire}</div>
+        </td>
+        <td><span class="sc-type-badge ${typeBadgeCls(s.type)}">${typeLabel(s.type)}</span></td>
+        <td style="font-size:.72rem;color:#64748b">${s.partenaire}</td>
+        <td class="text-end mono">${fmt(s.budget)}</td>
+        <td class="text-end mono" style="color:${pCol}">${fmt(s.decaisse)}</td>
+        <td class="text-end mono" style="${solde<0?'color:#b91c1c;font-weight:700':''}">${fmt(solde)}</td>
+        <td style="text-align:center">
+          <span style="font-size:.7rem;font-weight:700;color:${pCol};font-family:monospace">${pct}%</span>
+        </td>
+        <td style="text-align:center">
+          <span style="font-size:.68rem;font-weight:700;color:${statutColor(s.statut)}">${s.statut}</span>
+        </td>
+        <td style="font-size:.7rem;color:#64748b;white-space:nowrap">${s.echeance || '-'}</td>
+        <td class="text-end" style="white-space:nowrap">
+          <button class="btn-sc bsc-edit me-1" onclick="openModal('edit','${s.id}')" title="Modifier"><i class="fas fa-pencil-alt"></i></button>
+          <button class="btn-sc bsc-del" onclick="confirmDel('${s.id}','${s.libelle.substring(0,40).replace(/'/g,"&#39;")}')" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    const totB = data.reduce((s,x)=>s+(x.budget||0),0);
+    const totD = data.reduce((s,x)=>s+(x.decaisse||0),0);
+    const totS = totB - totD;
+    tfoot.innerHTML = `<tr>
+      <td colspan="4">TOTAL (${data.length} source${data.length>1?'s':''})</td>
+      <td class="text-end mono" style="color:#7dd3fc">${fmt(totB)}</td>
+      <td class="text-end mono" style="color:#a7f3d0">${fmt(totD)}</td>
+      <td class="text-end mono" style="color:#fcd34d">${fmt(totS)}</td>
+      <td colspan="4"></td>
+    </tr>`;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     KPIs
+  ══════════════════════════════════════════════════════════════ */
+  function updateKPIs() {
+    const all = SOURCES;
+    const totB = all.reduce((s,x)=>s+(x.budget||0),0);
+    const totD = all.reduce((s,x)=>s+(x.decaisse||0),0);
+    const totS = totB - totD;
+    const actives = all.filter(x=>x.statut==='Active').length;
+    const txD = totB > 0 ? ((totD/totB)*100).toFixed(1) : 0;
+    const expirant = all.filter(x => {
+      if (!x.echeance) return false;
+      const d = new Date(x.echeance);
+      const diff = (d - new Date()) / (1000*60*60*24);
+      return diff > 0 && diff <= 90;
+    }).length;
+
+    document.getElementById('kMobilise').textContent = fmt(totB) + ' FCFA';
+    document.getElementById('kSources').textContent  = all.length + ' source(s) de financement';
+    document.getElementById('kDecaisse').textContent = fmt(totD) + ' FCFA';
+    document.getElementById('kDecRate').textContent  = txD + ' % du budget mobilisé';
+    document.getElementById('kSolde').textContent    = fmt(totS) + ' FCFA';
+    document.getElementById('kActives').textContent  = actives + ' / ' + all.length;
+    const kExp = document.getElementById('kExpirant');
+    kExp.textContent = expirant > 0 ? expirant + ' expiran(t) dans 90 j' : 'Aucune en expiration proche';
+    kExp.style.color = expirant > 0 ? '#b45309' : '#94a3b8';
+  }
+
+  function renderAll() {
+    const data = getFiltered();
+    renderCards(data);
+    renderTable(data);
+    updateKPIs();
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     MODAL - CRÉER / MODIFIER
+  ══════════════════════════════════════════════════════════════ */
+  let _mode = 'add', _editId = null;
+
+  function openModal(mode, id) {
+    _mode = mode; _editId = id;
+    document.getElementById('modalSrcTitle').innerHTML =
+      `<i class="fas fa-hand-holding-usd me-2"></i>${mode==='add' ? 'Nouvelle source de financement' : 'Modifier la source'}`;
+    if (mode === 'edit' && id) {
+      const s = SOURCES.find(x => x.id === id);
+      if (!s) return;
+      document.getElementById('sId').value         = s.id;
+      document.getElementById('sCode').value       = s.code;
+      document.getElementById('sLibelle').value    = s.libelle;
+      document.getElementById('sType').value       = s.type;
+      document.getElementById('sPartenaire').value = s.partenaire;
+      document.getElementById('sStatut').value     = s.statut;
+      document.getElementById('sBudget').value     = s.budget;
+      document.getElementById('sDecaisse').value   = s.decaisse;
+      document.getElementById('sDevise').value     = s.devise;
+      document.getElementById('sDebut').value      = s.debut;
+      document.getElementById('sEcheance').value   = s.echeance;
+      document.getElementById('sConvention').value = s.convention;
+      document.getElementById('sNote').value       = s.note || '';
+      calcSource();
+    } else {
+      ['sId','sCode','sLibelle','sPartenaire','sBudget','sSolde','sDebut','sEcheance','sConvention','sNote'].forEach(f => {
+        const el = document.getElementById(f); if(el) el.value='';
+      });
+      document.getElementById('sDecaisse').value = '0';
+      document.getElementById('sDevise').value   = 'FCFA';
+      document.getElementById('sType').value     = 'Bailleur';
+      document.getElementById('sStatut').value   = 'Active';
+    }
+    new bootstrap.Modal(document.getElementById('modalSource')).show();
+  }
+
+  function calcSource() {
+    const budget   = parseFloat(document.getElementById('sBudget').value)   || 0;
+    const decaisse = parseFloat(document.getElementById('sDecaisse').value) || 0;
+    document.getElementById('sSolde').value = Math.round(budget - decaisse);
+  }
+
+  function saveSource() {
+    const code    = document.getElementById('sCode').value.trim();
+    const libelle = document.getElementById('sLibelle').value.trim();
+    const budget  = parseFloat(document.getElementById('sBudget').value) || 0;
+    if (!code)    { alert('Le code est obligatoire.'); return; }
+    if (!libelle) { alert('Le libellé est obligatoire.'); return; }
+
+    const decaisse   = parseFloat(document.getElementById('sDecaisse').value)   || 0;
+    const type       = document.getElementById('sType').value;
+    const partenaire = document.getElementById('sPartenaire').value.trim();
+    const statut     = document.getElementById('sStatut').value;
+    const devise     = document.getElementById('sDevise').value;
+    const debut      = document.getElementById('sDebut').value;
+    const echeance   = document.getElementById('sEcheance').value;
+    const convention = document.getElementById('sConvention').value.trim();
+    const note       = document.getElementById('sNote').value.trim();
+
+    if (_mode === 'add') {
+      SOURCES.push({ id:'S'+(String(_nextId++)), code, libelle, type, partenaire, budget, decaisse, devise, debut, echeance, convention, statut, note });
+    } else {
+      const idx = SOURCES.findIndex(x => x.id === _editId);
+      if (idx !== -1) SOURCES[idx] = { ...SOURCES[idx], code, libelle, type, partenaire, budget, decaisse, devise, debut, echeance, convention, statut, note };
+    }
+    bootstrap.Modal.getInstance(document.getElementById('modalSource')).hide();
+    saveStorage(); renderAll();
+    toast(_mode === 'add' ? 'Source créée avec succès.' : 'Source modifiée.');
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     SUPPRESSION
+  ══════════════════════════════════════════════════════════════ */
+  let _delId = null;
+  function confirmDel(id, label) {
+    _delId = id;
+    document.getElementById('delMsg').innerHTML =
+      `Supprimer la source <strong>"${label}"</strong> ?<br><small class="text-muted">Cette action est irréversible.</small>`;
+    document.getElementById('btnDel').onclick = execDel;
+    new bootstrap.Modal(document.getElementById('modalDel')).show();
+  }
+  function execDel() {
+    SOURCES = SOURCES.filter(x => x.id !== _delId);
+    bootstrap.Modal.getInstance(document.getElementById('modalDel')).hide();
+    saveStorage(); renderAll();
+    toast('Source supprimée.');
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     EXPORT CSV
+  ══════════════════════════════════════════════════════════════ */
+  function reinitialiserDonnees(){
+    if(!confirm('Réinitialiser aux sources sauvegardées ?\n\nToutes les modifications non sauvegardées seront perdues.')) return;
+    const raw = localStorage.getItem(SAVED_KEY);
+    let ref=null; if(raw){ try{ const s=JSON.parse(raw); if(s&&s._ok) ref=s; }catch(e){} }
+    if(ref){ SOURCES.splice(0,SOURCES.length,...(ref.data||[])); _nextId=ref.nextId||10; }
+    else   { SOURCES.splice(0,SOURCES.length,...DEFAULT_SOURCES); _nextId=10; }
+    saveStorage(); renderAll(); toast('Sources réinitialisées.');
+  }
+
+  function exportCSV() {
+    const data = getFiltered();
+    const headers = ['Code','Libellé','Type','Partenaire','Budget alloué','Décaissé','Solde','Devise','Échéance','Convention','Statut'];
+    const rows = data.map(s => [
+      s.code, `"${s.libelle}"`, s.type, `"${s.partenaire}"`,
+      s.budget, s.decaisse, (s.budget-s.decaisse), s.devise, s.echeance||'', `"${s.convention||''}"`, s.statut
+    ]);
+    const csv = [headers, ...rows].map(r => r.join(';')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Sources-Financement-PSLSH-2026.csv';
+    a.click();
+  }
+
+  /* ── INIT ── */
+  setVue('cards');
+  renderAll();
+</script>
+</body>
+</html>

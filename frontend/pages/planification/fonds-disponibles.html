@@ -1,0 +1,597 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Fonds disponibles</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    html, body { height:100%; overflow:hidden; }
+    .app-layout, .main-content { height:100vh; overflow:hidden; }
+    .page-content { flex:1; overflow:hidden; display:flex; flex-direction:column; padding:0; gap:0; }
+    .fds-top  { flex-shrink:0; padding:12px 24px 0; }
+    .fds-body { flex:1; overflow-y:auto; padding:14px 24px 20px; background:#eef2f7; }
+    .fds-title-strip { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .fds-title-strip h5 { margin:0; font-size:.95rem; font-weight:800; color:#1b2f52; }
+    .fds-title-strip small { font-size:.7rem; color:#64748b; }
+
+    /* ── KPI globaux ── */
+    .fd-kpi-bar { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px; }
+    .fd-kpi { background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;
+               display:flex;align-items:center;gap:14px; }
+    .fd-kpi-icon { width:46px;height:46px;border-radius:11px;display:flex;align-items:center;
+                   justify-content:center;font-size:1.1rem;flex-shrink:0; }
+    .fd-kpi-lbl  { font-size:.63rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em; }
+    .fd-kpi-val  { font-size:1rem;font-weight:800;color:#1b2f52;font-family:monospace;margin-top:2px; }
+    .fd-kpi-sub  { font-size:.63rem;color:#94a3b8;margin-top:2px; }
+
+    /* ── Tableau principal ── */
+    .card-section { background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:18px; }
+    .card-head { display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;gap:8px; }
+    .card-head-icon { width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;flex-shrink:0; }
+    .card-head-title { font-size:.85rem;font-weight:800;color:#1b2f52;flex:1; }
+
+    .fd-tbl { width:100%;border-collapse:collapse;font-size:.78rem; }
+    .fd-tbl thead th { background:#f8fafc;color:#64748b;font-size:.63rem;font-weight:700;
+      text-transform:uppercase;padding:9px 14px;border-bottom:1px solid #e2e8f0;white-space:nowrap; }
+    .fd-tbl tbody td { padding:10px 14px;border-bottom:1px solid #f8fafc;vertical-align:middle; }
+    .fd-tbl tbody tr:last-child td { border-bottom:none; }
+    .fd-tbl tbody tr:hover td { background:#f8fafc; }
+    .fd-tbl tfoot td { background:#f1f5f9;font-weight:800;padding:10px 14px;color:#1b2f52;font-size:.78rem; }
+    .te  { text-align:right; }
+    .mono{ font-family:'Cascadia Code','Consolas',monospace; }
+
+    .src-name { font-weight:700;color:#1b2f52; }
+    .src-bank { font-size:.68rem;color:#64748b;display:flex;align-items:center;gap:4px;margin-top:2px; }
+
+    .total-cell { font-weight:800;color:#0f766e;font-family:monospace; }
+    .total-zero { color:#94a3b8; }
+
+    /* Barre de progression dans le tableau */
+    .mini-bar { height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin-top:4px; }
+    .mini-bar-fill { height:100%;border-radius:3px;background:linear-gradient(90deg,#0f766e,#22c55e); }
+
+    /* Actions ligne */
+    .btn-del { background:none;border:none;color:#ef4444;cursor:pointer;padding:4px 7px;border-radius:6px;font-size:.8rem; }
+    .btn-del:hover { background:#fee2e2; }
+    .btn-edit { background:none;border:none;color:#3b82f6;cursor:pointer;padding:4px 7px;border-radius:6px;font-size:.8rem; }
+    .btn-edit:hover { background:#dbeafe; }
+
+    .btn-add-credit { background:none;border:1px dashed #0f766e;color:#0f766e;cursor:pointer;
+      padding:2px 7px;border-radius:5px;font-size:.63rem;margin-top:4px;display:inline-block;
+      transition:background .15s; }
+    .btn-add-credit:hover { background:#f0fdf4; }
+
+    /* Toast */
+    #_fdToast { position:fixed;bottom:24px;right:24px;background:#1e3a5f;color:#fff;padding:10px 18px;
+      border-radius:8px;font-size:.85rem;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/planification/pao-global.html">Planification</a></li>
+            <li class="breadcrumb-item active">Fonds disponibles</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="fds-top">
+        <div class="fds-title-strip">
+          <div>
+            <h5><i class="fas fa-piggy-bank text-primary me-2"></i>Fonds disponibles, PSLSH/IST</h5>
+            <small>Situation de trésorerie par source de financement, exercice 2026</small>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="fas fa-print me-1"></i> Imprimer</button>
+            <button class="btn btn-sm btn-success" onclick="sauvegarder()"><i class="fas fa-save me-1"></i> Sauvegarder</button>
+            <button class="btn btn-sm btn-danger" onclick="reinitialiserDonnees()"><i class="fas fa-undo me-1"></i> Réinitialiser</button>
+          </div>
+        </div>
+        <!-- KPI globaux -->
+        <div class="fd-kpi-bar">
+        <div class="fd-kpi">
+          <div class="fd-kpi-icon" style="background:#dbeafe;color:#1d4ed8"><i class="fas fa-piggy-bank"></i></div>
+          <div>
+            <div class="fd-kpi-lbl">Total Fonds Disponibles</div>
+            <div class="fd-kpi-val" id="kpiTotal">—</div>
+            <div class="fd-kpi-sub">Σ (Solde bancaire + Nouveau crédit)</div>
+          </div>
+        </div>
+        <div class="fd-kpi">
+          <div class="fd-kpi-icon" style="background:#dcfce7;color:#15803d"><i class="fas fa-landmark"></i></div>
+          <div>
+            <div class="fd-kpi-lbl">Total Soldes Bancaires</div>
+            <div class="fd-kpi-val" id="kpiSolde">—</div>
+            <div class="fd-kpi-sub">Reports et soldes en caisse</div>
+          </div>
+        </div>
+        <div class="fd-kpi">
+          <div class="fd-kpi-icon" style="background:#fef3c7;color:#b45309"><i class="fas fa-hand-holding-usd"></i></div>
+          <div>
+            <div class="fd-kpi-lbl">Total Nouveaux Crédits</div>
+            <div class="fd-kpi-val" id="kpiCredit">—</div>
+            <div class="fd-kpi-sub">Nouvelles subventions reçues</div>
+          </div>
+        </div>
+      </div>
+
+      </div><!-- /fds-top -->
+      <div class="fds-body">
+      <!-- Tableau des sources -->
+      <div class="card-section">
+        <div class="card-head">
+          <div class="card-head-icon" style="background:#1b3a6b"><i class="fas fa-table"></i></div>
+          <div class="card-head-title">Fonds disponibles par source de financement</div>
+          <button class="btn btn-sm btn-primary" onclick="showModal()">
+            <i class="fas fa-plus me-1"></i> Ajouter une source
+          </button>
+        </div>
+        <table class="fd-tbl">
+          <thead>
+            <tr>
+              <th style="width:30px">#</th>
+              <th>Source de financement</th>
+              <th>Banque / Compte</th>
+              <th class="te">Solde bancaire (FCFA)</th>
+              <th class="te">Nouveaux crédits, cumulatif (FCFA)</th>
+              <th class="te">Total disponible (FCFA)</th>
+              <th class="text-center" style="width:80px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="fdTbody"></tbody>
+          <tfoot id="fdTfoot"></tfoot>
+        </table>
+      </div>
+
+      </div><!-- /fds-body -->
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+<div id="_fdToast"></div>
+
+<!-- ══ MODAL AJOUT / ÉDITION SOURCE ══ -->
+<div class="modal fade" id="modalSource" tabindex="-1">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1b3a6b;color:#fff;">
+        <h5 class="modal-title" id="modalTitle"><i class="fas fa-piggy-bank me-2"></i>Source de financement</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editId">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label fw-bold small">Désignation de la source <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="inLibelle"
+              placeholder="ex : Fonctionnement État PSLSH">
+          </div>
+          <div class="col-md-7">
+            <label class="form-label fw-bold small">Banque / Compte <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="inBanque"
+              placeholder="ex : Banque CBT, Compte Trésor, Ecobank…">
+          </div>
+          <div class="col-md-5">
+            <label class="form-label fw-bold small">N° de compte</label>
+            <input type="text" class="form-control form-control-sm" id="inCompte"
+              placeholder="ex : 001-234-56789">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Solde bancaire (FCFA)</label>
+            <input type="number" class="form-control form-control-sm" id="inSolde"
+              placeholder="0" min="0">
+            <div class="form-text" style="font-size:.68rem;">Report en caisse — comptabilisé en prévision <strong>et</strong> en réalisation.</div>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Observations</label>
+            <textarea class="form-control form-control-sm" id="inNote" rows="2"
+              placeholder="Référence virement, date de réception…"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="saveSource()">
+          <i class="fas fa-save me-1"></i> Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL AJOUT CRÉDIT ══ -->
+<div class="modal fade" id="modalCredit" tabindex="-1">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#0f766e;color:#fff;">
+        <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Ajouter un versement / crédit</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="crSourceId">
+        <div class="alert alert-info p-2 mb-3" style="font-size:.78rem;">
+          <strong id="crSourceLabel"></strong><br>
+          Cumul actuel : <strong id="crCumul" style="color:#0f766e"></strong>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Montant du versement (FCFA) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control form-control-sm" id="crMontant" placeholder="0" min="0">
+            <div class="form-text" style="font-size:.68rem;">Ce montant sera <strong>ajouté</strong> au cumul existant.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small">Date de réception</label>
+            <input type="date" class="form-control form-control-sm" id="crDate">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Référence virement / mandat</label>
+            <input type="text" class="form-control form-control-sm" id="crRef" placeholder="ex : VIR-2026-001">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small">Observations</label>
+            <textarea class="form-control form-control-sm" id="crNote" rows="2" placeholder="Tranche T1, décaissement FM…"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-success" onclick="saveCredit()">
+          <i class="fas fa-plus me-1"></i> Ajouter au cumul
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL HISTORIQUE CRÉDITS ══ -->
+<div class="modal fade" id="modalHistory" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1b2f52;color:#fff;">
+        <h5 class="modal-title"><i class="fas fa-history me-2"></i>Historique des versements</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="px-3 pt-3 pb-2" style="background:#f8fafc;border-bottom:1px solid #e2e8f0;">
+          <div style="font-size:.82rem;font-weight:800;color:#1b2f52" id="histLabel"></div>
+          <div style="font-size:.72rem;color:#64748b;margin-top:2px;">
+            Cumul total : <strong style="color:#0f766e" id="histCumul">—</strong>
+          </div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:.78rem;">
+          <thead>
+            <tr style="background:#f1f5f9;">
+              <th style="padding:8px 14px;color:#64748b;font-size:.62rem;font-weight:700;text-transform:uppercase;">#</th>
+              <th style="padding:8px 14px;color:#64748b;font-size:.62rem;font-weight:700;text-transform:uppercase;">Date</th>
+              <th style="padding:8px 14px;color:#64748b;font-size:.62rem;font-weight:700;text-transform:uppercase;text-align:right">Montant (FCFA)</th>
+              <th style="padding:8px 14px;color:#64748b;font-size:.62rem;font-weight:700;text-transform:uppercase;">Référence</th>
+              <th style="padding:8px 14px;color:#64748b;font-size:.62rem;font-weight:700;text-transform:uppercase;">Observations</th>
+            </tr>
+          </thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/sources-ref.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user')||'{}');
+  document.getElementById('userName').textContent = _u.nom||_u.name||_u.email||'';
+  function logout(){ localStorage.removeItem('pslsh_token'); localStorage.removeItem('pslsh_user'); location.href='/pages/auth/login.html'; }
+
+  /* ══ DONNÉES ══
+     credits[] = historique cumulatif de tous les crédits reçus sur l'exercice
+     { id, date, montant, ref, note }
+  */
+  /* Libellés et banques issus de SOURCES_REF (sources-ref.js) — source de vérité unique */
+  const DEFAULT_SOURCES = SOURCES_REF.map(r => ({
+    id: r.id, libelle: r.libelle, banque: r.banque,
+    compte:'', soldeBancaire:0, credits:[], note:''
+  }));
+
+  let SOURCES = [];
+  let _nid = 5;
+
+  /* ══ PERSISTANCE ══ */
+  const STORAGE_KEY = 'pslsh_fonds_dispo_v1';
+  const SAVED_KEY   = 'pslsh_fonds_dispo_saved';
+
+  function _payload(){ return JSON.stringify({ _ok:true, data:SOURCES, nid:_nid }); }
+  function saveStorage(){ localStorage.setItem(STORAGE_KEY, _payload()); }
+  function sauvegarder(){
+    const p = _payload();
+    localStorage.setItem(STORAGE_KEY, p);
+    localStorage.setItem(SAVED_KEY, p);
+    toast('✓ Données sauvegardées comme nouvelle référence.');
+  }
+  function reinitialiserDonnees(){
+    if (!confirm('Réinitialiser aux données sauvegardées ?\nLes modifications non sauvegardées seront perdues.')) return;
+    const raw = localStorage.getItem(SAVED_KEY);
+    if (raw) {
+      try {
+        const s = JSON.parse(raw);
+        if (s && s._ok) { SOURCES.splice(0, SOURCES.length, ...(s.data||[])); _nid = s.nid||5; }
+      } catch(e) {}
+    } else {
+      SOURCES.splice(0, SOURCES.length, ...DEFAULT_SOURCES); _nid = 5;
+    }
+    saveStorage(); render();
+    toast('Données réinitialisées.');
+  }
+
+  /* Restaurer au chargement + migration libellés/banques depuis SOURCES_REF */
+  (function(){
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(SAVED_KEY);
+    if (raw) {
+      try {
+        const s = JSON.parse(raw);
+        if (s && s._ok) {
+          const rows = s.data || [];
+          /* Migration : aligner libellé et banque sur SOURCES_REF pour S1-S4 */
+          rows.forEach(src => {
+            const ref = getSourceRef(src.id);
+            if (ref) { src.libelle = ref.libelle; src.banque = ref.banque; }
+            /* Supprimer le champ allocation devenu orphelin */
+            delete src.allocation;
+          });
+          SOURCES.splice(0, SOURCES.length, ...rows);
+          _nid = s.nid || 5;
+          saveStorage();
+          return;
+        }
+      } catch(e) {}
+    }
+    SOURCES.splice(0, SOURCES.length, ...DEFAULT_SOURCES);
+    saveStorage();
+  })();
+
+  /* ══ HELPERS ══ */
+  function fmt(n){ return Math.round(n||0).toLocaleString('fr-FR'); }
+  function sumCredits(s){ return (s.credits||[]).reduce((t,c) => t + (c.montant||0), 0); }
+  let _cid = 1;
+
+  /* ══ RENDU ══ */
+  function render(){
+    const totSolde  = SOURCES.reduce((s,r) => s + (r.soldeBancaire||0), 0);
+    const totCredit = SOURCES.reduce((s,r) => s + sumCredits(r), 0);
+    const totDispo  = totSolde + totCredit;
+
+    /* KPI */
+    document.getElementById('kpiTotal').textContent  = fmt(totDispo)  + ' FCFA';
+    document.getElementById('kpiSolde').textContent  = fmt(totSolde)  + ' FCFA';
+    document.getElementById('kpiCredit').textContent = fmt(totCredit) + ' FCFA';
+
+    /* Tableau */
+    document.getElementById('fdTbody').innerHTML = SOURCES.map((s, i) => {
+      const cumul  = sumCredits(s);
+      const nbVers = (s.credits||[]).length;
+      const total  = (s.soldeBancaire||0) + cumul;
+      const pct    = totDispo > 0 ? Math.min((total / totDispo) * 100, 100) : 0;
+      const cls    = total === 0 ? 'total-zero' : 'total-cell';
+      return `<tr>
+        <td class="text-muted" style="font-size:.68rem">${i+1}</td>
+        <td>
+          <div class="src-name">${s.libelle}</div>
+          ${s.allocation > 0 ? `<div class="src-bank" style="color:#7e22ce"><i class="fas fa-receipt me-1"></i>Allocation : ${fmt(s.allocation)} FCFA</div>` : ''}
+          ${s.note ? `<div class="src-bank"><i class="fas fa-info-circle me-1"></i>${s.note}</div>` : ''}
+        </td>
+        <td>
+          <div style="font-size:.75rem;font-weight:600;color:#374151">${s.banque}</div>
+          ${s.compte ? `<div class="src-bank"><i class="fas fa-credit-card me-1"></i>${s.compte}</div>` : ''}
+        </td>
+        <td class="te mono">${fmt(s.soldeBancaire)}</td>
+        <td class="te">
+          <div class="mono" style="font-weight:700;color:${cumul>0?'#1b3a6b':'#94a3b8'}">${cumul>0?fmt(cumul)+' FCFA':'—'}</div>
+          ${nbVers>0 ? `<div style="font-size:.62rem;color:#64748b;margin-top:2px">${nbVers} versement${nbVers>1?'s':''} · <a href="#" onclick="showHistory('${s.id}');return false" style="color:#3b82f6;text-decoration:none">voir détail</a></div>` : ''}
+          <button class="btn-add-credit" onclick="showAddCredit('${s.id}')" title="Ajouter un versement">
+            <i class="fas fa-plus-circle me-1"></i>Ajouter
+          </button>
+        </td>
+        <td class="te">
+          <div class="${cls} mono">${total === 0 ? '—' : fmt(total)+' FCFA'}</div>
+          <div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%"></div></div>
+          <div style="font-size:.6rem;color:#94a3b8;text-align:right">${pct.toFixed(1)}% du total</div>
+        </td>
+        <td class="text-center">
+          <button class="btn-edit" onclick="editSource('${s.id}')" title="Modifier la source"><i class="fas fa-edit"></i></button>
+          <button class="btn-del"  onclick="delSource('${s.id}')"  title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" class="text-center text-muted py-4"><i class="fas fa-inbox me-2"></i>Aucune source enregistrée</td></tr>';
+
+    /* Pied de tableau */
+    document.getElementById('fdTfoot').innerHTML = `<tr>
+      <td colspan="3"><i class="fas fa-sigma me-1"></i> TOTAL FONDS DISPONIBLES</td>
+      <td class="te mono">${fmt(totSolde)}</td>
+      <td class="te mono">${fmt(totCredit)}</td>
+      <td class="te mono" style="color:#0f766e;font-size:.85rem">${fmt(totDispo)} FCFA</td>
+      <td></td>
+    </tr>`;
+  }
+
+  /* ══ MODAL SOURCE (info seulement, pas les crédits) ══ */
+  function showModal(id = null){
+    document.getElementById('editId').value        = id || '';
+    document.getElementById('inLibelle').value     = '';
+    document.getElementById('inBanque').value      = '';
+    document.getElementById('inCompte').value      = '';
+    document.getElementById('inSolde').value       = '';
+    document.getElementById('inNote').value        = '';
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-piggy-bank me-2"></i>Nouvelle source de financement';
+    if (id) {
+      const s = SOURCES.find(x => x.id === id);
+      if (s) {
+        document.getElementById('inLibelle').value    = s.libelle;
+        document.getElementById('inBanque').value     = s.banque;
+        document.getElementById('inCompte').value     = s.compte || '';
+        document.getElementById('inSolde').value      = s.soldeBancaire || 0;
+        document.getElementById('inNote').value       = s.note || '';
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Modifier la source';
+      }
+    }
+    new bootstrap.Modal(document.getElementById('modalSource')).show();
+  }
+
+  function editSource(id){ showModal(id); }
+
+  function saveSource(){
+    const libelle = document.getElementById('inLibelle').value.trim();
+    const banque  = document.getElementById('inBanque').value.trim();
+    if (!libelle || !banque) { alert('Désignation et banque/compte sont obligatoires.'); return; }
+    const editId = document.getElementById('editId').value;
+    if (editId) {
+      const idx = SOURCES.findIndex(x => x.id === editId);
+      if (idx !== -1) {
+        SOURCES[idx] = { ...SOURCES[idx], libelle, banque,
+          compte:        document.getElementById('inCompte').value.trim(),
+          soldeBancaire: parseFloat(document.getElementById('inSolde').value) || 0,
+          note:          document.getElementById('inNote').value.trim() };
+      }
+    } else {
+      SOURCES.push({ id:'S'+_nid++, libelle, banque,
+        compte:        document.getElementById('inCompte').value.trim(),
+        allocation:    parseFloat(document.getElementById('inAllocation').value) || 0,
+        soldeBancaire: parseFloat(document.getElementById('inSolde').value) || 0,
+        credits: [],
+        note:          document.getElementById('inNote').value.trim() });
+    }
+    saveStorage(); render();
+    bootstrap.Modal.getInstance(document.getElementById('modalSource')).hide();
+    toast(editId ? '✓ Source modifiée.' : '✓ Source ajoutée.');
+  }
+
+  function delSource(id){
+    const s = SOURCES.find(x => x.id === id);
+    if (!s) return;
+    if (!confirm('Supprimer la source « ' + s.libelle + ' » et tous ses versements ?')) return;
+    SOURCES.splice(SOURCES.findIndex(x => x.id === id), 1);
+    saveStorage(); render();
+    toast('Source supprimée.');
+  }
+
+  /* ══ MODAL AJOUT CRÉDIT (cumulatif) ══ */
+  function showAddCredit(sourceId){
+    const s = SOURCES.find(x => x.id === sourceId);
+    if (!s) return;
+    document.getElementById('crSourceId').value    = sourceId;
+    document.getElementById('crSourceLabel').textContent = s.libelle + ' — ' + s.banque;
+    document.getElementById('crMontant').value     = '';
+    document.getElementById('crDate').value        = new Date().toISOString().slice(0,10);
+    document.getElementById('crRef').value         = '';
+    document.getElementById('crNote').value        = '';
+    const cumul = sumCredits(s);
+    document.getElementById('crCumul').textContent = fmt(cumul) + ' FCFA (' + (s.credits||[]).length + ' versement(s))';
+    new bootstrap.Modal(document.getElementById('modalCredit')).show();
+  }
+
+  function saveCredit(){
+    const sourceId = document.getElementById('crSourceId').value;
+    const montant  = parseFloat(document.getElementById('crMontant').value) || 0;
+    if (!montant || montant <= 0) { alert('Montant invalide.'); return; }
+    const s = SOURCES.find(x => x.id === sourceId);
+    if (!s) return;
+    if (!s.credits) s.credits = [];
+    s.credits.push({
+      id:      'C' + _cid++,
+      date:    document.getElementById('crDate').value || new Date().toISOString().slice(0,10),
+      montant,
+      ref:     document.getElementById('crRef').value.trim(),
+      note:    document.getElementById('crNote').value.trim(),
+    });
+    saveStorage(); render();
+    bootstrap.Modal.getInstance(document.getElementById('modalCredit')).hide();
+    toast('✓ Versement de ' + fmt(montant) + ' FCFA ajouté — cumul mis à jour.');
+  }
+
+  /* ══ MODAL HISTORIQUE CRÉDITS ══ */
+  function showHistory(sourceId){
+    const s = SOURCES.find(x => x.id === sourceId);
+    if (!s) return;
+    document.getElementById('histLabel').textContent = s.libelle + ' — ' + s.banque;
+    const credits = s.credits || [];
+    const cumul   = sumCredits(s);
+    document.getElementById('histBody').innerHTML = credits.length === 0
+      ? '<tr><td colspan="5" class="text-center text-muted py-3">Aucun versement enregistré</td></tr>'
+      : credits.map((c, i) => `<tr>
+          <td class="text-muted">${i+1}</td>
+          <td>${c.date || '—'}</td>
+          <td class="mono" style="font-weight:700;color:#1b3a6b">${fmt(c.montant)} FCFA</td>
+          <td style="font-size:.72rem">${c.ref || '—'}</td>
+          <td style="font-size:.72rem">${c.note || '—'}
+            <button class="btn-del ms-2" onclick="delCredit('${sourceId}','${c.id}')" title="Supprimer ce versement">
+              <i class="fas fa-trash-alt" style="font-size:.65rem"></i>
+            </button>
+          </td>
+        </tr>`).join('');
+    document.getElementById('histCumul').textContent = fmt(cumul) + ' FCFA';
+    new bootstrap.Modal(document.getElementById('modalHistory')).show();
+  }
+
+  function delCredit(sourceId, creditId){
+    const s = SOURCES.find(x => x.id === sourceId);
+    if (!s || !s.credits) return;
+    const c = s.credits.find(x => x.id === creditId);
+    if (!c) return;
+    if (!confirm('Supprimer ce versement de ' + fmt(c.montant) + ' FCFA ?')) return;
+    s.credits = s.credits.filter(x => x.id !== creditId);
+    saveStorage(); render();
+    /* Mettre à jour l'historique si ouvert */
+    const histModal = document.getElementById('modalHistory');
+    if (histModal.classList.contains('show')) showHistory(sourceId);
+    toast('Versement supprimé.');
+  }
+
+  /* ══ TOAST ══ */
+  function toast(msg){
+    const t = document.getElementById('_fdToast');
+    t.textContent = msg; t.style.opacity = '1';
+    clearTimeout(t._t);
+    t._t = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+  }
+
+  render();
+</script>
+</body>
+</html>

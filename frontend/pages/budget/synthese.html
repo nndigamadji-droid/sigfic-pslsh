@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Synthèse globale</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    .page-body { padding: 22px 28px 56px; }
+
+    /* ── En-tête ── */
+    .cf-header {
+      background: linear-gradient(135deg, #0f2944 0%, #1b3a6b 100%);
+      border-radius: 12px; padding: 20px 26px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 18px;
+    }
+    .cf-header-icon {
+      width: 54px; height: 54px; background: rgba(255,255,255,.12);
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; color: #7dd3fc; flex-shrink: 0;
+    }
+    .cf-header-text { flex: 1; }
+    .cf-header-title { color: #fff; font-size: 1rem; font-weight: 800; letter-spacing: .01em; }
+    .cf-header-sub   { color: #93c5fd; font-size: .76rem; margin-top: 3px; }
+    .cf-header-meta  { display: flex; gap: 20px; margin-top: 8px; flex-wrap: wrap; }
+    .cf-meta-item { display: flex; align-items: center; gap: 6px; font-size: .7rem; color: #bfdbfe; font-weight: 600; }
+    .btn-exp {
+      font-size: .71rem; font-weight: 600; padding: 6px 14px; border-radius: 7px;
+      border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: #fff;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    }
+    .btn-exp:hover { background: rgba(255,255,255,.22); }
+
+    /* ── Navigation rapide ── */
+    .cf-nav { display: flex; gap: 10px; margin-bottom: 18px; }
+    .cf-nav-btn {
+      font-size: .77rem; font-weight: 700; padding: 7px 16px; border-radius: 9px;
+      border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+      text-decoration: none; transition: all .12s;
+    }
+    .cfn-green  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .cfn-green:hover  { background: #bbf7d0; }
+    .cfn-orange { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .cfn-orange:hover { background: #fde68a; }
+
+    /* ── KPI bilan (3 cartes haut) ── */
+    .kpi-top {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 14px; margin-bottom: 20px;
+    }
+    @media(max-width:900px){ .kpi-top { grid-template-columns: 1fr; } }
+
+    .kb-card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 20px 22px; position: relative; overflow: hidden;
+    }
+    .kb-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 4px; border-radius: 12px 12px 0 0;
+    }
+    .kb-dep::before { background: linear-gradient(90deg, #b45309, #f59e0b); }
+    .kb-rec::before { background: linear-gradient(90deg, #15803d, #22c55e); }
+    .kb-gap::before { background: linear-gradient(90deg, #9f1239, #e11d48); }
+    .kb-gap.gap-ok::before { background: linear-gradient(90deg, #15803d, #22c55e); }
+    .kb-gap.gap-zero::before { background: linear-gradient(90deg, #1b3a6b, #3b82f6); }
+
+    .kb-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.05rem; margin-bottom: 10px;
+    }
+    .kb-icon-orange { background: #fef3c7; color: #b45309; }
+    .kb-icon-green  { background: #dcfce7; color: #15803d; }
+    .kb-icon-red    { background: #fee2e2; color: #b91c1c; }
+    .kb-icon-blue   { background: #dbeafe; color: #1b3a6b; }
+
+    .kb-lbl {
+      font-size: .61rem; font-weight: 700; color: #64748b;
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;
+    }
+    .kb-main { font-size: 1.25rem; font-weight: 800; color: #1b2f52; font-family: monospace; }
+    .kb-sub  { font-size: .7rem; color: #94a3b8; margin-top: 5px; }
+    .kb-sub2 { font-size: .72rem; font-weight: 700; margin-top: 6px; }
+
+    /* Ligne source (haut de carte) */
+    .kb-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .kb-src-link {
+      font-size: .62rem; font-weight: 700; text-decoration: none;
+      padding: 2px 9px; border-radius: 20px;
+    }
+    .kb-src-orange { background: #fef3c7; color: #b45309; }
+    .kb-src-orange:hover { background: #fde68a; }
+    .kb-src-green  { background: #dcfce7; color: #15803d; }
+    .kb-src-green:hover  { background: #bbf7d0; }
+
+    /* Ligne formule = Σ champ ↑ source */
+    .kb-formula {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+      margin-top: 7px; padding: 5px 9px;
+      background: #f8fafc; border-radius: 6px; border: 1px dashed #cbd5e1;
+      font-size: .64rem;
+    }
+    .kf-eq     { font-weight: 900; color: #1b3a6b; font-size: .78rem; }
+    .kf-field  { font-weight: 700; color: #1b2f52; font-family: monospace;
+                 background: #e2e8f0; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+    .kf-arrow  { color: #94a3b8; }
+    .kf-origin { color: #64748b; font-style: italic; }
+    .kf-op     { font-weight: 800; color: #b91c1c; font-size: .72rem; }
+
+    /* ── Barre gap ── */
+    .gap-bar {
+      border-radius: 12px; padding: 14px 20px; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .gap-bar.gap-present { background: #fef2f2; border: 1px solid #fecaca; }
+    .gap-bar.gap-zero    { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .gap-bar.gap-surplus { background: #eff6ff; border: 1px solid #bfdbfe; }
+    .gb-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .gb-icon-red  { background: #fee2e2; color: #b91c1c; }
+    .gb-icon-grn  { background: #dcfce7; color: #15803d; }
+    .gb-icon-blu  { background: #dbeafe; color: #1b3a6b; }
+    .gb-lbl { font-size: .7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+    .gb-val { font-size: 1rem; font-weight: 800; font-family: monospace; }
+    .gb-sub { font-size: .7rem; color: #94a3b8; margin-top: 2px; }
+
+    /* ── Layout deux colonnes ── */
+    .bottom-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    @media(max-width:960px){ .bottom-grid { grid-template-columns: 1fr; } }
+
+    /* ── Panneaux résumé ── */
+    .sum-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+    .sum-head  {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; border-bottom: 1px solid #e2e8f0;
+    }
+    .sum-head.sh-green  { background: linear-gradient(90deg, #065f46, #15803d); }
+    .sum-head.sh-orange { background: linear-gradient(90deg, #7c2d12, #b45309); }
+    .sum-head-icon {
+      width: 30px; height: 30px; border-radius: 7px;
+      background: rgba(255,255,255,.15); display: flex; align-items: center;
+      justify-content: center; color: #fff; font-size: .85rem; flex-shrink: 0;
+    }
+    .sum-head-title { color: #fff; font-size: .84rem; font-weight: 800; flex: 1; }
+    .sum-head-link  {
+      font-size: .7rem; font-weight: 700; color: rgba(255,255,255,.8);
+      text-decoration: none; display: flex; align-items: center; gap: 4px;
+    }
+    .sum-head-link:hover { color: #fff; }
+
+    /* ── Tables résumé ── */
+    .sum-tbl { width: 100%; border-collapse: collapse; font-size: .77rem; }
+    .sum-tbl thead th {
+      background: #f8fafc; color: #64748b; font-size: .61rem; font-weight: 700;
+      text-transform: uppercase; padding: 8px 12px; border-bottom: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .sum-tbl tbody td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .sum-tbl tbody tr:hover td { background: #f8fafc; }
+
+    /* Ligne titre (en-tête de groupe) */
+    .str-rec td { background: #064e3b; color: #fff; font-weight: 700; font-size: .74rem; padding: 7px 12px; }
+    .str-dep td { background: #7c2d12; color: #fff; font-weight: 700; font-size: .74rem; padding: 7px 12px; }
+
+    /* Ligne sous-total */
+    .str-sub td {
+      background: #f1f5f9; font-weight: 700; color: #1b2f52; font-size: .74rem;
+      border-top: 1px solid #cbd5e1 !important; border-bottom: 1px solid #cbd5e1 !important;
+    }
+
+    /* Ligne total général */
+    .str-tot-rec td { background: #065f46; color: #fff; font-weight: 800; font-size: .76rem; padding: 9px 12px; }
+    .str-tot-dep td { background: #7c2d12; color: #fff; font-weight: 800; font-size: .76rem; padding: 9px 12px; }
+
+    .te   { text-align: right; }
+    .mono { font-family: 'Cascadia Code','Consolas',monospace; font-size: .73rem; }
+
+    /* Taux badges */
+    .tx { display: inline-block; font-size: .64rem; font-weight: 700; border-radius: 20px; padding: 2px 7px; font-family: monospace; }
+    .tx-hi  { background: #dcfce7; color: #15803d; }
+    .tx-mid { background: #fef3c7; color: #b45309; }
+    .tx-low { background: #fee2e2; color: #b91c1c; }
+    .tx-w   { background: rgba(255,255,255,.2); color: #fff; }
+
+    /* Badge origine */
+    .orig-badge {
+      display: inline-block; font-size: .62rem; font-weight: 700; border-radius: 20px;
+      padding: 2px 8px; white-space: nowrap;
+    }
+    .orig-etat  { background: #dbeafe; color: #1e40af; }
+    .orig-fm    { background: #fce7f3; color: #9d174d; }
+    .orig-oms   { background: #e0f2fe; color: #075985; }
+    .orig-uni   { background: #f0fdf4; color: #065f46; }
+    .orig-rep   { background: #f3e8ff; color: #6b21a8; }
+    .orig-aut   { background: #fef9c3; color: #854d0e; }
+
+    .empty-state {
+      text-align: center; color: #94a3b8; padding: 28px 16px;
+      font-size: .78rem; font-style: italic;
+    }
+
+    /* ── Panneaux exécution / réalisation ── */
+    .exec-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 14px; margin-bottom: 20px;
+    }
+    @media(max-width:900px){ .exec-grid { grid-template-columns: 1fr; } }
+
+    .exec-card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 18px 20px; position: relative; overflow: hidden;
+    }
+    .exec-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 3px; border-radius: 12px 12px 0 0;
+    }
+    .exec-dep::before { background: linear-gradient(90deg, #b45309, #f59e0b); }
+    .exec-rec::before { background: linear-gradient(90deg, #15803d, #22c55e); }
+
+    .exec-head {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+    }
+    .exec-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; font-size: .9rem;
+    }
+    .exec-icon-dep { background: #fef3c7; color: #b45309; }
+    .exec-icon-rec { background: #dcfce7; color: #15803d; }
+    .exec-title { font-size: .8rem; font-weight: 800; color: #1b2f52; }
+    .exec-subtitle { font-size: .65rem; color: #94a3b8; margin-top: 1px; }
+
+    /* Ligne de métrique avec barre */
+    .exec-metric { margin-bottom: 12px; }
+    .exec-metric:last-child { margin-bottom: 0; }
+    .exec-metric-head {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 5px;
+    }
+    .exec-metric-lbl { font-size: .66rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+    .exec-metric-val { font-size: .82rem; font-weight: 800; color: #1b2f52; font-family: monospace; }
+    .exec-metric-pct { font-size: .72rem; font-weight: 700; }
+
+    /* Progress bar */
+    .prog-track {
+      height: 7px; background: #f1f5f9; border-radius: 10px; overflow: hidden;
+    }
+    .prog-fill {
+      height: 100%; border-radius: 10px; transition: width .4s ease;
+    }
+    .pf-green  { background: linear-gradient(90deg, #15803d, #22c55e); }
+    .pf-orange { background: linear-gradient(90deg, #b45309, #f59e0b); }
+    .pf-red    { background: linear-gradient(90deg, #b91c1c, #ef4444); }
+    .pf-blue   { background: linear-gradient(90deg, #1b3a6b, #3b82f6); }
+
+    /* Footer de la carte */
+    .exec-footer {
+      margin-top: 14px; padding-top: 10px;
+      border-top: 1px solid #f1f5f9;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .exec-footer-item { font-size: .68rem; color: #64748b; }
+    .exec-footer-val  { font-size: .75rem; font-weight: 700; font-family: monospace; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/pages/budget/synthese.html">Budget</a></li>
+            <li class="breadcrumb-item active">Synthèse globale</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center">
+        <i class="fas fa-calendar-alt"></i> Exercice :
+        <select id="selExercice" class="form-select form-select-sm d-inline-block w-auto ms-1" onchange="renderAll()">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="topbar-right">
+        <span class="me-2 text-muted small" id="userName"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="page-content page-body">
+
+      <!-- En-tête -->
+      <div class="cf-header">
+        <div class="cf-header-icon"><i class="fas fa-book-open"></i></div>
+        <div class="cf-header-text">
+          <div class="cf-header-title">
+            SYNTHÈSE BUDGÉTAIRE - Programme Sectoriel de Lutte contre le Sida, les Hépatites et les IST (PSLSH/IST)
+          </div>
+          <div class="cf-header-sub">
+            Conformément à la législation tchadienne de finances publiques et aux normes SYSCOHADA
+          </div>
+          <div class="cf-header-meta">
+            <div class="cf-meta-item"><i class="fas fa-calendar-alt"></i> Exercice : <strong id="cf-annee">2026</strong></div>
+            <div class="cf-meta-item"><i class="fas fa-map-marker-alt"></i> N'Djaména, Tchad</div>
+            <div class="cf-meta-item"><i class="fas fa-balance-scale"></i> Principe d'équilibre budgétaire</div>
+          </div>
+        </div>
+        <div>
+          <button class="btn-exp" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+        </div>
+      </div>
+
+      <!-- Navigation rapide -->
+      <div class="cf-nav">
+        <a href="recettes.html"  class="cf-nav-btn cfn-green">
+          <i class="fas fa-arrow-trend-up"></i> Recettes
+        </a>
+        <a href="depenses.html"  class="cf-nav-btn cfn-orange">
+          <i class="fas fa-file-invoice-dollar"></i> Dépenses
+        </a>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PANNEAUX KPI PRINCIPAUX
+      ══════════════════════════════════════════════ -->
+      <div class="kpi-top">
+
+        <!-- Dépenses prévues -->
+        <div class="kb-card kb-dep">
+          <div class="kb-row-top">
+            <div class="kb-icon kb-icon-orange"><i class="fas fa-file-invoice-dollar"></i></div>
+            <a href="depenses.html" class="kb-src-link kb-src-orange">
+              <i class="fas fa-external-link-alt me-1"></i>module Dépenses
+            </a>
+          </div>
+          <div class="kb-lbl">Dépenses prévues</div>
+          <div class="kb-main" id="kDep">-</div>
+          <div class="kb-formula">
+            <span class="kf-eq">=</span>
+            <span class="kf-field">Σ Crédit initial</span>
+            <span class="kf-arrow">↑</span>
+            <span class="kf-origin" id="kDepFormula">colonne « Crédit initial » - module Dépenses</span>
+          </div>
+          <div class="kb-sub2" id="kDepTaux" style="color:#b45309;margin-top:6px">-</div>
+        </div>
+
+        <!-- Recettes mobilisables -->
+        <div class="kb-card kb-rec">
+          <div class="kb-row-top">
+            <div class="kb-icon kb-icon-green"><i class="fas fa-arrow-trend-up"></i></div>
+            <a href="recettes.html" class="kb-src-link kb-src-green">
+              <i class="fas fa-external-link-alt me-1"></i>module Recettes
+            </a>
+          </div>
+          <div class="kb-lbl">Recettes mobilisables</div>
+          <div class="kb-main" id="kRec">-</div>
+          <div class="kb-formula">
+            <span class="kf-eq">=</span>
+            <span class="kf-field">Σ Prévision initiale</span>
+            <span class="kf-arrow">↑</span>
+            <span class="kf-origin" id="kRecFormula">colonne « Prévision initiale » - module Recettes</span>
+          </div>
+          <div class="kb-sub2" id="kRecTaux" style="color:#15803d;margin-top:6px">-</div>
+        </div>
+
+        <!-- Gap à rechercher -->
+        <div class="kb-card kb-gap" id="kGapCard">
+          <div class="kb-row-top">
+            <div class="kb-icon kb-icon-red" id="kGapIcon"><i class="fas fa-search-dollar"></i></div>
+          </div>
+          <div class="kb-lbl">Gap à rechercher</div>
+          <div class="kb-main" id="kGap" style="color:#b91c1c">-</div>
+          <div class="kb-formula">
+            <span class="kf-eq">=</span>
+            <span class="kf-field">Dépenses prévues</span>
+            <span class="kf-op">-</span>
+            <span class="kf-field">Recettes mobilisables</span>
+          </div>
+          <div class="kb-sub2" id="kGapLib" style="color:#b91c1c;margin-top:6px">-</div>
+        </div>
+
+      </div>
+
+      <!-- Barre indicatrice du gap -->
+      <div class="gap-bar gap-present" id="gapBar">
+        <div class="gb-icon gb-icon-red" id="gapBarIcon"><i class="fas fa-exclamation-triangle"></i></div>
+        <div style="flex:1">
+          <div class="gb-lbl">Équilibre budgétaire - Exercice <span id="cf-annee2">2026</span></div>
+          <div class="gb-val" id="gapBarVal">-</div>
+          <div class="gb-sub" id="gapBarSub">En attente de données</div>
+        </div>
+        <div style="text-align:right;font-size:.7rem;color:#94a3b8" id="gapBarDetail"></div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PANNEAUX EXÉCUTION / RÉALISATION
+      ══════════════════════════════════════════════ -->
+      <div class="exec-grid">
+
+        <!-- Exécution des dépenses -->
+        <div class="exec-card exec-dep">
+          <div class="exec-head">
+            <div class="exec-icon exec-icon-dep"><i class="fas fa-chart-bar"></i></div>
+            <div>
+              <div class="exec-title">Exécution des dépenses</div>
+              <div class="exec-subtitle">Engagement et paiement sur crédits ouverts</div>
+            </div>
+          </div>
+
+          <!-- Taux d'engagement -->
+          <div class="exec-metric">
+            <div class="exec-metric-head">
+              <span class="exec-metric-lbl"><i class="fas fa-pen-to-square me-1"></i>Taux d'engagement</span>
+              <span class="exec-metric-pct" id="xDepEngPct" style="color:#b45309">- %</span>
+            </div>
+            <div class="exec-metric-val" id="xDepEngVal" style="color:#b45309; margin-bottom:5px">- FCFA engagés</div>
+            <div class="prog-track">
+              <div class="prog-fill pf-orange" id="xDepEngBar" style="width:0%"></div>
+            </div>
+          </div>
+
+          <!-- Taux de paiement -->
+          <div class="exec-metric">
+            <div class="exec-metric-head">
+              <span class="exec-metric-lbl"><i class="fas fa-circle-check me-1"></i>Taux de paiement</span>
+              <span class="exec-metric-pct" id="xDepPayPct" style="color:#15803d">- %</span>
+            </div>
+            <div class="exec-metric-val" id="xDepPayVal" style="color:#15803d; margin-bottom:5px">- FCFA payés</div>
+            <div class="prog-track">
+              <div class="prog-fill pf-green" id="xDepPayBar" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div class="exec-footer">
+            <div class="exec-footer-item">Crédits ouverts</div>
+            <div class="exec-footer-val" id="xDepBase">-</div>
+            <div class="exec-footer-item">Reste à engager</div>
+            <div class="exec-footer-val" id="xDepReste" style="color:#b91c1c">-</div>
+          </div>
+        </div>
+
+        <!-- Réalisation des recettes -->
+        <div class="exec-card exec-rec">
+          <div class="exec-head">
+            <div class="exec-icon exec-icon-rec"><i class="fas fa-chart-line"></i></div>
+            <div>
+              <div class="exec-title">Réalisation des recettes</div>
+              <div class="exec-subtitle">Mobilisation effective sur prévisions budgétaires</div>
+            </div>
+          </div>
+
+          <!-- Taux de réalisation -->
+          <div class="exec-metric">
+            <div class="exec-metric-head">
+              <span class="exec-metric-lbl"><i class="fas fa-arrow-trend-up me-1"></i>Taux de réalisation</span>
+              <span class="exec-metric-pct" id="xRecRealPct" style="color:#15803d">- %</span>
+            </div>
+            <div class="exec-metric-val" id="xRecRealVal" style="color:#15803d; margin-bottom:5px">- FCFA mobilisés</div>
+            <div class="prog-track">
+              <div class="prog-fill pf-green" id="xRecRealBar" style="width:0%"></div>
+            </div>
+          </div>
+
+          <!-- Reste à mobiliser -->
+          <div class="exec-metric">
+            <div class="exec-metric-head">
+              <span class="exec-metric-lbl"><i class="fas fa-hourglass-half me-1"></i>Reste à mobiliser</span>
+              <span class="exec-metric-pct" id="xRecRestePct" style="color:#b45309">- %</span>
+            </div>
+            <div class="exec-metric-val" id="xRecResteVal" style="color:#b45309; margin-bottom:5px">- FCFA non encore mobilisés</div>
+            <div class="prog-track">
+              <div class="prog-fill pf-orange" id="xRecResteBar" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div class="exec-footer">
+            <div class="exec-footer-item">Prévision totale</div>
+            <div class="exec-footer-val" id="xRecBase">-</div>
+            <div class="exec-footer-item">Sources actives</div>
+            <div class="exec-footer-val" id="xRecSources" style="color:#15803d">-</div>
+          </div>
+        </div>
+
+      </div><!-- /exec-grid -->
+
+      <!-- ══════════════════════════════════════════════
+           DEUX COLONNES : Recettes | Dépenses
+      ══════════════════════════════════════════════ -->
+      <div class="bottom-grid">
+
+        <!-- ── RECETTES PAR SOURCE ── -->
+        <div class="sum-panel">
+          <div class="sum-head sh-green">
+            <div class="sum-head-icon"><i class="fas fa-arrow-trend-up"></i></div>
+            <div style="flex:1">
+              <div class="sum-head-title">Recettes par source de financement</div>
+              <div id="rec-ts-lbl" style="font-size:.62rem;color:rgba(255,255,255,.6);margin-top:2px">
+                <i class="fas fa-circle me-1" style="font-size:.4rem;vertical-align:middle"></i>Recettes
+              </div>
+            </div>
+            <a href="recettes.html" class="sum-head-link">
+              <i class="fas fa-external-link-alt"></i> Saisir
+            </a>
+          </div>
+          <div class="table-responsive">
+            <table class="sum-tbl">
+              <thead>
+                <tr>
+                  <th>Source / Désignation</th>
+                  <th class="te">Prévision (FCFA)</th>
+                  <th class="te">Réalisation (FCFA)</th>
+                  <th class="te">Taux</th>
+                </tr>
+              </thead>
+              <tbody id="rec-sum-body">
+                <tr><td colspan="4" class="empty-state">
+                  <i class="fas fa-spinner fa-spin me-2"></i>Chargement…
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── DÉPENSES PAR RUBRIQUE ── -->
+        <div class="sum-panel">
+          <div class="sum-head sh-orange">
+            <div class="sum-head-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div style="flex:1">
+              <div class="sum-head-title">Dépenses par rubrique budgétaire</div>
+              <div id="dep-ts-lbl" style="font-size:.62rem;color:rgba(255,255,255,.6);margin-top:2px">
+                <i class="fas fa-circle me-1" style="font-size:.4rem;vertical-align:middle"></i>Dépenses
+              </div>
+            </div>
+            <a href="depenses.html" class="sum-head-link">
+              <i class="fas fa-external-link-alt"></i> Saisir
+            </a>
+          </div>
+          <div class="table-responsive">
+            <table class="sum-tbl">
+              <thead>
+                <tr>
+                  <th>Titre / Rubrique</th>
+                  <th class="te">Crédit initial (FCFA)</th>
+                  <th class="te">Engagé (FCFA)</th>
+                  <th class="te">Taux</th>
+                </tr>
+              </thead>
+              <tbody id="dep-sum-body">
+                <tr><td colspan="4" class="empty-state">
+                  <i class="fas fa-spinner fa-spin me-2"></i>Chargement…
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /bottom-grid -->
+
+    </div><!-- /page-body -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+  requireAuth();
+  if (typeof renderSidebarNav  === 'function') renderSidebarNav('sidebarNav');
+  if (typeof renderServiceBadge === 'function') renderServiceBadge();
+  const _u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
+  document.getElementById('userName').textContent = _u.nom || _u.name || _u.email || '';
+
+  /* ────────────────────────────────────────────────
+     UTILITAIRES
+  ──────────────────────────────────────────────── */
+  function el(id) { return document.getElementById(id); }
+  function fmt(n) { return Math.abs(Number(n || 0)).toLocaleString('fr-FR'); }
+  function fmtSigned(n) {
+    const v = Number(n || 0);
+    return (v > 0 ? '+' : v < 0 ? '-' : '') + Math.abs(v).toLocaleString('fr-FR');
+  }
+  function txCls(p) { return p >= 70 ? 'tx-hi' : p >= 40 ? 'tx-mid' : 'tx-low'; }
+  function txBadge(p) {
+    if (p === null || p === undefined) return '<span class="tx tx-low">-</span>';
+    return `<span class="tx ${txCls(p)}">${p} %</span>`;
+  }
+  function txBadgeW(p) { return `<span class="tx tx-w">${p} %</span>`; }
+
+  /* ────────────────────────────────────────────────
+     LECTURE localStorage avec fallback
+  ──────────────────────────────────────────────── */
+  function readStore(key, savedKey) {
+    for (const k of [key, savedKey]) {
+      if (!k) continue;
+      try {
+        const raw = localStorage.getItem(k);
+        if (raw) {
+          const p = JSON.parse(raw);
+          if (p && Array.isArray(p.data)) return p.data;
+        }
+      } catch(e) {}
+    }
+    return [];
+  }
+
+  /* ────────────────────────────────────────────────
+     RÉFÉRENTIELS
+  ──────────────────────────────────────────────── */
+  const REC_TITRES = [
+    { num: 'I',  label: 'TITRE I - Reports de soldes',      origines: ['Report'] },
+    { num: 'II', label: 'TITRE II - Nouvelles subventions', origines: ['État','Fonds Mondial','OMS','UNICEF','Autre'] }
+  ];
+
+  const DEP_TITRES = {
+    'I':   'TITRE I - Fonctionnement',
+    'II':  'TITRE II - Investissements',
+    'III': 'TITRE III - Médicaments & Intrants'
+  };
+
+  /* Couleur par origine */
+  function origClass(o) {
+    if (o === 'État')          return 'orig-etat';
+    if (o === 'Fonds Mondial') return 'orig-fm';
+    if (o === 'OMS')           return 'orig-oms';
+    if (o === 'UNICEF')        return 'orig-uni';
+    if (o === 'Report')        return 'orig-rep';
+    return 'orig-aut';
+  }
+
+  /* ════════════════════════════════════════════════
+     RENDU PRINCIPAL
+  ════════════════════════════════════════════════ */
+  function renderAll() {
+    const annee = el('selExercice') ? el('selExercice').value : '2026';
+    ['cf-annee','cf-annee2'].forEach(id => { if (el(id)) el(id).textContent = annee; });
+
+    const { totalPrev: depPrev, totalEngage: depEngage, totalPaye: depPaye } = renderDepenses();
+    const { totalPrev: recPrev, totalReal: recReal }                        = renderRecettes();
+
+    updateKPIs(depPrev, recPrev, depEngage, depPaye, recReal);
+  }
+
+  /* ────────────────────────────────────────────────
+     MISE À JOUR KPI + BARRE GAP
+  ──────────────────────────────────────────────── */
+  /* Wrapper sécurisé : lit un élément, retourne un objet no-op si absent */
+  function safe(id) {
+    const e = document.getElementById(id);
+    if (e) return e;
+    console.warn('[Synthèse] Élément introuvable :', id);
+    return { textContent: '', innerHTML: '', style: {}, className: '' };
+  }
+
+  function updateKPIs(depPrev, recPrev, depEngage, depPaye, recReal) {
+    depPaye = depPaye || 0;
+
+    /* ── KPI ligne 1 ── */
+    const pctDep = depPrev > 0 ? Math.round(depEngage / depPrev * 100) : 0;
+    safe('kDep').textContent        = fmt(depPrev) + ' FCFA';
+    safe('kDepFormula').textContent = fmt(depPrev) + ' FCFA - total colonne « Crédit initial »';
+    safe('kDepTaux').innerHTML      = txBadge(pctDep) +
+      ' <span style="font-size:.67rem;color:#94a3b8">engagé / crédit initial</span>';
+
+    const pctRec = recPrev > 0 ? Math.round(recReal / recPrev * 100) : 0;
+    safe('kRec').textContent        = fmt(recPrev) + ' FCFA';
+    safe('kRecFormula').textContent = fmt(recPrev) + ' FCFA - total colonne « Prévision initiale »';
+    safe('kRecTaux').innerHTML      = txBadge(pctRec) +
+      ' <span style="font-size:.67rem;color:#94a3b8">réalisé / prévision initiale</span>';
+
+    /* ── Panneau exécution dépenses ── */
+    const pctEng   = depPrev > 0 ? Math.round(depEngage / depPrev * 100) : 0;
+    const pctPay   = depPrev > 0 ? Math.round(depPaye   / depPrev * 100) : 0;
+    const depReste = Math.max(0, depPrev - depEngage);
+
+    safe('xDepEngPct').textContent = pctEng + ' %';
+    safe('xDepEngVal').textContent = fmt(depEngage) + ' FCFA engagés';
+    safe('xDepEngBar').style.width = Math.min(pctEng, 100) + '%';
+    safe('xDepEngBar').className   = 'prog-fill ' + (pctEng >= 70 ? 'pf-orange' : pctEng >= 40 ? 'pf-blue' : 'pf-red');
+    safe('xDepPayPct').textContent = pctPay + ' %';
+    safe('xDepPayVal').textContent = fmt(depPaye) + ' FCFA payés';
+    safe('xDepPayBar').style.width = Math.min(pctPay, 100) + '%';
+    safe('xDepPayBar').className   = 'prog-fill ' + (pctPay >= 70 ? 'pf-green' : pctPay >= 40 ? 'pf-orange' : 'pf-red');
+    safe('xDepBase').textContent   = fmt(depPrev) + ' FCFA';
+    safe('xDepReste').textContent  = fmt(depReste) + ' FCFA';
+    safe('xDepReste').style.color  = depReste > 0 ? '#b91c1c' : '#15803d';
+
+    /* ── Panneau réalisation recettes ── */
+    const recReste = Math.max(0, recPrev - recReal);
+    const pctReal  = recPrev > 0 ? Math.round(recReal  / recPrev * 100) : 0;
+    const pctReste = recPrev > 0 ? Math.round(recReste / recPrev * 100) : 0;
+
+    safe('xRecRealPct').textContent  = pctReal + ' %';
+    safe('xRecRealVal').textContent  = fmt(recReal) + ' FCFA mobilisés';
+    safe('xRecRealBar').style.width  = Math.min(pctReal, 100) + '%';
+    safe('xRecRealBar').className    = 'prog-fill ' + (pctReal >= 70 ? 'pf-green' : pctReal >= 40 ? 'pf-orange' : 'pf-red');
+    safe('xRecRestePct').textContent = pctReste + ' %';
+    safe('xRecResteVal').textContent = fmt(recReste) + ' FCFA non encore mobilisés';
+    safe('xRecResteBar').style.width = Math.min(pctReste, 100) + '%';
+    safe('xRecResteBar').className   = 'prog-fill ' + (pctReste > 60 ? 'pf-red' : pctReste > 30 ? 'pf-orange' : 'pf-blue');
+
+    const recRows  = readStore('pslsh_recettes_v1', 'pslsh_recettes_saved');
+    const srcActif = recRows.filter(r => Number(r.real || 0) > 0).length;
+    safe('xRecBase').textContent    = fmt(recPrev) + ' FCFA';
+    safe('xRecSources').textContent = srcActif + ' / ' + recRows.length + ' sources';
+
+    /* ── GAP ── */
+    const gap     = depPrev - recPrev;
+    const gapCard = safe('kGapCard');
+    const gapIcon = safe('kGapIcon');
+    const gapVal  = safe('kGap');
+    const gapLib  = safe('kGapLib');
+
+    if (gap > 0) {
+      /* Gap positif : besoin de financement non couvert */
+      gapCard.className = 'kb-card kb-gap';
+      gapIcon.className = 'kb-icon kb-icon-red';
+      gapIcon.innerHTML = '<i class="fas fa-search-dollar"></i>';
+      gapVal.textContent  = fmt(gap) + ' FCFA';
+      gapVal.style.color  = '#b91c1c';
+      gapLib.textContent  = '▲ Financement à mobiliser';
+      gapLib.style.color  = '#b91c1c';
+    } else if (gap < 0) {
+      /* Surplus de financement */
+      gapCard.className = 'kb-card kb-gap gap-ok';
+      gapIcon.className = 'kb-icon kb-icon-blue';
+      gapIcon.innerHTML = '<i class="fas fa-piggy-bank"></i>';
+      gapVal.textContent  = fmt(Math.abs(gap)) + ' FCFA';
+      gapVal.style.color  = '#1b3a6b';
+      gapLib.textContent  = '▼ Surplus de financement';
+      gapLib.style.color  = '#1b3a6b';
+    } else {
+      /* Équilibre parfait */
+      gapCard.className = 'kb-card kb-gap gap-zero';
+      gapIcon.className = 'kb-icon kb-icon-green';
+      gapIcon.innerHTML = '<i class="fas fa-balance-scale"></i>';
+      gapVal.textContent  = '0 FCFA';
+      gapVal.style.color  = '#15803d';
+      gapLib.textContent  = '= Budget à l\'équilibre';
+      gapLib.style.color  = '#15803d';
+    }
+    /* kGapSub supprimé du HTML - formule affichée statiquement dans kb-formula */
+
+    /* Barre gap */
+    const bar    = safe('gapBar');
+    const barIco = safe('gapBarIcon');
+    const barVal = safe('gapBarVal');
+    const barSub = safe('gapBarSub');
+    const barDet = safe('gapBarDetail');
+
+    /* Formule commune affichée dans la barre */
+    const equationHtml =
+      `<span style="font-family:monospace;font-size:.68rem">` +
+      `<strong style="color:#b45309">Σ Crédit initial</strong> (dép.) = <strong style="color:#b45309">${fmt(depPrev)}</strong> FCFA` +
+      `&nbsp;&nbsp;-&nbsp;&nbsp;` +
+      `<strong style="color:#15803d">Σ Prévision initiale</strong> (rec.) = <strong style="color:#15803d">${fmt(recPrev)}</strong> FCFA` +
+      `</span>`;
+
+    if (gap > 0) {
+      bar.className    = 'gap-bar gap-present';
+      barIco.className = 'gb-icon gb-icon-red';
+      barIco.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+      barVal.innerHTML = `<strong style="color:#b91c1c">${fmt(gap)} FCFA</strong> de financement manquant`;
+      barSub.textContent = 'Σ Crédit initial > Σ Prévision initiale - un gap de financement doit être comblé';
+      barDet.innerHTML   = equationHtml;
+    } else if (gap < 0) {
+      bar.className    = 'gap-bar gap-surplus';
+      barIco.className = 'gb-icon gb-icon-blu';
+      barIco.innerHTML = '<i class="fas fa-check-circle"></i>';
+      barVal.innerHTML = `<strong style="color:#1b3a6b">${fmt(Math.abs(gap))} FCFA</strong> de surplus de financement`;
+      barSub.textContent = 'Σ Prévision initiale > Σ Crédit initial - les recettes dépassent les dépenses prévues';
+      barDet.innerHTML   = equationHtml;
+    } else {
+      bar.className    = 'gap-bar gap-zero';
+      barIco.className = 'gb-icon gb-icon-grn';
+      barIco.innerHTML = '<i class="fas fa-balance-scale"></i>';
+      barVal.innerHTML = `<strong style="color:#15803d">Budget parfaitement équilibré</strong>`;
+      barSub.textContent = 'Σ Crédit initial = Σ Prévision initiale - principe d\'équilibre budgétaire respecté';
+      barDet.innerHTML   = equationHtml;
+    }
+  }
+
+  /* ────────────────────────────────────────────────
+     TABLEAU RECETTES PAR SOURCE (colonne gauche)
+  ──────────────────────────────────────────────── */
+  function renderRecettes() {
+    const rows = readStore('pslsh_recettes_v1', 'pslsh_recettes_saved');
+    const tbody = el('rec-sum-body');
+
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="4" class="empty-state">
+        <i class="fas fa-info-circle me-2"></i>Aucune recette enregistrée -
+        <a href="recettes.html">Saisir les recettes</a>
+      </td></tr>`;
+      return { totalPrev: 0, totalReal: 0 };
+    }
+
+    const html = [];
+    let totalPrev = 0, totalReal = 0;
+
+    REC_TITRES.forEach(titre => {
+      const lignes = rows.filter(r => titre.origines.includes(r.origine || ''));
+      if (!lignes.length) return;
+
+      let sPrev = 0, sReal = 0;
+      lignes.forEach(r => { sPrev += Number(r.prev || 0); sReal += Number(r.real || 0); });
+      const pctT = sPrev > 0 ? Math.round(sReal / sPrev * 100) : 0;
+
+      /* Ligne titre */
+      html.push(`<tr class="str-rec">
+        <td colspan="4">
+          <i class="fas fa-layer-group me-2" style="font-size:.65rem"></i>${titre.label}
+          &nbsp;${txBadgeW(pctT)}
+        </td>
+      </tr>`);
+
+      /* Lignes de détail */
+      lignes.forEach(r => {
+        const prev = Number(r.prev || 0);
+        const real = Number(r.real || 0);
+        const pct  = prev > 0 ? Math.round(real / prev * 100) : 0;
+        html.push(`<tr>
+          <td style="padding-left:20px">
+            <span class="orig-badge ${origClass(r.origine)}">${r.origine || '-'}</span>
+            <span style="margin-left:6px;color:#1b2f52;font-weight:600">${r.libelle || r.id || '-'}</span>
+          </td>
+          <td class="te mono">${fmt(prev)}</td>
+          <td class="te mono" style="color:#15803d">${fmt(real)}</td>
+          <td class="te">${txBadge(pct)}</td>
+        </tr>`);
+      });
+
+      /* Sous-total titre */
+      html.push(`<tr class="str-sub">
+        <td style="padding-left:12px">↳ Sous-total ${titre.label.split('-')[0].trim()}</td>
+        <td class="te mono">${fmt(sPrev)}</td>
+        <td class="te mono">${fmt(sReal)}</td>
+        <td class="te">${txBadge(pctT)}</td>
+      </tr>`);
+
+      totalPrev += sPrev;
+      totalReal += sReal;
+    });
+
+    /* Lignes sans titre connu */
+    const classified = REC_TITRES.flatMap(t => t.origines);
+    const autres = rows.filter(r => !classified.includes(r.origine || ''));
+    if (autres.length) {
+      let sPrev = 0, sReal = 0;
+      autres.forEach(r => { sPrev += Number(r.prev || 0); sReal += Number(r.real || 0); });
+      const pctA = sPrev > 0 ? Math.round(sReal / sPrev * 100) : 0;
+      html.push(`<tr class="str-rec"><td colspan="4">
+        <i class="fas fa-question-circle me-2" style="font-size:.65rem"></i>Autres sources
+        &nbsp;${txBadgeW(pctA)}
+      </td></tr>`);
+      autres.forEach(r => {
+        const prev = Number(r.prev || 0);
+        const real = Number(r.real || 0);
+        const pct  = prev > 0 ? Math.round(real / prev * 100) : 0;
+        html.push(`<tr>
+          <td style="padding-left:20px;color:#1b2f52">${r.libelle || r.id || '-'}</td>
+          <td class="te mono">${fmt(prev)}</td>
+          <td class="te mono" style="color:#15803d">${fmt(real)}</td>
+          <td class="te">${txBadge(pct)}</td>
+        </tr>`);
+      });
+      totalPrev += sPrev; totalReal += sReal;
+    }
+
+    /* Total général */
+    const pctTot = totalPrev > 0 ? Math.round(totalReal / totalPrev * 100) : 0;
+    html.push(`<tr class="str-tot-rec">
+      <td><strong>TOTAL GÉNÉRAL RECETTES</strong></td>
+      <td class="te mono">${fmt(totalPrev)}</td>
+      <td class="te mono">${fmt(totalReal)}</td>
+      <td class="te">${txBadgeW(pctTot)}</td>
+    </tr>`);
+
+    tbody.innerHTML = html.join('');
+    return { totalPrev, totalReal };
+  }
+
+  /* ────────────────────────────────────────────────
+     TABLEAU DÉPENSES PAR RUBRIQUE (colonne droite)
+  ──────────────────────────────────────────────── */
+  function renderDepenses() {
+    const rows = readStore('pslsh_depenses_v1', 'pslsh_depenses_saved');
+    const tbody = el('dep-sum-body');
+
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="4" class="empty-state">
+        <i class="fas fa-info-circle me-2"></i>Aucune dépense enregistrée -
+        <a href="depenses.html">Saisir les dépenses</a>
+      </td></tr>`;
+      return { totalPrev: 0, totalEngage: 0, totalPaye: 0 };
+    }
+
+    const titreRows = rows.filter(r => r.niv === 0);
+    const chapRows  = rows.filter(r => r.niv === 1);
+    const artRows   = rows.filter(r => r.niv === 2);
+
+    const html = [];
+    let totalPrev = 0, totalEngage = 0, totalPaye = 0;
+
+    titreRows.forEach(t => {
+      /* Agréger les articles de ce titre */
+      const arts = artRows.filter(a => a.titre === t.titre);
+      let tCredit = 0, tEngage = 0, tPaye = 0;
+      arts.forEach(a => {
+        tCredit += Number(a.credit || 0);
+        tEngage += Number(a.engage || 0);
+        tPaye   += Number(a.paye   || 0);
+      });
+      const tPct   = tCredit > 0 ? Math.round(tEngage / tCredit * 100) : 0;
+      const label  = DEP_TITRES[t.titre] || t.libelle || t.code || ('Titre ' + t.titre);
+
+      /* Ligne titre */
+      html.push(`<tr class="str-dep">
+        <td colspan="4">
+          <i class="fas fa-layer-group me-2" style="font-size:.65rem"></i>${label}
+          &nbsp;${txBadgeW(tPct)}
+        </td>
+      </tr>`);
+
+      /* Chapitres de ce titre */
+      const chaps = chapRows.filter(c => c.titre === t.titre);
+      chaps.forEach(c => {
+        /* Articles de ce chapitre */
+        const cArts = artRows.filter(a => a.titre === t.titre && a.code && c.code && a.code.startsWith(c.code));
+        let cCredit = 0, cEngage = 0;
+        cArts.forEach(a => {
+          cCredit += Number(a.credit || 0);
+          cEngage += Number(a.engage || 0);
+        });
+        const cPct  = cCredit > 0 ? Math.round(cEngage / cCredit * 100) : 0;
+        html.push(`<tr>
+          <td style="padding-left:20px;font-weight:600;color:#1b2f52">
+            <i class="fas fa-folder me-2" style="font-size:.65rem;color:#94a3b8"></i>${c.libelle || c.code}
+          </td>
+          <td class="te mono">${fmt(cCredit)}</td>
+          <td class="te mono" style="color:${cEngage>cCredit?'#b91c1c':'#b45309'}">${fmt(cEngage)}</td>
+          <td class="te">${txBadge(cPct)}</td>
+        </tr>`);
+      });
+
+      /* Sous-total titre */
+      html.push(`<tr class="str-sub">
+        <td style="padding-left:12px">↳ Sous-total ${label.split('-')[0].trim()}</td>
+        <td class="te mono">${fmt(tCredit)}</td>
+        <td class="te mono">${fmt(tEngage)}</td>
+        <td class="te">${txBadge(tPct)}</td>
+      </tr>`);
+
+      totalPrev   += tCredit;
+      totalEngage += tEngage;
+      totalPaye   += tPaye;
+    });
+
+    /* Total général */
+    const pctTot = totalPrev > 0 ? Math.round(totalEngage / totalPrev * 100) : 0;
+    html.push(`<tr class="str-tot-dep">
+      <td><strong>TOTAL GÉNÉRAL DÉPENSES</strong></td>
+      <td class="te mono">${fmt(totalPrev)}</td>
+      <td class="te mono">${fmt(totalEngage)}</td>
+      <td class="te">${txBadgeW(pctTot)}</td>
+    </tr>`);
+
+    tbody.innerHTML = html.join('');
+    return { totalPrev, totalEngage, totalPaye };
+  }
+
+  /* ────────────────────────────────────────────────
+     HORODATAGES - afficher la fraîcheur des données
+  ──────────────────────────────────────────────── */
+  function fmtTs(tsKey) {
+    const ts = parseInt(localStorage.getItem(tsKey) || '0');
+    if (!ts) return '';
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 120)   return 'à jour';
+    if (diff < 3600)  return `actualisé il y a ${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `actualisé le ${new Date(ts).toLocaleDateString('fr-FR')}`;
+    return `actualisé le ${new Date(ts).toLocaleDateString('fr-FR')}`;
+  }
+
+  function updateTimestamps() {
+    const recTs = el('rec-ts-lbl');
+    const depTs = el('dep-ts-lbl');
+    if (recTs) {
+      const t = fmtTs('pslsh_recettes_ts');
+      recTs.innerHTML = `<i class="fas fa-circle me-1" style="font-size:.4rem;color:#22c55e;vertical-align:middle"></i>Recettes${t ? ' - ' + t : ''}`;
+    }
+    if (depTs) {
+      const t = fmtTs('pslsh_depenses_ts');
+      depTs.innerHTML = `<i class="fas fa-circle me-1" style="font-size:.4rem;color:#22c55e;vertical-align:middle"></i>Dépenses${t ? ' - ' + t : ''}`;
+    }
+  }
+
+  /* ────────────────────────────────────────────────
+     INIT + ÉCOUTE DES CHANGEMENTS
+  ──────────────────────────────────────────────── */
+  function init() {
+    renderAll();
+    updateTimestamps();
+  }
+
+  /* Rafraîchissement automatique quand localStorage change
+     (autre onglet ou retour depuis recettes/depenses) */
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'pslsh_recettes_v1' || e.key === 'pslsh_depenses_v1' ||
+        e.key === 'pslsh_recettes_ts'  || e.key === 'pslsh_depenses_ts') {
+      renderAll();
+      updateTimestamps();
+    }
+  });
+
+  /* Rafraîchissement quand l'utilisateur revient sur cet onglet */
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+      renderAll();
+      updateTimestamps();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState !== 'loading') init();
+</script>
+</body>
+</html>
