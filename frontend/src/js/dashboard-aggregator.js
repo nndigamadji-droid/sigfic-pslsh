@@ -5,41 +5,43 @@
     planAchat: 'pslsh_plan_achat_v1',
     rh:        'pslsh_rh_v1',
     dossiers:  'pslsh_dossiers_v1',
+    depenses:  'pslsh_depenses_v1',
   };
 
   const ACHAT_CATEGORIES = {
-    arv:   ['Médicaments ARV', 'ARV'],
-    reac:  ['Réactifs dépistage VIH', 'Réactifs charge virale VIH', 'Réactifs hépatites & syphilis',
-            'Charge virale hépatites', 'Sérologie hépatites'],
-    ist:   ['Réactifs IST'],
+    arv:   ['Médicaments ARV', 'Médicaments Ios'],
+    reac:  ['Réactifs dépistage VIH', 'Réactifs charge virale VIH'],
+    ist:   ['Réactifs IST', 'Réactifs hépatites & syphilis', 'Charge virale hépatites', 'Sérologie hépatites'],
     equip: ['Équipements médicaux'],
-    meds:  ['Médicaments Ios', 'Intrants nutritionnels'],
+    meds:  ['Intrants nutritionnels'],
   };
+
+  const STATUT_LIQ = new Set(['Reçu', 'Partiellement reçu']);
 
   const DEMO_ACHAT = [
-    { cat:'Réactifs dépistage VIH',      qte: 50000, prix_u: 1850,   engage: 76000000,  paye: 60000000 },
-    { cat:'Réactifs charge virale VIH',  qte: 12000, prix_u: 18500,  engage: 180000000, paye: 145000000 },
-    { cat:'Réactifs hépatites & syphilis',qte: 25000, prix_u: 2400,  engage: 52000000,  paye: 40000000 },
-    { cat:'Réactifs IST',                qte: 18000, prix_u: 1950,   engage: 28000000,  paye: 21000000 },
-    { cat:'Médicaments ARV',             qte: 8500,  prix_u: 12500,  engage: 95000000,  paye: 78000000 },
-    { cat:'Médicaments Ios',             qte: 5200,  prix_u: 8200,   engage: 36000000,  paye: 24000000 },
-    { cat:'Intrants nutritionnels',      qte: 3500,  prix_u: 15800,  engage: 48000000,  paye: 38000000 },
+    { cat:'Réactifs dépistage VIH',       qte:2000, prix_u:55000,  engage: 97350000, paye: 88000000, statut:'Partiellement reçu' },
+    { cat:'Réactifs dépistage VIH',       qte:3000, prix_u:32000,  engage: 86400000, paye: 86400000, statut:'Reçu' },
+    { cat:'Réactifs charge virale VIH',   qte: 800, prix_u:185000, engage:120000000, paye: 95000000, statut:'Partiellement reçu' },
+    { cat:'Réactifs hépatites & syphilis',qte:1500, prix_u: 45000, engage: 58500000, paye: 58500000, statut:'Reçu' },
+    { cat:'Réactifs IST',                 qte:2400, prix_u: 21000, engage: 42000000, paye: 32000000, statut:'Partiellement reçu' },
+    { cat:'Médicaments ARV',              qte: 850, prix_u:125000, engage: 95625000, paye: 78000000, statut:'Partiellement reçu' },
+    { cat:'Médicaments Ios',              qte: 520, prix_u: 82000, engage: 36400000, paye: 24000000, statut:'En attente' },
+    { cat:'Intrants nutritionnels',       qte: 350, prix_u:158000, engage: 47800000, paye: 38000000, statut:'Partiellement reçu' },
+    { cat:'Équipements médicaux',         qte:  12, prix_u:2500000,engage: 18000000, paye:        0, statut:'En attente' },
   ];
 
-  const DEMO_RH = {
-    agents: Array.from({ length: 24 }, (_, i) => ({
-      statut: i < 18 ? 'Actif' : i < 21 ? 'En congé' : 'En mission',
-      salaire: [1450000, 1200000, 850000, 425000, 980000, 520000, 1100000, 485000][i % 8],
-    })),
-    demandes: [
-      { statut: 'En attente' }, { statut: 'En attente' },
-      { statut: 'En attente' }, { statut: 'En attente' },
-    ],
-  };
+  const DEMO_RH_AGENTS = [
+    1450000,1200000,850000,425000,980000,520000,1100000,485000,1350000,520000,
+    1050000,485000,925000,680000,825000,620000,485000,425000,870000,870000,
+    285000,215000,150000,1250000,
+  ].map((s, i) => ({
+    salaire: s,
+    statut:  i < 20 ? 'Actif' : i < 22 ? 'En congé' : 'En mission',
+  }));
 
   function read(key) {
     try { return JSON.parse(localStorage.getItem(key) || 'null'); }
-    catch (e) { return null; }
+    catch (_) { return null; }
   }
 
   function fmt(v) {
@@ -49,141 +51,168 @@
     return Math.round(v).toLocaleString('fr-FR');
   }
 
+  function pct(n, d) {
+    return d > 0 ? Math.round((n / d) * 100) : 0;
+  }
+
   function set(id, value) {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
   }
 
-  function setBar(id, pct, color) {
+  function setBar(id, width, color) {
     const el = document.getElementById(id);
     if (!el) return;
-    el.style.width = Math.min(100, Math.max(0, pct)) + '%';
+    el.style.width = Math.min(100, Math.max(0, width)) + '%';
     if (color) el.style.background = color;
   }
 
-  function aggregatePlanAchat() {
-    let data = read(KEYS.planAchat);
-    if (!Array.isArray(data) || !data.length) data = DEMO_ACHAT;
+  function getFonds() {
+    if (typeof fondsTotaux === 'function') {
+      try { return fondsTotaux(); } catch (_) {}
+    }
+    return {
+      etat:  { allocation: 2_052_000_000, decaisse: 824_000_000,  ecart: 1_228_000_000 },
+      ptf:   { allocation: 3_677_922_858, decaisse: 1_020_040_000, ecart: 2_657_882_858 },
+      grand: { allocation: 5_729_922_858, decaisse: 1_844_040_000, ecart: 3_885_882_858 },
+    };
+  }
 
-    const total = data.reduce(
-      (a, p) => {
-        const prevu = (p.qte || 0) * (p.prix_u || 0);
-        a.prevu  += prevu;
-        a.engage += +(p.engage || 0);
-        a.paye   += +(p.paye   || 0);
-        return a;
-      },
-      { prevu: 0, engage: 0, paye: 0, n: data.length }
-    );
+  function aggregateAchats() {
+    const raw = read(KEYS.planAchat);
+    const data = (Array.isArray(raw) && raw.length) ? raw : DEMO_ACHAT;
 
-    total.byCat = {};
-    Object.entries(ACHAT_CATEGORIES).forEach(([key, cats]) => {
-      const items = data.filter((p) => cats.includes(p.cat));
-      const prevu = items.reduce((s, p) => s + (p.qte || 0) * (p.prix_u || 0), 0);
-      const paye  = items.reduce((s, p) => s + (+p.paye || 0), 0);
-      total.byCat[key] = { prevu, paye, pct: prevu > 0 ? Math.round(paye / prevu * 100) : 0 };
+    const counts = { recu: 0, partiel: 0, attente: 0, anomalie: 0 };
+    let prevu = 0, engage = 0, liquide = 0, paye = 0;
+
+    data.forEach((p) => {
+      const ligne = (p.qte || 0) * (p.prix_u || 0);
+      const eng   = +p.engage || 0;
+      const pay   = +p.paye   || 0;
+      prevu  += ligne;
+      engage += eng;
+      paye   += pay;
+      if (STATUT_LIQ.has(p.statut)) liquide += eng;
+      if (p.statut === 'Reçu')                counts.recu++;
+      else if (p.statut === 'Partiellement reçu') counts.partiel++;
+      else                                         counts.attente++;
+      if (pay > eng || (eng === 0 && pay > 0)) counts.anomalie++;
     });
 
-    return total;
+    const liquideFinal = Math.max(liquide, paye);
+    const engageFinal  = Math.max(engage, liquideFinal);
+
+    const byCat = {};
+    Object.entries(ACHAT_CATEGORIES).forEach(([key, cats]) => {
+      const items  = data.filter((p) => cats.includes(p.cat));
+      const cPrevu = items.reduce((s, p) => s + (p.qte || 0) * (p.prix_u || 0), 0);
+      const cPaye  = items.reduce((s, p) => s + (+p.paye || 0), 0);
+      byCat[key] = { prevu: cPrevu, paye: cPaye, pct: pct(cPaye, cPrevu) };
+    });
+
+    return {
+      n: data.length, prevu,
+      engage: engageFinal, liquide: liquideFinal, paye,
+      counts, byCat,
+    };
   }
 
   function aggregateRh() {
     const raw = read(KEYS.rh);
-    const src = raw && Array.isArray(raw.agents) && raw.agents.length ? raw : DEMO_RH;
-    const agents = src.agents;
+    const agents = (raw && Array.isArray(raw.agents) && raw.agents.length) ? raw.agents : DEMO_RH_AGENTS;
+    const demandes = (raw && Array.isArray(raw.demandes))
+      ? raw.demandes.filter((d) => d.statut === 'En attente').length
+      : 4;
+    const masseMois = agents.reduce((s, a) => s + (+a.salaire || 0), 0);
     return {
-      effectif:  agents.length,
-      actifs:    agents.filter((a) => a.statut === 'Actif').length,
-      enConge:   agents.filter((a) => /congé|mission/i.test(a.statut || '')).length,
-      masse:     agents.reduce((s, a) => s + (+a.salaire || 0), 0),
-      demandes:  Array.isArray(src.demandes) ? src.demandes.filter((d) => d.statut === 'En attente').length : 0,
+      effectif: agents.length,
+      actifs:   agents.filter((a) => a.statut === 'Actif').length,
+      enConge:  agents.filter((a) => /congé|mission/i.test(a.statut || '')).length,
+      masseMois,
+      masseAnnuelle: masseMois * 12,
+      demandes,
     };
   }
 
-  function renderTopBubbles(achat, rh) {
-    const budget   = achat.prevu + (rh.masse * 12);
-    const dossiers = (read(KEYS.dossiers) || []).length || achat.n;
-
+  function renderTopBubbles(fonds, achats, rh) {
+    const budget   = fonds.grand.allocation;
+    const dossiers = achats.counts.recu + achats.counts.partiel + achats.counts.attente;
     set('bubble-budget',    fmt(budget));
-    set('bubble-engage',    fmt(achat.engage));
-    set('bubble-liquide',   fmt(achat.paye));
-    set('bubble-paye',      fmt(achat.paye));
+    set('bubble-engage',    fmt(achats.engage));
+    set('bubble-liquide',   fmt(achats.liquide));
+    set('bubble-paye',      fmt(achats.paye + fonds.etat.decaisse));
     set('bubble-dossiers',  dossiers);
-    set('bubble-anomalies', rh.demandes);
+    set('bubble-anomalies', achats.counts.anomalie + rh.demandes);
 
     set('kpi-budget',    fmt(budget));
-    set('kpi-engage',    fmt(achat.engage));
-    set('kpi-liquide',   fmt(achat.paye));
-    set('kpi-paye',      fmt(achat.paye));
+    set('kpi-engage',    fmt(achats.engage));
+    set('kpi-liquide',   fmt(achats.liquide));
+    set('kpi-paye',      fmt(achats.paye));
     set('kpi-dossiers',  dossiers);
-    set('kpi-anomalies', rh.demandes);
+    set('kpi-anomalies', achats.counts.anomalie + rh.demandes);
   }
 
-  function renderExecutionBars(achat) {
-    if (!achat.prevu) return;
-    const txEng = Math.round(achat.engage / achat.prevu * 100);
-    const txPay = Math.round(achat.paye   / achat.prevu * 100);
+  function renderExecutionBars(fonds, achats) {
+    const base = fonds.grand.allocation || achats.prevu;
+    const txEng = pct(achats.engage,  base);
+    const txLiq = pct(achats.liquide, base);
+    const txPay = pct(achats.paye,    base);
 
-    set('fr-initial', fmt(achat.prevu));
-    set('fr-engage',  fmt(achat.engage));
-    set('fr-paye',    fmt(achat.paye));
-    set('fr-liquide', fmt(achat.paye));
+    set('fr-initial', fmt(base));
+    set('fr-engage',  fmt(achats.engage));
+    set('fr-liquide', fmt(achats.liquide));
+    set('fr-paye',    fmt(achats.paye));
     set('fr-tx-eng',  txEng + '%');
+    set('fr-tx-liq',  txLiq + '%');
     set('fr-tx-pay',  txPay + '%');
-    set('fr-tx-liq',  txPay + '%');
 
     setBar('bar-eng', txEng, '#f59e0b');
-    setBar('bar-liq', txPay, '#a855f7');
+    setBar('bar-liq', txLiq, '#a855f7');
     setBar('bar-pay', txPay, '#22c55e');
     set('pct-eng', txEng + '%');
-    set('pct-liq', txPay + '%');
+    set('pct-liq', txLiq + '%');
     set('pct-pay', txPay + '%');
   }
 
-  function renderAchatsPanel(achat) {
-    const txGlobal = achat.prevu > 0 ? Math.round(achat.paye / achat.prevu * 100) : 0;
-    set('ach-taux',  txGlobal + '%');
-    set('ach-paye',  fmt(achat.paye));
-    set('ach-prevu', fmt(achat.prevu));
+  function renderAchats(achats) {
+    set('ach-taux',  pct(achats.paye, achats.prevu) + '%');
+    set('ach-paye',  fmt(achats.paye));
+    set('ach-prevu', fmt(achats.prevu));
 
-    const palette = {
-      arv:   '#ef4444', reac: '#3b82f6', ist:  '#22c55e',
-      equip: '#0d9488', meds: '#f59e0b',
-    };
-    Object.entries(achat.byCat).forEach(([key, v]) => {
+    const palette = { arv:'#ef4444', reac:'#3b82f6', ist:'#22c55e', equip:'#0d9488', meds:'#f59e0b' };
+    Object.entries(achats.byCat).forEach(([key, v]) => {
       setBar('af-' + key, v.pct, palette[key]);
       set('ap-'   + key, v.pct + '%');
     });
   }
 
-  function renderTresorerie(achat, rh) {
-    const credit = achat.paye + rh.masse;
-    const debit  = achat.paye + rh.masse;
+  function renderTresorerie(fonds, achats, rh) {
+    const moisEcoules = new Date().getMonth() + 1;
+    const decaissementRh = rh.masseMois * moisEcoules;
+    const credit = fonds.grand.decaisse;
+    const debit  = achats.paye + decaissementRh;
     set('bnk-comptes-v', '4');
     set('bnk-credit-v',  fmt(credit));
     set('bnk-debit-v',   fmt(debit));
     set('bnk-solde-v',   fmt(credit - debit));
   }
 
-  function renderPaoCounts(achat) {
-    const total = achat.n;
-    const done  = achat.paye >= achat.prevu * 0.95 ? total : Math.round(total * 0.35);
-    const wip   = achat.engage > 0 ? Math.round(total * 0.45) : 0;
-    const todo  = Math.max(0, total - done - wip);
-    set('pao-cnt-plan',  total);
-    set('pao-cnt-real',  done);
-    set('pao-cnt-cours', wip);
-    set('pao-cnt-non',   todo);
+  function renderPao(achats) {
+    set('pao-cnt-plan',  achats.n);
+    set('pao-cnt-real',  achats.counts.recu);
+    set('pao-cnt-cours', achats.counts.partiel);
+    set('pao-cnt-non',   achats.counts.attente);
   }
 
   function run() {
-    const achat = aggregatePlanAchat();
-    const rh    = aggregateRh();
-    renderTopBubbles(achat, rh);
-    renderExecutionBars(achat);
-    renderAchatsPanel(achat);
-    renderTresorerie(achat, rh);
-    renderPaoCounts(achat);
+    const fonds  = getFonds();
+    const achats = aggregateAchats();
+    const rh     = aggregateRh();
+    renderTopBubbles(fonds, achats, rh);
+    renderExecutionBars(fonds, achats);
+    renderAchats(achats);
+    renderTresorerie(fonds, achats, rh);
+    renderPao(achats);
   }
 
   window.dashboardAggregate = run;
