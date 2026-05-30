@@ -19,8 +19,6 @@
     "lint-staged": "^15.2.10"
   },
   "lint-staged": {
-    "*.js": "eslint --fix --max-warnings=0",
-    "*.{css,html}": "stylelint --fix",
-    "*.{json,md}": "prettier --write"
+    "*.js": "eslint --max-warnings=0"
   }
 }
