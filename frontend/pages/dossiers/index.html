@@ -385,9 +385,6 @@ function renderTable(list) {
       <td><span class="badge-type bt-${d.type}"><i class="fas ${f.icon}"></i> ${f.label.split(' ')[0]}</span></td>
       <td><strong>${d.objet}</strong><br><small style="color:#94a3b8">${d.service} · ${d.porteur} · soumis ${d.soumis}</small></td>
       <td><span class="mono" style="color:#475569">${d.ligne}</span><br><small style="color:#94a3b8">${d.source}</small></td>
-      <td class="num"><strong>${fmt(d.montant_estime)}</strong></td>
-      <td class="num" style="color:#1d4ed8">${fmt(d.montant_engage)}</td>
-      <td class="num" style="color:#15803d">${fmt(d.montant_paye)}</td>
       <td>${positionWidget(d.etape)}</td>
       <td><button class="btn-open" onclick="ouvrirDossier('${d.id}')"><i class="fas fa-folder-open"></i>Ouvrir dossier</button></td>
     </tr>`;
@@ -400,9 +397,6 @@ function renderTable(list) {
           <th style="width:140px">Famille</th>
           <th>Objet</th>
           <th style="width:160px">Ligne / Source</th>
-          <th class="num" style="width:120px">Estimé (FCFA)</th>
-          <th class="num" style="width:120px">Engagé</th>
-          <th class="num" style="width:120px">Payé</th>
           <th style="width:220px">Position dans le circuit</th>
           <th style="width:140px"></th>
         </tr>
