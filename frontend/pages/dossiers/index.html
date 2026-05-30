@@ -378,23 +378,18 @@ function renderTable(list) {
       `<div class="empty"><i class="fas fa-inbox d-block"></i>Aucun dossier ne correspond à ce filtre.</div>`;
     return;
   }
-  const rows = list.map((d) => {
-    const f = familyOf(d.type);
-    return `<tr>
+  const rows = list.map((d) => `<tr>
       <td class="mono">${d.id}</td>
-      <td><span class="badge-type bt-${d.type}"><i class="fas ${f.icon}"></i> ${f.label.split(' ')[0]}</span></td>
       <td><strong>${d.objet}</strong><br><small style="color:#94a3b8">${d.service} · ${d.porteur} · soumis ${d.soumis}</small></td>
       <td><span class="mono" style="color:#475569">${d.ligne}</span><br><small style="color:#94a3b8">${d.source}</small></td>
       <td>${positionWidget(d.etape)}</td>
       <td><button class="btn-open" onclick="ouvrirDossier('${d.id}')"><i class="fas fa-folder-open"></i>Ouvrir dossier</button></td>
-    </tr>`;
-  }).join('');
+    </tr>`).join('');
   document.getElementById('dossierTable').innerHTML = `
     <table class="dos-tbl">
       <thead>
         <tr>
           <th style="width:120px">N° dossier</th>
-          <th style="width:140px">Famille</th>
           <th>Objet</th>
           <th style="width:160px">Ligne / Source</th>
           <th style="width:220px">Position dans le circuit</th>
