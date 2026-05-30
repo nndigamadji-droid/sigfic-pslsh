@@ -941,15 +941,16 @@ function dbSwitchTab(tab) {
 </script>
 <script src="../../src/js/roles.js"></script>
 <script src="../../src/js/fonds-data.js"></script>
+<script src="../../src/js/dashboard-aggregator.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  function boot() {
     if (typeof fondsRenderDashboard === 'function') fondsRenderDashboard();
     loadRecettesPanel();
-  });
-  if (document.readyState !== 'loading') {
-    if (typeof fondsRenderDashboard === 'function') fondsRenderDashboard();
-    loadRecettesPanel();
+    if (typeof dashboardAggregate === 'function') dashboardAggregate();
   }
+  document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', boot)
+    : boot();
 </script>
 </body>
 </html>
