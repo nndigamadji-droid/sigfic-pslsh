@@ -380,13 +380,18 @@ function loadAll() {
     if (!id) { renderError('Aucun identifiant de dossier fourni dans l\'URL.'); return; }
 
     let dossiers = [];
-    try { dossiers = JSON.parse(localStorage.getItem(STORAGE_DOSSIERS) || '[]'); }
-    catch (_) {}
-    _dossier = dossiers.find((d) => d.id === id);
-    if (!_dossier) { renderError(`Dossier <strong>${id}</strong> introuvable dans le stockage local. <a href="index.html">Retour à la liste</a>`); return; }
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORAGE_DOSSIERS) || '[]');
+      dossiers = Array.isArray(raw) ? raw : [];
+    } catch (_) { dossiers = []; }
 
-    try { _piecesData = JSON.parse(localStorage.getItem(STORAGE_PIECES) || '{}'); }
-    catch (_) { _piecesData = {}; }
+    _dossier = dossiers.find((d) => d.id === id);
+    if (!_dossier) { renderNotFound(id); return; }
+
+    try {
+      const rawP = JSON.parse(localStorage.getItem(STORAGE_PIECES) || '{}');
+      _piecesData = (rawP && typeof rawP === 'object' && !Array.isArray(rawP)) ? rawP : {};
+    } catch (_) { _piecesData = {}; }
     if (!_piecesData[id]) _piecesData[id] = { pieces: {}, histo: [] };
 
     autoGeneratePieces();
@@ -397,6 +402,27 @@ function loadAll() {
     console.error('Erreur loadAll:', err);
     renderError(`Erreur lors du chargement : <code>${err.message}</code><br><small>${(err.stack || '').split('\n').slice(0, 3).join('<br>')}</small>`);
   }
+}
+
+function renderNotFound(id) {
+  $id('detBody').innerHTML = `<div class="stub-notice" style="background:#fef3c7;border-color:#fde68a;color:#92400e">
+    <strong>Dossier ${id} introuvable.</strong><br><br>
+    Votre stockage local ne contient pas (ou plus) ce dossier. Cela arrive après une mise à jour
+    du moteur de la page liste.<br><br>
+    <button class="btn btn-sm btn-warning" onclick="resetStorage()">
+      <i class="fas fa-redo me-1"></i>Réinitialiser le stockage local des dossiers
+    </button>
+    &nbsp;
+    <a href="index.html" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+    </a>
+  </div>`;
+}
+
+function resetStorage() {
+  if (!confirm('Cette action supprime toutes les données locales de dossiers, pièces et expressions de besoin. Continuer ?')) return;
+  ['pslsh_dossiers_v1', 'pslsh_pieces_v1', 'pslsh_eb_v1'].forEach((k) => localStorage.removeItem(k));
+  window.location.href = 'index.html';
 }
 
 function autoGeneratePieces() {
