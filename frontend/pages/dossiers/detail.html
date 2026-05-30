@@ -84,7 +84,30 @@
       font-size:.78rem; transition:all .12s;
     }
     .pc-quick button:hover { background:#1b3a6b; color:#fff; border-color:#1b3a6b; }
-    .pc-quick button.imported { color:#15803d; }
+    .pc-quick button.imported { color:#15803d; border-color:#86efac; background:#f0fdf4; }
+
+    .src-tag {
+      display:inline-flex; align-items:center; gap:4px;
+      font-size:.6rem; font-weight:700; padding:2px 8px; border-radius:10px;
+      text-transform:uppercase; letter-spacing:.04em; white-space:nowrap;
+    }
+    .src-interne { background:#dbeafe; color:#1d4ed8; }
+    .src-externe { background:#fef3c7; color:#b45309; }
+    .src-mixte   { background:#ede9fe; color:#6d28d9; }
+
+    .import-info {
+      margin-top:10px; padding:8px 12px; background:#f0fdf4; border:1px solid #86efac;
+      border-radius:7px; font-size:.74rem; color:#15803d;
+      display:flex; align-items:center; gap:8px;
+    }
+    .import-info .badge {
+      font-family:monospace; background:#fff; color:#15803d;
+      padding:1px 7px; border-radius:4px; font-weight:700; font-size:.66rem;
+    }
+    .import-info .replace {
+      margin-left:auto; font-size:.7rem; color:#475569; cursor:pointer;
+      text-decoration:underline;
+    }
 
     .pc-body {
       padding:14px 18px 18px; border-top:1px solid #f1f5f9; background:#fafbfc;
@@ -272,58 +295,58 @@ const STORAGE_DOSSIERS = 'pslsh_dossiers_v1';
 const STORAGE_PIECES   = 'pslsh_pieces_v1';
 
 const PIECES_ACH_S = [
-  { code:'EB',       label:'Expression de besoin',          icon:'fa-list-check',     fields:['designation','quantite','prix_unitaire','justification'] },
-  { code:'PROFORMA', label:'Facture proforma',              icon:'fa-file-invoice',   fields:['fournisseur','reference','montant_ttc','date_doc'] },
-  { code:'BC',       label:'Bon de commande',               icon:'fa-shopping-cart',  fields:['fournisseur','reference','montant_ttc','date_doc','delai_livraison'] },
-  { code:'FACTURE',  label:'Facture définitive',            icon:'fa-file-invoice-dollar', fields:['fournisseur','reference','montant_ttc','date_doc','date_echeance'] },
-  { code:'BL',       label:'Bon de livraison',              icon:'fa-truck',          fields:['fournisseur','reference','date_doc','transporteur'] },
-  { code:'PV_RECEP', label:'PV de réception',               icon:'fa-clipboard-check',fields:['date_doc','lieu','observations','etat_marchandise'] },
-  { code:'ATT_SF',   label:'Attestation de service fait',   icon:'fa-stamp',          fields:['date_doc','signataire','observations'] },
-  { code:'OP',       label:'Ordre de paiement',             icon:'fa-money-check-alt',fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
-  { code:'OV',       label:'Ordre de virement',             icon:'fa-exchange-alt',   fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
+  { code:'EB',       label:'Expression de besoin',          icon:'fa-list-check',          source:'interne', fields:['designation','quantite','prix_unitaire','justification'] },
+  { code:'PROFORMA', label:'Facture proforma',              icon:'fa-file-invoice',        source:'externe', fields:['fournisseur','reference','montant_ttc','date_doc'] },
+  { code:'BC',       label:'Bon de commande',               icon:'fa-shopping-cart',       source:'interne', fields:['fournisseur','reference','montant_ttc','date_doc','delai_livraison'] },
+  { code:'FACTURE',  label:'Facture définitive',            icon:'fa-file-invoice-dollar', source:'externe', fields:['fournisseur','reference','montant_ttc','date_doc','date_echeance'] },
+  { code:'BL',       label:'Bon de livraison',              icon:'fa-truck',               source:'externe', fields:['fournisseur','reference','date_doc','transporteur'] },
+  { code:'PV_RECEP', label:'PV de réception',               icon:'fa-clipboard-check',     source:'interne', fields:['date_doc','lieu','observations','etat_marchandise'] },
+  { code:'ATT_SF',   label:'Attestation de service fait',   icon:'fa-stamp',               source:'interne', fields:['date_doc','signataire','observations'] },
+  { code:'OP',       label:'Ordre de paiement',             icon:'fa-money-check-alt',     source:'interne', fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
+  { code:'OV',       label:'Ordre de virement',             icon:'fa-exchange-alt',        source:'interne', fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
 ];
 
 const PIECES_ACH_P = [
-  { code:'EB',         label:'Expression de besoin',        icon:'fa-list-check',         fields:['designation','quantite','prix_unitaire','justification'] },
-  { code:'CDC',        label:'Cahier des charges / TDR',    icon:'fa-file-contract',      fields:['reference','date_doc','specifications','criteres_eligibilite'] },
-  { code:'DC',         label:'Demande de cotation',         icon:'fa-paper-plane',        fields:['reference','date_doc','date_limite','soumissionnaires_invites'] },
-  { code:'OFFRES',     label:'Réception des offres',        icon:'fa-inbox',              fields:['date_doc','nb_offres_recues','observations'] },
-  { code:'TC',         label:'Tableau comparatif',          icon:'fa-table',              fields:['reference','date_doc','commission','observations'] },
-  { code:'PV_ATTR',    label:'PV d\'attribution',           icon:'fa-gavel',              fields:['reference','date_doc','attributaire','montant_attribue','motif_choix'] },
-  { code:'CONTRAT',    label:'Contrat / Marché signé',      icon:'fa-handshake',          fields:['fournisseur','reference','montant_ttc','date_doc','duree','garanties'] },
-  { code:'NOTIF',      label:'Notification d\'attribution', icon:'fa-bullhorn',           fields:['reference','date_doc','date_demarrage'] },
-  { code:'BL',         label:'Bon de livraison',            icon:'fa-truck',              fields:['fournisseur','reference','date_doc','transporteur'] },
-  { code:'PV_RECEP',   label:'PV de réception',             icon:'fa-clipboard-check',    fields:['date_doc','lieu','observations','etat_marchandise'] },
-  { code:'ATT_SF',     label:'Attestation de service fait', icon:'fa-stamp',              fields:['date_doc','signataire','observations'] },
-  { code:'FACTURE',    label:'Facture définitive',          icon:'fa-file-invoice-dollar',fields:['fournisseur','reference','montant_ttc','date_doc','date_echeance'] },
-  { code:'OP',         label:'Ordre de paiement',           icon:'fa-money-check-alt',    fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
-  { code:'OV',         label:'Ordre de virement',           icon:'fa-exchange-alt',       fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
+  { code:'EB',         label:'Expression de besoin',        icon:'fa-list-check',          source:'interne', fields:['designation','quantite','prix_unitaire','justification'] },
+  { code:'CDC',        label:'Cahier des charges / TDR',    icon:'fa-file-contract',       source:'interne', fields:['reference','date_doc','specifications','criteres_eligibilite'] },
+  { code:'DC',         label:'Demande de cotation',         icon:'fa-paper-plane',         source:'interne', fields:['reference','date_doc','date_limite','soumissionnaires_invites'] },
+  { code:'OFFRES',     label:'Offres reçues',               icon:'fa-inbox',               source:'externe', fields:['date_doc','nb_offres_recues','observations'] },
+  { code:'TC',         label:'Tableau comparatif',          icon:'fa-table',               source:'interne', fields:['reference','date_doc','commission','observations'] },
+  { code:'PV_ATTR',    label:'PV d\'attribution',           icon:'fa-gavel',               source:'interne', fields:['reference','date_doc','attributaire','montant_attribue','motif_choix'] },
+  { code:'CONTRAT',    label:'Contrat / Marché signé',      icon:'fa-handshake',           source:'mixte',   fields:['fournisseur','reference','montant_ttc','date_doc','duree','garanties'] },
+  { code:'NOTIF',      label:'Notification d\'attribution', icon:'fa-bullhorn',            source:'interne', fields:['reference','date_doc','date_demarrage'] },
+  { code:'BL',         label:'Bon de livraison',            icon:'fa-truck',               source:'externe', fields:['fournisseur','reference','date_doc','transporteur'] },
+  { code:'PV_RECEP',   label:'PV de réception',             icon:'fa-clipboard-check',     source:'interne', fields:['date_doc','lieu','observations','etat_marchandise'] },
+  { code:'ATT_SF',     label:'Attestation de service fait', icon:'fa-stamp',               source:'interne', fields:['date_doc','signataire','observations'] },
+  { code:'FACTURE',    label:'Facture définitive',          icon:'fa-file-invoice-dollar', source:'externe', fields:['fournisseur','reference','montant_ttc','date_doc','date_echeance'] },
+  { code:'OP',         label:'Ordre de paiement',           icon:'fa-money-check-alt',     source:'interne', fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
+  { code:'OV',         label:'Ordre de virement',           icon:'fa-exchange-alt',        source:'interne', fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
 ];
 
 const PIECES_FOR_M = [
-  { code:'EB',         label:'Expression de besoin',        icon:'fa-list-check',         fields:['designation','quantite','prix_unitaire','justification'] },
-  { code:'TDR',        label:'Termes de référence',         icon:'fa-file-contract',      fields:['reference','date_doc','objectifs','resultats_attendus','public_cible'] },
-  { code:'PLAN',       label:'Programme détaillé',          icon:'fa-calendar-alt',       fields:['reference','date_doc','periode','lieu','formateurs'] },
-  { code:'LISTE',      label:'Liste des participants',      icon:'fa-users',              fields:['nb_participants','services_representes','date_doc'] },
-  { code:'CONVOC',     label:'Convocations / invitations',  icon:'fa-envelope',           fields:['reference','date_doc','signataire'] },
-  { code:'ETAT_PEC',   label:'État de prise en charge',     icon:'fa-receipt',            fields:['nb_beneficiaires','per_diem','transport','hebergement','montant_ttc'] },
-  { code:'FEUILLE',    label:'Feuilles de présence',        icon:'fa-clipboard-list',     fields:['date_doc','taux_presence','observations'] },
-  { code:'RAPPORT',    label:'Rapport de mission / formation', icon:'fa-book',            fields:['reference','date_doc','redacteur','synthese','recommandations'] },
-  { code:'JUSTIFS',    label:'Justificatifs (billets, reçus)', icon:'fa-folder-open',     fields:['nb_pieces','montant_justifie','observations'] },
-  { code:'OP',         label:'Ordre de paiement',           icon:'fa-money-check-alt',    fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
-  { code:'OV',         label:'Ordre de virement',           icon:'fa-exchange-alt',       fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
+  { code:'EB',         label:'Expression de besoin',          icon:'fa-list-check',     source:'interne', fields:['designation','quantite','prix_unitaire','justification'] },
+  { code:'TDR',        label:'Termes de référence',           icon:'fa-file-contract',  source:'interne', fields:['reference','date_doc','objectifs','resultats_attendus','public_cible'] },
+  { code:'PLAN',       label:'Programme détaillé',            icon:'fa-calendar-alt',   source:'interne', fields:['reference','date_doc','periode','lieu','formateurs'] },
+  { code:'LISTE',      label:'Liste des participants',        icon:'fa-users',          source:'interne', fields:['nb_participants','services_representes','date_doc'] },
+  { code:'CONVOC',     label:'Convocations / invitations',    icon:'fa-envelope',       source:'interne', fields:['reference','date_doc','signataire'] },
+  { code:'ETAT_PEC',   label:'État de prise en charge',       icon:'fa-receipt',        source:'interne', fields:['nb_beneficiaires','per_diem','transport','hebergement','montant_ttc'] },
+  { code:'FEUILLE',    label:'Feuilles de présence',          icon:'fa-clipboard-list', source:'externe', fields:['date_doc','taux_presence','observations'] },
+  { code:'RAPPORT',    label:'Rapport de mission / formation',icon:'fa-book',           source:'interne', fields:['reference','date_doc','redacteur','synthese','recommandations'] },
+  { code:'JUSTIFS',    label:'Justificatifs (billets, reçus)',icon:'fa-folder-open',    source:'externe', fields:['nb_pieces','montant_justifie','observations'] },
+  { code:'OP',         label:'Ordre de paiement',             icon:'fa-money-check-alt',source:'interne', fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
+  { code:'OV',         label:'Ordre de virement',             icon:'fa-exchange-alt',   source:'interne', fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
 ];
 
 const PIECES_PER_A = [
-  { code:'EB',         label:'Expression de besoin / motif', icon:'fa-list-check',        fields:['designation','justification','quantite','prix_unitaire'] },
-  { code:'DECISION',   label:'Décision / note de service',   icon:'fa-gavel',             fields:['reference','date_doc','signataire','motif_decision'] },
-  { code:'ETAT_NOM',   label:'État nominatif des bénéficiaires', icon:'fa-id-card',       fields:['nb_beneficiaires','services_representes','date_doc'] },
-  { code:'CALCUL',     label:'Tableau de calcul',            icon:'fa-calculator',        fields:['reference','date_doc','base_calcul','montant_unitaire','montant_ttc'] },
-  { code:'VALID_RH',   label:'Validation RH / hiérarchique', icon:'fa-user-check',        fields:['date_doc','signataire','observations'] },
-  { code:'BORD_PAIE',  label:'Bordereau de paie collectif',  icon:'fa-file-invoice',      fields:['reference','date_doc','nb_beneficiaires','montant_ttc'] },
-  { code:'PV_REMISE',  label:'PV de remise / décharge',      icon:'fa-clipboard-check',   fields:['date_doc','lieu','signataire','observations'] },
-  { code:'OP',         label:'Ordre de paiement collectif',  icon:'fa-money-check-alt',   fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
-  { code:'OV',         label:'Ordre de virement / décaissement', icon:'fa-exchange-alt',  fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
+  { code:'EB',         label:'Expression de besoin / motif',    icon:'fa-list-check',      source:'interne', fields:['designation','justification','quantite','prix_unitaire'] },
+  { code:'DECISION',   label:'Décision / note de service',      icon:'fa-gavel',           source:'interne', fields:['reference','date_doc','signataire','motif_decision'] },
+  { code:'ETAT_NOM',   label:'État nominatif des bénéficiaires',icon:'fa-id-card',         source:'interne', fields:['nb_beneficiaires','services_representes','date_doc'] },
+  { code:'CALCUL',     label:'Tableau de calcul',               icon:'fa-calculator',      source:'interne', fields:['reference','date_doc','base_calcul','montant_unitaire','montant_ttc'] },
+  { code:'VALID_RH',   label:'Validation RH / hiérarchique',    icon:'fa-user-check',      source:'interne', fields:['date_doc','signataire','observations'] },
+  { code:'BORD_PAIE',  label:'Bordereau de paie collectif',     icon:'fa-file-invoice',    source:'interne', fields:['reference','date_doc','nb_beneficiaires','montant_ttc'] },
+  { code:'PV_REMISE',  label:'PV de remise / décharge',         icon:'fa-clipboard-check', source:'mixte',   fields:['date_doc','lieu','signataire','observations'] },
+  { code:'OP',         label:'Ordre de paiement collectif',     icon:'fa-money-check-alt', source:'interne', fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
+  { code:'OV',         label:'Ordre de virement / décaissement',icon:'fa-exchange-alt',    source:'interne', fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
 ];
 
 const PIECES_BY_TYPE = {
@@ -671,18 +694,27 @@ function renderPieceCard(piece, idx, prog) {
   else if (idx === prog.idx)    cls += ' current';
   if (piece.code === _selectedPiece) cls += ' selected';
 
+  const src = piece.source || 'interne';
+  const srcLabel = { interne:'Interne', externe:'Fournisseur', mixte:'Mixte' }[src];
+  const showGenerer = src !== 'externe';
+  const showImporter = src !== 'interne';
+  const quickButtons = [
+    showGenerer ? `<button title="Générer le document PSLSH" onclick="generatePiece('${piece.code}')"><i class="fas fa-magic"></i></button>` : '',
+    showImporter ? `<button title="Importer le document fournisseur" onclick="importPiece('${piece.code}')" class="${data.imported ? 'imported' : ''}"><i class="fas fa-${data.imported ? 'file-import' : 'upload'}"></i></button>` : '',
+    `<button title="Imprimer cette pièce" onclick="printPiece('${piece.code}')"><i class="fas fa-print"></i></button>`,
+  ].filter(Boolean).join('');
+
   return `<div class="${cls}" id="card-${piece.code}">
     <div class="pc-head" onclick="selectPiece('${piece.code}')">
       <div class="pc-num">${status === 'valide' ? '<i class="fas fa-check"></i>' : status === 'rejete' ? '<i class="fas fa-times"></i>' : idx + 1}</div>
       <div class="pc-info">
-        <h6><i class="fas ${piece.icon} me-2" style="color:#1b3a6b"></i>${piece.label}</h6>
+        <h6>
+          <i class="fas ${piece.icon} me-2" style="color:#1b3a6b"></i>${piece.label}
+          <span class="src-tag src-${src}"><i class="fas fa-${src === 'externe' ? 'arrow-down' : src === 'mixte' ? 'exchange-alt' : 'pen'}"></i>${srcLabel}</span>
+        </h6>
         <div class="pc-sub">Pièce ${idx + 1}/${PIECES_BY_TYPE[_dossier.type].length} · ${data.reference || 'sans référence'}</div>
       </div>
-      <div class="pc-quick" onclick="event.stopPropagation()">
-        <button title="Générer le document" onclick="generatePiece('${piece.code}')"><i class="fas fa-magic"></i></button>
-        <button title="Importer un fichier" onclick="importPiece('${piece.code}')" class="${data.imported ? 'imported' : ''}"><i class="fas fa-${data.imported ? 'check-circle' : 'upload'}"></i></button>
-        <button title="Imprimer cette pièce" onclick="printPiece('${piece.code}')"><i class="fas fa-print"></i></button>
-      </div>
+      <div class="pc-quick" onclick="event.stopPropagation()">${quickButtons}</div>
       <div style="display:flex;align-items:center;gap:10px">
         <span class="pc-status ${s.cls}">${s.txt}</span>
         <div class="pc-toggle"><i class="fas fa-chevron-right"></i></div>
@@ -723,7 +755,19 @@ function renderPieceBody(piece, data, status) {
         : `<button class="btn-act-pp btn-save" onclick="savePiece(false)"><i class="fas fa-save"></i>Enregistrer</button>
            <button class="btn-act-pp btn-submit" onclick="savePiece(true)"><i class="fas fa-paper-plane"></i>Soumettre pour validation</button>`;
 
+  const importedBlock = data.imported ? `
+    <div class="import-info">
+      <i class="fas fa-paperclip"></i>
+      <div>
+        <strong>Document fournisseur importé :</strong>
+        <span class="badge">${data.imported.filename}</span>
+        <span style="color:#475569;font-size:.68rem;margin-left:6px">${Math.round(data.imported.size / 1024)} ko · ${data.imported.type || 'fichier'}</span>
+      </div>
+      <span class="replace" onclick="importPiece('${piece.code}')">Remplacer</span>
+    </div>` : '';
+
   return `<div class="pc-body">
+    ${importedBlock}
     <form id="pieceForm" onsubmit="event.preventDefault();savePiece(false)">
       <div class="pp-fields">${fields}</div>
       <div class="pp-actions">${actions}</div>
