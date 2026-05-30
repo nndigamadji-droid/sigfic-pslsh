@@ -37,62 +37,37 @@
     .det-grid { display:grid; grid-template-columns:1fr 320px; gap:16px; }
     .det-main { display:flex; flex-direction:column; gap:16px; }
 
-    .workflow {
-      background:#fff; border:1px solid #e2e8f0; border-radius:12px;
-      padding:18px 22px;
+    .pieces-column { display:flex; flex-direction:column; gap:10px; }
+
+    .piece-card {
+      background:#fff; border:1px solid #e2e8f0; border-left:4px solid #cbd5e1;
+      border-radius:10px; overflow:hidden; transition:box-shadow .15s, border-color .15s;
     }
-    .wf-title {
-      font-size:.74rem; font-weight:800; color:#1b2f52;
-      text-transform:uppercase; letter-spacing:.05em; margin-bottom:14px;
-      display:flex; align-items:center; gap:8px;
+    .piece-card.done     { border-left-color:#15803d; }
+    .piece-card.current  { border-left-color:#b45309; }
+    .piece-card.rejected { border-left-color:#b91c1c; }
+    .piece-card.selected { box-shadow:0 4px 14px rgba(27,58,107,.10); border-color:#1b3a6b; }
+
+    .pc-head {
+      display:grid; grid-template-columns:42px 1fr auto auto;
+      align-items:center; gap:12px; padding:12px 16px;
+      cursor:pointer; user-select:none;
     }
-    .wf-flow { display:flex; align-items:stretch; overflow-x:auto; padding-bottom:8px; }
-    .wf-step {
-      flex-shrink:0; min-width:120px; max-width:160px;
-      display:flex; flex-direction:column; align-items:center; gap:6px;
-      padding:8px 6px; cursor:pointer; border-radius:8px;
-      transition:background .15s;
-    }
-    .wf-step:hover { background:#f8fafc; }
-    .wf-step.selected { background:#eff6ff; }
-    .wf-circle {
-      width:42px; height:42px; border-radius:50%;
+    .pc-head:hover { background:#f8fafc; }
+    .pc-num {
+      width:34px; height:34px; border-radius:50%;
       display:flex; align-items:center; justify-content:center;
-      font-weight:800; font-size:.95rem;
+      font-weight:800; font-size:.85rem;
       background:#f1f5f9; color:#94a3b8;
       border:2px solid #e2e8f0;
-      transition:all .2s;
     }
-    .wf-step.done    .wf-circle { background:#dcfce7; color:#15803d; border-color:#15803d; }
-    .wf-step.current .wf-circle { background:#fef3c7; color:#b45309; border-color:#b45309; box-shadow:0 0 0 4px rgba(180,83,9,.15); }
-    .wf-step.rejected .wf-circle { background:#fee2e2; color:#b91c1c; border-color:#b91c1c; }
-    .wf-step.locked  .wf-circle { opacity:.5; }
-    .wf-label { text-align:center; font-size:.7rem; font-weight:600; color:#475569; line-height:1.25; }
-    .wf-step.selected .wf-label { color:#1b3a6b; font-weight:700; }
-    .wf-arrow {
-      flex-shrink:0; align-self:center; color:#cbd5e1;
-      font-size:.85rem; padding:0 2px;
-    }
-
-    .piece-panel {
-      background:#fff; border:1px solid #e2e8f0; border-radius:12px;
-      padding:18px 22px;
-    }
-    .pp-head {
-      display:flex; align-items:center; gap:12px;
-      padding-bottom:12px; margin-bottom:14px;
-      border-bottom:1px solid #f1f5f9;
-    }
-    .pp-icon {
-      width:38px; height:38px; border-radius:9px;
-      background:#1b3a6b; color:#fff;
-      display:flex; align-items:center; justify-content:center; font-size:1.1rem;
-    }
-    .pp-title { flex:1; }
-    .pp-title h5 { margin:0; font-size:.95rem; font-weight:800; color:#1b2f52; }
-    .pp-title .sub { font-size:.72rem; color:#64748b; }
-    .pp-status {
-      padding:5px 12px; border-radius:18px; font-size:.7rem; font-weight:700; white-space:nowrap;
+    .piece-card.done    .pc-num { background:#dcfce7; color:#15803d; border-color:#15803d; }
+    .piece-card.current .pc-num { background:#fef3c7; color:#b45309; border-color:#b45309; }
+    .piece-card.rejected .pc-num{ background:#fee2e2; color:#b91c1c; border-color:#b91c1c; }
+    .pc-info h6 { margin:0; font-size:.88rem; font-weight:700; color:#1b2f52; }
+    .pc-info .pc-sub { font-size:.7rem; color:#64748b; margin-top:2px; }
+    .pc-status {
+      padding:4px 10px; border-radius:14px; font-size:.66rem; font-weight:700; white-space:nowrap;
     }
     .ps-vide       { background:#f1f5f9; color:#64748b; }
     .ps-en-cours   { background:#fef3c7; color:#b45309; }
@@ -100,6 +75,28 @@
     .ps-valide     { background:#dcfce7; color:#15803d; }
     .ps-rejete     { background:#fee2e2; color:#b91c1c; }
     .ps-non-applic { background:#f1f5f9; color:#94a3b8; }
+
+    .pc-quick { display:flex; gap:4px; }
+    .pc-quick button {
+      width:32px; height:32px; border-radius:6px; border:1px solid #cbd5e1;
+      background:#fff; color:#475569; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.78rem; transition:all .12s;
+    }
+    .pc-quick button:hover { background:#1b3a6b; color:#fff; border-color:#1b3a6b; }
+    .pc-quick button.imported { color:#15803d; }
+
+    .pc-body {
+      padding:14px 18px 18px; border-top:1px solid #f1f5f9; background:#fafbfc;
+      display:none;
+    }
+    .piece-card.selected .pc-body { display:block; }
+    .pc-toggle {
+      width:24px; height:24px; border-radius:4px;
+      display:flex; align-items:center; justify-content:center;
+      color:#94a3b8; font-size:.7rem; transition:transform .2s;
+    }
+    .piece-card.selected .pc-toggle { transform:rotate(90deg); color:#1b3a6b; }
 
     .pp-fields { display:grid; grid-template-columns:1fr 1fr; gap:12px 18px; margin-bottom:14px; }
     .pp-fld label { display:block; font-size:.65rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
@@ -199,6 +196,17 @@
     }
     .provisoire-banner i { color:#b45309; font-size:1rem; }
     .provisoire-banner strong { color:#78350f; }
+
+    @media print {
+      .sidebar, .topbar, .det-aside, .pc-quick, .pp-actions, .provisoire-banner,
+      .piece-card .pc-toggle, .breadcrumb { display:none !important; }
+      .det-body { padding:0; background:#fff; }
+      .det-header { box-shadow:none; }
+      .piece-card { box-shadow:none; border:1px solid #1b3a6b; page-break-inside:avoid; margin-bottom:12px; }
+      .piece-card:not(.print-target) { display:none; }
+      .pc-body { display:block !important; background:#fff; }
+      .det-grid { grid-template-columns:1fr; }
+    }
   </style>
 </head>
 <body>
@@ -594,8 +602,7 @@ function render() {
     ${notice}
     <div class="det-grid">
       <div class="det-main">
-        ${renderWorkflow()}
-        ${renderPiecePanel()}
+        ${renderPiecesColumn()}
       </div>
       <div class="det-aside">
         ${renderPiecesSummary()}
@@ -628,58 +635,81 @@ function renderHeader() {
   </div>`;
 }
 
-function renderWorkflow() {
+const STATUS_MAP = {
+  'vide':       { cls:'ps-vide',       txt:'À renseigner' },
+  'en-cours':   { cls:'ps-en-cours',   txt:'En cours de saisie' },
+  'soumis':     { cls:'ps-soumis',     txt:'Soumis pour validation' },
+  'valide':     { cls:'ps-valide',     txt:'Validée' },
+  'rejete':     { cls:'ps-rejete',     txt:'Rejetée' },
+  'non-applic': { cls:'ps-non-applic', txt:'Sans objet' },
+};
+
+function renderPiecesColumn() {
   const list = PIECES_BY_TYPE[_dossier.type];
   const prog = pieceProgress();
-  const html = list.map((p, i) => {
-    const st = statusOfPiece(p.code);
-    let cls = 'wf-step';
-    if (st === 'valide')      cls += ' done';
-    else if (st === 'rejete') cls += ' rejected';
-    else if (i === prog.idx)  cls += ' current';
-    else if (i > prog.idx)    cls += ' locked';
-    if (p.code === _selectedPiece) cls += ' selected';
-    return `
-      <div class="${cls}" onclick="selectPiece('${p.code}')">
-        <div class="wf-circle">${st === 'valide' ? '<i class="fas fa-check"></i>' : st === 'rejete' ? '<i class="fas fa-times"></i>' : i + 1}</div>
-        <div class="wf-label">${p.label}</div>
+  const cards = list.map((p, i) => renderPieceCard(p, i, prog)).join('');
+  return `<div class="pieces-column">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px 4px">
+      <div style="font-size:.74rem;font-weight:800;color:#1b2f52;text-transform:uppercase;letter-spacing:.05em">
+        <i class="fas fa-folder-open me-2" style="color:#1b3a6b"></i>Circuit des pièces · ${prog.idx}/${prog.total} validées
       </div>
-      ${i < list.length - 1 ? '<div class="wf-arrow"><i class="fas fa-chevron-right"></i></div>' : ''}
-    `;
-  }).join('');
-  return `<div class="workflow">
-    <div class="wf-title"><i class="fas fa-route" style="color:#1b3a6b"></i>Circuit des pièces · ${prog.idx}/${prog.total} validées</div>
-    <div class="wf-flow">${html}</div>
+      <button class="btn-act-pp btn-save" style="font-size:.72rem;padding:5px 12px" onclick="printAll()">
+        <i class="fas fa-print"></i>Imprimer tout le dossier
+      </button>
+    </div>
+    ${cards}
   </div>`;
 }
 
-function renderPiecePanel() {
-  const list = PIECES_BY_TYPE[_dossier.type];
-  const piece = list.find((p) => p.code === _selectedPiece);
-  if (!piece) return '';
+function renderPieceCard(piece, idx, prog) {
   const data = _piecesData[_dossier.id].pieces[piece.code] || {};
   const status = data.status || 'vide';
-  const statusMap = {
-    'vide':       { cls:'ps-vide',       txt:'À renseigner' },
-    'en-cours':   { cls:'ps-en-cours',   txt:'En cours de saisie' },
-    'soumis':     { cls:'ps-soumis',     txt:'Soumis pour validation' },
-    'valide':     { cls:'ps-valide',     txt:'Validée' },
-    'rejete':     { cls:'ps-rejete',     txt:'Rejetée' },
-    'non-applic': { cls:'ps-non-applic', txt:'Sans objet' },
-  };
-  const s = statusMap[status];
+  const s = STATUS_MAP[status];
+  let cls = 'piece-card';
+  if (status === 'valide')      cls += ' done';
+  else if (status === 'rejete') cls += ' rejected';
+  else if (idx === prog.idx)    cls += ' current';
+  if (piece.code === _selectedPiece) cls += ' selected';
+
+  return `<div class="${cls}" id="card-${piece.code}">
+    <div class="pc-head" onclick="selectPiece('${piece.code}')">
+      <div class="pc-num">${status === 'valide' ? '<i class="fas fa-check"></i>' : status === 'rejete' ? '<i class="fas fa-times"></i>' : idx + 1}</div>
+      <div class="pc-info">
+        <h6><i class="fas ${piece.icon} me-2" style="color:#1b3a6b"></i>${piece.label}</h6>
+        <div class="pc-sub">Pièce ${idx + 1}/${PIECES_BY_TYPE[_dossier.type].length} · ${data.reference || 'sans référence'}</div>
+      </div>
+      <div class="pc-quick" onclick="event.stopPropagation()">
+        <button title="Générer le document" onclick="generatePiece('${piece.code}')"><i class="fas fa-magic"></i></button>
+        <button title="Importer un fichier" onclick="importPiece('${piece.code}')" class="${data.imported ? 'imported' : ''}"><i class="fas fa-${data.imported ? 'check-circle' : 'upload'}"></i></button>
+        <button title="Imprimer cette pièce" onclick="printPiece('${piece.code}')"><i class="fas fa-print"></i></button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="pc-status ${s.cls}">${s.txt}</span>
+        <div class="pc-toggle"><i class="fas fa-chevron-right"></i></div>
+      </div>
+    </div>
+    ${piece.code === _selectedPiece ? renderPieceBody(piece, data, status) : ''}
+  </div>`;
+}
+
+function renderPieceBody(piece, data, status) {
   const locked = status === 'valide';
   const ro = locked ? 'readonly' : '';
   const fields = piece.fields.map((f) => {
     const lbl = FIELD_LABELS[f] || f;
-    const v = data[f] || '';
-    const isText = ['justification', 'observations'].includes(f);
+    const v = data[f] != null ? String(data[f]) : '';
+    const isText = ['justification', 'observations', 'specifications', 'criteres_eligibilite',
+                    'soumissionnaires_invites', 'motif_choix', 'motif_decision', 'objectifs',
+                    'resultats_attendus', 'synthese', 'recommandations', 'garanties'].includes(f);
     const isDate = f.startsWith('date_');
-    const isNum  = ['quantite', 'prix_unitaire', 'montant_ttc'].includes(f);
+    const isNum  = ['quantite', 'prix_unitaire', 'montant_ttc', 'montant_attribue',
+                    'nb_participants', 'nb_offres_recues', 'nb_beneficiaires', 'nb_pieces',
+                    'per_diem', 'transport', 'hebergement', 'taux_presence', 'montant_unitaire',
+                    'montant_justifie'].includes(f);
     const fullCol = isText ? ' pp-full' : '';
     const inp = isText
       ? `<textarea ${ro}>${v}</textarea>`
-      : `<input type="${isDate ? 'date' : isNum ? 'number' : 'text'}" value="${v}" ${ro}>`;
+      : `<input type="${isDate ? 'date' : isNum ? 'number' : 'text'}" value="${v.replace(/"/g, '&quot;')}" ${ro}>`;
     return `<div class="pp-fld${fullCol}"><label>${lbl}</label>${inp}</div>`;
   }).join('');
 
@@ -693,15 +723,7 @@ function renderPiecePanel() {
         : `<button class="btn-act-pp btn-save" onclick="savePiece(false)"><i class="fas fa-save"></i>Enregistrer</button>
            <button class="btn-act-pp btn-submit" onclick="savePiece(true)"><i class="fas fa-paper-plane"></i>Soumettre pour validation</button>`;
 
-  return `<div class="piece-panel">
-    <div class="pp-head">
-      <div class="pp-icon"><i class="fas ${piece.icon}"></i></div>
-      <div class="pp-title">
-        <h5>${piece.label}</h5>
-        <div class="sub">Pièce ${PIECES_BY_TYPE[_dossier.type].findIndex((p) => p.code === piece.code) + 1}/${PIECES_BY_TYPE[_dossier.type].length}</div>
-      </div>
-      <span class="pp-status ${s.cls}">${s.txt}</span>
-    </div>
+  return `<div class="pc-body">
     <form id="pieceForm" onsubmit="event.preventDefault();savePiece(false)">
       <div class="pp-fields">${fields}</div>
       <div class="pp-actions">${actions}</div>
@@ -757,7 +779,80 @@ function renderStub() {
     </div>`;
 }
 
-function selectPiece(code) { _selectedPiece = code; render(); }
+function selectPiece(code) {
+  _selectedPiece = code;
+  render();
+  setTimeout(() => {
+    const el = document.getElementById('card-' + code);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 30);
+}
+
+function generatePiece(code) {
+  const list = PIECES_BY_TYPE[_dossier.type];
+  const piece = list.find((p) => p.code === code);
+  const idx = list.findIndex((p) => p.code === code);
+  if (!piece) return;
+  const fresh = seedPiece(piece, idx);
+  const existing = _piecesData[_dossier.id].pieces[code] || {};
+  fresh.status = existing.status === 'valide' ? 'valide' : 'en-cours';
+  fresh.imported = existing.imported;
+  _piecesData[_dossier.id].pieces[code] = fresh;
+  _piecesData[_dossier.id].histo.push({
+    action: `Document « ${piece.label} » régénéré automatiquement`,
+    par: 'Système', date: new Date().toLocaleString('fr-FR'), color: 'blue',
+  });
+  savePieces();
+  _selectedPiece = code;
+  render();
+}
+
+function importPiece(code) {
+  const list = PIECES_BY_TYPE[_dossier.type];
+  const piece = list.find((p) => p.code === code);
+  if (!piece) return;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const current = _piecesData[_dossier.id].pieces[code] || { status: 'en-cours' };
+    current.imported = {
+      filename: file.name,
+      size: file.size,
+      type: file.type,
+      importedAt: new Date().toISOString(),
+    };
+    if (!current.status || current.status === 'vide') current.status = 'en-cours';
+    _piecesData[_dossier.id].pieces[code] = current;
+    _piecesData[_dossier.id].histo.push({
+      action: `Pièce jointe importée : ${file.name} (${Math.round(file.size / 1024)} ko)`,
+      piece: code, par: 'admin@pslsh.org',
+      date: new Date().toLocaleString('fr-FR'), color: 'green',
+    });
+    savePieces();
+    render();
+  };
+  input.click();
+}
+
+function printPiece(code) {
+  document.querySelectorAll('.piece-card').forEach((el) => el.classList.remove('print-target'));
+  const card = document.getElementById('card-' + code);
+  if (card) {
+    card.classList.add('print-target');
+    if (code !== _selectedPiece) { _selectedPiece = code; render(); setTimeout(() => printPiece(code), 50); return; }
+  }
+  window.print();
+  setTimeout(() => card && card.classList.remove('print-target'), 800);
+}
+
+function printAll() {
+  document.querySelectorAll('.piece-card').forEach((el) => el.classList.add('print-target'));
+  window.print();
+  setTimeout(() => document.querySelectorAll('.piece-card').forEach((el) => el.classList.remove('print-target')), 800);
+}
 
 function logHisto(action, color, motif) {
   _piecesData[_dossier.id].histo.push({
