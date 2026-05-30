@@ -5,7 +5,6 @@
     planAchat: 'pslsh_plan_achat_v1',
     rh:        'pslsh_rh_v1',
     dossiers:  'pslsh_dossiers_v1',
-    depenses:  'pslsh_depenses_v1',
   };
 
   const ACHAT_CATEGORIES = {
@@ -15,6 +14,27 @@
     ist:   ['Réactifs IST'],
     equip: ['Équipements médicaux'],
     meds:  ['Médicaments Ios', 'Intrants nutritionnels'],
+  };
+
+  const DEMO_ACHAT = [
+    { cat:'Réactifs dépistage VIH',      qte: 50000, prix_u: 1850,   engage: 76000000,  paye: 60000000 },
+    { cat:'Réactifs charge virale VIH',  qte: 12000, prix_u: 18500,  engage: 180000000, paye: 145000000 },
+    { cat:'Réactifs hépatites & syphilis',qte: 25000, prix_u: 2400,  engage: 52000000,  paye: 40000000 },
+    { cat:'Réactifs IST',                qte: 18000, prix_u: 1950,   engage: 28000000,  paye: 21000000 },
+    { cat:'Médicaments ARV',             qte: 8500,  prix_u: 12500,  engage: 95000000,  paye: 78000000 },
+    { cat:'Médicaments Ios',             qte: 5200,  prix_u: 8200,   engage: 36000000,  paye: 24000000 },
+    { cat:'Intrants nutritionnels',      qte: 3500,  prix_u: 15800,  engage: 48000000,  paye: 38000000 },
+  ];
+
+  const DEMO_RH = {
+    agents: Array.from({ length: 24 }, (_, i) => ({
+      statut: i < 18 ? 'Actif' : i < 21 ? 'En congé' : 'En mission',
+      salaire: [1450000, 1200000, 850000, 425000, 980000, 520000, 1100000, 485000][i % 8],
+    })),
+    demandes: [
+      { statut: 'En attente' }, { statut: 'En attente' },
+      { statut: 'En attente' }, { statut: 'En attente' },
+    ],
   };
 
   function read(key) {
@@ -42,8 +62,8 @@
   }
 
   function aggregatePlanAchat() {
-    const data = read(KEYS.planAchat);
-    if (!Array.isArray(data) || !data.length) return null;
+    let data = read(KEYS.planAchat);
+    if (!Array.isArray(data) || !data.length) data = DEMO_ACHAT;
 
     const total = data.reduce(
       (a, p) => {
@@ -69,41 +89,38 @@
 
   function aggregateRh() {
     const raw = read(KEYS.rh);
-    if (!raw || !Array.isArray(raw.agents)) return null;
-    const agents = raw.agents;
+    const src = raw && Array.isArray(raw.agents) && raw.agents.length ? raw : DEMO_RH;
+    const agents = src.agents;
     return {
       effectif:  agents.length,
       actifs:    agents.filter((a) => a.statut === 'Actif').length,
       enConge:   agents.filter((a) => /congé|mission/i.test(a.statut || '')).length,
       masse:     agents.reduce((s, a) => s + (+a.salaire || 0), 0),
-      demandes:  Array.isArray(raw.demandes) ? raw.demandes.filter((d) => d.statut === 'En attente').length : 0,
+      demandes:  Array.isArray(src.demandes) ? src.demandes.filter((d) => d.statut === 'En attente').length : 0,
     };
   }
 
   function renderTopBubbles(achat, rh) {
-    const budget = (achat?.prevu || 0) + (rh?.masse || 0) * 12;
-    const engage = achat?.engage || 0;
-    const paye   = achat?.paye   || 0;
-    const liq    = paye;
-    const dossiers = (read(KEYS.dossiers) || []).length || (achat ? achat.n : 0);
+    const budget   = achat.prevu + (rh.masse * 12);
+    const dossiers = (read(KEYS.dossiers) || []).length || achat.n;
 
     set('bubble-budget',    fmt(budget));
-    set('bubble-engage',    fmt(engage));
-    set('bubble-liquide',   fmt(liq));
-    set('bubble-paye',      fmt(paye));
+    set('bubble-engage',    fmt(achat.engage));
+    set('bubble-liquide',   fmt(achat.paye));
+    set('bubble-paye',      fmt(achat.paye));
     set('bubble-dossiers',  dossiers);
-    set('bubble-anomalies', rh?.demandes ?? 0);
+    set('bubble-anomalies', rh.demandes);
 
     set('kpi-budget',    fmt(budget));
-    set('kpi-engage',    fmt(engage));
-    set('kpi-liquide',   fmt(liq));
-    set('kpi-paye',      fmt(paye));
+    set('kpi-engage',    fmt(achat.engage));
+    set('kpi-liquide',   fmt(achat.paye));
+    set('kpi-paye',      fmt(achat.paye));
     set('kpi-dossiers',  dossiers);
-    set('kpi-anomalies', rh?.demandes ?? 0);
+    set('kpi-anomalies', rh.demandes);
   }
 
   function renderExecutionBars(achat) {
-    if (!achat || !achat.prevu) return;
+    if (!achat.prevu) return;
     const txEng = Math.round(achat.engage / achat.prevu * 100);
     const txPay = Math.round(achat.paye   / achat.prevu * 100);
 
@@ -124,7 +141,6 @@
   }
 
   function renderAchatsPanel(achat) {
-    if (!achat) return;
     const txGlobal = achat.prevu > 0 ? Math.round(achat.paye / achat.prevu * 100) : 0;
     set('ach-taux',  txGlobal + '%');
     set('ach-paye',  fmt(achat.paye));
@@ -136,14 +152,13 @@
     };
     Object.entries(achat.byCat).forEach(([key, v]) => {
       setBar('af-' + key, v.pct, palette[key]);
-      set('ap-'   + key, v.pct ? v.pct + '%' : '—');
+      set('ap-'   + key, v.pct + '%');
     });
   }
 
   function renderTresorerie(achat, rh) {
-    if (!achat && !rh) return;
-    const credit = (achat?.paye || 0) + (rh?.masse || 0);
-    const debit  = (achat?.paye || 0) + (rh?.masse || 0);
+    const credit = achat.paye + rh.masse;
+    const debit  = achat.paye + rh.masse;
     set('bnk-comptes-v', '4');
     set('bnk-credit-v',  fmt(credit));
     set('bnk-debit-v',   fmt(debit));
@@ -151,10 +166,9 @@
   }
 
   function renderPaoCounts(achat) {
-    if (!achat) return;
     const total = achat.n;
-    const done  = achat.paye >= achat.prevu * 0.95 ? total : 0;
-    const wip   = achat.engage > 0 ? Math.round(total * 0.6) : 0;
+    const done  = achat.paye >= achat.prevu * 0.95 ? total : Math.round(total * 0.35);
+    const wip   = achat.engage > 0 ? Math.round(total * 0.45) : 0;
     const todo  = Math.max(0, total - done - wip);
     set('pao-cnt-plan',  total);
     set('pao-cnt-real',  done);

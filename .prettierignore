@@ -1,8 +1,0 @@
-node_modules
-**/node_modules
-storage
-database/schema
-graphify-out
-backend/scripts/seed.js
-frontend/pages/**/*.html
-*.min.*
