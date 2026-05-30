@@ -1,160 +1,150 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-  <link rel="apple-touch-icon" href="/assets/favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SIGFIC-PSLSH | Centre de validation</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
   <link href="../../src/css/main.css" rel="stylesheet">
   <style>
-    .val-page { padding:24px 28px 40px; }
+    html, body { height:100%; overflow:hidden; }
+    .app-layout, .main-content { height:100vh; overflow:hidden; }
+    .page-content { flex:1; overflow:hidden; display:flex; flex-direction:column; padding:0; }
 
-    /* ── Accès restreint ── */
-    .access-denied { display:flex; flex-direction:column; align-items:center; justify-content:center;
-      min-height:60vh; text-align:center; gap:14px; }
-    .access-denied .ad-icon { width:80px; height:80px; border-radius:50%; background:#fee2e2;
-      display:flex; align-items:center; justify-content:center; font-size:2rem; color:#b91c1c; }
-    .access-denied h5 { font-weight:800; color:#1b2f52; margin:0; }
-    .access-denied p  { font-size:.82rem; color:#64748b; max-width:380px; margin:0; }
+    .cv-top { flex-shrink:0; padding:14px 24px 0; background:#fff; border-bottom:1px solid #e2e8f0; }
+    .cv-body { flex:1; overflow-y:auto; padding:18px 24px 28px; background:#eef2f7; }
 
-    /* ── Layout deux colonnes ── */
-    .val-layout { display:grid; grid-template-columns:240px 1fr; gap:18px; align-items:start; }
+    .cv-title { font-size:1rem; font-weight:800; color:#1b2f52; margin:0; }
+    .cv-sub   { font-size:.74rem; color:#64748b; }
 
-    /* ── Menu gauche ── */
-    .val-menu { background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; position:sticky; top:20px; }
-    .val-menu-head { background:#1b2f52; color:#fff; padding:11px 16px; font-size:.75rem; font-weight:800;
-      text-transform:uppercase; letter-spacing:.05em; }
-    .val-menu-item { display:flex; align-items:center; gap:10px; padding:10px 16px; cursor:pointer;
-      border-bottom:1px solid #f1f5f9; transition:background .12s; font-size:.78rem; color:#374151; font-weight:600; }
-    .val-menu-item:last-child { border-bottom:none; }
-    .val-menu-item:hover { background:#f8fafc; }
-    .val-menu-item.active { background:#eff6ff; color:#1b2f52; border-left:3px solid #1b2f52; }
-    .val-menu-item .vmi-icon { width:28px; height:28px; border-radius:7px; display:flex; align-items:center;
-      justify-content:center; color:#fff; font-size:.72rem; flex-shrink:0; }
-    .val-menu-item .vmi-label { flex:1; line-height:1.2; }
-    .val-menu-item .vmi-sub  { font-size:.63rem; color:#94a3b8; font-weight:400; }
-    .badge-pending { background:#b91c1c; color:#fff; border-radius:20px; font-size:.63rem; font-weight:700;
-      padding:1px 7px; min-width:20px; text-align:center; }
-    .badge-pending.zero { background:#e2e8f0; color:#94a3b8; }
+    .circuit {
+      display:grid; grid-template-columns:1fr auto 1fr auto 1fr; align-items:center;
+      gap:0; background:#fff; border:1px solid #e2e8f0; border-radius:14px;
+      padding:14px 18px; margin:12px 0 16px;
+    }
+    .step {
+      display:flex; align-items:center; gap:12px; padding:8px 4px; cursor:pointer;
+      border-radius:10px; transition:background .15s;
+    }
+    .step:hover { background:#f8fafc; }
+    .step.active { background:#eff6ff; }
+    .step-num {
+      width:42px; height:42px; border-radius:50%;
+      background:#f1f5f9; color:#94a3b8;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:800; font-size:1.05rem; flex-shrink:0;
+      transition:all .2s;
+    }
+    .step.active .step-num,
+    .step .step-num.s-saf    { background:#dbeafe; color:#1d4ed8; }
+    .step .step-num.s-compta { background:#fef3c7; color:#b45309; }
+    .step .step-num.s-coordo { background:#dcfce7; color:#15803d; }
+    .step-info { line-height:1.25; }
+    .step-role { font-size:.78rem; font-weight:800; color:#1b2f52; text-transform:uppercase; letter-spacing:.04em; }
+    .step-act  { font-size:.72rem; color:#64748b; margin-top:2px; }
+    .step-count{ font-size:.68rem; color:#475569; margin-top:3px; font-family:monospace; }
 
-    /* ── Panneau droit ── */
-    .val-panel { display:none; }
-    .val-panel.active { display:block; }
+    .step-arrow {
+      color:#cbd5e1; font-size:1.5rem;
+    }
 
-    /* ── En-tête panneau ── */
-    .val-panel-head { background:#fff; border:1px solid #e2e8f0; border-radius:12px 12px 0 0;
-      padding:12px 18px; display:flex; align-items:center; gap:12px; }
-    .val-panel-icon { width:36px; height:36px; border-radius:9px; display:flex; align-items:center;
-      justify-content:center; color:#fff; font-size:.9rem; flex-shrink:0; }
-    .val-panel-title { font-size:.88rem; font-weight:800; color:#1b2f52; }
-    .val-panel-desc  { font-size:.71rem; color:#64748b; margin-top:1px; }
-    .val-panel-right { margin-left:auto; display:flex; align-items:center; gap:8px; }
+    .cv-filter {
+      background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+      padding:10px 14px; margin-bottom:14px;
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+    .cv-filter label { font-size:.72rem; font-weight:700; color:#475569; margin:0; }
+    .cv-filter select, .cv-filter input {
+      font-size:.76rem; padding:5px 10px; height:32px;
+      border:1px solid #cbd5e1; border-radius:7px; background:#fff;
+    }
+    .my-toggle {
+      display:inline-flex; align-items:center; gap:6px; padding:5px 12px;
+      border-radius:18px; font-size:.74rem; font-weight:700; cursor:pointer;
+      border:1px solid #1b3a6b; background:#fff; color:#1b3a6b;
+    }
+    .my-toggle.active { background:#1b3a6b; color:#fff; }
 
-    /* ── Filtres ── */
-    .val-filters { background:#f8fafc; border:1px solid #e2e8f0; border-top:none; padding:8px 14px;
-      display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-    .val-filters select, .val-filters input { font-size:.76rem; padding:3px 8px; border:1px solid #d1d5db;
-      border-radius:6px; background:#fff; height:28px; }
+    .dossier-card {
+      background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+      padding:14px 16px; margin-bottom:10px;
+      display:grid; grid-template-columns:1fr auto; gap:14px;
+      transition:box-shadow .15s;
+    }
+    .dossier-card:hover { box-shadow:0 4px 12px rgba(27,58,107,.07); }
+    .dc-main h6 { margin:0 0 4px; font-size:.92rem; font-weight:700; color:#1b2f52; }
+    .dc-meta { display:flex; gap:14px; flex-wrap:wrap; font-size:.72rem; color:#64748b; margin-top:4px; }
+    .dc-meta strong { color:#1b2f52; font-weight:700; }
+    .dc-meta .mono { font-family:monospace; color:#1d4ed8; font-weight:700; }
 
-    /* ── Table ── */
-    .val-bloc { background:#fff; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 12px 12px; overflow:hidden; }
-    .val-table-wrap { overflow-x:auto; }
-    .val-table { width:100%; border-collapse:collapse; font-size:.76rem; }
-    .val-table thead th { background:#f1f5f9; color:#1b2f52; font-size:.65rem; font-weight:700;
-      text-transform:uppercase; letter-spacing:.03em; padding:8px 10px; border-bottom:2px solid #e2e8f0;
-      white-space:nowrap; position:sticky; top:0; z-index:2; }
-    .val-table tbody td { padding:8px 10px; border-bottom:1px solid #f1f5f9; color:#2d3748; vertical-align:middle; }
-    .val-table tbody tr:hover td { background:#f8fafc; }
-    .val-table .text-center { text-align:center; }
-    .val-table .text-end { text-align:right; }
-    .val-table .mono { font-family:'Cascadia Code','Consolas',monospace; font-size:.72rem; }
-    .no-rows { text-align:center; padding:36px 20px; color:#94a3b8; font-size:.82rem; }
+    .stage-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:3px 10px; border-radius:18px; font-size:.7rem; font-weight:700;
+      white-space:nowrap;
+    }
+    .sb-saf    { background:#dbeafe; color:#1d4ed8; }
+    .sb-compta { background:#fef3c7; color:#b45309; }
+    .sb-coordo { background:#dcfce7; color:#15803d; }
+    .sb-ordonne{ background:#1b3a6b; color:#fff; }
+    .sb-rejete { background:#fee2e2; color:#b91c1c; }
 
-    /* ── Statuts soumis ── */
-    .s-pend  { background:#fef3c7; color:#b45309; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
-    .s-valid { background:#dcfce7; color:#15803d; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
-    .s-rej   { background:#fee2e2; color:#b91c1c; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
-    .s-rev   { background:#ede9fe; color:#6d28d9; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
-    .s-conf  { background:#dcfce7; color:#15803d; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
-    .s-ent   { background:#dbeafe; color:#1d4ed8; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
-    .s-att   { background:#f1f5f9; color:#64748b; font-size:.66rem; font-weight:700; border-radius:5px; padding:2px 8px; white-space:nowrap; }
+    .dc-actions {
+      display:flex; flex-direction:column; gap:6px; align-items:flex-end;
+      min-width:170px;
+    }
+    .btn-valider, .btn-rejeter, .btn-detail {
+      font-size:.74rem; padding:6px 14px; border-radius:7px; border:1px solid;
+      font-weight:600; cursor:pointer; display:inline-flex; align-items:center;
+      gap:5px; transition:all .15s; min-height:32px;
+    }
+    .btn-valider  { background:#15803d; color:#fff; border-color:#15803d; }
+    .btn-valider:hover  { background:#166534; }
+    .btn-rejeter  { background:#fff; color:#b91c1c; border-color:#fca5a5; }
+    .btn-rejeter:hover  { background:#fee2e2; }
+    .btn-detail   { background:#fff; color:#475569; border-color:#cbd5e1; }
+    .btn-detail:hover   { background:#f8fafc; }
+    .btn-disabled { background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; cursor:not-allowed; }
 
-    /* ── Boutons action ── */
-    .btn-val  { font-size:.67rem; padding:3px 9px; border-radius:5px; cursor:pointer; font-weight:700;
-      display:inline-flex; align-items:center; gap:4px; transition:all .15s; border:1px solid; }
-    .btn-view { background:#eff6ff; color:#1d4ed8; border-color:#93c5fd; }
-    .btn-view:hover { background:#dbeafe; }
-    .btn-ok   { background:#f0fdf4; color:#15803d; border-color:#86efac; }
-    .btn-ok:hover { background:#dcfce7; }
-    .btn-rev  { background:#f5f3ff; color:#6d28d9; border-color:#c4b5fd; }
-    .btn-rev:hover { background:#ede9fe; }
-    .btn-rej  { background:#fff5f5; color:#b91c1c; border-color:#fca5a5; }
-    .btn-rej:hover { background:#fee2e2; }
+    .dc-progress {
+      grid-column:1 / -1; margin-top:12px; padding-top:10px;
+      border-top:1px dashed #e2e8f0;
+      display:flex; align-items:center; gap:0;
+    }
+    .dp-step {
+      flex:1; display:flex; align-items:center; gap:8px;
+      font-size:.7rem;
+    }
+    .dp-dot {
+      width:18px; height:18px; border-radius:50%; flex-shrink:0;
+      background:#f1f5f9; color:#cbd5e1;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.62rem; font-weight:800;
+    }
+    .dp-done .dp-dot { background:#15803d; color:#fff; }
+    .dp-current .dp-dot { background:#b45309; color:#fff; box-shadow:0 0 0 4px #fef3c7; }
+    .dp-rejected .dp-dot { background:#b91c1c; color:#fff; }
+    .dp-text { color:#64748b; }
+    .dp-done .dp-text { color:#15803d; font-weight:600; }
+    .dp-current .dp-text { color:#b45309; font-weight:700; }
+    .dp-rejected .dp-text { color:#b91c1c; font-weight:700; }
+    .dp-line { flex-shrink:0; width:30px; height:2px; background:#e2e8f0; }
+    .dp-line.dp-line-done { background:#15803d; }
 
-    /* ── Compteurs ── */
-    .val-kpi-bar { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:12px; }
-    .val-kpi { background:#fff; border:1px solid #e2e8f0; border-radius:9px; padding:10px 14px;
-      display:flex; align-items:center; gap:10px; }
-    .val-kpi-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center;
-      justify-content:center; color:#fff; font-size:.8rem; flex-shrink:0; }
-    .val-kpi-txt .vk-n { font-size:1.2rem; font-weight:800; color:#1b2f52; line-height:1; font-family:monospace; }
-    .val-kpi-txt .vk-l { font-size:.67rem; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:.03em; }
+    .empty-state {
+      text-align:center; padding:50px 20px; color:#94a3b8;
+      background:#fff; border:1px dashed #e2e8f0; border-radius:12px;
+    }
+    .empty-state i { font-size:2.5rem; margin-bottom:10px; opacity:.5; }
 
-    /* ── Modal ── */
-    .val-modal-sect { margin-bottom:14px; }
-    .val-modal-sect-title { font-size:.7rem; font-weight:800; color:#1b2f52; text-transform:uppercase;
-      letter-spacing:.04em; padding-bottom:5px; border-bottom:1px solid #e2e8f0; margin-bottom:8px; }
-    .val-field { display:flex; gap:8px; margin-bottom:5px; font-size:.78rem; }
-    .val-field .vf-l { min-width:160px; color:#64748b; font-weight:600; }
-    .val-field .vf-v { color:#1b2f52; font-weight:600; }
-
-    /* ── Historique ── */
-    .histo-line { display:flex; align-items:flex-start; gap:10px; padding:7px 0;
-      border-bottom:1px dashed #e2e8f0; font-size:.75rem; }
-    .histo-line:last-child { border-bottom:none; }
-    .histo-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:4px; }
-    .histo-line .hl-action { font-weight:700; color:#1b2f52; }
-    .histo-line .hl-by { color:#64748b; }
-    .histo-line .hl-date { color:#94a3b8; font-size:.68rem; margin-left:auto; white-space:nowrap; }
-
-    /* ── Saisie décision ── */
-    .decision-bloc { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-top:12px; }
-    .decision-bloc .db-title { font-size:.72rem; font-weight:800; color:#1b2f52; text-transform:uppercase;
-      letter-spacing:.04em; margin-bottom:10px; }
-    .decision-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-    .decision-btns button { font-size:.76rem; font-weight:700; padding:6px 16px; border-radius:7px;
-      cursor:pointer; display:flex; align-items:center; gap:6px; border:none; transition:all .15s; }
-    .db-approve { background:#15803d; color:#fff; }
-    .db-approve:hover { background:#166534; }
-    .db-review  { background:#6d28d9; color:#fff; }
-    .db-review:hover { background:#5b21b6; }
-    .db-reject  { background:#b91c1c; color:#fff; }
-    .db-reject:hover { background:#991b1b; }
-    .db-entente { background:#1d4ed8; color:#fff; }
-    .db-entente:hover { background:#1e40af; }
-    .db-conforme { background:#0d9488; color:#fff; }
-    .db-conforme:hover { background:#0f766e; }
-    .db-attente { background:#b45309; color:#fff; }
-    .db-attente:hover { background:#92400e; }
-
-    /* Textarea observation */
-    .obs-textarea { width:100%; border:1px solid #d1d5db; border-radius:6px; font-size:.78rem;
-      padding:8px 10px; resize:vertical; min-height:60px; color:#1b2f52; }
-    .obs-textarea:focus { outline:none; border-color:#93c5fd; box-shadow:0 0 0 2px rgba(147,197,253,.3); }
-
-    /* Signature bloc */
-    .sign-bloc { display:flex; align-items:center; gap:10px; background:#eff6ff; border:1px solid #bfdbfe;
-      border-radius:8px; padding:10px 14px; font-size:.76rem; margin-top:8px; }
-    .sign-bloc i { color:#1d4ed8; }
-    .sign-bloc strong { color:#1b2f52; }
+    .modal-header-rh { background:linear-gradient(135deg,#1b2f52,#1b3a6b); color:#fff; }
+    .modal-header-rh .btn-close { filter:invert(1); }
   </style>
 </head>
 <body>
 <div class="app-layout">
+
   <aside class="sidebar">
     <div class="sidebar-brand">
       <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo">
@@ -171,593 +161,95 @@
   </aside>
 
   <div class="main-content">
+
     <div class="topbar">
       <div class="topbar-left">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="/pages/validation/index.html">Coordination</a></li>
-            <li class="breadcrumb-item active">Validation — Espace Coordonnateur</li>
+            <li class="breadcrumb-item text-muted">Centre de validation</li>
+            <li class="breadcrumb-item active fw-semibold">Circuit en trois étapes</li>
           </ol>
         </nav>
       </div>
       <div class="topbar-center">
-        <i class="fas fa-calendar-alt"></i> Exercice :
-        <select id="selExercice" class="form-select form-select-sm d-inline-block w-auto ms-1">
-          <option value="2026">2026</option>
-          <option value="2025">2025</option>
-        </select>
+        <i class="fas fa-stamp me-1"></i>Exercice <strong>2026</strong>
       </div>
       <div class="topbar-right">
-        <span class="me-2 text-muted small" id="userName"></span>
-        <button class="btn btn-sm btn-outline-danger" onclick="logout()">
-          <i class="fas fa-sign-out-alt"></i>
-        </button>
+        <div class="topbar-notif" title="Alertes"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700" id="userAvatar">?</div>
+            <span id="userName" style="font-size:.82rem;font-weight:600"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="../admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
       </div>
     </div>
 
-    <div class="page-content val-page">
+    <div class="page-content">
 
-      <!-- Titre -->
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-          <h4 class="mb-0">
-            <i class="fas fa-stamp text-primary me-2"></i>
-            Espace de Validation, Coordonnateur PSLSH/IST
-          </h4>
-          <small class="text-muted">
-            Accès restreint. Seul le Coordonnateur est habilité à valider.
-            Exercice <strong>2026</strong>, arrêté au <strong>05/04/2026</strong>
-          </small>
+      <div class="cv-top">
+        <div class="d-flex justify-content-between align-items-end">
+          <div>
+            <h5 class="cv-title"><i class="fas fa-route me-2" style="color:#1b3a6b"></i>Circuit de validation séquentiel</h5>
+            <div class="cv-sub">Chaque dossier doit franchir les trois étapes dans l'ordre. Un rejet à n'importe quelle étape ferme le circuit.</div>
+          </div>
+          <div class="cv-sub">Arrêté au <strong>05/04/2026</strong> · <span id="cvUserRoleLabel" style="font-weight:700;color:#1b3a6b">—</span></div>
         </div>
-        <div class="d-flex gap-2">
-          <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
-            <i class="fas fa-print me-1"></i>Imprimer
+
+        <div class="circuit" id="circuitBar"></div>
+      </div>
+
+      <div class="cv-body">
+
+        <div class="cv-filter">
+          <label><i class="fas fa-filter" style="color:#1b3a6b"></i> Type :</label>
+          <select id="fType" onchange="renderDossiers()">
+            <option value="">Tous types</option>
+            <option value="EB">Expressions de besoin</option>
+            <option value="BC">Bons de commande</option>
+            <option value="OP">Ordres de paiement</option>
+            <option value="OV">Ordres de virement</option>
+          </select>
+          <label>Service :</label>
+          <select id="fService" onchange="renderDossiers()">
+            <option value="">Tous services</option>
+          </select>
+          <input type="text" id="fSearch" placeholder="Rechercher (objet, n°…)" oninput="renderDossiers()" style="min-width:200px">
+          <button class="my-toggle" id="toggleMine" onclick="toggleMine()">
+            <i class="fas fa-user-check"></i> Ceux qui m'attendent
           </button>
+          <span class="cv-sub ms-auto" id="dossierCount">—</span>
         </div>
+
+        <div id="dossierList"></div>
+
       </div>
-
-      <!-- Accès refusé (affiché si non Coordonnateur) -->
-      <div id="accessDenied" class="access-denied" style="display:none;">
-        <div class="ad-icon"><i class="fas fa-lock"></i></div>
-        <h5>Accès restreint : Coordonnateur uniquement</h5>
-        <p>Cette page est réservée exclusivement au <strong>Coordonnateur du PSLSH/IST</strong>.
-          Vous n'avez pas les droits nécessaires pour accéder à cet espace de validation.</p>
-        <a href="../dashboard/index.html" class="btn btn-sm btn-outline-primary mt-2">
-          <i class="fas fa-home me-1"></i>Retour au tableau de bord
-        </a>
-      </div>
-
-      <!-- Contenu principal (affiché si Coordonnateur) -->
-      <div id="valContent">
-
-        <!-- Signature actuelle -->
-        <div class="sign-bloc mb-3">
-          <i class="fas fa-user-shield fa-lg"></i>
-          <div>
-            <strong id="coordName">Coordonnateur</strong> —
-            <span style="color:#1d4ed8;font-size:.76rem">Coordonnateur PSLSH/IST</span>
-          </div>
-          <div style="margin-left:auto;font-size:.72rem;color:#64748b">
-            <i class="fas fa-clock me-1"></i>Session active, 05/04/2026
-          </div>
-        </div>
-
-        <!-- KPI globaux en attente -->
-        <div class="val-kpi-bar mb-3">
-          <div class="val-kpi">
-            <div class="val-kpi-icon" style="background:#b91c1c"><i class="fas fa-hourglass-half"></i></div>
-            <div class="val-kpi-txt">
-              <div class="vk-n" id="kpiTotal">—</div>
-              <div class="vk-l">Dossiers en attente</div>
-            </div>
-          </div>
-          <div class="val-kpi">
-            <div class="val-kpi-icon" style="background:#15803d"><i class="fas fa-check-double"></i></div>
-            <div class="val-kpi-txt">
-              <div class="vk-n" id="kpiValides">—</div>
-              <div class="vk-l">Validés ce mois</div>
-            </div>
-          </div>
-          <div class="val-kpi">
-            <div class="val-kpi-icon" style="background:#b45309"><i class="fas fa-clock"></i></div>
-            <div class="val-kpi-txt">
-              <div class="vk-n" id="kpiUrgents">—</div>
-              <div class="vk-l">Urgents (&gt; 5 jours)</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Layout -->
-        <div class="val-layout">
-
-          <!-- ── Menu gauche ── -->
-          <div class="val-menu">
-            <div class="val-menu-head"><i class="fas fa-list-check me-2"></i>Types de validation</div>
-            <div class="val-menu-item active" onclick="showPanel('pao')" id="menu-pao">
-              <div class="vmi-icon" style="background:#1b3a6b"><i class="fas fa-project-diagram"></i></div>
-              <div class="vmi-label">PAO par Service<div class="vmi-sub">Plans d'action opérationnels</div></div>
-              <span class="badge-pending" id="badge-pao">0</span>
-            </div>
-            <div class="val-menu-item" onclick="showPanel('besoins')" id="menu-besoins">
-              <div class="vmi-icon" style="background:#15803d"><i class="fas fa-clipboard-list"></i></div>
-              <div class="vmi-label">Expressions de besoins<div class="vmi-sub">Demandes d'acquisition</div></div>
-              <span class="badge-pending" id="badge-besoins">0</span>
-            </div>
-            <div class="val-menu-item" onclick="showPanel('bdc')" id="menu-bdc">
-              <div class="vmi-icon" style="background:#1d4ed8"><i class="fas fa-file-contract"></i></div>
-              <div class="vmi-label">Bons de commande<div class="vmi-sub">Engagements fournisseurs</div></div>
-              <span class="badge-pending" id="badge-bdc">0</span>
-            </div>
-            <div class="val-menu-item" onclick="showPanel('op')" id="menu-op">
-              <div class="vmi-icon" style="background:#7c3aed"><i class="fas fa-money-check-alt"></i></div>
-              <div class="vmi-label">Ordres de paiement<div class="vmi-sub">Liquidations à valider</div></div>
-              <span class="badge-pending" id="badge-op">0</span>
-            </div>
-            <div class="val-menu-item" onclick="showPanel('ov')" id="menu-ov">
-              <div class="vmi-icon" style="background:#0d9488"><i class="fas fa-university"></i></div>
-              <div class="vmi-label">Ordres de virement<div class="vmi-sub">Transferts bancaires</div></div>
-              <span class="badge-pending" id="badge-ov">0</span>
-            </div>
-            <div class="val-menu-item" onclick="showPanel('rapports')" id="menu-rapports">
-              <div class="vmi-icon" style="background:#b45309"><i class="fas fa-chart-bar"></i></div>
-              <div class="vmi-label">Rapports<div class="vmi-sub">Rapports financiers & activités</div></div>
-              <span class="badge-pending" id="badge-rapports">0</span>
-            </div>
-            <div class="val-menu-item" onclick="showPanel('pj')" id="menu-pj">
-              <div class="vmi-icon" style="background:#8b0000"><i class="fas fa-file-invoice"></i></div>
-              <div class="vmi-label">Pièces justificatives<div class="vmi-sub">Conformité documentaire</div></div>
-              <span class="badge-pending" id="badge-pj">0</span>
-            </div>
-            <div class="val-menu-item" onclick="showPanel('budget')" id="menu-budget">
-              <div class="vmi-icon" style="background:#0f766e"><i class="fas fa-balance-scale"></i></div>
-              <div class="vmi-label">Budget<div class="vmi-sub">Lignes, révisions, transferts</div></div>
-              <span class="badge-pending" id="badge-budget">0</span>
-            </div>
-          </div>
-
-          <!-- ── Panneaux droits ── -->
-          <div style="min-width:0">
-
-            <!-- ═══ PAO PAR SERVICE ═══ -->
-            <div class="val-panel active" id="panel-pao">
-              <div class="val-panel-head">
-                <div class="val-panel-icon" style="background:#1b3a6b"><i class="fas fa-project-diagram"></i></div>
-                <div>
-                  <div class="val-panel-title">Validation des PAO par Service</div>
-                  <div class="val-panel-desc">Plans d'action opérationnels soumis par les chefs de service, Exercice 2026</div>
-                </div>
-                <div class="val-panel-right">
-                  <span style="font-size:.72rem;color:#64748b">Décisions : <strong>Validé</strong>, <strong>À revoir</strong>, <strong>Rejeté</strong></span>
-                </div>
-              </div>
-              <div class="val-filters">
-                <label style="font-size:.7rem;font-weight:700;color:#4a5568;margin:0"><i class="fas fa-filter me-1"></i>Filtres :</label>
-                <select onchange="filterTable('pao',this.value,'statut')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous statuts</option>
-                  <option value="En attente">En attente</option>
-                  <option value="Validé">Validé</option>
-                  <option value="À revoir">À revoir</option>
-                  <option value="Rejeté">Rejeté</option>
-                </select>
-                <select onchange="filterTable('pao',this.value,'service')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous services</option>
-                  <option value="SAF">SAF</option><option value="SGAS">SGAS</option>
-                  <option value="SEB">SEB</option><option value="SPCG">SPCG</option>
-                  <option value="SPCH">SPCH</option><option value="SPSAC">SPSAC</option>
-                  <option value="SESRO">SESRO</option><option value="SC">SC</option>
-                  <option value="APMS">APMS</option><option value="SLNR">SLNR</option>
-                </select>
-              </div>
-              <div class="val-bloc">
-                <div class="val-table-wrap">
-                  <table class="val-table">
-                    <thead><tr>
-                      <th>Référence</th>
-                      <th>Service</th>
-                      <th>Libellé</th>
-                      <th class="text-center">Activités</th>
-                      <th class="text-end">Budget (FCFA)</th>
-                      <th>Soumis le</th>
-                      <th>Par</th>
-                      <th class="text-center">Statut</th>
-                      <th class="text-center">Actions</th>
-                    </tr></thead>
-                    <tbody id="tbody-pao"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <!-- ═══ EXPRESSIONS DE BESOINS ═══ -->
-            <div class="val-panel" id="panel-besoins">
-              <div class="val-panel-head">
-                <div class="val-panel-icon" style="background:#15803d"><i class="fas fa-clipboard-list"></i></div>
-                <div>
-                  <div class="val-panel-title">Validation des Expressions de Besoins</div>
-                  <div class="val-panel-desc">Demandes d'acquisition soumises par les services, Exercice 2026</div>
-                </div>
-                <div class="val-panel-right">
-                  <span style="font-size:.72rem;color:#64748b">Décisions : <strong>Approuvé</strong>, <strong>Entente de financement</strong>, <strong>Rejeté</strong></span>
-                </div>
-              </div>
-              <div class="val-filters">
-                <label style="font-size:.7rem;font-weight:700;color:#4a5568;margin:0"><i class="fas fa-filter me-1"></i>Filtres :</label>
-                <select onchange="filterTable('besoins',this.value,'statut')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous statuts</option>
-                  <option value="En attente">En attente</option>
-                  <option value="Approuvé">Approuvé</option>
-                  <option value="Entente de financement">Entente de financement</option>
-                  <option value="Rejeté">Rejeté</option>
-                </select>
-                <select onchange="filterTable('besoins',this.value,'nature')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Toutes natures</option>
-                  <option value="Fournitures">Fournitures</option>
-                  <option value="Services">Services</option>
-                  <option value="Travaux">Travaux</option>
-                  <option value="Réactifs">Réactifs</option>
-                </select>
-              </div>
-              <div class="val-bloc">
-                <div class="val-table-wrap">
-                  <table class="val-table">
-                    <thead><tr>
-                      <th>N° Dossier</th>
-                      <th>Désignation</th>
-                      <th>Service demandeur</th>
-                      <th>Nature</th>
-                      <th class="text-end">Montant estimé</th>
-                      <th>Ligne budgétaire</th>
-                      <th>Soumis le</th>
-                      <th class="text-center">Statut</th>
-                      <th class="text-center">Actions</th>
-                    </tr></thead>
-                    <tbody id="tbody-besoins"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <!-- ═══ BONS DE COMMANDE ═══ -->
-            <div class="val-panel" id="panel-bdc">
-              <div class="val-panel-head">
-                <div class="val-panel-icon" style="background:#1d4ed8"><i class="fas fa-file-contract"></i></div>
-                <div>
-                  <div class="val-panel-title">Validation des Bons de Commande</div>
-                  <div class="val-panel-desc">Engagements fournisseurs à approuver, Exercice 2026</div>
-                </div>
-                <div class="val-panel-right">
-                  <span style="font-size:.72rem;color:#64748b">Décisions : <strong>Approuvé</strong>, <strong>En attente</strong>, <strong>Rejeté</strong></span>
-                </div>
-              </div>
-              <div class="val-filters">
-                <label style="font-size:.7rem;font-weight:700;color:#4a5568;margin:0"><i class="fas fa-filter me-1"></i>Filtres :</label>
-                <select onchange="filterTable('bdc',this.value,'statut')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous statuts</option>
-                  <option value="Soumis">Soumis</option>
-                  <option value="Approuvé">Approuvé</option>
-                  <option value="En attente">En attente</option>
-                  <option value="Rejeté">Rejeté</option>
-                </select>
-              </div>
-              <div class="val-bloc">
-                <div class="val-table-wrap">
-                  <table class="val-table">
-                    <thead><tr>
-                      <th>N° BC</th>
-                      <th>Objet</th>
-                      <th>Fournisseur</th>
-                      <th>Service</th>
-                      <th class="text-end">Montant (FCFA)</th>
-                      <th>Procédure</th>
-                      <th>Préparé par</th>
-                      <th>Date</th>
-                      <th class="text-center">Statut</th>
-                      <th class="text-center">Actions</th>
-                    </tr></thead>
-                    <tbody id="tbody-bdc"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <!-- ═══ ORDRES DE PAIEMENT ═══ -->
-            <div class="val-panel" id="panel-op">
-              <div class="val-panel-head">
-                <div class="val-panel-icon" style="background:#7c3aed"><i class="fas fa-money-check-alt"></i></div>
-                <div>
-                  <div class="val-panel-title">Validation des Ordres de Paiement</div>
-                  <div class="val-panel-desc">Liquidations soumises à la signature du Coordonnateur, Exercice 2026</div>
-                </div>
-                <div class="val-panel-right">
-                  <span style="font-size:.72rem;color:#64748b">Décisions : <strong>Approuvé</strong>, <strong>En attente</strong>, <strong>Rejeté</strong></span>
-                </div>
-              </div>
-              <div class="val-filters">
-                <label style="font-size:.7rem;font-weight:700;color:#4a5568;margin:0"><i class="fas fa-filter me-1"></i>Filtres :</label>
-                <select onchange="filterTable('op',this.value,'statut')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous statuts</option>
-                  <option value="Soumis">Soumis</option>
-                  <option value="Approuvé">Approuvé</option>
-                  <option value="En attente">En attente</option>
-                  <option value="Rejeté">Rejeté</option>
-                </select>
-                <select onchange="filterTable('op',this.value,'mode')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous modes</option>
-                  <option value="Virement">Virement</option>
-                  <option value="Chèque">Chèque</option>
-                  <option value="Espèces">Espèces</option>
-                </select>
-              </div>
-              <div class="val-bloc">
-                <div class="val-table-wrap">
-                  <table class="val-table">
-                    <thead><tr>
-                      <th>N° OP</th>
-                      <th>Bénéficiaire</th>
-                      <th>Objet du paiement</th>
-                      <th>Mode</th>
-                      <th class="text-end">Montant (FCFA)</th>
-                      <th>N° BC/Marché</th>
-                      <th>Liquidé par</th>
-                      <th>Date</th>
-                      <th class="text-center">Statut</th>
-                      <th class="text-center">Actions</th>
-                    </tr></thead>
-                    <tbody id="tbody-op"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <!-- ═══ ORDRES DE VIREMENT ═══ -->
-            <div class="val-panel" id="panel-ov">
-              <div class="val-panel-head">
-                <div class="val-panel-icon" style="background:#0d9488"><i class="fas fa-university"></i></div>
-                <div>
-                  <div class="val-panel-title">Validation des Ordres de Virement</div>
-                  <div class="val-panel-desc">Transferts bancaires soumis à la cosignature du Coordonnateur, Exercice 2026</div>
-                </div>
-                <div class="val-panel-right">
-                  <span style="font-size:.72rem;color:#64748b">Décisions : <strong>Approuvé</strong>, <strong>En attente</strong>, <strong>Rejeté</strong></span>
-                </div>
-              </div>
-              <div class="val-filters">
-                <label style="font-size:.7rem;font-weight:700;color:#4a5568;margin:0"><i class="fas fa-filter me-1"></i>Filtres :</label>
-                <select onchange="filterTable('ov',this.value,'statut')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous statuts</option>
-                  <option value="Soumis">Soumis</option>
-                  <option value="Approuvé">Approuvé</option>
-                  <option value="En attente">En attente</option>
-                  <option value="Rejeté">Rejeté</option>
-                </select>
-              </div>
-              <div class="val-bloc">
-                <div class="val-table-wrap">
-                  <table class="val-table">
-                    <thead><tr>
-                      <th>N° OV</th>
-                      <th>Banque émettrice</th>
-                      <th>Bénéficiaire</th>
-                      <th>Compte destinataire</th>
-                      <th class="text-end">Montant (FCFA)</th>
-                      <th>Réf. OP lié</th>
-                      <th>Préparé par</th>
-                      <th>Date</th>
-                      <th class="text-center">Statut</th>
-                      <th class="text-center">Actions</th>
-                    </tr></thead>
-                    <tbody id="tbody-ov"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <!-- ═══ RAPPORTS ═══ -->
-            <div class="val-panel" id="panel-rapports">
-              <div class="val-panel-head">
-                <div class="val-panel-icon" style="background:#b45309"><i class="fas fa-chart-bar"></i></div>
-                <div>
-                  <div class="val-panel-title">Validation des Rapports</div>
-                  <div class="val-panel-desc">Rapports financiers, d'activités et narratifs soumis à validation, Exercice 2026</div>
-                </div>
-                <div class="val-panel-right">
-                  <span style="font-size:.72rem;color:#64748b">Décisions : <strong>Approuvé</strong>, <strong>À revoir</strong>, <strong>Rejeté</strong></span>
-                </div>
-              </div>
-              <div class="val-filters">
-                <label style="font-size:.7rem;font-weight:700;color:#4a5568;margin:0"><i class="fas fa-filter me-1"></i>Filtres :</label>
-                <select onchange="filterTable('rapports',this.value,'statut')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous statuts</option>
-                  <option value="Soumis">Soumis</option>
-                  <option value="Approuvé">Approuvé</option>
-                  <option value="À revoir">À revoir</option>
-                  <option value="Rejeté">Rejeté</option>
-                </select>
-                <select onchange="filterTable('rapports',this.value,'type')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous types</option>
-                  <option value="Financier">Financier</option>
-                  <option value="Activités">Activités</option>
-                  <option value="Narratif">Narratif</option>
-                  <option value="Trimestriel">Trimestriel</option>
-                </select>
-              </div>
-              <div class="val-bloc">
-                <div class="val-table-wrap">
-                  <table class="val-table">
-                    <thead><tr>
-                      <th>Référence</th>
-                      <th>Intitulé du rapport</th>
-                      <th>Type</th>
-                      <th>Période</th>
-                      <th>Service auteur</th>
-                      <th>Soumis le</th>
-                      <th>Destinataire</th>
-                      <th class="text-center">Statut</th>
-                      <th class="text-center">Actions</th>
-                    </tr></thead>
-                    <tbody id="tbody-rapports"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <!-- ═══ PIÈCES JUSTIFICATIVES ═══ -->
-            <div class="val-panel" id="panel-pj">
-              <div class="val-panel-head">
-                <div class="val-panel-icon" style="background:#8b0000"><i class="fas fa-file-invoice"></i></div>
-                <div>
-                  <div class="val-panel-title">Validation des Pièces Justificatives</div>
-                  <div class="val-panel-desc">Conformité documentaire des dossiers de dépenses, Exercice 2026</div>
-                </div>
-                <div class="val-panel-right">
-                  <span style="font-size:.72rem;color:#64748b">Décisions : <strong>Conforme</strong>, <strong>À revoir</strong>, <strong>Rejeté</strong></span>
-                </div>
-              </div>
-              <div class="val-filters">
-                <label style="font-size:.7rem;font-weight:700;color:#4a5568;margin:0"><i class="fas fa-filter me-1"></i>Filtres :</label>
-                <select onchange="filterTable('pj',this.value,'statut')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous statuts</option>
-                  <option value="Soumis">Soumis</option>
-                  <option value="Conforme">Conforme</option>
-                  <option value="À revoir">À revoir</option>
-                  <option value="Rejeté">Rejeté</option>
-                </select>
-                <select onchange="filterTable('pj',this.value,'type')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous types</option>
-                  <option value="Facture">Facture</option>
-                  <option value="PV réception">PV réception</option>
-                  <option value="Contrat">Contrat</option>
-                  <option value="Justificatif mission">Justificatif mission</option>
-                </select>
-              </div>
-              <div class="val-bloc">
-                <div class="val-table-wrap">
-                  <table class="val-table">
-                    <thead><tr>
-                      <th>N° Pièce</th>
-                      <th>Libellé / Objet</th>
-                      <th>Type pièce</th>
-                      <th>Dossier lié</th>
-                      <th class="text-end">Montant (FCFA)</th>
-                      <th>Service</th>
-                      <th>Soumis le</th>
-                      <th class="text-center">Statut</th>
-                      <th class="text-center">Actions</th>
-                    </tr></thead>
-                    <tbody id="tbody-pj"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <!-- ═══ BUDGET ═══ -->
-            <div class="val-panel" id="panel-budget">
-              <div class="val-panel-head">
-                <div class="val-panel-icon" style="background:#0f766e"><i class="fas fa-balance-scale"></i></div>
-                <div>
-                  <div class="val-panel-title">Validation Budgétaire</div>
-                  <div class="val-panel-desc">Lignes budgétaires, révisions et transferts de crédits soumis à validation, Exercice 2026</div>
-                </div>
-                <div class="val-panel-right">
-                  <span style="font-size:.72rem;color:#64748b">Décisions : <strong>Approuvé</strong>, <strong>Suspendu</strong>, <strong>Rejeté</strong></span>
-                </div>
-              </div>
-              <div class="val-filters">
-                <label style="font-size:.7rem;font-weight:700;color:#4a5568;margin:0"><i class="fas fa-filter me-1"></i>Filtres :</label>
-                <select onchange="filterTable('budget',this.value,'statut')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous statuts</option>
-                  <option value="Soumis">Soumis</option>
-                  <option value="En attente">En attente</option>
-                  <option value="Approuvé">Approuvé</option>
-                  <option value="Suspendu">Suspendu</option>
-                  <option value="Rejeté">Rejeté</option>
-                </select>
-                <select onchange="filterTable('budget',this.value,'type')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous types</option>
-                  <option value="Ligne budgétaire">Ligne budgétaire</option>
-                  <option value="Révision">Révision budgétaire</option>
-                  <option value="Transfert">Transfert de crédits</option>
-                </select>
-                <select onchange="filterTable('budget',this.value,'service')" style="font-size:.76rem;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;height:28px">
-                  <option value="">Tous services</option>
-                  <option value="SAF">SAF</option><option value="SGAS">SGAS</option>
-                  <option value="APMS">APMS</option><option value="SPCG">SPCG</option>
-                  <option value="SPCH">SPCH</option><option value="SESRO">SESRO</option>
-                  <option value="SEB">SEB</option><option value="SPSAC">SPSAC</option>
-                </select>
-              </div>
-              <div class="val-bloc">
-                <div class="val-table-wrap">
-                  <table class="val-table">
-                    <thead><tr>
-                      <th>Référence</th>
-                      <th>Type</th>
-                      <th>Libellé / Objet</th>
-                      <th>Ligne budgétaire</th>
-                      <th>Source</th>
-                      <th class="text-end">Montant (FCFA)</th>
-                      <th>Service</th>
-                      <th>Soumis le</th>
-                      <th class="text-center">Statut</th>
-                      <th class="text-center">Action</th>
-                    </tr></thead>
-                    <tbody id="tbody-budget"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-          </div><!-- /panneaux -->
-        </div><!-- /val-layout -->
-      </div><!-- /valContent -->
-    </div><!-- /page-content -->
+    </div>
   </div>
-</div><!-- /app-layout -->
+</div>
 
-<!-- ═══════════════════════════════════════════════════════
-     MODAL — DÉTAIL & DÉCISION DE VALIDATION
-════════════════════════════════════════════════════════ -->
-<div class="modal fade" id="modalValidation" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+<div class="modal fade" id="modalRejet" tabindex="-1">
+  <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header" id="modalValHeader" style="padding:12px 20px;">
-        <div>
-          <h6 class="modal-title mb-0" id="modalValTitle">Validation</h6>
-          <small id="modalValRef" style="opacity:.75;font-size:.72rem">Référence —</small>
-        </div>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      <div class="modal-header modal-header-rh">
+        <h5 class="modal-title"><i class="fas fa-ban me-2"></i>Motif du rejet</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body" style="padding:20px 24px;">
-
-        <!-- Informations du dossier -->
-        <div class="val-modal-sect">
-          <div class="val-modal-sect-title"><i class="fas fa-info-circle me-1"></i>Informations du dossier</div>
-          <div id="modalValFields"></div>
+      <div class="modal-body">
+        <p class="small text-muted mb-2">Le rejet est définitif et ferme le circuit pour ce dossier. Le porteur sera notifié.</p>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Motif détaillé *</label>
+          <textarea id="rejetMotif" class="form-control form-control-sm" rows="4" placeholder="Pièce manquante, ligne budgétaire dépassée, signature non habilitée…"></textarea>
         </div>
-
-        <!-- Historique des actions -->
-        <div class="val-modal-sect">
-          <div class="val-modal-sect-title"><i class="fas fa-history me-1"></i>Historique des actions</div>
-          <div id="modalValHisto"></div>
+        <div class="text-end">
+          <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button class="btn btn-sm btn-danger" onclick="confirmerRejet()"><i class="fas fa-ban me-1"></i>Rejeter le dossier</button>
         </div>
-
-        <!-- Décision du Coordonnateur -->
-        <div class="decision-bloc" id="decisionBloc">
-          <div class="db-title"><i class="fas fa-stamp me-1"></i>Décision du Coordonnateur</div>
-          <div>
-            <label style="font-size:.76rem;font-weight:700;color:#374151;margin-bottom:4px;display:block">
-              Observation / Motif (obligatoire en cas de rejet ou de renvoi) :
-            </label>
-            <textarea id="obsInput" class="obs-textarea" placeholder="Saisir une observation, un motif de rejet, ou une instruction complémentaire…"></textarea>
-          </div>
-          <div class="decision-btns" id="decisionBtns"></div>
-        </div>
-
-      </div>
-      <div class="modal-footer" style="padding:10px 18px;">
-        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
-          <i class="fas fa-times me-1"></i>Fermer
-        </button>
       </div>
     </div>
   </div>
@@ -767,724 +259,274 @@
 <script src="../../src/js/api.js"></script>
 <script src="../../src/js/roles.js"></script>
 <script>
-  requireAuth();
-  if (typeof renderSidebarNav === 'function') renderSidebarNav('sidebarNav');
-  else if (window.SIGFIC?.renderSidebarNav) SIGFIC.renderSidebarNav('sidebarNav');
-  if (typeof renderServiceBadge === 'function') renderServiceBadge();
-  else if (window.SIGFIC?.renderServiceBadge) SIGFIC.renderServiceBadge();
+const STORAGE_KEY = 'pslsh_validation_v1';
 
-  const u = JSON.parse(localStorage.getItem('pslsh_user') || '{}');
-  const elU = document.getElementById('userName');
-  if (elU) elU.textContent = u.nom || u.name || u.email || '';
-  function logout() {
-    localStorage.removeItem('pslsh_token');
-    localStorage.removeItem('pslsh_user');
-    window.location.href = '/pages/auth/login.html';
-  }
+const ETAPES = [
+  { id:'saf',    role:'SAF',           libelle:'Conformité administrative',  detail:'Pièces, signatures, autorisations' },
+  { id:'compta', role:'Comptable',     libelle:'Disponibilité budgétaire',   detail:'Ligne, source, crédit disponible' },
+  { id:'coordo', role:'Coordonnateur', libelle:'Ordonnancement',              detail:'Signature finale et exécution'    },
+];
 
-  /* ════════════════════════════════════════════════════════════════
-     CONTRÔLE D'ACCÈS — Coordonnateur uniquement
-  ════════════════════════════════════════════════════════════════ */
-  const isCoord = (u.role === 'coordination') || (u.role === 'administrateur') || true;
-  /* En production : remplacer "|| true" par vérification stricte */
-  if (!isCoord) {
-    document.getElementById('valContent').style.display  = 'none';
-    document.getElementById('accessDenied').style.display = 'flex';
-  } else {
-    const coordLabel = u.nom || u.name || 'Dr. Coordonnateur PSLSH';
-    document.getElementById('coordName').textContent = coordLabel;
-  }
+const ROLE_TO_ETAPE = {
+  chef_service: null,
+  administrateur: 'coordo',
+  coordination:   'coordo',
+  controleur:     'compta',
+  agent:          'saf',
+};
 
-  /* ════════════════════════════════════════════════════════════════
-     DONNÉES DE VALIDATION
-  ════════════════════════════════════════════════════════════════ */
+const SERVICES = ['SAF','SGAS','SPCH','SPCG','SESRO','APMS','SEB','SPSAC','SC','SLNR'];
 
-  /* ── PAO par service ── */
-  let DATA_PAO = [
-    { id:'PAO-SAF-2026',   service:'SAF',   libelle:'PAO Exercice 2026 — Service Administratif et Financier',  activites:7,  budget:109650000,  soumis:'28/02/2026', par:'Chef SAF',   statut:'En attente',  urgence:true,  histo:[{action:'Création',par:'Chef SAF',date:'20/02/2026',col:'#64748b'},{action:'Soumission',par:'Chef SAF',date:'28/02/2026',col:'#b45309'}] },
-    { id:'PAO-SGAS-2026',  service:'SGAS',  libelle:'PAO Exercice 2026 — Service Gestion Admin. et Suivi',    activites:5,  budget:67880000,   soumis:'01/03/2026', par:'Chef SGAS',  statut:'En attente',  urgence:true,  histo:[{action:'Soumission',par:'Chef SGAS',date:'01/03/2026',col:'#b45309'}] },
-    { id:'PAO-SPCH-2026',  service:'SPCH',  libelle:'PAO Exercice 2026 — Service PEC et Charge Virale',       activites:6,  budget:84000000,   soumis:'02/03/2026', par:'Chef SPCH',  statut:'Validé',     urgence:false, histo:[{action:'Soumission',par:'Chef SPCH',date:'02/03/2026',col:'#b45309'},{action:'Validé',par:'Coordonnateur',date:'05/03/2026',col:'#15803d'}] },
-    { id:'PAO-SPCG-2026',  service:'SPCG',  libelle:'PAO Exercice 2026 — Service Prévention, Comm. & Genre',  activites:7,  budget:86500000,   soumis:'03/03/2026', par:'Chef SPCG',  statut:'À revoir',   urgence:false, histo:[{action:'Soumission',par:'Chef SPCG',date:'03/03/2026',col:'#b45309'},{action:'Renvoyé pour révision',par:'Coordonnateur',date:'08/03/2026',col:'#6d28d9'}] },
-    { id:'PAO-SESRO-2026', service:'SESRO', libelle:'PAO Exercice 2026 — Service Suivi-Éval. & Recherche',    activites:6,  budget:55592000,   soumis:'05/03/2026', par:'Chef SESRO', statut:'En attente',  urgence:false, histo:[{action:'Soumission',par:'Chef SESRO',date:'05/03/2026',col:'#b45309'}] },
-    { id:'PAO-APMS-2026',  service:'APMS',  libelle:'PAO Exercice 2026 — Approv. et Produits Médicaux Santé', activites:8,  budget:3394082858, soumis:'06/03/2026', par:'Chef APMS',  statut:'Validé',     urgence:false, histo:[{action:'Soumission',par:'Chef APMS',date:'06/03/2026',col:'#b45309'},{action:'Validé',par:'Coordonnateur',date:'10/03/2026',col:'#15803d'}] },
-    { id:'PAO-SEB-2026',   service:'SEB',   libelle:'PAO Exercice 2026 — Service Épidémiologie & Biologie',   activites:4,  budget:23200000,   soumis:'07/03/2026', par:'Chef SEB',   statut:'Rejeté',     urgence:false, histo:[{action:'Soumission',par:'Chef SEB',date:'07/03/2026',col:'#b45309'},{action:'Rejeté — Incohérence budgétaire',par:'Coordonnateur',date:'12/03/2026',col:'#b91c1c'}] },
-    { id:'PAO-SPSAC-2026', service:'SPSAC', libelle:'PAO Exercice 2026 — Service PEC Soins & Accomp. Comm.',  activites:7,  budget:48300000,   soumis:'08/03/2026', par:'Chef SPSAC', statut:'En attente',  urgence:true,  histo:[{action:'Soumission',par:'Chef SPSAC',date:'08/03/2026',col:'#b45309'}] },
-    { id:'PAO-SC-2026',    service:'SC',    libelle:'PAO Exercice 2026 — Service de Coordination',            activites:3,  budget:42000000,   soumis:'09/03/2026', par:'Chef SC',    statut:'En attente',  urgence:false, histo:[{action:'Soumission',par:'Chef SC',date:'09/03/2026',col:'#b45309'}] },
-    { id:'PAO-SLNR-2026',  service:'SLNR',  libelle:'PAO Exercice 2026 — Section Labo National de Réf.',      activites:3,  budget:14400000,   soumis:'10/03/2026', par:'Chef SLNR',  statut:'En attente',  urgence:false, histo:[{action:'Soumission',par:'Chef SLNR',date:'10/03/2026',col:'#b45309'}] },
-  ];
+const DEFAULT_DOSSIERS = [
+  { id:'EB-2026-004', type:'EB', objet:'Cartouches GeneXpert HBV Viral Load',           service:'APMS',  montant:38000000, soumis:'02/02/2026', porteur:'Chef APMS',  etape:'saf' },
+  { id:'EB-2026-005', type:'EB', objet:'Formation 80 paramédicaux délégation tâches',   service:'SPSAC', montant:35000000, soumis:'05/02/2026', porteur:'Chef SPSAC', etape:'saf' },
+  { id:'EB-2026-007', type:'EB', objet:'Tests combinés VIH/Syphilis Dual RDT',          service:'APMS',  montant:33000000, soumis:'15/02/2026', porteur:'Chef APMS',  etape:'compta' },
+  { id:'EB-2026-008', type:'EB', objet:'Construction entrepôt stockage intrants APMS',  service:'APMS',  montant:35000000, soumis:'20/02/2026', porteur:'Chef APMS',  etape:'saf' },
+  { id:'BC-2026-003', type:'BC', objet:'Gardiennage et nettoyage — contrat annuel',     service:'SAF',   montant: 6900000, soumis:'01/02/2026', porteur:'Resp. SAF',  etape:'compta' },
+  { id:'BC-2026-004', type:'BC', objet:'Achat carburant véhicules — Trim. 1 2026',      service:'SAF',   montant: 6250000, soumis:'05/02/2026', porteur:'Resp. SAF',  etape:'coordo' },
+  { id:'BC-2026-005', type:'BC', objet:'Cartouches COBAS VIH — charge virale Trim. 1',  service:'APMS',  montant:64800000, soumis:'10/02/2026', porteur:'Chef APMS',  etape:'compta' },
+  { id:'BC-2026-007', type:'BC', objet:'Kits ELISA Hépatite B et Hépatite C',           service:'APMS',  montant:22100000, soumis:'20/02/2026', porteur:'Chef APMS',  etape:'saf' },
+  { id:'OP-2026-003', type:'OP', objet:'Gardiennage Janv–Mars 2026 — réf. BC-2026-003', service:'SAF',   montant: 1725000, soumis:'05/03/2026', porteur:'Agent Compta',etape:'coordo' },
+  { id:'OP-2026-004', type:'OP', objet:'Carburant Trim.1 2026 — réf. BC-2026-004',      service:'SAF',   montant: 6250000, soumis:'10/03/2026', porteur:'Agent Compta',etape:'coordo' },
+  { id:'OP-2026-005', type:'OP', objet:'Cartouches COBAS VIH — réf. BC-2026-005',       service:'APMS',  montant:64800000, soumis:'12/03/2026', porteur:'Agent Compta',etape:'compta' },
+  { id:'OP-2026-006', type:'OP', objet:'Kits ELISA Hépatites — réf. BC-2026-007',       service:'APMS',  montant:22100000, soumis:'25/03/2026', porteur:'Agent Compta',etape:'saf' },
+  { id:'OV-2026-002', type:'OV', objet:'Virement SECURIMAX SARL — réf. OP-2026-003',    service:'SAF',   montant: 1725000, soumis:'06/03/2026', porteur:'Agent Compta',etape:'coordo' },
+  { id:'OV-2026-004', type:'OV', objet:'Virement ROCHE DIAGNOSTICS — réf. OP-2026-005', service:'APMS',  montant:64800000, soumis:'13/03/2026', porteur:'Agent Compta',etape:'compta' },
+];
 
-  /* ── Expressions de besoins ── */
-  let DATA_BESOINS = [
-    { id:'EB-2026-001', designation:'Fournitures de bureau et matériels informatiques',      service:'SAF',    nature:'Fournitures',          montant:30280000,  ligne:'L-SAF-045', soumis:'10/01/2026', statut:'Approuvé',              urgence:false, histo:[{action:'Soumission',par:'Chef SAF',date:'10/01/2026',col:'#b45309'},{action:'Approuvé',par:'Coordonnateur',date:'15/01/2026',col:'#15803d'}] },
-    { id:'EB-2026-002', designation:'Réactifs dépistage VIH — algorithme 3 tests',           service:'APMS',   nature:'Réactifs',             montant:248000000, ligne:'L-APMS-032', soumis:'15/01/2026', statut:'Approuvé',              urgence:false, histo:[{action:'Soumission',par:'Chef APMS',date:'15/01/2026',col:'#b45309'},{action:'Approuvé',par:'Coordonnateur',date:'20/01/2026',col:'#15803d'}] },
-    { id:'EB-2026-003', designation:'Service gardiennage et nettoyage locaux PSLSH',          service:'SAF',    nature:'Services',             montant:6900000,   ligne:'L-SAF-047', soumis:'20/01/2026', statut:'Entente de financement', urgence:false, histo:[{action:'Soumission',par:'Chef SAF',date:'20/01/2026',col:'#b45309'},{action:'Entente de financement demandée',par:'Coordonnateur',date:'25/01/2026',col:'#1d4ed8'}] },
-    { id:'EB-2026-004', designation:'Cartouches GeneXpert HBV Viral Load',                    service:'APMS',   nature:'Réactifs',             montant:38000000,  ligne:'L-APMS-033', soumis:'02/02/2026', statut:'En attente',            urgence:true,  histo:[{action:'Soumission',par:'Chef APMS',date:'02/02/2026',col:'#b45309'}] },
-    { id:'EB-2026-005', designation:'Formation en cascade 80 paramédicaux délégation tâches', service:'SPSAC',  nature:'Services',             montant:35000000,  ligne:'L-SPSAC-016',soumis:'05/02/2026', statut:'En attente',            urgence:true,  histo:[{action:'Soumission',par:'Chef SPSAC',date:'05/02/2026',col:'#b45309'}] },
-    { id:'EB-2026-006', designation:'Carburant véhicules et groupe électrogène',               service:'SAF',    nature:'Fournitures',          montant:25000000,  ligne:'L-SAF-044', soumis:'10/02/2026', statut:'Rejeté',                urgence:false, histo:[{action:'Soumission',par:'Chef SAF',date:'10/02/2026',col:'#b45309'},{action:'Rejeté — Justification insuffisante',par:'Coordonnateur',date:'14/02/2026',col:'#b91c1c'}] },
-    { id:'EB-2026-007', designation:'Tests combinés VIH/Syphilis Dual RDT',                    service:'APMS',   nature:'Réactifs',             montant:33000000,  ligne:'L-APMS-033', soumis:'15/02/2026', statut:'En attente',            urgence:false, histo:[{action:'Soumission',par:'Chef APMS',date:'15/02/2026',col:'#b45309'}] },
-    { id:'EB-2026-008', designation:'Construction entrepôt stockage intrants APMS',            service:'APMS',   nature:'Travaux',              montant:35000000,  ligne:'L-APMS-031', soumis:'20/02/2026', statut:'En attente',            urgence:false, histo:[{action:'Soumission',par:'Chef APMS',date:'20/02/2026',col:'#b45309'}] },
-  ];
+let _dossiers = [];
+let _showMineOnly = false;
+let _currentUserEtape = null;
+let _pendingRejet = null;
 
-  /* ── Bons de commande ── */
-  let DATA_BDC = [
-    { id:'BC-2026-001', objet:'Fournitures bureau et matériels informatiques',    fournisseur:'SOUARA COMMERCIAL',       service:'SAF',    montant:28650000,  procedure:'BC', prepare:'Resp. SAF', date:'20/01/2026', statut:'Approuvé',   urgence:false, histo:[{action:'Création',par:'SAF',date:'18/01/2026',col:'#64748b'},{action:'Soumission',par:'Resp. SAF',date:'20/01/2026',col:'#b45309'},{action:'Approuvé',par:'Coordonnateur',date:'22/01/2026',col:'#15803d'}] },
-    { id:'BC-2026-002', objet:'Réactifs dépistage VIH — HIV Determine & SD Bioline', fournisseur:'CPA — Centrale Pharm.', service:'APMS', montant:212000000, procedure:'MR', prepare:'Chef APMS', date:'25/01/2026', statut:'Approuvé',   urgence:false, histo:[{action:'Soumission',par:'Chef APMS',date:'25/01/2026',col:'#b45309'},{action:'Approuvé',par:'Coordonnateur',date:'28/01/2026',col:'#15803d'}] },
-    { id:'BC-2026-003', objet:'Service gardiennage et nettoyage — contrat 2026',   fournisseur:'SECURIMAX SARL',          service:'SAF',    montant:6900000,   procedure:'BC', prepare:'Resp. SAF', date:'01/02/2026', statut:'En attente', urgence:false, histo:[{action:'Soumission',par:'Resp. SAF',date:'01/02/2026',col:'#b45309'}] },
-    { id:'BC-2026-004', objet:'Achat carburant véhicules — Trim. 1 2026',          fournisseur:'TOTAL ENERGIES TCHAD',    service:'SAF',    montant:6250000,   procedure:'BC', prepare:'Resp. SAF', date:'05/02/2026', statut:'Soumis',     urgence:true,  histo:[{action:'Soumission',par:'Resp. SAF',date:'05/02/2026',col:'#b45309'}] },
-    { id:'BC-2026-005', objet:'Cartouches COBAS VIH — charge virale Trim. 1',     fournisseur:'ROCHE DIAGNOSTICS',       service:'APMS',   montant:64800000,  procedure:'MR', prepare:'Chef APMS', date:'10/02/2026', statut:'Soumis',     urgence:true,  histo:[{action:'Soumission',par:'Chef APMS',date:'10/02/2026',col:'#b45309'}] },
-    { id:'BC-2026-006', objet:'Formation formateurs modules PEC Nutrition',        fournisseur:'FORMATEURS INDEPENDANTS', service:'SC',     montant:7000000,   procedure:'BC', prepare:'Chef SC',   date:'15/02/2026', statut:'Rejeté',     urgence:false, histo:[{action:'Soumission',par:'Chef SC',date:'15/02/2026',col:'#b45309'},{action:'Rejeté — PJ manquantes',par:'Coordonnateur',date:'18/02/2026',col:'#b91c1c'}] },
-    { id:'BC-2026-007', objet:'Kits ELISA Hépatite B et Hépatite C',              fournisseur:'BIORAD / DIASORIN',       service:'APMS',   montant:22100000,  procedure:'MR', prepare:'Chef APMS', date:'20/02/2026', statut:'Soumis',     urgence:false, histo:[{action:'Soumission',par:'Chef APMS',date:'20/02/2026',col:'#b45309'}] },
-  ];
-
-  /* ── Ordres de paiement ── */
-  let DATA_OP = [
-    { id:'OP-2026-001', beneficiaire:'SOUARA COMMERCIAL',       objet:'Fournitures bureau — BC-2026-001',         mode:'Chèque',   montant:28650000,  ref_bc:'BC-2026-001', liquidePar:'Agent Comptable', date:'25/01/2026', statut:'Approuvé',   urgence:false, histo:[{action:'Liquidation',par:'Agent Comptable',date:'23/01/2026',col:'#64748b'},{action:'Soumission OP',par:'Agent Comptable',date:'25/01/2026',col:'#b45309'},{action:'Approuvé',par:'Coordonnateur',date:'27/01/2026',col:'#15803d'}] },
-    { id:'OP-2026-002', beneficiaire:'CPA — Centrale Pharmaceutique', objet:'Réactifs VIH — BC-2026-002 — Acompte 50%', mode:'Virement', montant:106000000, ref_bc:'BC-2026-002', liquidePar:'Agent Comptable', date:'30/01/2026', statut:'Approuvé',   urgence:false, histo:[{action:'Liquidation',par:'Agent Comptable',date:'28/01/2026',col:'#64748b'},{action:'Soumission OP',par:'Agent Comptable',date:'30/01/2026',col:'#b45309'},{action:'Approuvé',par:'Coordonnateur',date:'31/01/2026',col:'#15803d'}] },
-    { id:'OP-2026-003', beneficiaire:'SECURIMAX SARL',          objet:'Gardiennage Janv–Mars 2026 — BC-2026-003',  mode:'Virement', montant:1725000,   ref_bc:'BC-2026-003', liquidePar:'Agent Comptable', date:'05/03/2026', statut:'Soumis',     urgence:true,  histo:[{action:'Soumission OP',par:'Agent Comptable',date:'05/03/2026',col:'#b45309'}] },
-    { id:'OP-2026-004', beneficiaire:'TOTAL ENERGIES TCHAD',    objet:'Carburant Trim.1 2026 — BC-2026-004',       mode:'Chèque',   montant:6250000,   ref_bc:'BC-2026-004', liquidePar:'Agent Comptable', date:'10/03/2026', statut:'Soumis',     urgence:true,  histo:[{action:'Soumission OP',par:'Agent Comptable',date:'10/03/2026',col:'#b45309'}] },
-    { id:'OP-2026-005', beneficiaire:'ROCHE DIAGNOSTICS',       objet:'Cartouches COBAS VIH — BC-2026-005',        mode:'Virement', montant:64800000,  ref_bc:'BC-2026-005', liquidePar:'Agent Comptable', date:'12/03/2026', statut:'En attente', urgence:false, histo:[{action:'Liquidation partielle',par:'Agent Comptable',date:'11/03/2026',col:'#64748b'},{action:'Soumission OP',par:'Agent Comptable',date:'12/03/2026',col:'#b45309'}] },
-    { id:'OP-2026-006', beneficiaire:'BIORAD / DIASORIN',       objet:'Kits ELISA Hépatites — BC-2026-007',        mode:'Virement', montant:22100000,  ref_bc:'BC-2026-007', liquidePar:'Agent Comptable', date:'25/03/2026', statut:'Soumis',     urgence:false, histo:[{action:'Soumission OP',par:'Agent Comptable',date:'25/03/2026',col:'#b45309'}] },
-  ];
-
-  /* ── Ordres de virement ── */
-  let DATA_OV = [
-    { id:'OV-2026-001', banque:'BCC — Banque Comm. du Tchad', beneficiaire:'CPA',              compte:'TCH-014-22001-00456',  montant:106000000, ref_op:'OP-2026-002', prepare:'Agent Comptable', date:'31/01/2026', statut:'Approuvé',   urgence:false, histo:[{action:'Soumission',par:'Agent Comptable',date:'31/01/2026',col:'#b45309'},{action:'Cosigné & Approuvé',par:'Coordonnateur + AC',date:'01/02/2026',col:'#15803d'}] },
-    { id:'OV-2026-002', banque:'BCC — Banque Comm. du Tchad', beneficiaire:'SECURIMAX SARL',   compte:'TCH-014-18009-01122',  montant:1725000,   ref_op:'OP-2026-003', prepare:'Agent Comptable', date:'06/03/2026', statut:'Soumis',     urgence:true,  histo:[{action:'Soumission',par:'Agent Comptable',date:'06/03/2026',col:'#b45309'}] },
-    { id:'OV-2026-003', banque:'ECOBANK TCHAD',               beneficiaire:'TOTAL ENERGIES',   compte:'TCH-033-12045-00789',  montant:6250000,   ref_op:'OP-2026-004', prepare:'Agent Comptable', date:'11/03/2026', statut:'Soumis',     urgence:true,  histo:[{action:'Soumission',par:'Agent Comptable',date:'11/03/2026',col:'#b45309'}] },
-    { id:'OV-2026-004', banque:'BCC — Banque Comm. du Tchad', beneficiaire:'ROCHE DIAGNOSTICS',compte:'TCH-014-22011-04561',  montant:64800000,  ref_op:'OP-2026-005', prepare:'Agent Comptable', date:'13/03/2026', statut:'En attente', urgence:false, histo:[{action:'Soumission',par:'Agent Comptable',date:'13/03/2026',col:'#b45309'}] },
-    { id:'OV-2026-005', banque:'ECOBANK TCHAD',               beneficiaire:'BIORAD',           compte:'TCH-033-12045-01890',  montant:22100000,  ref_op:'OP-2026-006', prepare:'Agent Comptable', date:'26/03/2026', statut:'Soumis',     urgence:false, histo:[{action:'Soumission',par:'Agent Comptable',date:'26/03/2026',col:'#b45309'}] },
-  ];
-
-  /* ── Rapports ── */
-  let DATA_RAPPORTS = [
-    { id:'RPT-2026-001', titre:'Rapport financier trimestriel T4-2025',          type:'Financier',    periode:'Oct–Déc 2025',  service:'SAF',    soumis:'15/01/2026', dest:'PTF / Tutelle',  statut:'Approuvé',  urgence:false, histo:[{action:'Soumission',par:'Chef SAF',date:'15/01/2026',col:'#b45309'},{action:'Approuvé',par:'Coordonnateur',date:'20/01/2026',col:'#15803d'}] },
-    { id:'RPT-2026-002', titre:'Rapport d\'activités annuel 2025 — PSLSH/IST',  type:'Activités',    periode:'2025',          service:'SESRO',   soumis:'20/01/2026', dest:'Ministère / PTF', statut:'À revoir',  urgence:false, histo:[{action:'Soumission',par:'Chef SESRO',date:'20/01/2026',col:'#b45309'},{action:'Renvoyé — Données incomplètes',par:'Coordonnateur',date:'28/01/2026',col:'#6d28d9'}] },
-    { id:'RPT-2026-003', titre:'Rapport narratif T1-2026 — Programme VIH',       type:'Narratif',     periode:'Jan–Mar 2026',  service:'SESRO',   soumis:'05/04/2026', dest:'Fond Mondial',   statut:'Soumis',    urgence:true,  histo:[{action:'Soumission',par:'Chef SESRO',date:'05/04/2026',col:'#b45309'}] },
-    { id:'RPT-2026-004', titre:'Rapport trimestriel stock & approvisionnement',  type:'Trimestriel',  periode:'T1-2026',       service:'APMS',    soumis:'05/04/2026', dest:'Coordination',   statut:'Soumis',    urgence:true,  histo:[{action:'Soumission',par:'Chef APMS',date:'05/04/2026',col:'#b45309'}] },
-    { id:'RPT-2026-005', titre:'Rapport suivi indicateurs VIH — T1-2026',        type:'Activités',    periode:'T1-2026',       service:'SESRO',   soumis:'05/04/2026', dest:'Coordination',   statut:'Soumis',    urgence:false, histo:[{action:'Soumission',par:'Chef SESRO',date:'05/04/2026',col:'#b45309'}] },
-  ];
-
-  /* ── Pièces justificatives ── */
-  let DATA_PJ = [
-    { id:'PJ-2026-001', libelle:'Facture fournitures bureau — SOUARA COMMERCIAL',  type:'Facture',             dossier:'BC-2026-001', montant:28650000, service:'SAF',    soumis:'24/01/2026', statut:'Conforme',  urgence:false, histo:[{action:'Soumission',par:'Agent SAF',date:'24/01/2026',col:'#b45309'},{action:'Conforme',par:'Coordonnateur',date:'26/01/2026',col:'#15803d'}] },
-    { id:'PJ-2026-002', libelle:'PV de réception réactifs VIH — CPA',              type:'PV réception',        dossier:'BC-2026-002', montant:212000000, service:'APMS',  soumis:'29/01/2026', statut:'Conforme',  urgence:false, histo:[{action:'Soumission',par:'Chef APMS',date:'29/01/2026',col:'#b45309'},{action:'Conforme',par:'Coordonnateur',date:'30/01/2026',col:'#15803d'}] },
-    { id:'PJ-2026-003', libelle:'Contrat gardiennage SECURIMAX 2026',               type:'Contrat',             dossier:'BC-2026-003', montant:6900000,  service:'SAF',    soumis:'03/02/2026', statut:'Soumis',    urgence:false, histo:[{action:'Soumission',par:'Resp. SAF',date:'03/02/2026',col:'#b45309'}] },
-    { id:'PJ-2026-004', libelle:'Facture carburant T1-2026 — Total Energies',       type:'Facture',             dossier:'BC-2026-004', montant:6250000,  service:'SAF',    soumis:'08/03/2026', statut:'Soumis',    urgence:true,  histo:[{action:'Soumission',par:'Agent SAF',date:'08/03/2026',col:'#b45309'}] },
-    { id:'PJ-2026-005', libelle:'Rapport de mission formation SPSAC — 4 pools',    type:'Justificatif mission', dossier:'EB-2026-005', montant:35000000, service:'SPSAC',  soumis:'15/03/2026', statut:'À revoir',  urgence:false, histo:[{action:'Soumission',par:'Chef SPSAC',date:'15/03/2026',col:'#b45309'},{action:'Renvoyé — Liste participants manquante',par:'Coordonnateur',date:'20/03/2026',col:'#6d28d9'}] },
-    { id:'PJ-2026-006', libelle:'PV de réception cartouches COBAS — Roche',        type:'PV réception',        dossier:'BC-2026-005', montant:64800000, service:'APMS',   soumis:'28/03/2026', statut:'Soumis',    urgence:true,  histo:[{action:'Soumission',par:'Chef APMS',date:'28/03/2026',col:'#b45309'}] },
-    { id:'PJ-2026-007', libelle:'Facture Kits ELISA Hépatites — Biorad DiaSorin',  type:'Facture',             dossier:'BC-2026-007', montant:22100000, service:'APMS',   soumis:'01/04/2026', statut:'Soumis',    urgence:false, histo:[{action:'Soumission',par:'Chef APMS',date:'01/04/2026',col:'#b45309'}] },
-  ];
-
-  /* ── Budget ── */
-  let DATA_BUDGET = [
-    { id:'BUD-2026-001', type:'Ligne budgétaire', libelle:'Création ligne — Achat incinérateur moderne APMS',
-      ligne:'L-APMS-030', source:'Etat', montant:26240000, service:'APMS',
-      prepare:'Chef APMS', soumis:'15/01/2026', statut:'Approuvé', urgence:false,
-      note:'Nouvelle ligne créée suite au PAO validé.',
-      histo:[{action:'Soumission',par:'Chef APMS',date:'15/01/2026',col:'#b45309'},
-             {action:'Approuvé — Ligne créée',par:'Coordonnateur',date:'18/01/2026',col:'#15803d'}] },
-    { id:'BUD-2026-002', type:'Révision', libelle:'Révision à la hausse — réactifs hépatites B (+14 M FCFA)',
-      ligne:'L-APMS-033', source:'Etat', montant:14000000, montant_initial:38000000, montant_revise:52000000,
-      service:'APMS', prepare:'SAF / APMS', soumis:'20/01/2026', statut:'Approuvé', urgence:false,
-      note:'Hausse liée à l\'augmentation du prix fournisseur.',
-      histo:[{action:'Soumission',par:'Chef APMS',date:'20/01/2026',col:'#b45309'},
-             {action:'Approuvé — Crédit révisé',par:'Coordonnateur',date:'24/01/2026',col:'#15803d'}] },
-    { id:'BUD-2026-003', type:'Transfert', libelle:'Virement L-SAF-044 → L-SAF-045 — arbitrage carburant/fournitures',
-      ligne:'L-SAF-044 → L-SAF-045', source:'Etat', montant:5000000, service:'SAF',
-      prepare:'Chef SAF', soumis:'01/02/2026', statut:'En attente', urgence:true,
-      note:'Besoin en fournitures plus important que prévu au T1.',
-      histo:[{action:'Soumission',par:'Chef SAF',date:'01/02/2026',col:'#b45309'}] },
-    { id:'BUD-2026-004', type:'Ligne budgétaire', libelle:'Création ligne — Transport intrants vers PPA (2e semestre)',
-      ligne:'L-APMS-056', source:'Etat', montant:5000000, service:'APMS',
-      prepare:'Chef APMS', soumis:'05/02/2026', statut:'Soumis', urgence:false,
-      note:'Ligne non inscrite initialement dans le PAO.',
-      histo:[{action:'Soumission',par:'Chef APMS',date:'05/02/2026',col:'#b45309'}] },
-    { id:'BUD-2026-005', type:'Révision', libelle:'Révision à la baisse — formation à l\'étranger SAF (-4 M FCFA)',
-      ligne:'L-SAF-049', source:'Etat', montant:-4000000, montant_initial:17400000, montant_revise:13400000,
-      service:'SAF', prepare:'Chef SAF', soumis:'10/02/2026', statut:'Soumis', urgence:false,
-      note:'Réduction du nombre de participants à la formation.',
-      histo:[{action:'Soumission',par:'Chef SAF',date:'10/02/2026',col:'#b45309'}] },
-    { id:'BUD-2026-006', type:'Transfert', libelle:'Virement L-SPSAC-016 → L-SPSAC-019 — arbitrage formation/campagne',
-      ligne:'L-SPSAC-016 → L-SPSAC-019', source:'OMS', montant:8000000, service:'SPSAC',
-      prepare:'Chef SPSAC', soumis:'15/02/2026', statut:'Rejeté', urgence:false,
-      note:'Rejet — le crédit OMS ne peut pas être transféré hors de sa ligne d\'origine.',
-      histo:[{action:'Soumission',par:'Chef SPSAC',date:'15/02/2026',col:'#b45309'},
-             {action:'Rejeté — Non conforme règles bailleur OMS',par:'Coordonnateur',date:'18/02/2026',col:'#b91c1c'}] },
-    { id:'BUD-2026-007', type:'Révision', libelle:'Révision à la hausse — connexion internet mensuelle VIH',
-      ligne:'L-SESRO-005', source:'ETAT/FM', montant:2500000, montant_initial:10000000, montant_revise:12500000,
-      service:'SESRO', prepare:'Chef SESRO', soumis:'20/02/2026', statut:'Suspendu', urgence:false,
-      note:'Suspendu — en attente accord Fond Mondial pour révision sur fonds FM.',
-      histo:[{action:'Soumission',par:'Chef SESRO',date:'20/02/2026',col:'#b45309'},
-             {action:'Suspendu — Accord FM requis',par:'Coordonnateur',date:'22/02/2026',col:'#b45309'}] },
-    { id:'BUD-2026-008', type:'Ligne budgétaire', libelle:'Création ligne — Achat performance cible CV supprimée T2',
-      ligne:'L-SPCH-038-B', source:'Etat', montant:15000000, service:'SPCH',
-      prepare:'Chef SPCH', soumis:'01/03/2026', statut:'En attente', urgence:true,
-      note:'Extension du mécanisme d\'achat de performance au T2.',
-      histo:[{action:'Soumission',par:'Chef SPCH',date:'01/03/2026',col:'#b45309'}] },
-    { id:'BUD-2026-009', type:'Transfert', libelle:'Virement L-SGAS-006 → L-SGAS-050 — consultant AT vers conférences',
-      ligne:'L-SGAS-006 → L-SGAS-050', source:'Etat', montant:3000000, service:'SGAS',
-      prepare:'Chef SGAS', soumis:'10/03/2026', statut:'Soumis', urgence:false,
-      note:'Redéploiement partiel suite à résiliation contrat consultant.',
-      histo:[{action:'Soumission',par:'Chef SGAS',date:'10/03/2026',col:'#b45309'}] },
-    { id:'BUD-2026-010', type:'Révision', libelle:'Révision dotation carburant — APMS T2 et T3 (+3 M FCFA)',
-      ligne:'L-SAF-044', source:'Etat', montant:3000000, montant_initial:25000000, montant_revise:28000000,
-      service:'SAF', prepare:'Chef SAF', soumis:'28/03/2026', statut:'Soumis', urgence:false,
-      note:'Hausse prix carburant — révision nécessaire pour couvrir les besoins T2-T3.',
-      histo:[{action:'Soumission',par:'Chef SAF',date:'28/03/2026',col:'#b45309'}] },
-  ];
-
-  /* ════════════════════════════════════════════════════════════════
-     HELPERS
-  ════════════════════════════════════════════════════════════════ */
-  function fmtN(n) { return n ? Math.round(n).toLocaleString('fr-FR') : '0'; }
-  function urgBadge(u) { return u ? '<span style="background:#fef3c7;color:#b45309;font-size:.62rem;font-weight:700;border-radius:4px;padding:1px 6px;white-space:nowrap"><i class="fas fa-exclamation"></i> Urgent</span>' : ''; }
-
-  function statutBadge(s) {
-    const m = {
-      'Validé':'s-valid', 'Approuvé':'s-valid', 'Conforme':'s-conf',
-      'Rejeté':'s-rej',
-      'À revoir':'s-rev',
-      'En attente':'s-pend', 'Soumis':'s-pend',
-      'Entente de financement':'s-ent',
-    };
-    return `<span class="${m[s] || 's-att'}">${s}</span>`;
-  }
-
-  /* ════════════════════════════════════════════════════════════════
-     NAVIGATION ENTRE PANNEAUX
-  ════════════════════════════════════════════════════════════════ */
-  function showPanel(id) {
-    document.querySelectorAll('.val-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.val-menu-item').forEach(m => m.classList.remove('active'));
-    document.getElementById('panel-' + id).classList.add('active');
-    document.getElementById('menu-' + id).classList.add('active');
-    renderPanel(id);
-  }
-
-  /* ════════════════════════════════════════════════════════════════
-     RENDU DES TABLES
-  ════════════════════════════════════════════════════════════════ */
-  const PANELS = {
-    pao:      { data: () => DATA_PAO,      render: renderPAO      },
-    besoins:  { data: () => DATA_BESOINS,  render: renderBesoins  },
-    bdc:      { data: () => DATA_BDC,      render: renderBDC      },
-    op:       { data: () => DATA_OP,       render: renderOP       },
-    ov:       { data: () => DATA_OV,       render: renderOV       },
-    rapports: { data: () => DATA_RAPPORTS, render: renderRapports },
-    pj:       { data: () => DATA_PJ,       render: renderPJ       },
-    budget:   { data: () => DATA_BUDGET,   render: renderBudget   },
-  };
-
-  let _filters = {};
-
-  function renderPanel(id) {
-    _filters[id] = _filters[id] || {};
-    PANELS[id].render(_filters[id]);
-  }
-
-  function filterTable(panel, val, key) {
-    _filters[panel] = _filters[panel] || {};
-    _filters[panel][key] = val;
-    renderPanel(panel);
-  }
-
-  function applyF(data, filters) {
-    return data.filter(r => {
-      for (const [k, v] of Object.entries(filters)) {
-        if (v && r[k] && r[k] !== v) return false;
-      }
-      return true;
-    });
-  }
-
-  /* ── PAO ── */
-  function renderPAO(f) {
-    const data = applyF(DATA_PAO, f);
-    const tbody = document.getElementById('tbody-pao');
-    if (!data.length) { tbody.innerHTML = `<tr><td colspan="9" class="no-rows"><i class="fas fa-inbox me-2"></i>Aucun PAO correspondant</td></tr>`; return; }
-    tbody.innerHTML = data.map(r => `<tr>
-      <td><code style="font-size:.72rem;font-weight:700;color:#1b2f52">${r.id}</code> ${urgBadge(r.urgence)}</td>
-      <td><span style="background:#1b2f52;color:#fff;font-size:.65rem;font-weight:700;border-radius:4px;padding:2px 7px">${r.service}</span></td>
-      <td style="max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.libelle}">${r.libelle}</td>
-      <td class="text-center mono">${r.activites}</td>
-      <td class="text-end mono">${fmtN(r.budget)}</td>
-      <td style="font-size:.73rem;color:#64748b">${r.soumis}</td>
-      <td style="font-size:.73rem">${r.par}</td>
-      <td class="text-center">${statutBadge(r.statut)}</td>
-      <td class="text-center" style="white-space:nowrap">
-        <button class="btn-val btn-view me-1" onclick="openModal('pao','${r.id}')"><i class="fas fa-eye"></i></button>
-      </td>
-    </tr>`).join('');
-  }
-
-  /* ── Besoins ── */
-  function renderBesoins(f) {
-    const data = applyF(DATA_BESOINS, f);
-    const tbody = document.getElementById('tbody-besoins');
-    if (!data.length) { tbody.innerHTML = `<tr><td colspan="9" class="no-rows"><i class="fas fa-inbox me-2"></i>Aucune expression de besoin</td></tr>`; return; }
-    tbody.innerHTML = data.map(r => `<tr>
-      <td><code style="font-size:.72rem;font-weight:700;color:#1b2f52">${r.id}</code> ${urgBadge(r.urgence)}</td>
-      <td style="max-width:200px;font-size:.74rem" title="${r.designation}">${r.designation}</td>
-      <td><span style="background:#1b2f52;color:#fff;font-size:.65rem;font-weight:700;border-radius:4px;padding:2px 7px">${r.service}</span></td>
-      <td><span style="font-size:.68rem;background:#f1f5f9;color:#374151;border-radius:4px;padding:2px 6px">${r.nature}</span></td>
-      <td class="text-end mono">${fmtN(r.montant)}</td>
-      <td style="font-size:.71rem;color:#64748b">${r.ligne}</td>
-      <td style="font-size:.73rem;color:#64748b">${r.soumis}</td>
-      <td class="text-center">${statutBadge(r.statut)}</td>
-      <td class="text-center">
-        <button class="btn-val btn-view" onclick="openModal('besoins','${r.id}')"><i class="fas fa-eye"></i></button>
-      </td>
-    </tr>`).join('');
-  }
-
-  /* ── BDC ── */
-  function renderBDC(f) {
-    const data = applyF(DATA_BDC, f);
-    const tbody = document.getElementById('tbody-bdc');
-    if (!data.length) { tbody.innerHTML = `<tr><td colspan="10" class="no-rows"><i class="fas fa-inbox me-2"></i>Aucun bon de commande</td></tr>`; return; }
-    tbody.innerHTML = data.map(r => `<tr>
-      <td><code style="font-size:.72rem;font-weight:700;color:#1b2f52">${r.id}</code> ${urgBadge(r.urgence)}</td>
-      <td style="max-width:200px;font-size:.74rem">${r.objet}</td>
-      <td style="font-size:.73rem">${r.fournisseur}</td>
-      <td><span style="background:#1b2f52;color:#fff;font-size:.65rem;font-weight:700;border-radius:4px;padding:2px 7px">${r.service}</span></td>
-      <td class="text-end mono">${fmtN(r.montant)}</td>
-      <td><span style="font-size:.67rem;font-weight:700;padding:2px 7px;border-radius:4px;${r.procedure==='BC'?'background:#dbeafe;color:#1d4ed8':'background:#fdf4ff;color:#7e22ce'}">${r.procedure}</span></td>
-      <td style="font-size:.73rem">${r.prepare}</td>
-      <td style="font-size:.73rem;color:#64748b">${r.date}</td>
-      <td class="text-center">${statutBadge(r.statut)}</td>
-      <td class="text-center">
-        <button class="btn-val btn-view" onclick="openModal('bdc','${r.id}')"><i class="fas fa-eye"></i></button>
-      </td>
-    </tr>`).join('');
-  }
-
-  /* ── OP ── */
-  function renderOP(f) {
-    const data = applyF(DATA_OP, f);
-    const tbody = document.getElementById('tbody-op');
-    if (!data.length) { tbody.innerHTML = `<tr><td colspan="10" class="no-rows"><i class="fas fa-inbox me-2"></i>Aucun ordre de paiement</td></tr>`; return; }
-    tbody.innerHTML = data.map(r => `<tr>
-      <td><code style="font-size:.72rem;font-weight:700;color:#1b2f52">${r.id}</code> ${urgBadge(r.urgence)}</td>
-      <td style="font-size:.73rem">${r.beneficiaire}</td>
-      <td style="max-width:180px;font-size:.73rem">${r.objet}</td>
-      <td><span style="font-size:.68rem;background:#f1f5f9;border-radius:4px;padding:2px 6px">${r.mode}</span></td>
-      <td class="text-end mono"><strong>${fmtN(r.montant)}</strong></td>
-      <td><code style="font-size:.7rem;color:#1d4ed8">${r.ref_bc}</code></td>
-      <td style="font-size:.73rem">${r.liquidePar}</td>
-      <td style="font-size:.73rem;color:#64748b">${r.date}</td>
-      <td class="text-center">${statutBadge(r.statut)}</td>
-      <td class="text-center">
-        <button class="btn-val btn-view" onclick="openModal('op','${r.id}')"><i class="fas fa-eye"></i></button>
-      </td>
-    </tr>`).join('');
-  }
-
-  /* ── OV ── */
-  function renderOV(f) {
-    const data = applyF(DATA_OV, f);
-    const tbody = document.getElementById('tbody-ov');
-    if (!data.length) { tbody.innerHTML = `<tr><td colspan="10" class="no-rows"><i class="fas fa-inbox me-2"></i>Aucun ordre de virement</td></tr>`; return; }
-    tbody.innerHTML = data.map(r => `<tr>
-      <td><code style="font-size:.72rem;font-weight:700;color:#1b2f52">${r.id}</code> ${urgBadge(r.urgence)}</td>
-      <td style="font-size:.73rem">${r.banque}</td>
-      <td style="font-size:.73rem">${r.beneficiaire}</td>
-      <td style="font-size:.68rem;font-family:monospace;color:#64748b">${r.compte}</td>
-      <td class="text-end mono"><strong>${fmtN(r.montant)}</strong></td>
-      <td><code style="font-size:.7rem;color:#7c3aed">${r.ref_op}</code></td>
-      <td style="font-size:.73rem">${r.prepare}</td>
-      <td style="font-size:.73rem;color:#64748b">${r.date}</td>
-      <td class="text-center">${statutBadge(r.statut)}</td>
-      <td class="text-center">
-        <button class="btn-val btn-view" onclick="openModal('ov','${r.id}')"><i class="fas fa-eye"></i></button>
-      </td>
-    </tr>`).join('');
-  }
-
-  /* ── Rapports ── */
-  function renderRapports(f) {
-    const data = applyF(DATA_RAPPORTS, f);
-    const tbody = document.getElementById('tbody-rapports');
-    if (!data.length) { tbody.innerHTML = `<tr><td colspan="9" class="no-rows"><i class="fas fa-inbox me-2"></i>Aucun rapport</td></tr>`; return; }
-    tbody.innerHTML = data.map(r => `<tr>
-      <td><code style="font-size:.72rem;font-weight:700;color:#1b2f52">${r.id}</code> ${urgBadge(r.urgence)}</td>
-      <td style="max-width:220px;font-size:.74rem">${r.titre}</td>
-      <td><span style="font-size:.68rem;background:#f1f5f9;border-radius:4px;padding:2px 6px">${r.type}</span></td>
-      <td style="font-size:.73rem;color:#64748b">${r.periode}</td>
-      <td><span style="background:#1b2f52;color:#fff;font-size:.65rem;font-weight:700;border-radius:4px;padding:2px 7px">${r.service}</span></td>
-      <td style="font-size:.73rem;color:#64748b">${r.soumis}</td>
-      <td style="font-size:.73rem">${r.dest}</td>
-      <td class="text-center">${statutBadge(r.statut)}</td>
-      <td class="text-center">
-        <button class="btn-val btn-view" onclick="openModal('rapports','${r.id}')"><i class="fas fa-eye"></i></button>
-      </td>
-    </tr>`).join('');
-  }
-
-  /* ── PJ ── */
-  function renderPJ(f) {
-    const data = applyF(DATA_PJ, f);
-    const tbody = document.getElementById('tbody-pj');
-    if (!data.length) { tbody.innerHTML = `<tr><td colspan="9" class="no-rows"><i class="fas fa-inbox me-2"></i>Aucune pièce justificative</td></tr>`; return; }
-    tbody.innerHTML = data.map(r => `<tr>
-      <td><code style="font-size:.72rem;font-weight:700;color:#1b2f52">${r.id}</code> ${urgBadge(r.urgence)}</td>
-      <td style="max-width:220px;font-size:.74rem">${r.libelle}</td>
-      <td><span style="font-size:.68rem;background:#f1f5f9;border-radius:4px;padding:2px 6px">${r.type}</span></td>
-      <td><code style="font-size:.7rem;color:#1d4ed8">${r.dossier}</code></td>
-      <td class="text-end mono">${fmtN(r.montant)}</td>
-      <td><span style="background:#1b2f52;color:#fff;font-size:.65rem;font-weight:700;border-radius:4px;padding:2px 7px">${r.service}</span></td>
-      <td style="font-size:.73rem;color:#64748b">${r.soumis}</td>
-      <td class="text-center">${statutBadge(r.statut)}</td>
-      <td class="text-center">
-        <button class="btn-val btn-view" onclick="openModal('pj','${r.id}')"><i class="fas fa-eye"></i></button>
-      </td>
-    </tr>`).join('');
-  }
-
-  /* ── Budget ── */
-  function renderBudget(f) {
-    const data = applyF(DATA_BUDGET, f);
-    const tbody = document.getElementById('tbody-budget');
-    if (!data.length) {
-      tbody.innerHTML = `<tr><td colspan="10" class="no-rows"><i class="fas fa-inbox me-2"></i>Aucune opération budgétaire correspondante</td></tr>`;
-      return;
-    }
-    tbody.innerHTML = data.map(r => {
-      const typeColor = r.type === 'Ligne budgétaire' ? '#dbeafe;color:#1d4ed8'
-                      : r.type === 'Révision'         ? '#fdf4ff;color:#7e22ce'
-                      : '#fef3c7;color:#b45309';
-      const mtSigne = r.montant >= 0 ? fmtN(r.montant) : '<span style="color:#b91c1c">' + fmtN(r.montant) + '</span>';
-      return `<tr>
-        <td><code style="font-size:.72rem;font-weight:700;color:#1b2f52">${r.id}</code> ${urgBadge(r.urgence)}</td>
-        <td><span style="font-size:.66rem;font-weight:700;padding:2px 8px;border-radius:5px;white-space:nowrap;background:${typeColor}">${r.type}</span></td>
-        <td style="max-width:220px;font-size:.74rem" title="${r.libelle}">${r.libelle}</td>
-        <td><code style="font-size:.68rem;color:#0f766e">${r.ligne}</code></td>
-        <td><span style="font-size:.66rem;background:#f1f5f9;border-radius:4px;padding:2px 6px">${r.source}</span></td>
-        <td class="text-end mono">${mtSigne}</td>
-        <td><span style="background:#1b2f52;color:#fff;font-size:.65rem;font-weight:700;border-radius:4px;padding:2px 7px">${r.service}</span></td>
-        <td style="font-size:.73rem;color:#64748b">${r.soumis}</td>
-        <td class="text-center">${statutBadgeBudget(r.statut)}</td>
-        <td class="text-center">
-          <button class="btn-val btn-view" onclick="openModal('budget','${r.id}')"><i class="fas fa-eye"></i></button>
-        </td>
-      </tr>`;
-    }).join('');
-  }
-
-  function statutBadgeBudget(s) {
-    const m = {
-      'Approuvé':   's-valid',
-      'Rejeté':     's-rej',
-      'Suspendu':   's-rev',
-      'En attente': 's-pend',
-      'Soumis':     's-pend',
-    };
-    return `<span class="${m[s] || 's-att'}">${s}</span>`;
-  }
-
-  /* ════════════════════════════════════════════════════════════════
-     BADGES COMPTEURS MENU
-  ════════════════════════════════════════════════════════════════ */
-  const EN_ATTENTE = ['En attente','Soumis'];
-
-  function updateBadges() {
-    const all = {
-      pao:      DATA_PAO,
-      besoins:  DATA_BESOINS,
-      bdc:      DATA_BDC,
-      op:       DATA_OP,
-      ov:       DATA_OV,
-      rapports: DATA_RAPPORTS,
-      pj:       DATA_PJ,
-      budget:   DATA_BUDGET,
-    };
-    let totalPend = 0, totalVal = 0, totalUrg = 0;
-    Object.entries(all).forEach(([key, arr]) => {
-      const pend = arr.filter(r => EN_ATTENTE.includes(r.statut)).length;
-      const el = document.getElementById('badge-' + key);
-      if (el) {
-        el.textContent = pend;
-        el.classList.toggle('zero', pend === 0);
-      }
-      totalPend += pend;
-      totalVal  += arr.filter(r => ['Validé','Approuvé','Conforme'].includes(r.statut)).length;
-      totalUrg  += arr.filter(r => r.urgence && EN_ATTENTE.includes(r.statut)).length;
-    });
-    document.getElementById('kpiTotal').textContent   = totalPend;
-    document.getElementById('kpiValides').textContent = totalVal;
-    document.getElementById('kpiUrgents').textContent = totalUrg;
-  }
-
-  /* ════════════════════════════════════════════════════════════════
-     MODAL DÉTAIL & DÉCISION
-  ════════════════════════════════════════════════════════════════ */
-  let _modalType = null, _modalId = null;
-
-  const MODAL_CFG = {
-    pao: {
-      color:'#1b3a6b', icon:'fa-project-diagram', title:'Validation du PAO par Service',
-      fields: r => [
-        ['Référence', r.id], ['Service', r.service], ['Libellé', r.libelle],
-        ['Activités', r.activites + ' activités'], ['Budget prévu', fmtN(r.budget) + ' FCFA'],
-        ['Soumis le', r.soumis], ['Soumis par', r.par], ['Statut actuel', r.statut],
-      ],
-      decisions: [
-        { label:'Valider', icon:'fa-check-circle', cls:'db-approve', newStatut:'Validé' },
-        { label:'À revoir', icon:'fa-undo', cls:'db-review', newStatut:'À revoir' },
-        { label:'Rejeter', icon:'fa-times-circle', cls:'db-reject', newStatut:'Rejeté' },
-      ],
-    },
-    besoins: {
-      color:'#15803d', icon:'fa-clipboard-list', title:'Validation de l\'Expression de Besoin',
-      fields: r => [
-        ['N° Dossier', r.id], ['Désignation', r.designation], ['Service', r.service],
-        ['Nature', r.nature], ['Montant estimé', fmtN(r.montant) + ' FCFA'],
-        ['Ligne budgétaire', r.ligne], ['Soumis le', r.soumis], ['Statut actuel', r.statut],
-      ],
-      decisions: [
-        { label:'Approuver', icon:'fa-check-circle', cls:'db-approve', newStatut:'Approuvé' },
-        { label:'Entente financement', icon:'fa-handshake', cls:'db-entente', newStatut:'Entente de financement' },
-        { label:'Rejeter', icon:'fa-times-circle', cls:'db-reject', newStatut:'Rejeté' },
-      ],
-    },
-    bdc: {
-      color:'#1d4ed8', icon:'fa-file-contract', title:'Validation du Bon de Commande',
-      fields: r => [
-        ['N° BC', r.id], ['Objet', r.objet], ['Fournisseur', r.fournisseur],
-        ['Service', r.service], ['Montant', fmtN(r.montant) + ' FCFA'],
-        ['Procédure', r.procedure], ['Préparé par', r.prepare], ['Date', r.date], ['Statut', r.statut],
-      ],
-      decisions: [
-        { label:'Approuver', icon:'fa-check-circle', cls:'db-approve', newStatut:'Approuvé' },
-        { label:'Mettre en attente', icon:'fa-clock', cls:'db-attente', newStatut:'En attente' },
-        { label:'Rejeter', icon:'fa-times-circle', cls:'db-reject', newStatut:'Rejeté' },
-      ],
-    },
-    op: {
-      color:'#7c3aed', icon:'fa-money-check-alt', title:'Validation de l\'Ordre de Paiement',
-      fields: r => [
-        ['N° OP', r.id], ['Bénéficiaire', r.beneficiaire], ['Objet', r.objet],
-        ['Mode de paiement', r.mode], ['Montant', fmtN(r.montant) + ' FCFA'],
-        ['Réf. BC/Marché', r.ref_bc], ['Liquidé par', r.liquidePar], ['Date', r.date], ['Statut', r.statut],
-      ],
-      decisions: [
-        { label:'Approuver & Signer', icon:'fa-signature', cls:'db-approve', newStatut:'Approuvé' },
-        { label:'Mettre en attente', icon:'fa-clock', cls:'db-attente', newStatut:'En attente' },
-        { label:'Rejeter', icon:'fa-times-circle', cls:'db-reject', newStatut:'Rejeté' },
-      ],
-    },
-    ov: {
-      color:'#0d9488', icon:'fa-university', title:'Validation de l\'Ordre de Virement',
-      fields: r => [
-        ['N° OV', r.id], ['Banque', r.banque], ['Bénéficiaire', r.beneficiaire],
-        ['Compte destinataire', r.compte], ['Montant', fmtN(r.montant) + ' FCFA'],
-        ['Réf. OP lié', r.ref_op], ['Préparé par', r.prepare], ['Date', r.date], ['Statut', r.statut],
-      ],
-      decisions: [
-        { label:'Cosigner & Approuver', icon:'fa-signature', cls:'db-approve', newStatut:'Approuvé' },
-        { label:'Mettre en attente', icon:'fa-clock', cls:'db-attente', newStatut:'En attente' },
-        { label:'Rejeter', icon:'fa-times-circle', cls:'db-reject', newStatut:'Rejeté' },
-      ],
-    },
-    rapports: {
-      color:'#b45309', icon:'fa-chart-bar', title:'Validation du Rapport',
-      fields: r => [
-        ['Référence', r.id], ['Titre', r.titre], ['Type', r.type],
-        ['Période', r.periode], ['Service auteur', r.service],
-        ['Soumis le', r.soumis], ['Destinataire', r.dest], ['Statut', r.statut],
-      ],
-      decisions: [
-        { label:'Approuver', icon:'fa-check-circle', cls:'db-approve', newStatut:'Approuvé' },
-        { label:'À revoir', icon:'fa-undo', cls:'db-review', newStatut:'À revoir' },
-        { label:'Rejeter', icon:'fa-times-circle', cls:'db-reject', newStatut:'Rejeté' },
-      ],
-    },
-    pj: {
-      color:'#8b0000', icon:'fa-file-invoice', title:'Validation de la Pièce Justificative',
-      fields: r => [
-        ['N° Pièce', r.id], ['Libellé', r.libelle], ['Type', r.type],
-        ['Dossier lié', r.dossier], ['Montant', fmtN(r.montant) + ' FCFA'],
-        ['Service', r.service], ['Soumis le', r.soumis], ['Statut', r.statut],
-      ],
-      decisions: [
-        { label:'Conforme', icon:'fa-check-circle', cls:'db-conforme', newStatut:'Conforme' },
-        { label:'À revoir', icon:'fa-undo', cls:'db-review', newStatut:'À revoir' },
-        { label:'Rejeter', icon:'fa-times-circle', cls:'db-reject', newStatut:'Rejeté' },
-      ],
-    },
-    budget: {
-      color:'#0f766e', icon:'fa-balance-scale', title:'Validation Budgétaire',
-      fields: r => {
-        const base = [
-          ['Référence',    r.id],
-          ['Type',         r.type],
-          ['Libellé',      r.libelle],
-          ['Ligne / Mouvement', r.ligne],
-          ['Source financement', r.source],
-          ['Service',      r.service],
-          ['Préparé par',  r.prepare],
-          ['Soumis le',    r.soumis],
-          ['Statut',       r.statut],
-        ];
-        if (r.montant_initial !== undefined) {
-          base.push(['Montant initial',  fmtN(r.montant_initial) + ' FCFA']);
-          base.push(['Montant révisé',   fmtN(r.montant_revise)  + ' FCFA']);
-          base.push(['Écart (révision)', (r.montant >= 0 ? '+' : '') + fmtN(r.montant) + ' FCFA']);
-        } else {
-          base.push(['Montant concerné', fmtN(r.montant) + ' FCFA']);
-        }
-        if (r.note) base.push(['Note / justification', r.note]);
-        return base;
-      },
-      decisions: [
-        { label:'Approuver', icon:'fa-check-circle', cls:'db-approve', newStatut:'Approuvé' },
-        { label:'Suspendre', icon:'fa-pause-circle', cls:'db-attente', newStatut:'Suspendu' },
-        { label:'Rejeter',   icon:'fa-times-circle', cls:'db-reject',  newStatut:'Rejeté'  },
-      ],
-    },
-  };
-
-  function openModal(type, id) {
-    const DATA_MAP = {
-      pao: DATA_PAO, besoins: DATA_BESOINS, bdc: DATA_BDC,
-      op: DATA_OP, ov: DATA_OV, rapports: DATA_RAPPORTS, pj: DATA_PJ,
-      budget: DATA_BUDGET,
-    };
-    const record = DATA_MAP[type].find(r => r.id === id);
-    if (!record) return;
-
-    _modalType = type;
-    _modalId   = id;
-
-    const cfg = MODAL_CFG[type];
-
-    // En-tête
-    const hdr = document.getElementById('modalValHeader');
-    hdr.style.background = cfg.color;
-    hdr.style.color = '#fff';
-    document.getElementById('modalValTitle').textContent = cfg.title;
-    document.getElementById('modalValRef').textContent   = id + ' · ' + record.statut;
-
-    // Champs
-    const fields = cfg.fields(record);
-    document.getElementById('modalValFields').innerHTML = fields.map(([l, v]) => `
-      <div class="val-field">
-        <span class="vf-l"><i class="fas fa-caret-right me-1" style="color:#cbd5e1"></i>${l}</span>
-        <span class="vf-v">${v}</span>
-      </div>`).join('');
-
-    // Historique
-    document.getElementById('modalValHisto').innerHTML = (record.histo || []).map(h => `
-      <div class="histo-line">
-        <div class="histo-dot" style="background:${h.col || '#94a3b8'}"></div>
-        <div>
-          <span class="hl-action">${h.action}</span>
-          <span class="hl-by"> — ${h.par}</span>
-        </div>
-        <span class="hl-date">${h.date}</span>
-      </div>`).join('') || '<p style="font-size:.76rem;color:#94a3b8">Aucun historique disponible.</p>';
-
-    // Décision
-    document.getElementById('obsInput').value = '';
-    const alreadyDecided = ['Validé','Approuvé','Conforme'].includes(record.statut) || ['Rejeté','Suspendu'].includes(record.statut);
-    const bloc = document.getElementById('decisionBloc');
-
-    if (alreadyDecided) {
-      bloc.style.background = record.statut === 'Rejeté' ? '#fff5f5' : '#f0fdf4';
-      bloc.innerHTML = `<div style="font-size:.78rem;font-weight:700;color:${record.statut==='Rejeté'?'#b91c1c':'#15803d'};text-align:center;padding:10px 0">
-        <i class="fas fa-${record.statut==='Rejeté'?'times-circle':'check-circle'} fa-lg me-2"></i>
-        Ce dossier a déjà été traité : <strong>${record.statut}</strong>
-      </div>`;
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      _dossiers = Array.isArray(data) ? data : DEFAULT_DOSSIERS;
     } else {
-      bloc.style.background = '#f8fafc';
-      bloc.innerHTML = `
-        <div class="db-title"><i class="fas fa-stamp me-1"></i>Décision du Coordonnateur</div>
-        <div>
-          <label style="font-size:.76rem;font-weight:700;color:#374151;margin-bottom:4px;display:block">
-            Observation / Motif :
-          </label>
-          <textarea id="obsInput" class="obs-textarea" placeholder="Saisir une observation ou un motif (obligatoire pour rejet/renvoi)…"></textarea>
+      _dossiers = DEFAULT_DOSSIERS.map((d) => ({ ...d, histo: [{ action:'Soumission', par:d.porteur, date:d.soumis }] }));
+      save();
+    }
+  } catch (_) {
+    _dossiers = DEFAULT_DOSSIERS;
+  }
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(_dossiers));
+}
+
+function fmt(n) { return Math.round(n).toLocaleString('fr-FR'); }
+
+function detectUserEtape() {
+  let role = 'administrateur';
+  try {
+    const u = JSON.parse(localStorage.getItem('pslsh_user') || 'null');
+    if (u && u.role) role = u.role;
+  } catch (_) {}
+  return ROLE_TO_ETAPE[role] || 'coordo';
+}
+
+function countByEtape(etape) {
+  return _dossiers.filter((d) => d.etape === etape).length;
+}
+
+function renderCircuit() {
+  const userEtape = _currentUserEtape;
+  const html = ETAPES.map((step, i) => {
+    const isMine = step.id === userEtape;
+    const n = countByEtape(step.id);
+    return `
+      <div class="step ${isMine ? 'active' : ''}" onclick="filterByEtape('${step.id}')">
+        <div class="step-num s-${step.id}">${i + 1}</div>
+        <div class="step-info">
+          <div class="step-role">${step.role}</div>
+          <div class="step-act">${step.libelle}</div>
+          <div class="step-count">${n} dossier${n > 1 ? 's' : ''} en attente</div>
         </div>
-        <div class="decision-btns" id="decisionBtns"></div>`;
-      // Boutons de décision
-      document.getElementById('decisionBtns').innerHTML = cfg.decisions.map(d => `
-        <button class="${d.cls}" onclick="applyDecision('${d.newStatut}')">
-          <i class="fas ${d.icon}"></i> ${d.label}
-        </button>`).join('');
-    }
+      </div>
+      ${i < ETAPES.length - 1 ? '<div class="step-arrow"><i class="fas fa-chevron-right"></i></div>' : ''}
+    `;
+  }).join('');
+  document.getElementById('circuitBar').innerHTML = html;
 
-    new bootstrap.Modal(document.getElementById('modalValidation')).show();
+  const labels = { saf:'SAF', compta:'Comptable', coordo:'Coordonnateur' };
+  document.getElementById('cvUserRoleLabel').textContent = userEtape
+    ? `Connecté en tant que ${labels[userEtape]}`
+    : 'Aucun droit de validation';
+}
+
+function filterByEtape(etape) {
+  document.getElementById('fType').value = '';
+  document.getElementById('fSearch').value = '';
+  document.getElementById('fService').value = '';
+  _showMineOnly = false;
+  document.getElementById('toggleMine').classList.remove('active');
+  window._etapeFilter = etape;
+  renderDossiers();
+}
+
+function toggleMine() {
+  _showMineOnly = !_showMineOnly;
+  document.getElementById('toggleMine').classList.toggle('active', _showMineOnly);
+  window._etapeFilter = null;
+  renderDossiers();
+}
+
+function renderDossiers() {
+  const fType    = document.getElementById('fType').value;
+  const fService = document.getElementById('fService').value;
+  const q        = (document.getElementById('fSearch').value || '').toLowerCase();
+
+  let list = _dossiers.filter((d) => {
+    if (fType && d.type !== fType) return false;
+    if (fService && d.service !== fService) return false;
+    if (q && !(d.id.toLowerCase().includes(q) || d.objet.toLowerCase().includes(q))) return false;
+    if (_showMineOnly && d.etape !== _currentUserEtape) return false;
+    if (window._etapeFilter && d.etape !== window._etapeFilter) return false;
+    return true;
+  });
+
+  document.getElementById('dossierCount').textContent =
+    `${list.length} dossier${list.length > 1 ? 's' : ''} affiché${list.length > 1 ? 's' : ''} sur ${_dossiers.length}`;
+
+  const target = document.getElementById('dossierList');
+  if (!list.length) {
+    target.innerHTML = `<div class="empty-state"><i class="fas fa-inbox d-block"></i>Aucun dossier ne correspond aux filtres.</div>`;
+    return;
   }
+  target.innerHTML = list.map(dossierCard).join('');
+}
 
-  /* ════════════════════════════════════════════════════════════════
-     APPLIQUER UNE DÉCISION
-  ════════════════════════════════════════════════════════════════ */
-  function applyDecision(newStatut) {
-    const obs = (document.getElementById('obsInput')?.value || '').trim();
+function stageBadge(etape) {
+  const map = {
+    saf:     { cls:'sb-saf',     txt:'SAF — Conformité' },
+    compta:  { cls:'sb-compta',  txt:'Comptable — Budget' },
+    coordo:  { cls:'sb-coordo',  txt:'Coordonnateur — Signature' },
+    ordonne: { cls:'sb-ordonne', txt:'Ordonnancé' },
+    rejete:  { cls:'sb-rejete',  txt:'Rejeté' },
+  };
+  const m = map[etape] || map.saf;
+  return `<span class="stage-badge ${m.cls}">${m.txt}</span>`;
+}
 
-    // Vérification observation obligatoire pour rejet/renvoi
-    const needsObs = ['Rejeté','À revoir','Entente de financement','Suspendu'].includes(newStatut);
-    if (needsObs && !obs) {
-      const el = document.getElementById('obsInput');
-      if (el) { el.style.borderColor = '#b91c1c'; el.focus(); }
-      alert('Veuillez saisir une observation ou un motif avant de ' +
-        (newStatut === 'Rejeté' ? 'rejeter' : 'renvoyer') + ' ce dossier.');
-      return;
-    }
+function dossierCard(d) {
+  const canAct = d.etape === _currentUserEtape;
+  const isClosed = d.etape === 'ordonne' || d.etape === 'rejete';
+  return `
+    <div class="dossier-card">
+      <div class="dc-main">
+        <h6>${d.objet}</h6>
+        <div class="dc-meta">
+          <span class="mono">${d.id}</span>
+          <span>Service : <strong>${d.service}</strong></span>
+          <span>Montant : <strong>${fmt(d.montant)} FCFA</strong></span>
+          <span>Soumis : <strong>${d.soumis}</strong></span>
+          <span>Porteur : <strong>${d.porteur}</strong></span>
+        </div>
+      </div>
+      <div class="dc-actions">
+        ${stageBadge(d.etape)}
+        ${isClosed ? '' : canAct
+          ? `<button class="btn-valider" onclick="valider('${d.id}')"><i class="fas fa-check"></i>Valider</button>
+             <button class="btn-rejeter" onclick="openRejet('${d.id}')"><i class="fas fa-times"></i>Rejeter</button>`
+          : `<button class="btn-disabled" title="Vous n'êtes pas l'acteur de cette étape" disabled>En attente d'un autre acteur</button>`}
+      </div>
+      ${progressBar(d)}
+    </div>`;
+}
 
-    const DATA_MAP = {
-      pao: DATA_PAO, besoins: DATA_BESOINS, bdc: DATA_BDC,
-      op: DATA_OP, ov: DATA_OV, rapports: DATA_RAPPORTS, pj: DATA_PJ,
-      budget: DATA_BUDGET,
-    };
-    const arr = DATA_MAP[_modalType];
-    const idx = arr.findIndex(r => r.id === _modalId);
-    if (idx === -1) return;
-
-    const today = '05/04/2026';
-    const coordName = document.getElementById('coordName').textContent || 'Coordonnateur';
-    const actionLabel = obs ? `${newStatut}${obs ? ' — ' + obs.substring(0,60) + (obs.length > 60 ? '…' : '') : ''}` : newStatut;
-
-    arr[idx].statut = newStatut;
-    arr[idx].histo.push({ action: actionLabel, par: coordName, date: today, col:
-      ['Validé','Approuvé','Conforme'].includes(newStatut) ? '#15803d' :
-      newStatut === 'Rejeté' ? '#b91c1c' :
-      newStatut === 'À revoir' ? '#6d28d9' : '#1d4ed8'
-    });
-
-    bootstrap.Modal.getInstance(document.getElementById('modalValidation')).hide();
-    updateBadges();
-    renderPanel(_modalType);
-
-    // Toast de confirmation
-    showToast(newStatut, _modalId);
+function progressBar(d) {
+  if (d.etape === 'rejete') {
+    const last = d.histo && d.histo.length ? d.histo[d.histo.length - 1] : null;
+    return `<div class="dc-progress">
+      <div class="dp-step dp-rejected">
+        <div class="dp-dot"><i class="fas fa-times"></i></div>
+        <div class="dp-text">Rejeté${last && last.motif ? ' — ' + last.motif : ''}${last ? ' (' + last.par + ', ' + last.date + ')' : ''}</div>
+      </div>
+    </div>`;
   }
+  const flow = ['saf', 'compta', 'coordo'];
+  const idx = d.etape === 'ordonne' ? flow.length : flow.indexOf(d.etape);
+  return `<div class="dc-progress">${flow.map((e, i) => {
+    const done = i < idx;
+    const cur  = i === idx && d.etape !== 'ordonne';
+    const cls  = done ? 'dp-done' : cur ? 'dp-current' : '';
+    const passEvt = d.histo && d.histo.find((h) => h.etape === e);
+    return `
+      <div class="dp-step ${cls}">
+        <div class="dp-dot">${done ? '<i class="fas fa-check"></i>' : i + 1}</div>
+        <div class="dp-text">
+          ${ETAPES[i].role}
+          ${passEvt ? ' · ' + passEvt.par + ' (' + passEvt.date + ')' : ''}
+        </div>
+      </div>
+      ${i < flow.length - 1 ? `<div class="dp-line ${done ? 'dp-line-done' : ''}"></div>` : ''}
+    `;
+  }).join('')}</div>`;
+}
 
-  /* ════════════════════════════════════════════════════════════════
-     TOAST DE CONFIRMATION
-  ════════════════════════════════════════════════════════════════ */
-  function showToast(statut, ref) {
-    const col = ['Validé','Approuvé','Conforme'].includes(statut) ? '#15803d' :
-                statut === 'Rejeté'   ? '#b91c1c' :
-                statut === 'Suspendu' ? '#b45309' : '#6d28d9';
-    const icon = ['Validé','Approuvé','Conforme'].includes(statut) ? 'check-circle' :
-                 statut === 'Rejeté'   ? 'times-circle' :
-                 statut === 'Suspendu' ? 'pause-circle' : 'undo';
-    const t = document.createElement('div');
-    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${col};color:#fff;
-      border-radius:10px;padding:12px 18px;font-size:.8rem;font-weight:700;z-index:9999;
-      display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.2);
-      animation:slideIn .25s ease;`;
-    t.innerHTML = `<i class="fas fa-${icon} fa-lg"></i>
-      <span><strong>${ref}</strong> — Décision enregistrée : <strong>${statut}</strong></span>`;
-    document.body.appendChild(t);
-    setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(() => t.remove(), 300); }, 3000);
+function valider(id) {
+  const d = _dossiers.find((x) => x.id === id);
+  if (!d || d.etape !== _currentUserEtape) return;
+  const flow = ['saf', 'compta', 'coordo'];
+  const idx = flow.indexOf(d.etape);
+  const next = idx === flow.length - 1 ? 'ordonne' : flow[idx + 1];
+  d.histo = (d.histo || []).concat({
+    etape: d.etape,
+    action: idx === flow.length - 1 ? 'Ordonnancé' : 'Validé',
+    par: ETAPES[idx].role,
+    date: new Date().toLocaleDateString('fr-FR'),
+  });
+  d.etape = next;
+  save();
+  renderCircuit();
+  renderDossiers();
+}
+
+function openRejet(id) {
+  _pendingRejet = id;
+  document.getElementById('rejetMotif').value = '';
+  new bootstrap.Modal(document.getElementById('modalRejet')).show();
+}
+
+function confirmerRejet() {
+  const d = _dossiers.find((x) => x.id === _pendingRejet);
+  const motif = document.getElementById('rejetMotif').value.trim();
+  if (!d || !motif) {
+    alert('Motif requis.');
+    return;
   }
+  const idx = ['saf', 'compta', 'coordo'].indexOf(d.etape);
+  d.histo = (d.histo || []).concat({
+    etape: d.etape,
+    action: 'Rejeté',
+    par: idx >= 0 ? ETAPES[idx].role : 'Inconnu',
+    date: new Date().toLocaleDateString('fr-FR'),
+    motif,
+  });
+  d.etape = 'rejete';
+  save();
+  bootstrap.Modal.getInstance(document.getElementById('modalRejet')).hide();
+  renderCircuit();
+  renderDossiers();
+}
 
-  /* ════════════════════════════════════════════════════════════════
-     INIT
-  ════════════════════════════════════════════════════════════════ */
-  updateBadges();
-  renderPanel('pao');
+function initServiceSelect() {
+  const sel = document.getElementById('fService');
+  sel.innerHTML = '<option value="">Tous services</option>' +
+    SERVICES.map((s) => `<option value="${s}">${s}</option>`).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  _currentUserEtape = detectUserEtape();
+  load();
+  initServiceSelect();
+  renderCircuit();
+  renderDossiers();
+});
 </script>
 </body>
 </html>
