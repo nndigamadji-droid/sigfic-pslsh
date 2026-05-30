@@ -47,8 +47,15 @@
       position:sticky; top:0;
     }
     .dos-tbl tbody td { padding:9px 12px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
-    .dos-tbl tbody tr { cursor:pointer; }
     .dos-tbl tbody tr:hover td { background:#eff6ff; transition:background .1s; }
+
+    .btn-open {
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:.73rem; font-weight:700; padding:6px 12px; min-height:30px;
+      background:#1b3a6b; color:#fff; border:1px solid #1b3a6b; border-radius:6px;
+      cursor:pointer; transition:background .15s; white-space:nowrap;
+    }
+    .btn-open:hover { background:#254d8f; }
     .dos-tbl .mono { font-family:monospace; color:#1d4ed8; font-weight:700; font-size:.75rem; }
     .dos-tbl .num  { font-family:monospace; text-align:right; font-feature-settings:'tnum' 1; }
 
@@ -373,16 +380,16 @@ function renderTable(list) {
   }
   const rows = list.map((d) => {
     const f = familyOf(d.type);
-    return `<tr onclick="ouvrirDossier('${d.id}')">
+    return `<tr>
       <td class="mono">${d.id}</td>
       <td><span class="badge-type bt-${d.type}"><i class="fas ${f.icon}"></i> ${f.label.split(' ')[0]}</span></td>
-      <td><strong>${d.objet}</strong><br><small style="color:#94a3b8">${d.service} · ${d.porteur}</small></td>
+      <td><strong>${d.objet}</strong><br><small style="color:#94a3b8">${d.service} · ${d.porteur} · soumis ${d.soumis}</small></td>
       <td><span class="mono" style="color:#475569">${d.ligne}</span><br><small style="color:#94a3b8">${d.source}</small></td>
       <td class="num"><strong>${fmt(d.montant_estime)}</strong></td>
       <td class="num" style="color:#1d4ed8">${fmt(d.montant_engage)}</td>
       <td class="num" style="color:#15803d">${fmt(d.montant_paye)}</td>
       <td>${positionWidget(d.etape)}</td>
-      <td style="color:#64748b;font-size:.72rem">${d.soumis}</td>
+      <td><button class="btn-open" onclick="ouvrirDossier('${d.id}')"><i class="fas fa-folder-open"></i>Ouvrir dossier</button></td>
     </tr>`;
   }).join('');
   document.getElementById('dossierTable').innerHTML = `
@@ -397,7 +404,7 @@ function renderTable(list) {
           <th class="num" style="width:120px">Engagé</th>
           <th class="num" style="width:120px">Payé</th>
           <th style="width:220px">Position dans le circuit</th>
-          <th style="width:100px">Soumis</th>
+          <th style="width:140px"></th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>

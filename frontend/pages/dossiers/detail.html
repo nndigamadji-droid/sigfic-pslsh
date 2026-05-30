@@ -307,8 +307,97 @@ function loadAll() {
   catch (_) { _piecesData = {}; }
   if (!_piecesData[id]) _piecesData[id] = { pieces: {}, histo: [] };
 
+  autoGeneratePieces();
+
   $id('bcRef').textContent = _dossier.id;
   render();
+}
+
+function autoGeneratePieces() {
+  const list = PIECES_BY_TYPE[_dossier.type];
+  if (!list) return;
+  const bucket = _piecesData[_dossier.id];
+  let generated = 0;
+  list.forEach((piece, i) => {
+    if (bucket.pieces[piece.code]) return;
+    bucket.pieces[piece.code] = seedPiece(piece, i);
+    generated++;
+  });
+  if (generated > 0) {
+    bucket.histo.push({
+      action: `${generated} pièce${generated > 1 ? 's' : ''} générée${generated > 1 ? 's' : ''} automatiquement à l'ouverture du dossier`,
+      par: 'Système', date: new Date().toLocaleString('fr-FR'), color: 'blue',
+    });
+    savePieces();
+  }
+}
+
+function seedPiece(piece, idx) {
+  const d = _dossier;
+  const refSeq = String(idx + 1).padStart(3, '0');
+  const refByCode = {
+    EB:       `EB-${d.id.slice(-7)}-${refSeq}`,
+    PROFORMA: `PRF-${d.id.slice(-7)}-${refSeq}`,
+    BC:       `BC-${d.id.slice(-7)}-${refSeq}`,
+    FACTURE:  `FAC-${d.id.slice(-7)}-${refSeq}`,
+    BL:       `BL-${d.id.slice(-7)}-${refSeq}`,
+    PV_RECEP: `PV-${d.id.slice(-7)}-${refSeq}`,
+    ATT_SF:   `ASF-${d.id.slice(-7)}-${refSeq}`,
+    OP:       `OP-${d.id.slice(-7)}-${refSeq}`,
+    OV:       `OV-${d.id.slice(-7)}-${refSeq}`,
+  };
+  const fournDefault = guessFournisseur(d);
+  const seedFields = {
+    designation:     d.objet,
+    quantite:        '1',
+    prix_unitaire:   String(d.montant_estime || 0),
+    justification:   `Besoin exprimé par ${d.porteur} (${d.service}) le ${d.soumis}.`,
+    fournisseur:     fournDefault,
+    reference:       refByCode[piece.code] || '',
+    montant_ttc:     String(d.montant_estime || 0),
+    date_doc:        toISO(d.soumis),
+    date_echeance:   addDaysISO(d.soumis, 30),
+    delai_livraison: '30 jours',
+    transporteur:    'À renseigner',
+    lieu:            'Magasin central PSLSH',
+    observations:    '',
+    etat_marchandise: 'Conforme au bon de commande',
+    signataire:      d.porteur,
+    beneficiaire:    fournDefault,
+    mode_paiement:   d.montant_estime >= 600000 ? 'Virement' : 'Chèque',
+    banque:          'BCC — Banque Comm. du Tchad',
+    compte:          'TCH-014-22001-' + d.id.slice(-5),
+  };
+  const data = { status: 'en-cours' };
+  piece.fields.forEach((f) => { data[f] = seedFields[f] || ''; });
+  return data;
+}
+
+function guessFournisseur(d) {
+  const map = {
+    'Réactifs dépistage VIH':      'CPA — Centrale Pharmaceutique',
+    'Réactifs charge virale VIH':  'ROCHE DIAGNOSTICS',
+    'Médicaments ARV':             'CPA — Centrale Pharmaceutique',
+    'Carburant':                   'TOTAL ENERGIES TCHAD',
+    'Fournitures':                 'SOUARA COMMERCIAL',
+    'gardiennage':                 'SECURIMAX SARL',
+  };
+  const objet = (d.objet || '').toLowerCase();
+  const hit = Object.keys(map).find((k) => objet.includes(k.toLowerCase()));
+  return hit ? map[hit] : 'À désigner';
+}
+
+function toISO(frDate) {
+  const m = (frDate || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : '';
+}
+
+function addDaysISO(frDate, days) {
+  const iso = toISO(frDate);
+  if (!iso) return '';
+  const d = new Date(iso);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
 }
 
 function savePieces() { localStorage.setItem(STORAGE_PIECES, JSON.stringify(_piecesData)); }
@@ -329,11 +418,12 @@ function statusOfPiece(code) {
 function pieceProgress() {
   const list = PIECES_BY_TYPE[_dossier.type];
   if (!list) return { idx: 0, total: 0 };
-  let firstNonValid = list.length;
+  let firstOpen = list.length;
   for (let i = 0; i < list.length; i++) {
-    if (statusOfPiece(list[i].code) !== 'valide') { firstNonValid = i; break; }
+    const st = statusOfPiece(list[i].code);
+    if (st !== 'valide' && st !== 'non-applic') { firstOpen = i; break; }
   }
-  return { idx: firstNonValid, total: list.length };
+  return { idx: firstOpen, total: list.length };
 }
 
 function renderError(msg) {
