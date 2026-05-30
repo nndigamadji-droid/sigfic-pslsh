@@ -365,9 +365,16 @@
     },
     {
       id: 'operations', label: 'Opérations', badge: 'Dossiers',
-      desc: 'Dossiers de dépenses, marchés, commandes, réceptions et stocks.',
+      desc: 'Expressions de besoin et dossiers d\'opération (achats, formations, personnel).',
       icon: 'fa-folder-open', color: '#b45309', light: '#fef3c7',
       href: '/pages/dossiers/index.html',
+      roles: ['administrateur','coordination','chef_service','controleur','agent'],
+    },
+    {
+      id: 'ressources', label: 'Ressources & Moyens', badge: 'Logistique',
+      desc: 'Stock & immobilisations, carburants et ressources humaines.',
+      icon: 'fa-toolbox', color: '#0891b2', light: '#cffafe',
+      href: '/pages/stock/index.html',
       roles: ['administrateur','coordination','chef_service','controleur','agent'],
     },
     {

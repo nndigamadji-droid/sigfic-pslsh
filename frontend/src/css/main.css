@@ -216,6 +216,7 @@ code, .mono {
 
 /* Nav items — tall, like SIGFP */
 .sidebar-nav .nav-link {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -251,6 +252,26 @@ code, .mono {
 }
 .sidebar-nav .nav-link:hover i,
 .sidebar-nav .nav-link.active i { color: rgb(255 255 255 / .9); }
+
+.sidebar-nav .nav-link.nav-sub {
+  padding-left: 38px;
+  font-size: .77rem;
+  color: rgb(255 255 255 / .58);
+}
+.sidebar-nav .nav-link.nav-sub i {
+  font-size: .72rem;
+  width: 14px;
+  opacity: .8;
+}
+.sidebar-nav .nav-link.nav-sub::before {
+  content: '';
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  width: 8px;
+  height: 1px;
+  background: rgb(255 255 255 / .2);
+}
 
 /* Chevron right on each item */
 .sidebar-nav .nav-link::after {

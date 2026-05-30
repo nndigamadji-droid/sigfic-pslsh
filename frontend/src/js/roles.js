@@ -279,23 +279,25 @@
         section: 'OPÉRATIONS',
         icon: 'fa-cogs',
         items: [
-          {
-            href: '/pages/dossiers/besoins.html',
-            icon: 'fa-list-check',
-            label: 'Expressions de besoin',
-          },
-          {
-            href: '/pages/dossiers/index.html',
-            icon: 'fa-folder-open',
-            label: "Dossiers d'opération",
-          },
-          { href: '/pages/stock/index.html', icon: 'fa-boxes', label: 'Stock & immobilisations' },
-          {
-            href: '/pages/carburant/index.html',
-            icon: 'fa-gas-pump',
-            label: 'Gestion des Carburants',
-          },
-          { href: '/pages/rh/index.html', icon: 'fa-users', label: 'Ressources Humaines' },
+          { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
+          { href: '/pages/dossiers/besoins.html?action=new',     icon: 'fa-plus-circle',   label: 'Saisir un nouveau besoin',         sub: true },
+          { href: '/pages/dossiers/besoins.html?filter=mine',    icon: 'fa-user-clock',    label: 'Mes besoins en cours',             sub: true },
+          { href: '/pages/dossiers/besoins.html?filter=pending', icon: 'fa-hourglass-half',label: 'Besoins en attente de validation', sub: true },
+          { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
+          { href: '/pages/dossiers/index.html',           icon: 'fa-list',            label: 'Tous les dossiers',         sub: true },
+          { href: '/pages/dossiers/index.html?type=ACH-S', icon: 'fa-shopping-cart',   label: 'Achat simple',              sub: true },
+          { href: '/pages/dossiers/index.html?type=ACH-P', icon: 'fa-gavel',           label: 'Achat par passation',       sub: true },
+          { href: '/pages/dossiers/index.html?type=FOR-M', icon: 'fa-graduation-cap',  label: 'Formation & missions',      sub: true },
+          { href: '/pages/dossiers/index.html?type=PER-A', icon: 'fa-hand-holding-usd',label: 'Personnel & assistance',    sub: true },
+        ],
+      },
+      {
+        section: 'RESSOURCES & MOYENS',
+        icon: 'fa-toolbox',
+        items: [
+          { href: '/pages/stock/index.html',     icon: 'fa-boxes',     label: 'Stock & immobilisations' },
+          { href: '/pages/carburant/index.html', icon: 'fa-gas-pump',  label: 'Gestion des carburants' },
+          { href: '/pages/rh/index.html',        icon: 'fa-users',     label: 'Ressources humaines' },
         ],
       },
       {
@@ -510,23 +512,25 @@
         section: 'OPÉRATIONS',
         icon: 'fa-cogs',
         items: [
-          {
-            href: '/pages/dossiers/besoins.html',
-            icon: 'fa-list-check',
-            label: 'Expressions de besoin',
-          },
-          {
-            href: '/pages/dossiers/index.html',
-            icon: 'fa-folder-open',
-            label: "Dossiers d'opération",
-          },
-          { href: '/pages/stock/index.html', icon: 'fa-boxes', label: 'Stock & immobilisations' },
-          {
-            href: '/pages/carburant/index.html',
-            icon: 'fa-gas-pump',
-            label: 'Gestion des Carburants',
-          },
-          { href: '/pages/rh/index.html', icon: 'fa-users', label: 'Ressources Humaines' },
+          { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
+          { href: '/pages/dossiers/besoins.html?action=new',     icon: 'fa-plus-circle',   label: 'Saisir un nouveau besoin',         sub: true },
+          { href: '/pages/dossiers/besoins.html?filter=mine',    icon: 'fa-user-clock',    label: 'Mes besoins en cours',             sub: true },
+          { href: '/pages/dossiers/besoins.html?filter=pending', icon: 'fa-hourglass-half',label: 'Besoins en attente de validation', sub: true },
+          { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
+          { href: '/pages/dossiers/index.html',           icon: 'fa-list',            label: 'Tous les dossiers',         sub: true },
+          { href: '/pages/dossiers/index.html?type=ACH-S', icon: 'fa-shopping-cart',   label: 'Achat simple',              sub: true },
+          { href: '/pages/dossiers/index.html?type=ACH-P', icon: 'fa-gavel',           label: 'Achat par passation',       sub: true },
+          { href: '/pages/dossiers/index.html?type=FOR-M', icon: 'fa-graduation-cap',  label: 'Formation & missions',      sub: true },
+          { href: '/pages/dossiers/index.html?type=PER-A', icon: 'fa-hand-holding-usd',label: 'Personnel & assistance',    sub: true },
+        ],
+      },
+      {
+        section: 'RESSOURCES & MOYENS',
+        icon: 'fa-toolbox',
+        items: [
+          { href: '/pages/stock/index.html',     icon: 'fa-boxes',     label: 'Stock & immobilisations' },
+          { href: '/pages/carburant/index.html', icon: 'fa-gas-pump',  label: 'Gestion des carburants' },
+          { href: '/pages/rh/index.html',        icon: 'fa-users',     label: 'Ressources humaines' },
         ],
       },
       {
@@ -704,19 +708,25 @@
         section: 'OPÉRATIONS',
         icon: 'fa-cogs',
         items: [
-          {
-            href: '/pages/dossiers/besoins.html',
-            icon: 'fa-list-check',
-            label: 'Mes expressions de besoin',
-          },
-          { href: '/pages/dossiers/index.html', icon: 'fa-folder-open', label: 'Mes dossiers' },
-          { href: '/pages/stock/index.html', icon: 'fa-boxes', label: 'Mon stock' },
-          {
-            href: '/pages/carburant/index.html',
-            icon: 'fa-gas-pump',
-            label: 'Gestion des Carburants',
-          },
-          { href: '/pages/rh/index.html', icon: 'fa-users', label: 'Ressources Humaines' },
+          { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
+          { href: '/pages/dossiers/besoins.html?action=new',     icon: 'fa-plus-circle',   label: 'Saisir un nouveau besoin',         sub: true },
+          { href: '/pages/dossiers/besoins.html?filter=mine',    icon: 'fa-user-clock',    label: 'Mes besoins en cours',             sub: true },
+          { href: '/pages/dossiers/besoins.html?filter=pending', icon: 'fa-hourglass-half',label: 'Besoins en attente de validation', sub: true },
+          { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
+          { href: '/pages/dossiers/index.html',           icon: 'fa-list',            label: 'Tous les dossiers',         sub: true },
+          { href: '/pages/dossiers/index.html?type=ACH-S', icon: 'fa-shopping-cart',   label: 'Achat simple',              sub: true },
+          { href: '/pages/dossiers/index.html?type=ACH-P', icon: 'fa-gavel',           label: 'Achat par passation',       sub: true },
+          { href: '/pages/dossiers/index.html?type=FOR-M', icon: 'fa-graduation-cap',  label: 'Formation & missions',      sub: true },
+          { href: '/pages/dossiers/index.html?type=PER-A', icon: 'fa-hand-holding-usd',label: 'Personnel & assistance',    sub: true },
+        ],
+      },
+      {
+        section: 'RESSOURCES & MOYENS',
+        icon: 'fa-toolbox',
+        items: [
+          { href: '/pages/stock/index.html',     icon: 'fa-boxes',     label: 'Stock & immobilisations' },
+          { href: '/pages/carburant/index.html', icon: 'fa-gas-pump',  label: 'Gestion des carburants' },
+          { href: '/pages/rh/index.html',        icon: 'fa-users',     label: 'Ressources humaines' },
         ],
       },
       {
@@ -896,26 +906,25 @@
         section: 'OPÉRATIONS',
         icon: 'fa-cogs',
         items: [
-          {
-            href: '/pages/dossiers/besoins.html',
-            icon: 'fa-list-check',
-            label: 'Expressions de besoin (lecture)',
-          },
-          {
-            href: '/pages/dossiers/index.html',
-            icon: 'fa-folder-open',
-            label: 'Dossiers (lecture)',
-          },
-          {
-            href: '/pages/carburant/index.html',
-            icon: 'fa-gas-pump',
-            label: 'Carburants (lecture)',
-          },
-          {
-            href: '/pages/rh/index.html',
-            icon: 'fa-users',
-            label: 'Ressources Humaines (lecture)',
-          },
+          { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
+          { href: '/pages/dossiers/besoins.html?action=new',     icon: 'fa-plus-circle',   label: 'Saisir un nouveau besoin',         sub: true },
+          { href: '/pages/dossiers/besoins.html?filter=mine',    icon: 'fa-user-clock',    label: 'Mes besoins en cours',             sub: true },
+          { href: '/pages/dossiers/besoins.html?filter=pending', icon: 'fa-hourglass-half',label: 'Besoins en attente de validation', sub: true },
+          { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
+          { href: '/pages/dossiers/index.html',           icon: 'fa-list',            label: 'Tous les dossiers',         sub: true },
+          { href: '/pages/dossiers/index.html?type=ACH-S', icon: 'fa-shopping-cart',   label: 'Achat simple',              sub: true },
+          { href: '/pages/dossiers/index.html?type=ACH-P', icon: 'fa-gavel',           label: 'Achat par passation',       sub: true },
+          { href: '/pages/dossiers/index.html?type=FOR-M', icon: 'fa-graduation-cap',  label: 'Formation & missions',      sub: true },
+          { href: '/pages/dossiers/index.html?type=PER-A', icon: 'fa-hand-holding-usd',label: 'Personnel & assistance',    sub: true },
+        ],
+      },
+      {
+        section: 'RESSOURCES & MOYENS',
+        icon: 'fa-toolbox',
+        items: [
+          { href: '/pages/stock/index.html',     icon: 'fa-boxes',     label: 'Stock & immobilisations' },
+          { href: '/pages/carburant/index.html', icon: 'fa-gas-pump',  label: 'Gestion des carburants' },
+          { href: '/pages/rh/index.html',        icon: 'fa-users',     label: 'Ressources humaines' },
         ],
       },
       {
@@ -1005,10 +1014,25 @@
         section: 'OPÉRATIONS',
         icon: 'fa-cogs',
         items: [
-          { href: '/pages/dossiers/index.html', icon: 'fa-folder-open', label: 'Mes dossiers' },
-          { href: '/pages/stock/index.html', icon: 'fa-boxes', label: 'Stock' },
-          { href: '/pages/carburant/index.html', icon: 'fa-gas-pump', label: 'Carburants' },
-          { href: '/pages/rh/index.html', icon: 'fa-users', label: 'Ressources Humaines' },
+          { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
+          { href: '/pages/dossiers/besoins.html?action=new',     icon: 'fa-plus-circle',   label: 'Saisir un nouveau besoin',         sub: true },
+          { href: '/pages/dossiers/besoins.html?filter=mine',    icon: 'fa-user-clock',    label: 'Mes besoins en cours',             sub: true },
+          { href: '/pages/dossiers/besoins.html?filter=pending', icon: 'fa-hourglass-half',label: 'Besoins en attente de validation', sub: true },
+          { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
+          { href: '/pages/dossiers/index.html',           icon: 'fa-list',            label: 'Tous les dossiers',         sub: true },
+          { href: '/pages/dossiers/index.html?type=ACH-S', icon: 'fa-shopping-cart',   label: 'Achat simple',              sub: true },
+          { href: '/pages/dossiers/index.html?type=ACH-P', icon: 'fa-gavel',           label: 'Achat par passation',       sub: true },
+          { href: '/pages/dossiers/index.html?type=FOR-M', icon: 'fa-graduation-cap',  label: 'Formation & missions',      sub: true },
+          { href: '/pages/dossiers/index.html?type=PER-A', icon: 'fa-hand-holding-usd',label: 'Personnel & assistance',    sub: true },
+        ],
+      },
+      {
+        section: 'RESSOURCES & MOYENS',
+        icon: 'fa-toolbox',
+        items: [
+          { href: '/pages/stock/index.html',     icon: 'fa-boxes',     label: 'Stock & immobilisations' },
+          { href: '/pages/carburant/index.html', icon: 'fa-gas-pump',  label: 'Gestion des carburants' },
+          { href: '/pages/rh/index.html',        icon: 'fa-users',     label: 'Ressources humaines' },
         ],
       },
       {
@@ -1116,12 +1140,16 @@
       pathname.indexOf('/dossiers') !== -1 ||
       pathname.indexOf('/passation') !== -1 ||
       pathname.indexOf('/commandes') !== -1 ||
-      pathname.indexOf('/reception') !== -1 ||
+      pathname.indexOf('/reception') !== -1
+    ) {
+      return 'OP\u00c9RATIONS';
+    }
+    if (
       pathname.indexOf('/stock') !== -1 ||
       pathname.indexOf('/carburant') !== -1 ||
       pathname.indexOf('/rh') !== -1
     ) {
-      return 'OP\u00c9RATIONS';
+      return 'RESSOURCES & MOYENS';
     }
     if (pathname.indexOf('/budget') !== -1) {
       return 'BUDGET';
@@ -1193,12 +1221,17 @@
         <div class="nav-section-items" style="display:${open ? 'block' : 'none'}">`;
 
       for (const item of group.items) {
-        const active = path.includes(item.href.replace('/pages', '').replace(/\/$/, ''))
+        const hrefBase = item.href.split('?')[0];
+        const queryMatch = item.href.includes('?')
+          ? (window.location.search === item.href.substring(item.href.indexOf('?')))
+          : (!window.location.search || hrefBase !== path.split('?')[0]);
+        const active = path.includes(hrefBase.replace('/pages', '').replace(/\/$/, '')) && queryMatch
           ? ' active'
           : '';
         const badge = item.badge ? `<span class="nav-badge"></span>` : '';
+        const subClass = item.sub ? ' nav-sub' : '';
         html += `
-          <a href="${item.href}" class="nav-link${active}" title="${item.label}">
+          <a href="${item.href}" class="nav-link${active}${subClass}" title="${item.label}">
             <i class="fas ${item.icon}"></i>
             <span>${item.label}</span>${badge}
           </a>`;
@@ -1352,6 +1385,13 @@
       label: 'Op\u00e9rations',
       icon: 'fa-folder-open',
       href: '/pages/dossiers/index.html',
+      roles: ['administrateur', 'coordination', 'chef_service', 'controleur', 'agent'],
+    },
+    {
+      section: 'RESSOURCES & MOYENS',
+      label: 'Ressources & Moyens',
+      icon: 'fa-toolbox',
+      href: '/pages/stock/index.html',
       roles: ['administrateur', 'coordination', 'chef_service', 'controleur', 'agent'],
     },
     {
