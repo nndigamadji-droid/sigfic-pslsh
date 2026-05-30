@@ -30,12 +30,47 @@
       font-size:.76rem; padding:5px 10px; height:32px;
       border:1px solid #cbd5e1; border-radius:7px; background:#fff;
     }
+    .eb-dropdown { position:relative; margin-left:auto; }
     .btn-new {
       font-size:.75rem; font-weight:700; padding:6px 14px; min-height:32px;
       background:#1b3a6b; color:#fff; border:none; border-radius:7px;
-      display:inline-flex; align-items:center; gap:6px; cursor:pointer; margin-left:auto;
+      display:inline-flex; align-items:center; gap:6px; cursor:pointer;
     }
     .btn-new:hover { background:#254d8f; }
+    .btn-new .eb-count {
+      background:rgba(255,255,255,.22); color:#fff; font-family:monospace;
+      font-size:.66rem; padding:1px 7px; border-radius:10px; font-weight:800;
+    }
+    .eb-menu {
+      position:absolute; top:calc(100% + 6px); right:0;
+      min-width:420px; max-width:540px; max-height:380px; overflow-y:auto;
+      background:#fff; border:1px solid #cbd5e1; border-radius:10px;
+      box-shadow:0 8px 24px rgba(15,23,42,.14);
+      padding:6px; z-index:50; display:none;
+    }
+    .eb-menu.open { display:block; }
+    .eb-menu-header {
+      padding:8px 12px 10px; border-bottom:1px solid #f1f5f9;
+      font-size:.7rem; color:#64748b; text-transform:uppercase;
+      letter-spacing:.05em; font-weight:700;
+    }
+    .eb-item {
+      display:grid; grid-template-columns:1fr auto; gap:8px;
+      padding:10px 12px; border-radius:8px; cursor:pointer;
+      transition:background .12s;
+    }
+    .eb-item:hover { background:#eff6ff; }
+    .eb-item-title { font-size:.8rem; font-weight:700; color:#1b2f52; line-height:1.3; }
+    .eb-item-meta { font-size:.68rem; color:#64748b; margin-top:3px; display:flex; gap:10px; flex-wrap:wrap; }
+    .eb-item-meta .mono { font-family:monospace; color:#1d4ed8; font-weight:700; }
+    .eb-item-type {
+      align-self:start; font-size:.62rem; font-weight:700;
+      padding:2px 8px; border-radius:5px; white-space:nowrap;
+    }
+    .eb-empty {
+      padding:24px 14px; text-align:center; color:#94a3b8; font-size:.78rem;
+    }
+    .eb-empty i { font-size:1.6rem; display:block; margin-bottom:8px; opacity:.5; }
 
     .dos-tbl { width:100%; border-collapse:collapse; font-size:.79rem;
       background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; }
@@ -229,9 +264,14 @@
             <select id="fService" onchange="render()">
               <option value="">Tous services</option>
             </select>
-            <button class="btn-new" onclick="window.location.href='besoins.html?action=new'">
-              <i class="fas fa-plus"></i>Nouveau dossier
-            </button>
+            <div class="eb-dropdown" id="ebDropdown">
+              <button class="btn-new" onclick="toggleEbMenu(event)">
+                <i class="fas fa-plus"></i>Nouveau dossier
+                <span class="eb-count" id="ebCount">0</span>
+                <i class="fas fa-caret-down"></i>
+              </button>
+              <div class="eb-menu" id="ebMenu"></div>
+            </div>
           </div>
 
           <div id="dossierTable"></div>
@@ -248,6 +288,15 @@
 <script src="../../src/js/roles.js"></script>
 <script>
 const STORAGE_KEY = 'pslsh_dossiers_v1';
+const STORAGE_EB  = 'pslsh_eb_v1';
+
+const DEFAULT_EB = [
+  { id:'EB-2026-0014', designation:'Réactifs charge virale VIH — renouvellement T3', service:'APMS',  porteur:'Chef APMS',  type_propose:'ACH-P', montant_estime: 64800000, ligne:'L-APMS-032', source:'PSLSH-032', valide_le:'02/04/2026', valide_par:'Coordonnateur' },
+  { id:'EB-2026-0015', designation:'Mission terrain équipe S&E région Mayo-Kebbi',     service:'SESRO', porteur:'Chef SESRO', type_propose:'PER-A', montant_estime:  5400000, ligne:'L-SESRO-MIS',source:'PSLSH-035', valide_le:'03/04/2026', valide_par:'Coordonnateur' },
+  { id:'EB-2026-0016', designation:'Formation continue laboratoires régionaux GeneXpert', service:'SLNR',porteur:'Chef SLNR',  type_propose:'FOR-M', montant_estime: 22000000, ligne:'L-SLNR-FOR', source:'PSLSH-035', valide_le:'03/04/2026', valide_par:'Coordonnateur' },
+  { id:'EB-2026-0017', designation:'Achat consommables pharmacie urgence T2',         service:'APMS',  porteur:'Chef APMS',  type_propose:'ACH-S', montant_estime:  4200000, ligne:'L-APMS-035', source:'PSLSH-035', valide_le:'04/04/2026', valide_par:'SAF' },
+  { id:'EB-2026-0018', designation:'Indemnités session formation PEC pédiatrique',     service:'SPCH',  porteur:'Chef SPCH',  type_propose:'PER-A', montant_estime:  3850000, ligne:'L-SPCH-IND', source:'PSLSH-035', valide_le:'04/04/2026', valide_par:'Comptable' },
+];
 
 const FAMILIES = [
   { code:'',      label:'Tous les dossiers',     icon:'fa-list',             color:'#1b3a6b' },
@@ -276,6 +325,7 @@ const DEFAULT_DOSSIERS = [
 ];
 
 let _dossiers = [];
+let _ebValidees = [];
 let _currentType = '';
 
 function load() {
@@ -285,9 +335,16 @@ function load() {
     if (!Array.isArray(_dossiers) || !_dossiers.length) _dossiers = DEFAULT_DOSSIERS;
   } catch (_) { _dossiers = DEFAULT_DOSSIERS; }
   if (!localStorage.getItem(STORAGE_KEY)) save();
+
+  try {
+    const raw = localStorage.getItem(STORAGE_EB);
+    _ebValidees = raw ? JSON.parse(raw) : DEFAULT_EB;
+  } catch (_) { _ebValidees = DEFAULT_EB; }
+  if (!localStorage.getItem(STORAGE_EB)) localStorage.setItem(STORAGE_EB, JSON.stringify(_ebValidees));
 }
 
 function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(_dossiers)); }
+function saveEb() { localStorage.setItem(STORAGE_EB, JSON.stringify(_ebValidees)); }
 
 function fmt(n) { return Math.round(n).toLocaleString('fr-FR'); }
 
@@ -410,6 +467,7 @@ function render() {
   document.getElementById('bcTitle').textContent = fam.label;
   const n = list.length;
   document.getElementById('paneSub').textContent = `${n} dossier${n > 1 ? 's' : ''} · exercice 2026`;
+  document.getElementById('ebCount').textContent = _ebValidees.length;
 }
 
 function switchTab(code) {
@@ -429,6 +487,78 @@ function navTab(dir) {
 function ouvrirDossier(id) {
   window.location.href = 'detail.html?id=' + encodeURIComponent(id);
 }
+
+function toggleEbMenu(event) {
+  event.stopPropagation();
+  const menu = document.getElementById('ebMenu');
+  const open = !menu.classList.contains('open');
+  menu.classList.toggle('open', open);
+  if (open) renderEbMenu();
+}
+
+function renderEbMenu() {
+  const menu = document.getElementById('ebMenu');
+  const items = _ebValidees;
+  if (!items.length) {
+    menu.innerHTML = `<div class="eb-empty">
+      <i class="fas fa-inbox"></i>
+      Aucune expression de besoin validée disponible.<br>
+      <a href="besoins.html?action=new" style="font-weight:700;color:#1b3a6b">Soumettre une nouvelle expression →</a>
+    </div>`;
+    return;
+  }
+  const header = `<div class="eb-menu-header">${items.length} expression${items.length > 1 ? 's' : ''} validée${items.length > 1 ? 's' : ''} — choisir pour ouvrir le dossier</div>`;
+  const rows = items.map((e) => {
+    const fam = familyOf(e.type_propose);
+    return `<div class="eb-item" onclick="creerDossierDepuisEB('${e.id}')">
+      <div>
+        <div class="eb-item-title">${e.designation}</div>
+        <div class="eb-item-meta">
+          <span class="mono">${e.id}</span>
+          <span>${e.service} · ${e.porteur}</span>
+          <span>${fmt(e.montant_estime)} FCFA</span>
+          <span>Validée le ${e.valide_le} par ${e.valide_par}</span>
+        </div>
+      </div>
+      <span class="eb-item-type bt-${e.type_propose}"><i class="fas ${fam.icon}"></i> ${fam.label.split(' ')[0]}</span>
+    </div>`;
+  }).join('');
+  menu.innerHTML = header + rows;
+}
+
+function creerDossierDepuisEB(ebId) {
+  const eb = _ebValidees.find((x) => x.id === ebId);
+  if (!eb) return;
+  const next = String(_dossiers.length + 1).padStart(4, '0');
+  const newDossier = {
+    id: `DOS-2026-${next}`,
+    type: eb.type_propose,
+    objet: eb.designation,
+    service: eb.service,
+    porteur: eb.porteur,
+    ligne: eb.ligne,
+    source: eb.source,
+    montant_estime: eb.montant_estime,
+    montant_engage: 0,
+    montant_paye: 0,
+    etape: 'saf',
+    soumis: new Date().toLocaleDateString('fr-FR'),
+    eb_ref: eb.id,
+  };
+  _dossiers.unshift(newDossier);
+  _ebValidees = _ebValidees.filter((x) => x.id !== ebId);
+  save();
+  saveEb();
+  document.getElementById('ebMenu').classList.remove('open');
+  window.location.href = 'detail.html?id=' + encodeURIComponent(newDossier.id);
+}
+
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('ebDropdown');
+  if (dd && !dd.contains(e.target)) {
+    document.getElementById('ebMenu').classList.remove('open');
+  }
+});
 
 function initServiceSelect() {
   const sel = document.getElementById('fService');
