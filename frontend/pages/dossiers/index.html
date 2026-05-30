@@ -95,29 +95,29 @@
     }
     .empty i { font-size:2.5rem; margin-bottom:12px; opacity:.5; }
 
-    /* ── Onglets Excel-style en pied de canvas ── */
+    /* ── Onglets Excel-style en haut du canvas ── */
     .sheet-tabs {
       flex-shrink:0; display:flex; align-items:flex-end; gap:0;
-      background:#dbe1ea; border-top:1px solid #94a3b8;
-      padding:0 16px; min-height:34px;
+      background:#dbe1ea; border-bottom:1px solid #94a3b8;
+      padding:6px 16px 0; min-height:36px;
       overflow-x:auto; overflow-y:hidden;
     }
     .sheet-tab {
       display:inline-flex; align-items:center; gap:6px;
       padding:7px 18px;
       font-size:.78rem; font-weight:600; color:#475569;
-      background:#cbd3dd; border:1px solid #94a3b8; border-bottom:none;
-      border-radius:0 0 4px 4px;
+      background:#cbd3dd; border:1px solid #94a3b8; border-top:none;
+      border-radius:4px 4px 0 0;
       cursor:pointer; user-select:none; white-space:nowrap;
-      margin-top:0; position:relative; top:-1px;
+      position:relative; bottom:-1px;
       transition:background .15s;
     }
     .sheet-tab:hover { background:#dee3eb; }
     .sheet-tab.active {
-      background:#fff; color:#1b3a6b; font-weight:800;
-      border-top:2px solid #15803d;
-      box-shadow:0 -2px 4px rgba(0,0,0,.04);
-      padding-top:6px; top:1px;
+      background:#eef2f7; color:#1b3a6b; font-weight:800;
+      border-bottom:2px solid #15803d;
+      box-shadow:0 2px 4px rgba(0,0,0,.04);
+      padding-bottom:6px; bottom:-1px;
       z-index:2;
     }
     .sheet-tab .count {
@@ -127,7 +127,7 @@
     }
     .sheet-tab.active .count { background:#dcfce7; color:#15803d; }
     .sheet-tabs-actions {
-      margin-left:auto; display:flex; gap:4px; align-items:center; padding:4px 0;
+      margin-left:auto; display:flex; gap:4px; align-items:center; padding:0 0 4px;
     }
     .sheet-nav-btn {
       width:24px; height:24px; border:none; background:transparent;
@@ -202,6 +202,8 @@
 
       <div class="dos-body">
 
+        <div class="sheet-tabs" id="sheetTabs"></div>
+
         <div class="dos-canvas">
 
           <div class="dos-filter">
@@ -229,8 +231,6 @@
           <div id="dossierTable"></div>
 
         </div>
-
-        <div class="sheet-tabs" id="sheetTabs"></div>
 
       </div>
     </div>
@@ -334,11 +334,11 @@ function renderTabs() {
   }).join('');
   document.getElementById('sheetTabs').innerHTML = html + `
     <div class="sheet-tabs-actions">
-      <button class="sheet-nav-btn" title="Page précédente" onclick="document.querySelector('.dos-canvas').scrollBy({top:-300,behavior:'smooth'})">
-        <i class="fas fa-chevron-up"></i>
+      <button class="sheet-nav-btn" title="Onglet précédent" onclick="navTab(-1)">
+        <i class="fas fa-chevron-left"></i>
       </button>
-      <button class="sheet-nav-btn" title="Page suivante" onclick="document.querySelector('.dos-canvas').scrollBy({top:300,behavior:'smooth'})">
-        <i class="fas fa-chevron-down"></i>
+      <button class="sheet-nav-btn" title="Onglet suivant" onclick="navTab(1)">
+        <i class="fas fa-chevron-right"></i>
       </button>
     </div>`;
 }
@@ -409,6 +409,12 @@ function switchTab(code) {
   if (code) url.searchParams.set('type', code); else url.searchParams.delete('type');
   window.history.replaceState({}, '', url);
   render();
+}
+
+function navTab(dir) {
+  const idx = FAMILIES.findIndex((f) => f.code === _currentType);
+  const next = (idx + dir + FAMILIES.length) % FAMILIES.length;
+  switchTab(FAMILIES[next].code);
 }
 
 function ouvrirDossier(id) {
