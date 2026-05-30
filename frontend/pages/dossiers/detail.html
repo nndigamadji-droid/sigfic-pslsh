@@ -192,6 +192,13 @@
       padding:14px 18px; color:#92400e; font-size:.82rem; line-height:1.6;
     }
     .stub-notice strong { color:#78350f; }
+    .provisoire-banner {
+      background:#fef3c7; border:1px solid #fde68a; border-left:4px solid #b45309;
+      border-radius:8px; padding:10px 14px; margin-bottom:14px;
+      font-size:.78rem; color:#92400e; display:flex; align-items:center; gap:10px;
+    }
+    .provisoire-banner i { color:#b45309; font-size:1rem; }
+    .provisoire-banner strong { color:#78350f; }
   </style>
 </head>
 <body>
@@ -257,22 +264,78 @@ const STORAGE_DOSSIERS = 'pslsh_dossiers_v1';
 const STORAGE_PIECES   = 'pslsh_pieces_v1';
 
 const PIECES_ACH_S = [
-  { code:'EB',       label:'Expression de besoin',     icon:'fa-list-check',     fields:['designation','quantite','prix_unitaire','justification'] },
-  { code:'PROFORMA', label:'Facture proforma',         icon:'fa-file-invoice',   fields:['fournisseur','reference','montant_ttc','date_doc'] },
-  { code:'BC',       label:'Bon de commande',          icon:'fa-shopping-cart',  fields:['fournisseur','reference','montant_ttc','date_doc','delai_livraison'] },
-  { code:'FACTURE',  label:'Facture définitive',       icon:'fa-file-invoice-dollar', fields:['fournisseur','reference','montant_ttc','date_doc','date_echeance'] },
-  { code:'BL',       label:'Bon de livraison',         icon:'fa-truck',          fields:['fournisseur','reference','date_doc','transporteur'] },
-  { code:'PV_RECEP', label:'PV de réception',          icon:'fa-clipboard-check',fields:['date_doc','lieu','observations','etat_marchandise'] },
-  { code:'ATT_SF',   label:'Attestation de service fait', icon:'fa-stamp',       fields:['date_doc','signataire','observations'] },
-  { code:'OP',       label:'Ordre de paiement',        icon:'fa-money-check-alt',fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
-  { code:'OV',       label:'Ordre de virement',        icon:'fa-exchange-alt',   fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
+  { code:'EB',       label:'Expression de besoin',          icon:'fa-list-check',     fields:['designation','quantite','prix_unitaire','justification'] },
+  { code:'PROFORMA', label:'Facture proforma',              icon:'fa-file-invoice',   fields:['fournisseur','reference','montant_ttc','date_doc'] },
+  { code:'BC',       label:'Bon de commande',               icon:'fa-shopping-cart',  fields:['fournisseur','reference','montant_ttc','date_doc','delai_livraison'] },
+  { code:'FACTURE',  label:'Facture définitive',            icon:'fa-file-invoice-dollar', fields:['fournisseur','reference','montant_ttc','date_doc','date_echeance'] },
+  { code:'BL',       label:'Bon de livraison',              icon:'fa-truck',          fields:['fournisseur','reference','date_doc','transporteur'] },
+  { code:'PV_RECEP', label:'PV de réception',               icon:'fa-clipboard-check',fields:['date_doc','lieu','observations','etat_marchandise'] },
+  { code:'ATT_SF',   label:'Attestation de service fait',   icon:'fa-stamp',          fields:['date_doc','signataire','observations'] },
+  { code:'OP',       label:'Ordre de paiement',             icon:'fa-money-check-alt',fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
+  { code:'OV',       label:'Ordre de virement',             icon:'fa-exchange-alt',   fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
+];
+
+const PIECES_ACH_P = [
+  { code:'EB',         label:'Expression de besoin',        icon:'fa-list-check',         fields:['designation','quantite','prix_unitaire','justification'] },
+  { code:'CDC',        label:'Cahier des charges / TDR',    icon:'fa-file-contract',      fields:['reference','date_doc','specifications','criteres_eligibilite'] },
+  { code:'DC',         label:'Demande de cotation',         icon:'fa-paper-plane',        fields:['reference','date_doc','date_limite','soumissionnaires_invites'] },
+  { code:'OFFRES',     label:'Réception des offres',        icon:'fa-inbox',              fields:['date_doc','nb_offres_recues','observations'] },
+  { code:'TC',         label:'Tableau comparatif',          icon:'fa-table',              fields:['reference','date_doc','commission','observations'] },
+  { code:'PV_ATTR',    label:'PV d\'attribution',           icon:'fa-gavel',              fields:['reference','date_doc','attributaire','montant_attribue','motif_choix'] },
+  { code:'CONTRAT',    label:'Contrat / Marché signé',      icon:'fa-handshake',          fields:['fournisseur','reference','montant_ttc','date_doc','duree','garanties'] },
+  { code:'NOTIF',      label:'Notification d\'attribution', icon:'fa-bullhorn',           fields:['reference','date_doc','date_demarrage'] },
+  { code:'BL',         label:'Bon de livraison',            icon:'fa-truck',              fields:['fournisseur','reference','date_doc','transporteur'] },
+  { code:'PV_RECEP',   label:'PV de réception',             icon:'fa-clipboard-check',    fields:['date_doc','lieu','observations','etat_marchandise'] },
+  { code:'ATT_SF',     label:'Attestation de service fait', icon:'fa-stamp',              fields:['date_doc','signataire','observations'] },
+  { code:'FACTURE',    label:'Facture définitive',          icon:'fa-file-invoice-dollar',fields:['fournisseur','reference','montant_ttc','date_doc','date_echeance'] },
+  { code:'OP',         label:'Ordre de paiement',           icon:'fa-money-check-alt',    fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
+  { code:'OV',         label:'Ordre de virement',           icon:'fa-exchange-alt',       fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
+];
+
+const PIECES_FOR_M = [
+  { code:'EB',         label:'Expression de besoin',        icon:'fa-list-check',         fields:['designation','quantite','prix_unitaire','justification'] },
+  { code:'TDR',        label:'Termes de référence',         icon:'fa-file-contract',      fields:['reference','date_doc','objectifs','resultats_attendus','public_cible'] },
+  { code:'PLAN',       label:'Programme détaillé',          icon:'fa-calendar-alt',       fields:['reference','date_doc','periode','lieu','formateurs'] },
+  { code:'LISTE',      label:'Liste des participants',      icon:'fa-users',              fields:['nb_participants','services_representes','date_doc'] },
+  { code:'CONVOC',     label:'Convocations / invitations',  icon:'fa-envelope',           fields:['reference','date_doc','signataire'] },
+  { code:'ETAT_PEC',   label:'État de prise en charge',     icon:'fa-receipt',            fields:['nb_beneficiaires','per_diem','transport','hebergement','montant_ttc'] },
+  { code:'FEUILLE',    label:'Feuilles de présence',        icon:'fa-clipboard-list',     fields:['date_doc','taux_presence','observations'] },
+  { code:'RAPPORT',    label:'Rapport de mission / formation', icon:'fa-book',            fields:['reference','date_doc','redacteur','synthese','recommandations'] },
+  { code:'JUSTIFS',    label:'Justificatifs (billets, reçus)', icon:'fa-folder-open',     fields:['nb_pieces','montant_justifie','observations'] },
+  { code:'OP',         label:'Ordre de paiement',           icon:'fa-money-check-alt',    fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
+  { code:'OV',         label:'Ordre de virement',           icon:'fa-exchange-alt',       fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
+];
+
+const PIECES_PER_A = [
+  { code:'EB',         label:'Expression de besoin / motif', icon:'fa-list-check',        fields:['designation','justification','quantite','prix_unitaire'] },
+  { code:'DECISION',   label:'Décision / note de service',   icon:'fa-gavel',             fields:['reference','date_doc','signataire','motif_decision'] },
+  { code:'ETAT_NOM',   label:'État nominatif des bénéficiaires', icon:'fa-id-card',       fields:['nb_beneficiaires','services_representes','date_doc'] },
+  { code:'CALCUL',     label:'Tableau de calcul',            icon:'fa-calculator',        fields:['reference','date_doc','base_calcul','montant_unitaire','montant_ttc'] },
+  { code:'VALID_RH',   label:'Validation RH / hiérarchique', icon:'fa-user-check',        fields:['date_doc','signataire','observations'] },
+  { code:'BORD_PAIE',  label:'Bordereau de paie collectif',  icon:'fa-file-invoice',      fields:['reference','date_doc','nb_beneficiaires','montant_ttc'] },
+  { code:'PV_REMISE',  label:'PV de remise / décharge',      icon:'fa-clipboard-check',   fields:['date_doc','lieu','signataire','observations'] },
+  { code:'OP',         label:'Ordre de paiement collectif',  icon:'fa-money-check-alt',   fields:['reference','beneficiaire','montant_ttc','mode_paiement','date_doc'] },
+  { code:'OV',         label:'Ordre de virement / décaissement', icon:'fa-exchange-alt',  fields:['reference','banque','compte','beneficiaire','montant_ttc','date_doc'] },
 ];
 
 const PIECES_BY_TYPE = {
   'ACH-S': PIECES_ACH_S,
-  'ACH-P': null,
-  'FOR-M': null,
-  'PER-A': null,
+  'ACH-P': PIECES_ACH_P,
+  'FOR-M': PIECES_FOR_M,
+  'PER-A': PIECES_PER_A,
+};
+
+const TYPE_LABEL = {
+  'ACH-S': 'Achat simple',
+  'ACH-P': 'Achat par passation',
+  'FOR-M': 'Formation / mission / atelier / séminaire',
+  'PER-A': 'Personnel / primes / dons / salaires / assistance',
+};
+
+const TYPE_NOTICE = {
+  'ACH-P': 'Circuit provisoire à confirmer par les services concernés (14 pièces séquentielles).',
+  'FOR-M': 'Circuit provisoire pour formations, missions, ateliers et séminaires (11 pièces).',
+  'PER-A': 'Circuit provisoire pour primes, dons, salaires et assistances (9 pièces).',
 };
 
 const FIELD_LABELS = {
@@ -284,6 +347,24 @@ const FIELD_LABELS = {
   observations: 'Observations', etat_marchandise: 'État de la marchandise',
   signataire: 'Signataire', beneficiaire: 'Bénéficiaire',
   mode_paiement: 'Mode de paiement', banque: 'Banque', compte: 'N° compte',
+
+  specifications: 'Spécifications techniques', criteres_eligibilite: 'Critères d\'éligibilité',
+  date_limite: 'Date limite de dépôt', soumissionnaires_invites: 'Soumissionnaires invités',
+  nb_offres_recues: 'Nombre d\'offres reçues', commission: 'Commission de dépouillement',
+  attributaire: 'Attributaire retenu', montant_attribue: 'Montant attribué (FCFA)',
+  motif_choix: 'Motif du choix', duree: 'Durée du marché', garanties: 'Garanties exigées',
+  date_demarrage: 'Date de démarrage',
+
+  objectifs: 'Objectifs', resultats_attendus: 'Résultats attendus', public_cible: 'Public cible',
+  periode: 'Période', formateurs: 'Formateurs / intervenants',
+  nb_participants: 'Nombre de participants', services_representes: 'Services représentés',
+  per_diem: 'Per diem (FCFA)', transport: 'Transport (FCFA)', hebergement: 'Hébergement (FCFA)',
+  taux_presence: 'Taux de présence (%)', redacteur: 'Rédacteur du rapport',
+  synthese: 'Synthèse', recommandations: 'Recommandations',
+  nb_pieces: 'Nombre de pièces justificatives', montant_justifie: 'Montant justifié (FCFA)',
+
+  motif_decision: 'Motif de la décision', nb_beneficiaires: 'Nombre de bénéficiaires',
+  base_calcul: 'Base de calcul', montant_unitaire: 'Montant unitaire (FCFA)',
 };
 
 let _dossier = null;
@@ -335,41 +416,74 @@ function autoGeneratePieces() {
 function seedPiece(piece, idx) {
   const d = _dossier;
   const refSeq = String(idx + 1).padStart(3, '0');
-  const refByCode = {
-    EB:       `EB-${d.id.slice(-7)}-${refSeq}`,
-    PROFORMA: `PRF-${d.id.slice(-7)}-${refSeq}`,
-    BC:       `BC-${d.id.slice(-7)}-${refSeq}`,
-    FACTURE:  `FAC-${d.id.slice(-7)}-${refSeq}`,
-    BL:       `BL-${d.id.slice(-7)}-${refSeq}`,
-    PV_RECEP: `PV-${d.id.slice(-7)}-${refSeq}`,
-    ATT_SF:   `ASF-${d.id.slice(-7)}-${refSeq}`,
-    OP:       `OP-${d.id.slice(-7)}-${refSeq}`,
-    OV:       `OV-${d.id.slice(-7)}-${refSeq}`,
+  const stamp = d.id.slice(-7);
+  const refPrefix = {
+    EB:'EB', PROFORMA:'PRF', BC:'BC', FACTURE:'FAC', BL:'BL', PV_RECEP:'PV', ATT_SF:'ASF',
+    OP:'OP', OV:'OV',
+    CDC:'CDC', DC:'DC', OFFRES:'OFR', TC:'TC', PV_ATTR:'PVA', CONTRAT:'CT', NOTIF:'NOT',
+    TDR:'TDR', PLAN:'PLN', LISTE:'LST', CONVOC:'CV', ETAT_PEC:'PEC', FEUILLE:'PRS',
+    RAPPORT:'RAP', JUSTIFS:'JUS',
+    DECISION:'DEC', ETAT_NOM:'EN', CALCUL:'CAL', VALID_RH:'VRH', BORD_PAIE:'BP', PV_REMISE:'PVR',
   };
   const fournDefault = guessFournisseur(d);
   const seedFields = {
-    designation:     d.objet,
-    quantite:        '1',
-    prix_unitaire:   String(d.montant_estime || 0),
-    justification:   `Besoin exprimé par ${d.porteur} (${d.service}) le ${d.soumis}.`,
-    fournisseur:     fournDefault,
-    reference:       refByCode[piece.code] || '',
-    montant_ttc:     String(d.montant_estime || 0),
-    date_doc:        toISO(d.soumis),
-    date_echeance:   addDaysISO(d.soumis, 30),
-    delai_livraison: '30 jours',
-    transporteur:    'À renseigner',
-    lieu:            'Magasin central PSLSH',
-    observations:    '',
-    etat_marchandise: 'Conforme au bon de commande',
-    signataire:      d.porteur,
-    beneficiaire:    fournDefault,
-    mode_paiement:   d.montant_estime >= 600000 ? 'Virement' : 'Chèque',
-    banque:          'BCC — Banque Comm. du Tchad',
-    compte:          'TCH-014-22001-' + d.id.slice(-5),
+    designation:       d.objet,
+    quantite:          '1',
+    prix_unitaire:     String(d.montant_estime || 0),
+    justification:     `Besoin exprimé par ${d.porteur} (${d.service}) le ${d.soumis}.`,
+    fournisseur:       fournDefault,
+    reference:         `${refPrefix[piece.code] || piece.code}-${stamp}-${refSeq}`,
+    montant_ttc:       String(d.montant_estime || 0),
+    date_doc:          toISO(d.soumis),
+    date_echeance:     addDaysISO(d.soumis, 30),
+    delai_livraison:   '30 jours',
+    transporteur:      'À renseigner',
+    lieu:              'Magasin central PSLSH',
+    observations:      '',
+    etat_marchandise:  'Conforme au bon de commande',
+    signataire:        d.porteur,
+    beneficiaire:      fournDefault,
+    mode_paiement:     d.montant_estime >= 600000 ? 'Virement' : 'Chèque',
+    banque:            'BCC — Banque Comm. du Tchad',
+    compte:            'TCH-014-22001-' + d.id.slice(-5),
+
+    specifications:    'Spécifications techniques à compléter selon catalogue de référence.',
+    criteres_eligibilite: 'Capacité technique, références antérieures, garanties financières.',
+    date_limite:       addDaysISO(d.soumis, 21),
+    soumissionnaires_invites: 'À renseigner (3 minimum)',
+    nb_offres_recues:  '0',
+    commission:        'Commission de passation des marchés PSLSH/IST',
+    attributaire:      '',
+    montant_attribue:  String(d.montant_estime || 0),
+    motif_choix:       'Offre conforme aux critères, mieux disante.',
+    duree:             '12 mois',
+    garanties:         'Caution de bonne exécution 5%',
+    date_demarrage:    addDaysISO(d.soumis, 45),
+
+    objectifs:         `Objectifs liés à : ${d.objet}`,
+    resultats_attendus:'Compétences acquises mesurables et applicables.',
+    public_cible:      `Personnel ${d.service}`,
+    periode:           `${toISO(d.soumis)} → ${addDaysISO(d.soumis, 5)}`,
+    formateurs:        'À désigner',
+    nb_participants:   '20',
+    services_representes: d.service,
+    per_diem:          '25 000',
+    transport:         '15 000',
+    hebergement:       '40 000',
+    taux_presence:     '100',
+    redacteur:         d.porteur,
+    synthese:          'À compléter à l\'issue de l\'activité.',
+    recommandations:   'À compléter.',
+    nb_pieces:         '0',
+    montant_justifie:  String(d.montant_estime || 0),
+
+    motif_decision:    `Décision liée à : ${d.objet}`,
+    nb_beneficiaires:  '1',
+    base_calcul:       'Forfaitaire',
+    montant_unitaire:  String(d.montant_estime || 0),
   };
   const data = { status: 'en-cours' };
-  piece.fields.forEach((f) => { data[f] = seedFields[f] || ''; });
+  piece.fields.forEach((f) => { data[f] = seedFields[f] !== undefined ? seedFields[f] : ''; });
   return data;
 }
 
@@ -437,8 +551,16 @@ function render() {
   if (!PIECES_BY_TYPE[_dossier.type]) { renderStub(); return; }
   if (!_selectedPiece) _selectedPiece = PIECES_BY_TYPE[_dossier.type][pieceProgress().idx]?.code || PIECES_BY_TYPE[_dossier.type][0].code;
 
+  const notice = TYPE_NOTICE[_dossier.type]
+    ? `<div class="provisoire-banner">
+         <i class="fas fa-exclamation-triangle"></i>
+         <div><strong>${TYPE_LABEL[_dossier.type]} — circuit provisoire :</strong> ${TYPE_NOTICE[_dossier.type]} Les pièces et leur ordre sont à valider par les services concernés.</div>
+       </div>`
+    : '';
+
   $id('detBody').innerHTML = `
     ${renderHeader()}
+    ${notice}
     <div class="det-grid">
       <div class="det-main">
         ${renderWorkflow()}
@@ -600,13 +722,8 @@ function renderStub() {
   $id('detBody').innerHTML = `
     ${renderHeader()}
     <div class="stub-notice">
-      <strong>Workflow non encore configuré pour la famille « ${_dossier.type} ».</strong><br><br>
-      Les pièces et le circuit de validation pour cette catégorie d'opération
-      (passation des marchés, formations/missions ou personnel/assistance)
-      seront ajoutés dès réception de la composition détaillée.<br><br>
-      <strong>Famille couverte à ce jour :</strong> Achat simple (ACH-S) — 9 pièces séquentielles.
-    </div>
-  `;
+      <strong>Famille inconnue : « ${_dossier.type} ».</strong> Ce type d'opération n'est pas reconnu par le moteur.
+    </div>`;
 }
 
 function selectPiece(code) { _selectedPiece = code; render(); }
@@ -684,9 +801,14 @@ function syncDossierEtape() {
   const list = PIECES_BY_TYPE[_dossier.type];
   if (!list) return;
   const prog = pieceProgress();
-  const ratios = { 0:'saf', 1:'saf', 2:'compta', 3:'coordo', 4:'engagement', 5:'reception', 6:'reception', 7:'paiement', 8:'paiement' };
-  if (prog.idx >= list.length) _dossier.etape = 'clos';
-  else _dossier.etape = ratios[prog.idx] || 'saf';
+  if (prog.idx >= list.length) { _dossier.etape = 'clos'; return; }
+  const ratio = prog.idx / list.length;
+  if (ratio < 0.15)      _dossier.etape = 'saf';
+  else if (ratio < 0.3)  _dossier.etape = 'compta';
+  else if (ratio < 0.45) _dossier.etape = 'coordo';
+  else if (ratio < 0.6)  _dossier.etape = 'engagement';
+  else if (ratio < 0.85) _dossier.etape = 'reception';
+  else                   _dossier.etape = 'paiement';
 }
 
 document.addEventListener('DOMContentLoaded', loadAll);
