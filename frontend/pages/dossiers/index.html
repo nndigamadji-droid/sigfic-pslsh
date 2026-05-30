@@ -75,6 +75,26 @@
     .e-clos      { background:#1b3a6b; color:#fff; }
     .e-rejete    { background:#fee2e2; color:#b91c1c; }
 
+    /* ── Positionnement dynamique du dossier ── */
+    .pos-cell { display:flex; flex-direction:column; gap:4px; min-width:200px; }
+    .pos-stages { display:flex; align-items:center; gap:2px; }
+    .pos-node {
+      flex:1; height:6px; border-radius:3px; background:#e2e8f0;
+      transition:background .2s;
+    }
+    .pos-node.done    { background:#15803d; }
+    .pos-node.current { background:#b45309; animation:pulse 1.6s ease-in-out infinite; }
+    .pos-node.rejected{ background:#b91c1c; }
+    .pos-meta { display:flex; justify-content:space-between; align-items:center; font-size:.65rem; color:#64748b; }
+    .pos-meta strong { color:#1b2f52; font-weight:700; }
+    .pos-actor { color:#b45309; font-weight:700; font-size:.65rem; }
+    .pos-actor.done { color:#15803d; }
+    .pos-actor.rejected { color:#b91c1c; }
+    @keyframes pulse {
+      0%,100% { opacity:1; }
+      50%     { opacity:.45; }
+    }
+
     .empty {
       text-align:center; padding:60px 20px; color:#94a3b8;
       background:#fff; border:1px dashed #e2e8f0; border-radius:12px;
@@ -266,20 +286,49 @@ function fmt(n) { return Math.round(n).toLocaleString('fr-FR'); }
 
 function familyOf(code) { return FAMILIES.find((f) => f.code === code) || FAMILIES[0]; }
 
+const WORKFLOW = ['brouillon', 'saf', 'compta', 'coordo', 'engagement', 'reception', 'paiement', 'clos'];
+
+const ETAPE_META = {
+  brouillon:  { cls:'e-brouillon',  label:'Brouillon',         actor:'Porteur du besoin' },
+  saf:        { cls:'e-saf',        label:'Conformité admin.', actor:'SAF' },
+  compta:     { cls:'e-compta',     label:'Vérif. budgétaire', actor:'Comptable' },
+  coordo:     { cls:'e-coordo',     label:'Ordonnancement',    actor:'Coordonnateur' },
+  engagement: { cls:'e-engagement', label:'Engagement',        actor:'SAF + Fournisseur' },
+  reception:  { cls:'e-reception',  label:'Réception',         actor:'Magasinier' },
+  paiement:   { cls:'e-paiement',   label:'Paiement',          actor:'Trésorier' },
+  clos:       { cls:'e-clos',       label:'Clôturé',           actor:'—' },
+  rejete:     { cls:'e-rejete',     label:'Rejeté',            actor:'—' },
+};
+
 function etapePill(etape) {
-  const map = {
-    brouillon:  ['e-brouillon',  'Brouillon'],
-    saf:        ['e-saf',        'SAF — Conformité'],
-    compta:     ['e-compta',     'Comptable — Budget'],
-    coordo:     ['e-coordo',     'Coordonnateur'],
-    engagement: ['e-engagement', 'Engagement'],
-    reception:  ['e-reception',  'Réception'],
-    paiement:   ['e-paiement',   'Paiement en cours'],
-    clos:       ['e-clos',       'Clôturé'],
-    rejete:     ['e-rejete',     'Rejeté'],
-  };
-  const [cls, txt] = map[etape] || map.brouillon;
-  return `<span class="etape-pill ${cls}">${txt}</span>`;
+  const m = ETAPE_META[etape] || ETAPE_META.brouillon;
+  return `<span class="etape-pill ${m.cls}">${m.label}</span>`;
+}
+
+function positionWidget(etape) {
+  if (etape === 'rejete') {
+    return `<div class="pos-cell">
+      <div class="pos-stages">${WORKFLOW.slice(1).map(() => `<div class="pos-node rejected"></div>`).join('')}</div>
+      <div class="pos-meta"><strong style="color:#b91c1c">Rejeté</strong><span class="pos-actor rejected">circuit clos</span></div>
+    </div>`;
+  }
+  const stages = WORKFLOW.slice(1);
+  const idx = stages.indexOf(etape);
+  const isClos = etape === 'clos';
+  const nodes = stages.map((s, i) => {
+    const cls = isClos ? 'done' : i < idx ? 'done' : i === idx ? 'current' : '';
+    return `<div class="pos-node ${cls}" title="${ETAPE_META[s].label}"></div>`;
+  }).join('');
+  const m = ETAPE_META[etape] || ETAPE_META.brouillon;
+  const stepNum = isClos ? stages.length : idx + 1;
+  const actorCls = isClos ? 'done' : '';
+  return `<div class="pos-cell">
+    <div class="pos-stages">${nodes}</div>
+    <div class="pos-meta">
+      <span><strong>${stepNum}/${stages.length}</strong> · ${m.label}</span>
+      <span class="pos-actor ${actorCls}">${isClos ? '✓ terminé' : '→ ' + m.actor}</span>
+    </div>
+  </div>`;
 }
 
 function filterDossiers() {
@@ -332,7 +381,7 @@ function renderTable(list) {
       <td class="num"><strong>${fmt(d.montant_estime)}</strong></td>
       <td class="num" style="color:#1d4ed8">${fmt(d.montant_engage)}</td>
       <td class="num" style="color:#15803d">${fmt(d.montant_paye)}</td>
-      <td>${etapePill(d.etape)}</td>
+      <td>${positionWidget(d.etape)}</td>
       <td style="color:#64748b;font-size:.72rem">${d.soumis}</td>
     </tr>`;
   }).join('');
@@ -347,7 +396,7 @@ function renderTable(list) {
           <th class="num" style="width:120px">Estimé (FCFA)</th>
           <th class="num" style="width:120px">Engagé</th>
           <th class="num" style="width:120px">Payé</th>
-          <th style="width:160px">Étape</th>
+          <th style="width:220px">Position dans le circuit</th>
           <th style="width:100px">Soumis</th>
         </tr>
       </thead>
