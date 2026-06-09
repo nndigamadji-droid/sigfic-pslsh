@@ -91,7 +91,8 @@
       libelle:'Entretien et réparations sur biens immobiliers', classe:6, type:'service',
       ligne_budget:'L-BATIMENT-6152', dossier_prefix:'Entretien bâtiment',
       keywords:['peinture','plomberie','porte','fenêtre','climatisation','chauffage',
-                'réparation bâtiment','travaux','maçonnerie','électricité bâtiment','toiture','sanitaire'] },
+                'réparation bâtiment','travaux','maçonnerie','électricité bâtiment','toiture','sanitaire',
+                'construction','entrepôt','aménagement','rénovation','réhabilitation','agrandissement'] },
 
     { code:'6156', famille:'Maintenance', sousFamille:'Maintenance IT et équipements',
       libelle:'Maintenance informatique et électronique', classe:6, type:'service',
