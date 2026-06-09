@@ -111,7 +111,46 @@
     }
     .ligne-row {
       display:grid; grid-template-columns:30px 1fr 120px 38px; gap:10px;
-      align-items:center; margin-bottom:8px;
+      align-items:center; margin-bottom:4px;
+    }
+    .ligne-tag {
+      grid-column:2 / 4; display:flex; align-items:center; gap:8px;
+      margin:2px 0 10px; padding:5px 10px;
+      background:#f1f5f9; border-radius:6px; font-size:.7rem;
+    }
+    .ligne-tag .tag-pill {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:2px 9px; border-radius:14px; font-size:.66rem; font-weight:700;
+    }
+    .ligne-tag .tag-code {
+      font-family:monospace; font-weight:800; color:#1b3a6b;
+    }
+    .ligne-tag .tag-info {
+      flex:1; color:#475569; font-size:.7rem;
+    }
+    .ligne-tag .tag-override {
+      font-size:.66rem; padding:3px 6px; border:1px solid #cbd5e1;
+      border-radius:5px; background:#fff; color:#475569; cursor:pointer;
+    }
+    .ligne-tag.unclassified {
+      background:#fef2f2; border:1px dashed #fca5a5;
+    }
+    .ligne-tag.unclassified .tag-info { color:#b91c1c; font-weight:600; }
+
+    .syscohada-summary {
+      background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px;
+      padding:10px 14px; margin-top:14px; font-size:.78rem; color:#1b3a6b;
+      display:flex; align-items:flex-start; gap:10px;
+    }
+    .syscohada-summary i { color:#1d4ed8; font-size:1.1rem; margin-top:2px; }
+    .syscohada-summary strong { color:#1b2f52; }
+    .syscohada-summary .sc-row {
+      display:flex; gap:14px; flex-wrap:wrap; margin-top:4px; font-size:.72rem;
+    }
+    .syscohada-summary .sc-row span { color:#475569; }
+    .syscohada-summary .sc-row code {
+      background:#dbeafe; color:#1b3a6b; padding:1px 6px; border-radius:4px;
+      font-weight:700; font-family:monospace;
     }
     .ligne-row .ligne-num {
       width:30px; height:30px; border-radius:50%;
@@ -214,6 +253,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../../src/js/api.js"></script>
 <script src="../../src/js/roles.js"></script>
+<script src="../../src/js/syscohada.js"></script>
 <script>
 const STORAGE_EB_ALL = 'pslsh_eb_all_v1';
 const STORAGE_EB_VALIDATED = 'pslsh_eb_v1';
@@ -320,10 +360,14 @@ function renderList(items, emptyMsg) {
     const lignes = e.lignes || (e.titre ? [{ libelle:e.titre, quantite:'' }] : []);
     const firstLine = lignes[0]?.libelle || '—';
     const more = lignes.length > 1 ? ` <small style="color:#1d4ed8;font-weight:700">+${lignes.length - 1} autre${lignes.length > 2 ? 's' : ''}</small>` : '';
+    const dom = e.sysco_code && e.sysco_code !== '?' ? SYSCOHADA.getByCode(e.sysco_code) : null;
+    const syscoCell = dom
+      ? `<span style="font-family:monospace;color:#1b3a6b;font-weight:700">${dom.code}</span><br><small style="color:#94a3b8">${dom.famille}</small>`
+      : `<span style="color:#b91c1c;font-size:.7rem">À classer</span>`;
     return `<tr>
       <td class="mono">${e.id}</td>
       <td><strong>${firstLine}</strong>${more}<br><small style="color:#94a3b8">${e.service} · ${e.porteur} · soumis ${e.soumis}</small></td>
-      <td>${e.type}</td>
+      <td>${syscoCell}</td>
       <td><small style="color:#475569">${(e.motif || '').slice(0, 80)}${(e.motif || '').length > 80 ? '…' : ''}</small></td>
       <td>${statutPill(e.statut)}</td>
     </tr>`;
@@ -332,7 +376,7 @@ function renderList(items, emptyMsg) {
     <thead><tr>
       <th style="width:140px">Référence</th>
       <th>Libellé principal</th>
-      <th style="width:80px">Type</th>
+      <th style="width:140px">Compte SYSCOHADA</th>
       <th>Motif</th>
       <th style="width:200px">Statut</th>
     </tr></thead>
@@ -348,15 +392,14 @@ function renderForm() {
     <form class="eb-form" id="ebForm" onsubmit="event.preventDefault();submitEb(event)">
       <div>
         <label>Service porteur *</label>
-        <select name="service" required>
+        <select name="service" required onchange="updateSyscoSummary()">
           ${SERVICES.map((s) => `<option value="${s}">${s}</option>`).join('')}
         </select>
       </div>
       <div>
-        <label>Type d'opération *</label>
-        <select name="type" required>
-          ${TYPES.map((t) => `<option value="${t.code}">${t.label}</option>`).join('')}
-        </select>
+        <label>Type de besoin (SYSCOHADA)</label>
+        <input type="text" id="syscoMain" readonly placeholder="Détecté à la saisie des libellés…"
+          style="background:#f8fafc;color:#1b3a6b;font-family:monospace;font-size:.78rem;font-weight:700">
       </div>
       <div class="lignes-block">
         <div class="lb-title">
@@ -367,6 +410,7 @@ function renderForm() {
         <button type="button" class="btn-add-ligne" onclick="addLigne()">
           <i class="fas fa-plus"></i>Ajouter un libellé
         </button>
+        <div id="syscohadaSummary"></div>
       </div>
 
       <div class="full">
@@ -386,23 +430,106 @@ function renderForm() {
 function renderLignes() {
   const target = document.getElementById('lignesList');
   if (!target) return;
-  target.innerHTML = _formLignes.map((l, i) => `
+  target.innerHTML = _formLignes.map((l, i) => {
+    const cat = (l.libelle || '').trim() ? SYSCOHADA.classify(l.libelle) : null;
+    return `
     <div class="ligne-row">
       <div class="ligne-num">${i + 1}</div>
       <input type="text" placeholder="Libellé du besoin (ex. Ramettes papier A4)"
              value="${(l.libelle || '').replace(/"/g, '&quot;')}"
-             oninput="_formLignes[${i}].libelle=this.value">
+             oninput="updateLigne(${i},'libelle',this.value)">
       <input type="text" placeholder="Quantité (ex. 40 cartons)"
              value="${(l.quantite || '').replace(/"/g, '&quot;')}"
-             oninput="_formLignes[${i}].quantite=this.value">
+             oninput="updateLigne(${i},'quantite',this.value)">
       <button type="button" class="btn-row ${_formLignes.length === 1 ? 'disabled' : ''}"
               ${_formLignes.length === 1 ? 'disabled' : ''}
               onclick="removeLigne(${i})" title="Retirer ce libellé">
         <i class="fas fa-minus"></i>
       </button>
-    </div>`).join('');
+    </div>
+    ${cat ? renderCategoryTag(cat, i) : ''}`;
+  }).join('');
   document.getElementById('lignesCount').textContent =
     `${_formLignes.length} ligne${_formLignes.length > 1 ? 's' : ''}`;
+  updateSyscoSummary();
+}
+
+function renderCategoryTag(cat, i) {
+  const isUnknown = cat.code === '?';
+  const typeMeta = SYSCOHADA.TYPE_TO_FAMILLE_LABEL[cat.type] || SYSCOHADA.TYPE_TO_FAMILLE_LABEL.autre;
+  return `<div class="ligne-tag ${isUnknown ? 'unclassified' : ''}">
+    <span class="tag-pill" style="background:${typeMeta.bg};color:${typeMeta.color}">
+      <i class="fas fa-${isUnknown ? 'exclamation-circle' : 'magic'}"></i>${typeMeta.label}
+    </span>
+    <span class="tag-code">${cat.code}</span>
+    <span class="tag-info">${cat.libelle} <em style="color:#94a3b8">· ${cat.famille}</em></span>
+    <select class="tag-override" onchange="overrideCategory(${i}, this.value)">
+      <option value="">Modifier…</option>
+      ${SYSCOHADA.CATALOG.map((c) => `<option value="${c.code}" ${c.code === cat.code ? 'selected' : ''}>${c.code} — ${c.libelle}</option>`).join('')}
+    </select>
+  </div>`;
+}
+
+function updateLigne(i, field, value) {
+  _formLignes[i][field] = value;
+  if (field === 'libelle') {
+    if (_formLignes[i].override) delete _formLignes[i].override;
+    renderLignes();
+  } else {
+    updateSyscoSummary();
+  }
+}
+
+function overrideCategory(i, code) {
+  if (!code) return;
+  _formLignes[i].override = code;
+  renderLignes();
+}
+
+function effectiveCategory(l) {
+  if (l.override) return SYSCOHADA.getByCode(l.override);
+  return (l.libelle || '').trim() ? SYSCOHADA.classify(l.libelle) : null;
+}
+
+function updateSyscoSummary() {
+  const lignes = _formLignes.map((l) => ({ ...l, _cat: effectiveCategory(l) })).filter((l) => l._cat);
+  const mainEl = document.getElementById('syscoMain');
+  const sumEl  = document.getElementById('syscohadaSummary');
+  if (!mainEl || !sumEl) return;
+
+  if (!lignes.length) {
+    mainEl.value = '';
+    sumEl.innerHTML = '';
+    return;
+  }
+  const tally = {};
+  lignes.forEach((l) => { tally[l._cat.code] = (tally[l._cat.code] || 0) + 1; });
+  const dominantCode = Object.keys(tally).sort((a, b) => tally[b] - tally[a])[0];
+  const dom = SYSCOHADA.getByCode(dominantCode) || lignes[0]._cat;
+  mainEl.value = `${dom.code} — ${dom.libelle}`;
+
+  const svc = document.querySelector('select[name="service"]').value;
+  const dossierTitle = SYSCOHADA.suggestDossierTitle('', _formLignes);
+  const budgetLine   = SYSCOHADA.suggestBudgetLine(svc, _formLignes);
+  const uniqueCats   = Object.keys(tally).length;
+
+  sumEl.innerHTML = `<div class="syscohada-summary">
+    <i class="fas fa-brain"></i>
+    <div>
+      <strong>Classification SYSCOHADA dérivée automatiquement</strong>
+      <div class="sc-row">
+        <span>Compte dominant : <code>${dom.code}</code> ${dom.libelle}</span>
+        <span>Catégories distinctes : <strong>${uniqueCats}</strong></span>
+      </div>
+      <div class="sc-row">
+        <span>Titre du dossier suggéré : <strong>${dossierTitle}</strong></span>
+      </div>
+      <div class="sc-row">
+        <span>Ligne budgétaire suggérée : <code>${budgetLine}</code></span>
+        <span>Libellé écriture : <em>${dom.libelle} — ${svc || 'service'}</em></span>
+      </div>
+    </div>
+  </div>`;
 }
 
 function addLigne() {
@@ -421,19 +548,44 @@ document.addEventListener('click', (e) => {
   if (e.target.matches('button[name="action"]')) _lastClickedAction = e.target.value;
 });
 
+const TYPE_FROM_SYSCO = {
+  immo: 'ACH-P', stock: 'ACH-P', service: 'ACH-S',
+  charge: 'ACH-S', personnel: 'PER-A', autre: 'PER-A',
+};
+
 function submitEb(evt) {
   const form = evt.target;
   const fd = new FormData(form);
-  const validLignes = _formLignes.filter((l) => (l.libelle || '').trim());
+  const validLignes = _formLignes
+    .filter((l) => (l.libelle || '').trim())
+    .map((l) => {
+      const cat = effectiveCategory(l);
+      return {
+        libelle: l.libelle,
+        quantite: l.quantite,
+        sysco_code: cat ? cat.code : '?',
+        sysco_libelle: cat ? cat.libelle : '',
+        sysco_famille: cat ? cat.famille : '',
+        sysco_type: cat ? cat.type : 'autre',
+        ligne_budget_suggested: cat ? cat.ligne_budget : 'L-A-CLASSER',
+      };
+    });
   if (!validLignes.length) {
     alert('Renseignez au moins un libellé de besoin.');
     return;
   }
+  const dom = SYSCOHADA.dominantCategory(validLignes);
+  const inferredType = dom ? (TYPE_FROM_SYSCO[dom.type] || 'ACH-S') : 'ACH-S';
   const seq = String(_ebAll.length + 20).padStart(4, '0');
+  const service = fd.get('service');
   const nb = {
     id: `EB-2026-${seq}`,
-    type: fd.get('type'),
-    service: fd.get('service'),
+    type: inferredType,
+    sysco_code: dom ? dom.code : '?',
+    sysco_libelle: dom ? dom.libelle : '',
+    titre_suggested: SYSCOHADA.suggestDossierTitle('', validLignes),
+    ligne_budget_suggested: SYSCOHADA.suggestBudgetLine(service, validLignes),
+    service,
     porteur: CURRENT_USER,
     motif: fd.get('motif') || '',
     lignes: validLignes,
@@ -443,7 +595,7 @@ function submitEb(evt) {
   _ebAll.unshift(nb);
   save();
   _formLignes = [{ libelle:'', quantite:'' }];
-  alert(`Besoin ${nb.id} ${_lastClickedAction === 'submit' ? 'soumis pour validation' : 'enregistré en brouillon'}.`);
+  alert(`Besoin ${nb.id} ${_lastClickedAction === 'submit' ? 'soumis pour validation' : 'enregistré en brouillon'}\n\nClassification : ${dom ? dom.code + ' — ' + dom.libelle : 'À classer'}\nLigne budgétaire : ${nb.ligne_budget_suggested}`);
   switchTab('mine');
 }
 
