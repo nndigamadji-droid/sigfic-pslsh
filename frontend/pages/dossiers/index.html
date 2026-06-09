@@ -92,7 +92,7 @@
     }
     .btn-open { background:#1b3a6b; color:#fff; border-color:#1b3a6b; }
     .btn-open:hover { background:#254d8f; }
-    .btn-archive-row { background:#fff; color:#475569; border-color:#cbd5e1; margin-left:6px; }
+    .btn-archive-row { background:#fff; color:#475569; border-color:#cbd5e1; }
     .btn-archive-row:hover { background:#475569; color:#fff; border-color:#475569; }
     .btn-archive-row.disabled { color:#cbd5e1; cursor:not-allowed; }
     .btn-archive-row.disabled:hover { background:#fff; color:#cbd5e1; border-color:#cbd5e1; }
@@ -464,10 +464,12 @@ function renderTable(list) {
       <td><span class="mono" style="color:#475569">${d.ligne}</span><br><small style="color:#94a3b8">${d.source}</small></td>
       <td>${positionWidget(d.etape)}</td>
       <td>
-        <button class="btn-open" onclick="ouvrirDossier('${d.id}')"><i class="fas fa-folder-open"></i>Ouvrir dossier</button>
-        ${canArchive
-          ? `<button class="btn-archive-row" onclick="archiveFromList('${d.id}')" title="Archiver ce dossier"><i class="fas fa-archive"></i>Archiver</button>`
-          : `<button class="btn-archive-row disabled" title="Archivable uniquement quand le dossier est clos ou payé"><i class="fas fa-archive"></i>Archiver</button>`}
+        <div style="display:flex;gap:6px;flex-wrap:nowrap;white-space:nowrap">
+          <button class="btn-open" onclick="ouvrirDossier('${d.id}')"><i class="fas fa-folder-open"></i>Ouvrir dossier</button>
+          ${canArchive
+            ? `<button class="btn-archive-row" onclick="archiveFromList('${d.id}')" title="Archiver ce dossier"><i class="fas fa-archive"></i>Archiver</button>`
+            : `<button class="btn-archive-row disabled" title="Archivable uniquement quand le dossier est clos ou payé"><i class="fas fa-archive"></i>Archiver</button>`}
+        </div>
       </td>
     </tr>`;
   }).join('');
@@ -479,7 +481,7 @@ function renderTable(list) {
           <th>Objet</th>
           <th style="width:160px">Ligne / Source</th>
           <th style="width:220px">Position dans le circuit</th>
-          <th style="width:140px"></th>
+          <th style="width:260px"></th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
