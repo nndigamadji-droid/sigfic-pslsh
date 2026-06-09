@@ -44,14 +44,13 @@
     .piece-card.done     { border-left-color:#15803d; }
     .piece-card.current  { border-left-color:#b45309; }
     .piece-card.rejected { border-left-color:#b91c1c; }
-    .piece-card.selected { box-shadow:0 4px 14px rgba(27,58,107,.10); border-color:#1b3a6b; }
+    .piece-card:hover { box-shadow:0 2px 8px rgba(27,58,107,.06); }
 
     .pc-head {
       display:grid; grid-template-columns:42px 1fr auto auto;
-      align-items:center; gap:12px; padding:12px 16px;
-      cursor:pointer; user-select:none;
+      align-items:center; gap:12px; padding:11px 16px;
+      user-select:none;
     }
-    .pc-head:hover { background:#f8fafc; }
     .pc-num {
       width:34px; height:34px; border-radius:50%;
       display:flex; align-items:center; justify-content:center;
@@ -143,17 +142,25 @@
       margin-bottom:12px;
     }
 
-    .pc-body {
-      padding:14px 18px 18px; border-top:1px solid #f1f5f9; background:#fafbfc;
-      display:none;
+    .pc-quick button.btn-submit-mini {
+      background:#1b3a6b; color:#fff; border-color:#1b3a6b;
     }
-    .piece-card.selected .pc-body { display:block; }
-    .pc-toggle {
-      width:24px; height:24px; border-radius:4px;
-      display:flex; align-items:center; justify-content:center;
-      color:#94a3b8; font-size:.7rem; transition:transform .2s;
+    .pc-quick button.btn-submit-mini:hover { background:#254d8f; }
+
+    .edit-modal-body .pp-fields {
+      display:grid; grid-template-columns:1fr 1fr; gap:12px 18px;
     }
-    .piece-card.selected .pc-toggle { transform:rotate(90deg); color:#1b3a6b; }
+    .edit-modal-body .pp-fld.pp-full { grid-column:1 / -1; }
+    .edit-modal-body .pp-fld label {
+      display:block; font-size:.65rem; font-weight:700; color:#64748b;
+      text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px;
+    }
+    .edit-modal-body .pp-fld input,
+    .edit-modal-body .pp-fld textarea {
+      width:100%; font-size:.78rem; padding:6px 10px;
+      border:1px solid #cbd5e1; border-radius:7px;
+    }
+    .edit-modal-body .pp-fld textarea { min-height:60px; resize:vertical; }
 
     .pp-fields { display:grid; grid-template-columns:1fr 1fr; gap:12px 18px; margin-bottom:14px; }
     .pp-fld label { display:block; font-size:.65rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
@@ -259,6 +266,22 @@
         <div style="text-align:center;padding:60px;color:#94a3b8">
           <i class="fas fa-spinner fa-spin fa-2x"></i><br><br>Chargement du dossier…
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalEditPiece" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(135deg,#1b2f52,#1b3a6b);color:#fff">
+        <h5 class="modal-title" id="editPieceTitle"><i class="fas fa-pencil-alt me-2"></i>Modifier la pièce</h5>
+        <button type="button" class="btn-close" style="filter:invert(1)" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body edit-modal-body" id="editPieceBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="saveEdit()"><i class="fas fa-save me-1"></i>Enregistrer</button>
       </div>
     </div>
   </div>
@@ -378,7 +401,6 @@ const FIELD_LABELS = {
 let _dossier = null;
 let _piecesData = {};
 let _selectedPiece = null;
-let _editMode = false;
 
 function $id(id) { return document.getElementById(id); }
 
@@ -662,145 +684,123 @@ function renderPieceCard(piece, idx, prog) {
   if (status === 'valide')      cls += ' done';
   else if (status === 'rejete') cls += ' rejected';
   else if (idx === prog.idx)    cls += ' current';
-  if (piece.code === _selectedPiece) cls += ' selected';
 
   const src = piece.source || 'interne';
   const srcLabel = { interne:'Interne', externe:'Fournisseur', mixte:'Mixte' }[src];
   const showGenerer = src !== 'externe';
   const showImporter = src !== 'interne';
+  const canSubmit = status !== 'valide' && status !== 'soumis' && status !== 'rejete';
+  const canValidate = status === 'soumis';
+  const canReopen = status === 'rejete';
+
   const quickButtons = [
     showGenerer ? `<button title="Générer le document PSLSH" onclick="generatePiece('${piece.code}')"><i class="fas fa-magic"></i></button>` : '',
     showImporter ? `<button title="Importer le document fournisseur" onclick="importPiece('${piece.code}')" class="${data.imported ? 'imported' : ''}"><i class="fas fa-${data.imported ? 'file-import' : 'upload'}"></i></button>` : '',
+    `<button title="Modifier les champs" onclick="openEdit('${piece.code}')"><i class="fas fa-pencil-alt"></i></button>`,
     `<button title="Imprimer cette pièce" onclick="printPiece('${piece.code}')"><i class="fas fa-print"></i></button>`,
+    canSubmit  ? `<button title="Soumettre pour validation" class="btn-submit-mini" onclick="quickSubmit('${piece.code}')"><i class="fas fa-paper-plane"></i></button>` : '',
+    canValidate ? `<button title="Valider" class="btn-submit-mini" style="background:#15803d;border-color:#15803d" onclick="validateOne('${piece.code}')"><i class="fas fa-check"></i></button>` : '',
+    canReopen  ? `<button title="Reprendre" onclick="reopenOne('${piece.code}')"><i class="fas fa-redo"></i></button>` : '',
   ].filter(Boolean).join('');
 
   return `<div class="${cls}" id="card-${piece.code}">
-    <div class="pc-head" onclick="selectPiece('${piece.code}')">
+    <div class="pc-head">
       <div class="pc-num">${status === 'valide' ? '<i class="fas fa-check"></i>' : status === 'rejete' ? '<i class="fas fa-times"></i>' : idx + 1}</div>
       <div class="pc-info">
         <h6>
           <i class="fas ${piece.icon} me-2" style="color:#1b3a6b"></i>${piece.label}
           <span class="src-tag src-${src}"><i class="fas fa-${src === 'externe' ? 'arrow-down' : src === 'mixte' ? 'exchange-alt' : 'pen'}"></i>${srcLabel}</span>
         </h6>
-        <div class="pc-sub">Pièce ${idx + 1}/${PIECES_BY_TYPE[_dossier.type].length} · ${data.reference || 'sans référence'}</div>
+        <div class="pc-sub">Pièce ${idx + 1}/${PIECES_BY_TYPE[_dossier.type].length} · ${data.reference || 'sans référence'}${data.imported ? ` · 📎 ${data.imported.filename}` : ''}</div>
       </div>
-      <div class="pc-quick" onclick="event.stopPropagation()">${quickButtons}</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span class="pc-status ${s.cls}">${s.txt}</span>
-        <div class="pc-toggle"><i class="fas fa-chevron-right"></i></div>
-      </div>
+      <div class="pc-quick">${quickButtons}</div>
+      <span class="pc-status ${s.cls}">${s.txt}</span>
     </div>
-    ${piece.code === _selectedPiece ? renderPieceBody(piece, data, status) : ''}
   </div>`;
 }
 
-function renderPieceBody(piece, data, status) {
-  const importedBlock = data.imported ? `
-    <div class="import-info">
-      <i class="fas fa-paperclip"></i>
-      <div>
-        <strong>Document fournisseur importé :</strong>
-        <span class="badge">${data.imported.filename}</span>
-        <span style="color:#475569;font-size:.68rem;margin-left:6px">${Math.round(data.imported.size / 1024)} ko · ${data.imported.type || 'fichier'}</span>
-      </div>
-      <span class="replace" onclick="importPiece('${piece.code}')">Remplacer</span>
-    </div>` : '';
+const TEXT_FIELDS = new Set(['justification', 'observations', 'specifications', 'criteres_eligibilite',
+  'soumissionnaires_invites', 'motif_choix', 'motif_decision', 'objectifs',
+  'resultats_attendus', 'synthese', 'recommandations', 'garanties']);
+const NUM_FIELDS = new Set(['quantite', 'prix_unitaire', 'montant_ttc', 'montant_attribue',
+  'nb_participants', 'nb_offres_recues', 'nb_beneficiaires', 'nb_pieces',
+  'per_diem', 'transport', 'hebergement', 'taux_presence', 'montant_unitaire',
+  'montant_justifie']);
 
-  return `<div class="pc-body">
-    ${importedBlock}
-    ${_editMode ? renderEditForm(piece, data, status) : renderPreview(piece, data, status)}
-  </div>`;
-}
-
-function renderPreview(piece, data, status) {
-  const locked = status === 'valide';
-  const filled = piece.fields.some((f) => data[f] && String(data[f]).trim());
-  const isExterne = piece.source === 'externe';
-
-  let body;
-  if (isExterne && !data.imported) {
-    body = `<div class="preview-empty"><i class="fas fa-cloud-upload-alt fa-2x d-block mb-2" style="opacity:.4"></i>
-      Aucun document fournisseur n'a encore été importé.</div>`;
-  } else if (!filled && !data.imported) {
-    body = `<div class="preview-empty"><i class="fas fa-file-alt fa-2x d-block mb-2" style="opacity:.4"></i>
-      Pièce vierge. Cliquez sur <strong>Générer</strong> pour créer le document.</div>`;
-  } else {
-    body = `<div class="preview-doc">
-      <div class="pv-title"><i class="fas fa-file-alt" style="color:#1b3a6b"></i>Document ${isExterne ? 'fournisseur attaché' : 'PSLSH généré'}</div>
-      ${piece.fields.map((f) => previewRow(f, data[f])).join('')}
-    </div>`;
-  }
-
-  const actions = locked
-    ? `<button class="btn-act-pp btn-disabled" disabled><i class="fas fa-lock"></i>Pièce validée</button>`
-    : status === 'rejete'
-      ? `<button class="btn-act-pp btn-save" onclick="reopenPiece()"><i class="fas fa-redo"></i>Reprendre</button>`
-      : status === 'soumis'
-        ? `<button class="btn-act-pp btn-reject" onclick="rejectPiece()"><i class="fas fa-times"></i>Rejeter</button>
-           <button class="btn-act-pp btn-validate" onclick="validatePiece()"><i class="fas fa-check"></i>Valider</button>`
-        : `<button class="btn-act-pp btn-save" onclick="enterEditMode()"><i class="fas fa-pencil-alt"></i>Modifier</button>
-           <button class="btn-act-pp btn-submit" onclick="quickSubmit()"><i class="fas fa-paper-plane"></i>Soumettre pour validation</button>`;
-
-  return `${body}<div class="pp-actions">${actions}</div>`;
-}
-
-function previewRow(f, value) {
-  const lbl = FIELD_LABELS[f] || f;
-  const v = value != null && value !== '' ? String(value) : '—';
-  const isText = ['justification', 'observations', 'specifications', 'criteres_eligibilite',
-                  'soumissionnaires_invites', 'motif_choix', 'motif_decision', 'objectifs',
-                  'resultats_attendus', 'synthese', 'recommandations', 'garanties'].includes(f);
-  const isNum = ['quantite', 'prix_unitaire', 'montant_ttc', 'montant_attribue',
-                 'nb_participants', 'nb_offres_recues', 'nb_beneficiaires', 'nb_pieces',
-                 'per_diem', 'transport', 'hebergement', 'montant_unitaire', 'montant_justifie'].includes(f);
-  const isRef = f === 'reference';
-  const display = isNum && v !== '—' ? Math.round(+v).toLocaleString('fr-FR') : v;
-  const cls = (isNum || isRef) ? ' mono' : '';
-  if (isText) {
-    return `<div class="pv-row full"><span class="pv-lbl">${lbl}</span><span class="pv-val">${display}</span></div>`;
-  }
-  return `<div class="pv-row"><span class="pv-lbl">${lbl}</span><span class="pv-val${cls}">${display}</span></div>`;
-}
-
-function renderEditForm(piece, data, status) {
-  const locked = status === 'valide';
-  const ro = locked ? 'readonly' : '';
+function openEdit(code) {
+  _selectedPiece = code;
+  const piece = PIECES_BY_TYPE[_dossier.type].find((p) => p.code === code);
+  const data = _piecesData[_dossier.id].pieces[code] || {};
+  document.getElementById('editPieceTitle').innerHTML =
+    `<i class="fas ${piece.icon} me-2"></i>${piece.label} <small style="opacity:.7;font-weight:400">· ${data.reference || ''}</small>`;
   const fields = piece.fields.map((f) => {
     const lbl = FIELD_LABELS[f] || f;
     const v = data[f] != null ? String(data[f]) : '';
-    const isText = ['justification', 'observations', 'specifications', 'criteres_eligibilite',
-                    'soumissionnaires_invites', 'motif_choix', 'motif_decision', 'objectifs',
-                    'resultats_attendus', 'synthese', 'recommandations', 'garanties'].includes(f);
+    const isText = TEXT_FIELDS.has(f);
     const isDate = f.startsWith('date_');
-    const isNum  = ['quantite', 'prix_unitaire', 'montant_ttc', 'montant_attribue',
-                    'nb_participants', 'nb_offres_recues', 'nb_beneficiaires', 'nb_pieces',
-                    'per_diem', 'transport', 'hebergement', 'taux_presence', 'montant_unitaire',
-                    'montant_justifie'].includes(f);
+    const isNum  = NUM_FIELDS.has(f);
     const fullCol = isText ? ' pp-full' : '';
     const inp = isText
-      ? `<textarea ${ro}>${v}</textarea>`
-      : `<input type="${isDate ? 'date' : isNum ? 'number' : 'text'}" value="${v.replace(/"/g, '&quot;')}" ${ro}>`;
+      ? `<textarea data-fld="${f}">${v}</textarea>`
+      : `<input data-fld="${f}" type="${isDate ? 'date' : isNum ? 'number' : 'text'}" value="${v.replace(/"/g, '&quot;')}">`;
     return `<div class="pp-fld${fullCol}"><label>${lbl}</label>${inp}</div>`;
   }).join('');
-
-  return `<form id="pieceForm" onsubmit="event.preventDefault();savePiece(false)">
-    <div class="pp-fields">${fields}</div>
-    <div class="pp-actions">
-      <button type="button" class="btn-act-pp btn-save" onclick="exitEditMode()"><i class="fas fa-times"></i>Annuler</button>
-      <button type="button" class="btn-act-pp btn-submit" onclick="savePiece(false);exitEditMode()"><i class="fas fa-save"></i>Enregistrer</button>
-    </div>
-  </form>`;
+  document.getElementById('editPieceBody').innerHTML = `<div class="pp-fields">${fields}</div>`;
+  new bootstrap.Modal(document.getElementById('modalEditPiece')).show();
 }
 
-function enterEditMode() { _editMode = true; render(); }
-function exitEditMode()  { _editMode = false; render(); }
-function quickSubmit() {
-  const p = _piecesData[_dossier.id].pieces[_selectedPiece] || {};
-  p.status = 'soumis';
-  _piecesData[_dossier.id].pieces[_selectedPiece] = p;
+function saveEdit() {
+  const piece = PIECES_BY_TYPE[_dossier.type].find((p) => p.code === _selectedPiece);
+  const current = _piecesData[_dossier.id].pieces[_selectedPiece] || {};
+  document.querySelectorAll('#editPieceBody [data-fld]').forEach((el) => {
+    current[el.dataset.fld] = el.value;
+  });
+  if (current.status === 'vide' || !current.status) current.status = 'en-cours';
+  _piecesData[_dossier.id].pieces[_selectedPiece] = current;
   _piecesData[_dossier.id].histo.push({
-    action: 'Soumis pour validation', piece: _selectedPiece,
+    action: 'Pièce modifiée manuellement', piece: _selectedPiece,
+    par: 'admin@pslsh.org', date: new Date().toLocaleString('fr-FR'), color: 'blue',
+  });
+  savePieces();
+  bootstrap.Modal.getInstance(document.getElementById('modalEditPiece')).hide();
+  render();
+}
+
+function quickSubmit(code) {
+  const p = _piecesData[_dossier.id].pieces[code] || {};
+  p.status = 'soumis';
+  _piecesData[_dossier.id].pieces[code] = p;
+  _piecesData[_dossier.id].histo.push({
+    action: 'Soumis pour validation', piece: code,
     par: 'admin@pslsh.org', date: new Date().toLocaleString('fr-FR'), color: 'orange',
+  });
+  savePieces();
+  render();
+}
+
+function validateOne(code) {
+  const p = _piecesData[_dossier.id].pieces[code] || {};
+  p.status = 'valide';
+  p.validatedAt = new Date().toISOString();
+  _piecesData[_dossier.id].pieces[code] = p;
+  _piecesData[_dossier.id].histo.push({
+    action: 'Validée', piece: code,
+    par: 'admin@pslsh.org', date: new Date().toLocaleString('fr-FR'), color: 'green',
+  });
+  syncDossierEtape();
+  savePieces();
+  saveDossiers();
+  render();
+}
+
+function reopenOne(code) {
+  const p = _piecesData[_dossier.id].pieces[code] || {};
+  p.status = 'en-cours';
+  delete p.motif;
+  _piecesData[_dossier.id].pieces[code] = p;
+  _piecesData[_dossier.id].histo.push({
+    action: 'Reprise', piece: code,
+    par: 'admin@pslsh.org', date: new Date().toLocaleString('fr-FR'), color: 'blue',
   });
   savePieces();
   render();
@@ -812,16 +812,6 @@ function renderStub() {
     <div class="stub-notice">
       <strong>Famille inconnue : « ${_dossier.type} ».</strong> Ce type d'opération n'est pas reconnu par le moteur.
     </div>`;
-}
-
-function selectPiece(code) {
-  _selectedPiece = code;
-  _editMode = false;
-  render();
-  setTimeout(() => {
-    const el = document.getElementById('card-' + code);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, 30);
 }
 
 function generatePiece(code) {
@@ -896,62 +886,6 @@ function logHisto(action, color, motif) {
     par: 'admin@pslsh.org', date: new Date().toLocaleString('fr-FR'),
     color, motif,
   });
-}
-
-function readFields() {
-  const piece = PIECES_BY_TYPE[_dossier.type].find((p) => p.code === _selectedPiece);
-  const data = {};
-  document.querySelectorAll('#pieceForm .pp-fld').forEach((wrap, i) => {
-    const input = wrap.querySelector('input, textarea');
-    if (input && piece.fields[i]) data[piece.fields[i]] = input.value;
-  });
-  return data;
-}
-
-function savePiece(submit) {
-  const data = readFields();
-  data.status = submit ? 'soumis' : 'en-cours';
-  _piecesData[_dossier.id].pieces[_selectedPiece] = data;
-  logHisto(submit ? 'Soumis pour validation' : 'Enregistré', submit ? 'orange' : 'blue');
-  savePieces();
-  render();
-}
-
-function validatePiece() {
-  const p = _piecesData[_dossier.id].pieces[_selectedPiece] || {};
-  p.status = 'valide';
-  p.validatedAt = new Date().toISOString();
-  _piecesData[_dossier.id].pieces[_selectedPiece] = p;
-  logHisto('Validée', 'green');
-  syncDossierEtape();
-  savePieces();
-  saveDossiers();
-  const list = PIECES_BY_TYPE[_dossier.type];
-  const idx = list.findIndex((x) => x.code === _selectedPiece);
-  if (idx >= 0 && idx < list.length - 1) _selectedPiece = list[idx + 1].code;
-  render();
-}
-
-function rejectPiece() {
-  const motif = prompt('Motif du rejet :');
-  if (!motif) return;
-  const p = _piecesData[_dossier.id].pieces[_selectedPiece] || {};
-  p.status = 'rejete';
-  p.motif = motif;
-  _piecesData[_dossier.id].pieces[_selectedPiece] = p;
-  logHisto('Rejetée', 'red', motif);
-  savePieces();
-  render();
-}
-
-function reopenPiece() {
-  const p = _piecesData[_dossier.id].pieces[_selectedPiece] || {};
-  p.status = 'en-cours';
-  delete p.motif;
-  _piecesData[_dossier.id].pieces[_selectedPiece] = p;
-  logHisto('Reprise', 'blue');
-  savePieces();
-  render();
 }
 
 function syncDossierEtape() {
