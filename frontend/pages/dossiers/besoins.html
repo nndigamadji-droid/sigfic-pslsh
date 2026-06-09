@@ -99,6 +99,43 @@
       grid-column:1 / -1; display:flex; gap:10px; justify-content:flex-end;
       padding-top:14px; border-top:1px solid #f1f5f9;
     }
+
+    .lignes-block {
+      grid-column:1 / -1; background:#f8fafc;
+      border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px;
+    }
+    .lignes-block .lb-title {
+      font-size:.7rem; font-weight:700; color:#475569;
+      text-transform:uppercase; letter-spacing:.05em; margin-bottom:10px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .ligne-row {
+      display:grid; grid-template-columns:30px 1fr 120px 38px; gap:10px;
+      align-items:center; margin-bottom:8px;
+    }
+    .ligne-row .ligne-num {
+      width:30px; height:30px; border-radius:50%;
+      background:#1b3a6b; color:#fff;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:800; font-size:.78rem;
+    }
+    .ligne-row input { font-size:.82rem; padding:7px 11px; border:1px solid #cbd5e1; border-radius:7px; background:#fff; }
+    .btn-row {
+      width:38px; height:38px; border-radius:7px;
+      background:#fff; color:#b91c1c; border:1px solid #fca5a5;
+      cursor:pointer; transition:all .15s;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .btn-row:hover { background:#fee2e2; }
+    .btn-row.disabled { color:#cbd5e1; border-color:#e2e8f0; cursor:not-allowed; }
+    .btn-row.disabled:hover { background:#fff; }
+    .btn-add-ligne {
+      font-size:.74rem; font-weight:700; padding:7px 14px;
+      background:#fff; color:#1b3a6b; border:1px dashed #1b3a6b; border-radius:7px;
+      cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+      transition:all .15s;
+    }
+    .btn-add-ligne:hover { background:#eff6ff; }
     .btn-eb {
       font-size:.78rem; font-weight:700; padding:8px 18px; min-height:36px;
       border-radius:8px; border:1px solid; cursor:pointer;
@@ -192,12 +229,24 @@ const SERVICES = ['SAF','SGAS','SPCH','SPCG','SESRO','APMS','SEB','SPSAC','SC','
 const SOURCES = ['PSLSH-032','PSLSH-033','PSLSH-034','PSLSH-035'];
 
 const DEFAULT_EB_ALL = [
-  { id:'EB-2026-0007', titre:'Tests combinés VIH/Syphilis Dual RDT', service:'APMS',  porteur:'Chef APMS',  type:'ACH-P', montant: 33000000, ligne:'L-APMS-033', source:'PSLSH-033', justification:'Renouvellement stock dépistage Q2', statut:'compta',    soumis:'15/02/2026' },
-  { id:'EB-2026-0008', titre:'Construction entrepôt stockage intrants APMS', service:'APMS',porteur:'Chef APMS',type:'ACH-P',montant: 35000000, ligne:'L-APMS-031', source:'PSLSH-034', justification:'Saturation entrepôt actuel', statut:'saf',       soumis:'20/02/2026' },
-  { id:'EB-2026-0011', titre:'Mission de supervision PEC pédiatrique', service:'SPCH',  porteur:'Chef SPCH', type:'PER-A', montant:  4200000, ligne:'L-SPCH-MIS', source:'PSLSH-035', justification:'Supervision trimestrielle programmée', statut:'soumis',   soumis:'05/03/2026' },
-  { id:'EB-2026-0012', titre:'Don matériel informatique Pasteur',     service:'COORD', porteur:'Coordo',     type:'PER-A', montant:  9800000, ligne:'L-COORD-DON',source:'PSLSH-035', justification:'Partenariat ratification 2026',  statut:'brouillon', soumis:'08/03/2026' },
-  { id:'EB-2026-0013', titre:'Séminaire annuel coordonnateurs régionaux',service:'COORD',porteur:'Coordo',  type:'FOR-M', montant: 18500000, ligne:'L-COORD-SEM',source:'PSLSH-035', justification:'Cadrage exercice 2027',           statut:'coordo',    soumis:'12/03/2026' },
-  { id:'EB-2026-0019', titre:'Renouvellement fournitures bureau SAF', service:'SAF',   porteur:'Resp. SAF', type:'ACH-S', montant:  2400000, ligne:'L-SAF-045',  source:'PSLSH-035', justification:'Stock épuisé Q2',                 statut:'brouillon', soumis:'04/04/2026' },
+  { id:'EB-2026-0007', motif:'Renouvellement stock dépistage Q2',          service:'APMS',  porteur:'Chef APMS',  type:'ACH-P', statut:'compta',    soumis:'15/02/2026',
+    lignes:[{ libelle:'Tests combinés VIH/Syphilis Dual RDT', quantite:'2000 boîtes' }] },
+  { id:'EB-2026-0008', motif:'Saturation entrepôt actuel',                  service:'APMS',  porteur:'Chef APMS',  type:'ACH-P', statut:'saf',       soumis:'20/02/2026',
+    lignes:[{ libelle:'Construction entrepôt 80m²', quantite:'1 ouvrage' },
+            { libelle:'Aménagement rayonnage métallique', quantite:'40 modules' }] },
+  { id:'EB-2026-0011', motif:'Supervision trimestrielle programmée',        service:'SPCH',  porteur:'Chef SPCH',  type:'PER-A', statut:'soumis',    soumis:'05/03/2026',
+    lignes:[{ libelle:'Indemnités mission (5 superviseurs)', quantite:'5 personnes × 4 jours' },
+            { libelle:'Carburant véhicule de mission', quantite:'180 litres' }] },
+  { id:'EB-2026-0012', motif:'Partenariat ratification 2026',                service:'COORD', porteur:'Coordo',     type:'PER-A', statut:'brouillon', soumis:'08/03/2026',
+    lignes:[{ libelle:'Don ordinateurs portables', quantite:'5 unités' }] },
+  { id:'EB-2026-0013', motif:'Cadrage exercice 2027',                         service:'COORD', porteur:'Coordo',     type:'FOR-M', statut:'coordo',    soumis:'12/03/2026',
+    lignes:[{ libelle:'Location salle séminaire', quantite:'3 jours' },
+            { libelle:'Restauration participants', quantite:'80 personnes × 3 jours' },
+            { libelle:'Per diem coordonnateurs régionaux', quantite:'12 personnes × 3 jours' }] },
+  { id:'EB-2026-0019', motif:'Stock épuisé Q2',                              service:'SAF',   porteur:'Resp. SAF',  type:'ACH-S', statut:'brouillon', soumis:'04/04/2026',
+    lignes:[{ libelle:'Ramettes papier A4', quantite:'40 cartons' },
+            { libelle:'Cartouches d\'encre HP', quantite:'25 boîtes' },
+            { libelle:'Stylos et marqueurs assortis', quantite:'10 lots' }] },
 ];
 
 let _ebAll = [];
@@ -267,41 +316,36 @@ function renderList(items, emptyMsg) {
   if (!items.length) {
     return `<div class="empty"><i class="fas fa-inbox d-block"></i>${emptyMsg}</div>`;
   }
-  const rows = items.map((e) => `<tr>
-    <td class="mono">${e.id}</td>
-    <td><strong>${e.titre}</strong><br><small style="color:#94a3b8">${e.service} · ${e.porteur} · soumis ${e.soumis}</small></td>
-    <td>${e.type}</td>
-    <td class="num"><strong>${fmt(e.montant)}</strong></td>
-    <td><span class="mono" style="color:#475569">${e.ligne}</span></td>
-    <td>${statutPill(e.statut)}</td>
-  </tr>`).join('');
+  const rows = items.map((e) => {
+    const lignes = e.lignes || (e.titre ? [{ libelle:e.titre, quantite:'' }] : []);
+    const firstLine = lignes[0]?.libelle || '—';
+    const more = lignes.length > 1 ? ` <small style="color:#1d4ed8;font-weight:700">+${lignes.length - 1} autre${lignes.length > 2 ? 's' : ''}</small>` : '';
+    return `<tr>
+      <td class="mono">${e.id}</td>
+      <td><strong>${firstLine}</strong>${more}<br><small style="color:#94a3b8">${e.service} · ${e.porteur} · soumis ${e.soumis}</small></td>
+      <td>${e.type}</td>
+      <td><small style="color:#475569">${(e.motif || '').slice(0, 80)}${(e.motif || '').length > 80 ? '…' : ''}</small></td>
+      <td>${statutPill(e.statut)}</td>
+    </tr>`;
+  }).join('');
   return `<div class="eb-card"><table class="eb-tbl">
     <thead><tr>
       <th style="width:140px">Référence</th>
-      <th>Désignation</th>
-      <th style="width:90px">Type</th>
-      <th class="num" style="width:130px">Montant (FCFA)</th>
-      <th style="width:140px">Ligne</th>
+      <th>Libellé principal</th>
+      <th style="width:80px">Type</th>
+      <th>Motif</th>
       <th style="width:200px">Statut</th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
 
+let _formLignes = [{ libelle:'', quantite:'' }];
+
 function renderForm() {
   return `<div class="eb-card">
     <div class="eb-card-title"><i class="fas fa-edit" style="color:#1b3a6b"></i>Nouvelle expression de besoin</div>
-    <form class="eb-form" onsubmit="event.preventDefault();submitEb(event)">
-      <div class="full">
-        <label>Désignation / objet du besoin *</label>
-        <input type="text" name="titre" required placeholder="Ex. Réactifs charge virale VIH — renouvellement T3">
-      </div>
-      <div>
-        <label>Type d'opération *</label>
-        <select name="type" required>
-          ${TYPES.map((t) => `<option value="${t.code}">${t.label}</option>`).join('')}
-        </select>
-      </div>
+    <form class="eb-form" id="ebForm" onsubmit="event.preventDefault();submitEb(event)">
       <div>
         <label>Service porteur *</label>
         <select name="service" required>
@@ -309,23 +353,27 @@ function renderForm() {
         </select>
       </div>
       <div>
-        <label>Ligne budgétaire</label>
-        <input type="text" name="ligne" placeholder="Ex. L-APMS-032">
-      </div>
-      <div>
-        <label>Source de financement *</label>
-        <select name="source" required>
-          ${SOURCES.map((s) => `<option value="${s}">${s}</option>`).join('')}
+        <label>Type d'opération *</label>
+        <select name="type" required>
+          ${TYPES.map((t) => `<option value="${t.code}">${t.label}</option>`).join('')}
         </select>
       </div>
       <div class="full">
-        <label>Montant estimé (FCFA) *</label>
-        <input type="number" name="montant" required min="0" placeholder="0">
+        <label>Motif du besoin *</label>
+        <textarea name="motif" required placeholder="Pourquoi ce besoin ? Contexte, urgence, finalité…"></textarea>
       </div>
-      <div class="full">
-        <label>Justification du besoin</label>
-        <textarea name="justification" placeholder="Indiquer le contexte, l'urgence, la base légale, etc."></textarea>
+
+      <div class="lignes-block">
+        <div class="lb-title">
+          <span><i class="fas fa-list-ul me-2" style="color:#1b3a6b"></i>Libellés du besoin</span>
+          <span style="font-weight:600;text-transform:none;color:#94a3b8" id="lignesCount">1 ligne</span>
+        </div>
+        <div id="lignesList"></div>
+        <button type="button" class="btn-add-ligne" onclick="addLigne()">
+          <i class="fas fa-plus"></i>Ajouter un libellé
+        </button>
       </div>
+
       <div class="form-actions">
         <button type="button" class="btn-eb btn-eb-cancel" onclick="switchTab('mine')"><i class="fas fa-times"></i>Annuler</button>
         <button type="submit" name="action" value="save" class="btn-eb btn-eb-save" onclick="this.value='save'"><i class="fas fa-save"></i>Enregistrer en brouillon</button>
@@ -333,6 +381,39 @@ function renderForm() {
       </div>
     </form>
   </div>`;
+}
+
+function renderLignes() {
+  const target = document.getElementById('lignesList');
+  if (!target) return;
+  target.innerHTML = _formLignes.map((l, i) => `
+    <div class="ligne-row">
+      <div class="ligne-num">${i + 1}</div>
+      <input type="text" placeholder="Libellé du besoin (ex. Ramettes papier A4)"
+             value="${(l.libelle || '').replace(/"/g, '&quot;')}"
+             oninput="_formLignes[${i}].libelle=this.value">
+      <input type="text" placeholder="Quantité (ex. 40 cartons)"
+             value="${(l.quantite || '').replace(/"/g, '&quot;')}"
+             oninput="_formLignes[${i}].quantite=this.value">
+      <button type="button" class="btn-row ${_formLignes.length === 1 ? 'disabled' : ''}"
+              ${_formLignes.length === 1 ? 'disabled' : ''}
+              onclick="removeLigne(${i})" title="Retirer ce libellé">
+        <i class="fas fa-minus"></i>
+      </button>
+    </div>`).join('');
+  document.getElementById('lignesCount').textContent =
+    `${_formLignes.length} ligne${_formLignes.length > 1 ? 's' : ''}`;
+}
+
+function addLigne() {
+  _formLignes.push({ libelle:'', quantite:'' });
+  renderLignes();
+}
+
+function removeLigne(i) {
+  if (_formLignes.length <= 1) return;
+  _formLignes.splice(i, 1);
+  renderLignes();
 }
 
 let _lastClickedAction = 'save';
@@ -343,22 +424,25 @@ document.addEventListener('click', (e) => {
 function submitEb(evt) {
   const form = evt.target;
   const fd = new FormData(form);
+  const validLignes = _formLignes.filter((l) => (l.libelle || '').trim());
+  if (!validLignes.length) {
+    alert('Renseignez au moins un libellé de besoin.');
+    return;
+  }
   const seq = String(_ebAll.length + 20).padStart(4, '0');
   const nb = {
     id: `EB-2026-${seq}`,
-    titre: fd.get('titre'),
     type: fd.get('type'),
     service: fd.get('service'),
     porteur: CURRENT_USER,
-    ligne: fd.get('ligne') || `L-${fd.get('service')}-AUTO`,
-    source: fd.get('source'),
-    montant: parseInt(fd.get('montant'), 10) || 0,
-    justification: fd.get('justification') || '',
+    motif: fd.get('motif') || '',
+    lignes: validLignes,
     statut: _lastClickedAction === 'submit' ? 'soumis' : 'brouillon',
     soumis: new Date().toLocaleDateString('fr-FR'),
   };
   _ebAll.unshift(nb);
   save();
+  _formLignes = [{ libelle:'', quantite:'' }];
   alert(`Besoin ${nb.id} ${_lastClickedAction === 'submit' ? 'soumis pour validation' : 'enregistré en brouillon'}.`);
   switchTab('mine');
 }
@@ -381,6 +465,7 @@ function render() {
   document.getElementById('paneSub').textContent = _currentTab === 'new'
     ? 'Toute opération PSLSH/IST commence par une expression de besoins.'
     : `${_ebAll.filter(tab.filter || (() => true)).length} besoin(s) · exercice 2026`;
+  if (_currentTab === 'new') renderLignes();
 }
 
 if (document.readyState === 'loading') {
