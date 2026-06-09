@@ -313,7 +313,6 @@ const FAMILIES = [
   { code:'ACH-P', label:'Achat par passation',   icon:'fa-gavel',            color:'#3730a3' },
   { code:'FOR-M', label:'Formation & missions',  icon:'fa-graduation-cap',   color:'#0f766e' },
   { code:'PER-A', label:'Personnel & assistance',icon:'fa-hand-holding-usd', color:'#9d174d' },
-  { code:'ARC',   label:'Archives',              icon:'fa-archive',          color:'#475569' },
 ];
 
 const SERVICES = ['SAF','SGAS','SPCH','SPCG','SESRO','APMS','SEB','SPSAC','SC','SLNR'];
@@ -411,13 +410,8 @@ function filterDossiers() {
   const fE = document.getElementById('fEtape').value;
   const fS = document.getElementById('fService').value;
   return _dossiers.filter((d) => {
-    const isArchived = d.archived === true;
-    if (_currentType === 'ARC') {
-      if (!isArchived) return false;
-    } else {
-      if (isArchived) return false;
-      if (_currentType && d.type !== _currentType) return false;
-    }
+    if (d.archived === true) return false;
+    if (_currentType && d.type !== _currentType) return false;
     if (fE && d.etape !== fE) return false;
     if (fS && d.service !== fS) return false;
     if (q && !(d.id.toLowerCase().includes(q) || d.objet.toLowerCase().includes(q) || (d.porteur || '').toLowerCase().includes(q))) return false;
@@ -427,10 +421,9 @@ function filterDossiers() {
 
 function renderTabs() {
   const html = FAMILIES.map((f) => {
-    let n;
-    if (f.code === 'ARC')     n = _dossiers.filter((d) => d.archived === true).length;
-    else if (f.code === '')   n = _dossiers.filter((d) => !d.archived).length;
-    else                       n = _dossiers.filter((d) => d.type === f.code && !d.archived).length;
+    const n = f.code
+      ? _dossiers.filter((d) => d.type === f.code && !d.archived).length
+      : _dossiers.filter((d) => !d.archived).length;
     const active = f.code === _currentType ? ' active' : '';
     return `<div class="sheet-tab${active}" onclick="switchTab('${f.code}')" title="${f.label}">
       <i class="fas ${f.icon}" style="color:${f.color}"></i>

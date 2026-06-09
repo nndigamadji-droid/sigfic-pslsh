@@ -281,6 +281,7 @@
         items: [
           { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
           { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
+          { href: '/pages/dossiers/archives.html', icon: 'fa-archive', label: 'Archives' },
         ],
       },
       {
@@ -506,6 +507,7 @@
         items: [
           { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
           { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
+          { href: '/pages/dossiers/archives.html', icon: 'fa-archive', label: 'Archives' },
         ],
       },
       {
@@ -694,6 +696,7 @@
         items: [
           { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
           { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
+          { href: '/pages/dossiers/archives.html', icon: 'fa-archive', label: 'Archives' },
         ],
       },
       {
@@ -884,6 +887,7 @@
         items: [
           { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
           { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
+          { href: '/pages/dossiers/archives.html', icon: 'fa-archive', label: 'Archives' },
         ],
       },
       {
@@ -984,6 +988,7 @@
         items: [
           { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
           { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
+          { href: '/pages/dossiers/archives.html', icon: 'fa-archive', label: 'Archives' },
         ],
       },
       {

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Archives</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    html, body { height:100%; overflow:hidden; }
+    .app-layout, .main-content { height:100vh; overflow:hidden; }
+    .page-content { flex:1; overflow:hidden; display:flex; flex-direction:column; padding:0; }
+
+    .arc-top { flex-shrink:0; padding:12px 24px 10px; background:#fff; border-bottom:1px solid #e2e8f0; }
+    .arc-title-row h5 { margin:0; font-size:.96rem; font-weight:800; color:#1b2f52; }
+    .arc-title-row small { font-size:.7rem; color:#64748b; }
+
+    .arc-body { flex:1; overflow-y:auto; padding:14px 24px 24px; background:#eef2f7; }
+
+    .arc-filter {
+      background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+      padding:10px 14px; margin-bottom:12px;
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+    .arc-filter input, .arc-filter select {
+      font-size:.76rem; padding:5px 10px; height:32px;
+      border:1px solid #cbd5e1; border-radius:7px; background:#fff;
+    }
+
+    .arc-tbl { width:100%; border-collapse:collapse; font-size:.79rem;
+      background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; }
+    .arc-tbl thead th {
+      background:#1b2f52; color:#fff; font-size:.69rem; font-weight:700;
+      text-transform:uppercase; letter-spacing:.03em; padding:10px 12px;
+      text-align:left; white-space:nowrap;
+    }
+    .arc-tbl tbody td { padding:9px 12px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+    .arc-tbl tbody tr:hover td { background:#f8fafc; }
+    .arc-tbl .mono { font-family:monospace; color:#475569; font-weight:700; font-size:.75rem; }
+    .arc-tbl .num  { font-family:monospace; text-align:right; }
+    .arc-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      background:#475569; color:#fff; padding:3px 9px; border-radius:6px;
+      font-size:.64rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+    }
+    .fam-pill {
+      display:inline-block; padding:2px 8px; border-radius:6px;
+      font-size:.65rem; font-weight:700; white-space:nowrap;
+    }
+    .fp-ACH-S { background:#fef3c7; color:#92400e; }
+    .fp-ACH-P { background:#e0e7ff; color:#3730a3; }
+    .fp-FOR-M { background:#ccfbf1; color:#0f766e; }
+    .fp-PER-A { background:#fce7f3; color:#9d174d; }
+
+    .btn-view {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:.73rem; font-weight:700; padding:6px 12px; min-height:30px;
+      background:#475569; color:#fff; border:1px solid #475569; border-radius:6px;
+      cursor:pointer; white-space:nowrap;
+    }
+    .btn-view:hover { background:#334155; }
+
+    .arc-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
+    .arc-kpi {
+      background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+      padding:10px 14px; position:relative;
+    }
+    .arc-kpi::before { content:''; position:absolute; top:0;left:0;right:0;height:3px; border-radius:10px 10px 0 0; background:#475569; }
+    .arc-kpi .lbl { font-size:.65rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
+    .arc-kpi .val { font-size:1.05rem; font-weight:800; color:#1b2f52; font-family:monospace; margin-top:2px; }
+
+    .empty { text-align:center; padding:60px 20px; color:#94a3b8;
+      background:#fff; border:1px dashed #e2e8f0; border-radius:12px; }
+    .empty i { font-size:2.5rem; margin-bottom:12px; opacity:.5; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+
+  <div class="main-content">
+
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item text-muted">Opérations</li>
+            <li class="breadcrumb-item active fw-semibold">Archives</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center"><i class="fas fa-archive me-1"></i>Exercice <strong>2026</strong></div>
+      <div class="topbar-right">
+        <div class="topbar-notif"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700" id="userAvatar">?</div>
+            <span id="userName" style="font-size:.82rem;font-weight:600"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="../admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="arc-top">
+        <div class="arc-title-row">
+          <h5><i class="fas fa-archive me-2" style="color:#475569"></i>Archives des dossiers d'opération</h5>
+          <small id="arcSub">Dossiers d'opération clos et archivés · accès en lecture seule</small>
+        </div>
+      </div>
+
+      <div class="arc-body">
+        <div class="arc-kpis">
+          <div class="arc-kpi"><div class="lbl">Dossiers archivés</div><div class="val" id="kArchives">—</div></div>
+          <div class="arc-kpi"><div class="lbl">Montant cumulé estimé</div><div class="val" id="kEstime">—</div></div>
+          <div class="arc-kpi"><div class="lbl">Montant cumulé engagé</div><div class="val" id="kEngage">—</div></div>
+          <div class="arc-kpi"><div class="lbl">Montant cumulé payé</div><div class="val" id="kPaye">—</div></div>
+        </div>
+
+        <div class="arc-filter">
+          <input type="text" id="fSearch" oninput="render()" placeholder="Rechercher (n°, objet, porteur…)" style="min-width:240px">
+          <select id="fType" onchange="render()">
+            <option value="">Toutes familles</option>
+            <option value="ACH-S">Achat simple</option>
+            <option value="ACH-P">Achat par passation</option>
+            <option value="FOR-M">Formation &amp; missions</option>
+            <option value="PER-A">Personnel &amp; assistance</option>
+          </select>
+          <select id="fService" onchange="render()">
+            <option value="">Tous services</option>
+          </select>
+          <select id="fAnnee" onchange="render()">
+            <option value="">Tous exercices</option>
+          </select>
+        </div>
+
+        <div id="archivesTable"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+const STORAGE_KEY = 'pslsh_dossiers_v1';
+const SERVICES = ['SAF','SGAS','SPCH','SPCG','SESRO','APMS','SEB','SPSAC','SC','SLNR','COORD'];
+
+let _dossiers = [];
+
+function load() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    _dossiers = Array.isArray(raw) ? raw : [];
+  } catch (_) { _dossiers = []; }
+}
+
+function fmt(n) { return Math.round(n || 0).toLocaleString('fr-FR'); }
+function fmtBig(n) {
+  if (n >= 1e9) return (n / 1e9).toFixed(2).replace('.', ',') + ' Md';
+  if (n >= 1e6) return (n / 1e6).toFixed(1).replace('.', ',') + ' M';
+  return fmt(n);
+}
+
+function ouvrir(id) { window.location.href = 'detail.html?id=' + encodeURIComponent(id); }
+
+function filterList() {
+  const q  = (document.getElementById('fSearch').value || '').toLowerCase();
+  const ft = document.getElementById('fType').value;
+  const fs = document.getElementById('fService').value;
+  const fa = document.getElementById('fAnnee').value;
+  return _dossiers.filter((d) => {
+    if (!d.archived) return false;
+    if (ft && d.type !== ft) return false;
+    if (fs && d.service !== fs) return false;
+    if (fa && !d.id.includes('-' + fa + '-')) return false;
+    if (q && !(d.id.toLowerCase().includes(q) || d.objet.toLowerCase().includes(q) || (d.porteur || '').toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+
+function render() {
+  const all = _dossiers.filter((d) => d.archived);
+  const list = filterList();
+
+  document.getElementById('kArchives').textContent = all.length;
+  document.getElementById('kEstime').textContent  = fmtBig(all.reduce((s, d) => s + (d.montant_estime || 0), 0));
+  document.getElementById('kEngage').textContent  = fmtBig(all.reduce((s, d) => s + (d.montant_engage || 0), 0));
+  document.getElementById('kPaye').textContent    = fmtBig(all.reduce((s, d) => s + (d.montant_paye   || 0), 0));
+
+  document.getElementById('arcSub').textContent =
+    `${list.length} dossier${list.length > 1 ? 's' : ''} archivé${list.length > 1 ? 's' : ''} sur ${all.length} au total`;
+
+  if (!list.length) {
+    document.getElementById('archivesTable').innerHTML =
+      `<div class="empty"><i class="fas fa-archive d-block"></i>Aucun dossier archivé ne correspond à ce filtre.</div>`;
+    return;
+  }
+
+  const rows = list.map((d) => `<tr>
+    <td class="mono">${d.id}</td>
+    <td><span class="fam-pill fp-${d.type}">${d.type}</span></td>
+    <td><strong>${d.objet}</strong><br><small style="color:#94a3b8">${d.service} · ${d.porteur}</small></td>
+    <td class="num"><strong>${fmt(d.montant_estime)}</strong></td>
+    <td class="num" style="color:#15803d">${fmt(d.montant_paye)}</td>
+    <td><span class="arc-badge"><i class="fas fa-archive"></i>${d.archive_le || '—'}</span><br><small style="color:#94a3b8">${d.archive_par || ''}</small></td>
+    <td><button class="btn-view" onclick="ouvrir('${d.id}')"><i class="fas fa-eye"></i>Consulter</button></td>
+  </tr>`).join('');
+
+  document.getElementById('archivesTable').innerHTML = `<table class="arc-tbl">
+    <thead><tr>
+      <th style="width:130px">N° dossier</th>
+      <th style="width:90px">Famille</th>
+      <th>Objet</th>
+      <th class="num" style="width:120px">Estimé (FCFA)</th>
+      <th class="num" style="width:120px">Payé</th>
+      <th style="width:160px">Archivé</th>
+      <th style="width:130px"></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function initFilters() {
+  document.getElementById('fService').innerHTML = '<option value="">Tous services</option>' +
+    SERVICES.map((s) => `<option value="${s}">${s}</option>`).join('');
+  const years = [...new Set(_dossiers.filter((d) => d.archived).map((d) => (d.id.match(/-(\d{4})-/) || [])[1]).filter(Boolean))].sort((a, b) => b - a);
+  document.getElementById('fAnnee').innerHTML = '<option value="">Tous exercices</option>' +
+    years.map((y) => `<option value="${y}">${y}</option>`).join('');
+}
+
+function boot() { load(); initFilters(); render(); }
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+</script>
+</body>
+</html>
