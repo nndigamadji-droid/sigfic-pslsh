@@ -107,6 +107,42 @@
       text-decoration:underline;
     }
 
+    .preview-doc {
+      background:#fff; border:1px solid #e2e8f0; border-radius:8px;
+      padding:14px 18px; margin-bottom:12px;
+    }
+    .preview-doc .pv-title {
+      font-size:.7rem; font-weight:700; color:#64748b;
+      text-transform:uppercase; letter-spacing:.05em; margin-bottom:10px;
+      display:flex; align-items:center; gap:6px; padding-bottom:8px;
+      border-bottom:1px dashed #e2e8f0;
+    }
+    .preview-doc .pv-row {
+      display:grid; grid-template-columns:160px 1fr; gap:10px;
+      padding:5px 0; font-size:.78rem; align-items:baseline;
+    }
+    .preview-doc .pv-row .pv-lbl {
+      color:#64748b; font-weight:600; font-size:.72rem;
+    }
+    .preview-doc .pv-row .pv-val {
+      color:#1b2f52; font-weight:600;
+    }
+    .preview-doc .pv-row .pv-val.mono {
+      font-family:monospace; color:#1d4ed8;
+    }
+    .preview-doc .pv-row.full {
+      grid-template-columns:1fr; gap:3px;
+      padding-top:8px; border-top:1px dashed #f1f5f9; margin-top:6px;
+    }
+    .preview-doc .pv-row.full .pv-val {
+      color:#374151; font-weight:400; white-space:pre-wrap;
+    }
+    .preview-empty {
+      padding:18px; text-align:center; color:#94a3b8; font-size:.78rem;
+      background:#fff; border:1px dashed #e2e8f0; border-radius:8px;
+      margin-bottom:12px;
+    }
+
     .pc-body {
       padding:14px 18px 18px; border-top:1px solid #f1f5f9; background:#fafbfc;
       display:none;
@@ -342,6 +378,7 @@ const FIELD_LABELS = {
 let _dossier = null;
 let _piecesData = {};
 let _selectedPiece = null;
+let _editMode = false;
 
 function $id(id) { return document.getElementById(id); }
 
@@ -658,6 +695,74 @@ function renderPieceCard(piece, idx, prog) {
 }
 
 function renderPieceBody(piece, data, status) {
+  const importedBlock = data.imported ? `
+    <div class="import-info">
+      <i class="fas fa-paperclip"></i>
+      <div>
+        <strong>Document fournisseur importé :</strong>
+        <span class="badge">${data.imported.filename}</span>
+        <span style="color:#475569;font-size:.68rem;margin-left:6px">${Math.round(data.imported.size / 1024)} ko · ${data.imported.type || 'fichier'}</span>
+      </div>
+      <span class="replace" onclick="importPiece('${piece.code}')">Remplacer</span>
+    </div>` : '';
+
+  return `<div class="pc-body">
+    ${importedBlock}
+    ${_editMode ? renderEditForm(piece, data, status) : renderPreview(piece, data, status)}
+  </div>`;
+}
+
+function renderPreview(piece, data, status) {
+  const locked = status === 'valide';
+  const filled = piece.fields.some((f) => data[f] && String(data[f]).trim());
+  const isExterne = piece.source === 'externe';
+
+  let body;
+  if (isExterne && !data.imported) {
+    body = `<div class="preview-empty"><i class="fas fa-cloud-upload-alt fa-2x d-block mb-2" style="opacity:.4"></i>
+      Aucun document fournisseur n'a encore été importé.</div>`;
+  } else if (!filled && !data.imported) {
+    body = `<div class="preview-empty"><i class="fas fa-file-alt fa-2x d-block mb-2" style="opacity:.4"></i>
+      Pièce vierge. Cliquez sur <strong>Générer</strong> pour créer le document.</div>`;
+  } else {
+    body = `<div class="preview-doc">
+      <div class="pv-title"><i class="fas fa-file-alt" style="color:#1b3a6b"></i>Document ${isExterne ? 'fournisseur attaché' : 'PSLSH généré'}</div>
+      ${piece.fields.map((f) => previewRow(f, data[f])).join('')}
+    </div>`;
+  }
+
+  const actions = locked
+    ? `<button class="btn-act-pp btn-disabled" disabled><i class="fas fa-lock"></i>Pièce validée</button>`
+    : status === 'rejete'
+      ? `<button class="btn-act-pp btn-save" onclick="reopenPiece()"><i class="fas fa-redo"></i>Reprendre</button>`
+      : status === 'soumis'
+        ? `<button class="btn-act-pp btn-reject" onclick="rejectPiece()"><i class="fas fa-times"></i>Rejeter</button>
+           <button class="btn-act-pp btn-validate" onclick="validatePiece()"><i class="fas fa-check"></i>Valider</button>`
+        : `<button class="btn-act-pp btn-save" onclick="enterEditMode()"><i class="fas fa-pencil-alt"></i>Modifier</button>
+           <button class="btn-act-pp btn-submit" onclick="quickSubmit()"><i class="fas fa-paper-plane"></i>Soumettre pour validation</button>`;
+
+  return `${body}<div class="pp-actions">${actions}</div>`;
+}
+
+function previewRow(f, value) {
+  const lbl = FIELD_LABELS[f] || f;
+  const v = value != null && value !== '' ? String(value) : '—';
+  const isText = ['justification', 'observations', 'specifications', 'criteres_eligibilite',
+                  'soumissionnaires_invites', 'motif_choix', 'motif_decision', 'objectifs',
+                  'resultats_attendus', 'synthese', 'recommandations', 'garanties'].includes(f);
+  const isNum = ['quantite', 'prix_unitaire', 'montant_ttc', 'montant_attribue',
+                 'nb_participants', 'nb_offres_recues', 'nb_beneficiaires', 'nb_pieces',
+                 'per_diem', 'transport', 'hebergement', 'montant_unitaire', 'montant_justifie'].includes(f);
+  const isRef = f === 'reference';
+  const display = isNum && v !== '—' ? Math.round(+v).toLocaleString('fr-FR') : v;
+  const cls = (isNum || isRef) ? ' mono' : '';
+  if (isText) {
+    return `<div class="pv-row full"><span class="pv-lbl">${lbl}</span><span class="pv-val">${display}</span></div>`;
+  }
+  return `<div class="pv-row"><span class="pv-lbl">${lbl}</span><span class="pv-val${cls}">${display}</span></div>`;
+}
+
+function renderEditForm(piece, data, status) {
   const locked = status === 'valide';
   const ro = locked ? 'readonly' : '';
   const fields = piece.fields.map((f) => {
@@ -678,34 +783,27 @@ function renderPieceBody(piece, data, status) {
     return `<div class="pp-fld${fullCol}"><label>${lbl}</label>${inp}</div>`;
   }).join('');
 
-  const actions = locked
-    ? `<button class="btn-act-pp btn-disabled" disabled><i class="fas fa-lock"></i>Pièce validée</button>`
-    : status === 'rejete'
-      ? `<button class="btn-act-pp btn-save" onclick="reopenPiece()"><i class="fas fa-redo"></i>Reprendre</button>`
-      : status === 'soumis'
-        ? `<button class="btn-act-pp btn-reject" onclick="rejectPiece()"><i class="fas fa-times"></i>Rejeter</button>
-           <button class="btn-act-pp btn-validate" onclick="validatePiece()"><i class="fas fa-check"></i>Valider</button>`
-        : `<button class="btn-act-pp btn-save" onclick="savePiece(false)"><i class="fas fa-save"></i>Enregistrer</button>
-           <button class="btn-act-pp btn-submit" onclick="savePiece(true)"><i class="fas fa-paper-plane"></i>Soumettre pour validation</button>`;
+  return `<form id="pieceForm" onsubmit="event.preventDefault();savePiece(false)">
+    <div class="pp-fields">${fields}</div>
+    <div class="pp-actions">
+      <button type="button" class="btn-act-pp btn-save" onclick="exitEditMode()"><i class="fas fa-times"></i>Annuler</button>
+      <button type="button" class="btn-act-pp btn-submit" onclick="savePiece(false);exitEditMode()"><i class="fas fa-save"></i>Enregistrer</button>
+    </div>
+  </form>`;
+}
 
-  const importedBlock = data.imported ? `
-    <div class="import-info">
-      <i class="fas fa-paperclip"></i>
-      <div>
-        <strong>Document fournisseur importé :</strong>
-        <span class="badge">${data.imported.filename}</span>
-        <span style="color:#475569;font-size:.68rem;margin-left:6px">${Math.round(data.imported.size / 1024)} ko · ${data.imported.type || 'fichier'}</span>
-      </div>
-      <span class="replace" onclick="importPiece('${piece.code}')">Remplacer</span>
-    </div>` : '';
-
-  return `<div class="pc-body">
-    ${importedBlock}
-    <form id="pieceForm" onsubmit="event.preventDefault();savePiece(false)">
-      <div class="pp-fields">${fields}</div>
-      <div class="pp-actions">${actions}</div>
-    </form>
-  </div>`;
+function enterEditMode() { _editMode = true; render(); }
+function exitEditMode()  { _editMode = false; render(); }
+function quickSubmit() {
+  const p = _piecesData[_dossier.id].pieces[_selectedPiece] || {};
+  p.status = 'soumis';
+  _piecesData[_dossier.id].pieces[_selectedPiece] = p;
+  _piecesData[_dossier.id].histo.push({
+    action: 'Soumis pour validation', piece: _selectedPiece,
+    par: 'admin@pslsh.org', date: new Date().toLocaleString('fr-FR'), color: 'orange',
+  });
+  savePieces();
+  render();
 }
 
 function renderStub() {
@@ -718,6 +816,7 @@ function renderStub() {
 
 function selectPiece(code) {
   _selectedPiece = code;
+  _editMode = false;
   render();
   setTimeout(() => {
     const el = document.getElementById('card-' + code);
