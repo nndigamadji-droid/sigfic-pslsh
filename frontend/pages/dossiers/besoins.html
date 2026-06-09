@@ -501,16 +501,18 @@ function renderLignes() {
   const target = document.getElementById('lignesList');
   if (!target) return;
   target.innerHTML = _formLignes.map((l, i) => {
-    const cat = (l.libelle || '').trim() ? SYSCOHADA.classify(l.libelle) : null;
+    const cat = (l.libelle || '').trim() ? effectiveCategory(l) : null;
     return `
     <div class="ligne-row">
       <div class="ligne-num">${i + 1}</div>
       <input type="text" placeholder="Libellé du besoin (ex. Ramettes papier A4)"
              value="${(l.libelle || '').replace(/"/g, '&quot;')}"
-             oninput="updateLigne(${i},'libelle',this.value)">
+             oninput="_formLignes[${i}].libelle=this.value"
+             onblur="onLigneBlur(${i})">
       <input type="text" placeholder="Quantité (ex. 40 cartons)"
              value="${(l.quantite || '').replace(/"/g, '&quot;')}"
-             oninput="updateLigne(${i},'quantite',this.value)">
+             oninput="_formLignes[${i}].quantite=this.value"
+             onblur="updateSyscoSummary()">
       <button type="button" class="btn-row ${_formLignes.length === 1 ? 'disabled' : ''}"
               ${_formLignes.length === 1 ? 'disabled' : ''}
               onclick="removeLigne(${i})" title="Retirer ce libellé">
@@ -522,6 +524,11 @@ function renderLignes() {
   document.getElementById('lignesCount').textContent =
     `${_formLignes.length} ligne${_formLignes.length > 1 ? 's' : ''}`;
   updateSyscoSummary();
+}
+
+function onLigneBlur(i) {
+  if (_formLignes[i].override) delete _formLignes[i].override;
+  renderLignes();
 }
 
 function renderCategoryTag(cat, i) {
@@ -538,16 +545,6 @@ function renderCategoryTag(cat, i) {
       ${SYSCOHADA.CATALOG.map((c) => `<option value="${c.code}" ${c.code === cat.code ? 'selected' : ''}>${c.code} — ${c.libelle}</option>`).join('')}
     </select>
   </div>`;
-}
-
-function updateLigne(i, field, value) {
-  _formLignes[i][field] = value;
-  if (field === 'libelle') {
-    if (_formLignes[i].override) delete _formLignes[i].override;
-    renderLignes();
-  } else {
-    updateSyscoSummary();
-  }
 }
 
 function overrideCategory(i, code) {
