@@ -1113,7 +1113,11 @@
     if (pathname.indexOf('/budget') !== -1) {
       return 'BUDGET';
     }
-    if (pathname.indexOf('/paiement') !== -1 || pathname.indexOf('/comptabilite') !== -1) {
+    if (
+      pathname.indexOf('/finances') !== -1 ||
+      pathname.indexOf('/paiement') !== -1 ||
+      pathname.indexOf('/comptabilite') !== -1
+    ) {
       return 'FINANCES';
     }
     if (

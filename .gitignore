@@ -19,3 +19,7 @@ build
 *.tmp
 *.docx
 !Docs/**/*.docx
+
+# DB locale parasite (la vraie DB est dans database/schema/)
+sigfic_pslsh.db
+*.db-journal
