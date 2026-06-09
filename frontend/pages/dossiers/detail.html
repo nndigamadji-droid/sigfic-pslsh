@@ -34,8 +34,6 @@
     .amt-lbl { font-size:.62rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
     .amt-val { font-size:.95rem; font-weight:800; color:#1b2f52; font-family:monospace; margin-top:1px; }
 
-    .det-grid { display:grid; grid-template-columns:1fr 320px; gap:16px; }
-    .det-main { display:flex; flex-direction:column; gap:16px; }
 
     .pieces-column { display:flex; flex-direction:column; gap:10px; }
 
@@ -151,62 +149,6 @@
     .btn-reject:hover { background:#fee2e2; }
     .btn-disabled { background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; cursor:not-allowed; }
 
-    .det-aside {
-      display:flex; flex-direction:column; gap:16px;
-    }
-    .audit-card {
-      background:#fff; border:1px solid #e2e8f0; border-radius:12px;
-      padding:14px 18px; max-height:480px; overflow-y:auto;
-    }
-    .audit-title {
-      font-size:.74rem; font-weight:800; color:#1b2f52;
-      text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px;
-    }
-    .audit-item {
-      display:grid; grid-template-columns:24px 1fr; gap:10px;
-      padding:8px 0; border-bottom:1px dashed #f1f5f9; font-size:.74rem;
-    }
-    .audit-item:last-child { border-bottom:none; }
-    .audit-dot {
-      width:10px; height:10px; border-radius:50%; margin-top:4px;
-      background:#cbd5e1;
-    }
-    .audit-dot.green  { background:#15803d; }
-    .audit-dot.orange { background:#b45309; }
-    .audit-dot.red    { background:#b91c1c; }
-    .audit-dot.blue   { background:#1d4ed8; }
-    .audit-action { font-weight:700; color:#1b2f52; }
-    .audit-meta { color:#64748b; font-size:.68rem; margin-top:1px; }
-
-    .pieces-summary {
-      background:#fff; border:1px solid #e2e8f0; border-radius:12px;
-      padding:14px 18px;
-    }
-    .pcs-row {
-      display:grid; grid-template-columns:auto 1fr auto; gap:10px;
-      padding:7px 0; align-items:center; font-size:.76rem;
-      border-bottom:1px dashed #f1f5f9; cursor:pointer;
-    }
-    .pcs-row:hover { background:#f8fafc; }
-    .pcs-row:last-child { border-bottom:none; }
-    .pcs-num {
-      width:22px; height:22px; border-radius:50%;
-      background:#f1f5f9; color:#64748b;
-      display:flex; align-items:center; justify-content:center;
-      font-size:.65rem; font-weight:800;
-    }
-    .pcs-row.done .pcs-num    { background:#dcfce7; color:#15803d; }
-    .pcs-row.current .pcs-num { background:#fef3c7; color:#b45309; }
-    .pcs-name { font-weight:600; color:#1b2f52; }
-    .pcs-row.locked .pcs-name { color:#94a3b8; font-weight:500; }
-    .pcs-mini-status {
-      font-size:.62rem; font-weight:700; padding:1px 7px; border-radius:10px;
-      background:#f1f5f9; color:#64748b;
-    }
-    .pcs-row.done .pcs-mini-status    { background:#dcfce7; color:#15803d; }
-    .pcs-row.current .pcs-mini-status { background:#fef3c7; color:#b45309; }
-    .pcs-row.rejected .pcs-mini-status{ background:#fee2e2; color:#b91c1c; }
-
     .stub-notice {
       background:#fffbeb; border:1px solid #fde68a; border-radius:10px;
       padding:14px 18px; color:#92400e; font-size:.82rem; line-height:1.6;
@@ -221,14 +163,13 @@
     .provisoire-banner strong { color:#78350f; }
 
     @media print {
-      .sidebar, .topbar, .det-aside, .pc-quick, .pp-actions, .provisoire-banner,
+      .sidebar, .topbar, .pc-quick, .pp-actions, .provisoire-banner,
       .piece-card .pc-toggle, .breadcrumb { display:none !important; }
       .det-body { padding:0; background:#fff; }
       .det-header { box-shadow:none; }
       .piece-card { box-shadow:none; border:1px solid #1b3a6b; page-break-inside:avoid; margin-bottom:12px; }
       .piece-card:not(.print-target) { display:none; }
       .pc-body { display:block !important; background:#fff; }
-      .det-grid { grid-template-columns:1fr; }
     }
   </style>
 </head>
@@ -623,15 +564,7 @@ function render() {
   $id('detBody').innerHTML = `
     ${renderHeader()}
     ${notice}
-    <div class="det-grid">
-      <div class="det-main">
-        ${renderPiecesColumn()}
-      </div>
-      <div class="det-aside">
-        ${renderPiecesSummary()}
-        ${renderAudit()}
-      </div>
-    </div>
+    ${renderPiecesColumn()}
   `;
 }
 
@@ -772,46 +705,6 @@ function renderPieceBody(piece, data, status) {
       <div class="pp-fields">${fields}</div>
       <div class="pp-actions">${actions}</div>
     </form>
-  </div>`;
-}
-
-function renderPiecesSummary() {
-  const list = PIECES_BY_TYPE[_dossier.type];
-  const prog = pieceProgress();
-  return `<div class="pieces-summary">
-    <div class="audit-title">Pièces du dossier (${prog.idx}/${prog.total})</div>
-    ${list.map((p, i) => {
-      const st = statusOfPiece(p.code);
-      let cls = 'pcs-row';
-      if (st === 'valide')       cls += ' done';
-      else if (st === 'rejete')  cls += ' rejected';
-      else if (i === prog.idx)   cls += ' current';
-      else if (i > prog.idx)     cls += ' locked';
-      const stTxt = { vide:'—', 'en-cours':'En cours', soumis:'Soumis', valide:'Validée', rejete:'Rejetée' }[st] || '—';
-      return `<div class="${cls}" onclick="selectPiece('${p.code}')">
-        <div class="pcs-num">${i + 1}</div>
-        <div class="pcs-name">${p.label}</div>
-        <div class="pcs-mini-status">${stTxt}</div>
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-
-function renderAudit() {
-  const histo = _piecesData[_dossier.id].histo;
-  return `<div class="audit-card">
-    <div class="audit-title">Journal d'audit</div>
-    ${histo.length === 0
-      ? `<div style="text-align:center;color:#94a3b8;font-size:.75rem;padding:14px 0">Aucune action enregistrée</div>`
-      : histo.slice().reverse().map((h) => `
-          <div class="audit-item">
-            <div class="audit-dot ${h.color || 'blue'}"></div>
-            <div>
-              <div class="audit-action">${h.action}</div>
-              <div class="audit-meta">${h.piece || ''} · ${h.par} · ${h.date}</div>
-              ${h.motif ? `<div class="audit-meta" style="color:#b91c1c">Motif : ${h.motif}</div>` : ''}
-            </div>
-          </div>`).join('')}
   </div>`;
 }
 
