@@ -137,13 +137,16 @@
         </div>
       </div>
 
-      <!-- Tabs -->
+      <!-- Tabs : 5 journaux comme onglets Excel -->
       <div class="journal-tabs" id="journalTabs">
-        <button class="j-tab active" data-journal="caisse" onclick="switchTab(this)">
+        <button class="j-tab active" data-journal="banque" onclick="switchTab(this)">
+          <i class="fas fa-university"></i> Journal Banque (JB)
+        </button>
+        <button class="j-tab" data-journal="caisse" onclick="switchTab(this)">
           <i class="fas fa-coins"></i> Journal Caisse
         </button>
-        <button class="j-tab" data-journal="banque" onclick="switchTab(this)">
-          <i class="fas fa-university"></i> Journal Banque
+        <button class="j-tab" data-journal="achats" onclick="switchTab(this)">
+          <i class="fas fa-shopping-cart"></i> Journal Achats (JA)
         </button>
         <button class="j-tab" data-journal="od" onclick="switchTab(this)">
           <i class="fas fa-exchange-alt"></i> Journal OD
