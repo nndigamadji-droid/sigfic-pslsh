@@ -110,11 +110,11 @@
       display:flex; align-items:center; justify-content:space-between;
     }
     .ligne-row {
-      display:grid; grid-template-columns:30px 1fr 120px 38px; gap:10px;
+      display:grid; grid-template-columns:30px 1fr 110px 140px 38px; gap:10px;
       align-items:center; margin-bottom:4px;
     }
     .ligne-tag {
-      grid-column:2 / 4; display:flex; align-items:center; gap:8px;
+      grid-column:2 / 5; display:flex; align-items:center; gap:8px;
       margin:2px 0 10px; padding:5px 10px;
       background:#f1f5f9; border-radius:6px; font-size:.7rem;
     }
@@ -335,27 +335,30 @@ const TYPES = [
   { code:'PER-A', label:'Personnel / assistance' },
 ];
 const SERVICES = ['SAF','SGAS','SPCH','SPCG','SESRO','APMS','SEB','SPSAC','SC','SLNR','COORD'];
+const UNITES = ['pièce','boîte','carton','ramette','lot','unité','paquet','sachet',
+  'litre','ml','kg','g','mètre','m²','m³','rouleau','flacon','tube','dose','test',
+  'heure','jour','mois','personne','session','prestation','contrat','forfait'];
 const SOURCES = ['PSLSH-032','PSLSH-033','PSLSH-034','PSLSH-035'];
 
 const DEFAULT_EB_ALL = [
   { id:'EB-2026-0007', motif:'Renouvellement stock dépistage Q2',          service:'APMS',  porteur:'Chef APMS',  type:'ACH-P', statut:'compta',    soumis:'15/02/2026',
-    lignes:[{ libelle:'Tests combinés VIH/Syphilis Dual RDT', quantite:'2000 boîtes' }] },
+    lignes:[{ libelle:'Tests combinés VIH/Syphilis Dual RDT', quantite:'2000', unite:'boîte' }] },
   { id:'EB-2026-0008', motif:'Saturation entrepôt actuel',                  service:'APMS',  porteur:'Chef APMS',  type:'ACH-P', statut:'saf',       soumis:'20/02/2026',
-    lignes:[{ libelle:'Construction entrepôt 80m²', quantite:'1 ouvrage' },
-            { libelle:'Aménagement rayonnage métallique', quantite:'40 modules' }] },
+    lignes:[{ libelle:'Construction entrepôt 80m²', quantite:'1', unite:'forfait' },
+            { libelle:'Aménagement rayonnage métallique', quantite:'40', unite:'unité' }] },
   { id:'EB-2026-0011', motif:'Supervision trimestrielle programmée',        service:'SPCH',  porteur:'Chef SPCH',  type:'PER-A', statut:'soumis',    soumis:'05/03/2026',
-    lignes:[{ libelle:'Indemnités mission (5 superviseurs)', quantite:'5 personnes × 4 jours' },
-            { libelle:'Carburant véhicule de mission', quantite:'180 litres' }] },
+    lignes:[{ libelle:'Indemnités mission 5 superviseurs', quantite:'20', unite:'jour' },
+            { libelle:'Carburant véhicule de mission', quantite:'180', unite:'litre' }] },
   { id:'EB-2026-0012', motif:'Partenariat ratification 2026',                service:'COORD', porteur:'Coordo',     type:'PER-A', statut:'brouillon', soumis:'08/03/2026',
-    lignes:[{ libelle:'Don ordinateurs portables', quantite:'5 unités' }] },
+    lignes:[{ libelle:'Don ordinateurs portables', quantite:'5', unite:'unité' }] },
   { id:'EB-2026-0013', motif:'Cadrage exercice 2027',                         service:'COORD', porteur:'Coordo',     type:'FOR-M', statut:'coordo',    soumis:'12/03/2026',
-    lignes:[{ libelle:'Location salle séminaire', quantite:'3 jours' },
-            { libelle:'Restauration participants', quantite:'80 personnes × 3 jours' },
-            { libelle:'Per diem coordonnateurs régionaux', quantite:'12 personnes × 3 jours' }] },
+    lignes:[{ libelle:'Location salle séminaire', quantite:'3', unite:'jour' },
+            { libelle:'Restauration participants', quantite:'240', unite:'personne' },
+            { libelle:'Per diem coordonnateurs régionaux', quantite:'36', unite:'jour' }] },
   { id:'EB-2026-0019', motif:'Stock épuisé Q2',                              service:'SAF',   porteur:'Resp. SAF',  type:'ACH-S', statut:'brouillon', soumis:'04/04/2026',
-    lignes:[{ libelle:'Ramettes papier A4', quantite:'40 cartons' },
-            { libelle:'Cartouches d\'encre HP', quantite:'25 boîtes' },
-            { libelle:'Stylos et marqueurs assortis', quantite:'10 lots' }] },
+    lignes:[{ libelle:'Ramettes papier A4', quantite:'40', unite:'carton' },
+            { libelle:'Cartouches d\'encre HP', quantite:'25', unite:'boîte' },
+            { libelle:'Stylos et marqueurs assortis', quantite:'10', unite:'lot' }] },
 ];
 
 let _ebAll = [];
@@ -453,7 +456,7 @@ function renderList(items, emptyMsg) {
   </table></div>`;
 }
 
-let _formLignes = [{ libelle:'', quantite:'' }];
+let _formLignes = [{ libelle:'', quantite:'', unite:'' }];
 
 function renderForm() {
   return `<div class="eb-card">
@@ -487,6 +490,8 @@ function renderForm() {
         <textarea name="motif" required placeholder="Pourquoi ce besoin ? Contexte, urgence, finalité…"></textarea>
       </div>
 
+      <datalist id="unitesList">${UNITES.map((u) => `<option value="${u}">`).join('')}</datalist>
+
       <div class="form-actions">
         <button type="button" class="btn-eb btn-eb-cancel" onclick="switchTab('mine')"><i class="fas fa-times"></i>Annuler</button>
         <button type="button" class="btn-eb btn-eb-cancel" onclick="previewEb()" style="background:#fff;color:#1b3a6b;border-color:#1b3a6b"><i class="fas fa-eye"></i>Aperçu</button>
@@ -509,9 +514,13 @@ function renderLignes() {
              value="${(l.libelle || '').replace(/"/g, '&quot;')}"
              oninput="_formLignes[${i}].libelle=this.value"
              onblur="onLigneBlur(${i})">
-      <input type="text" placeholder="Quantité (ex. 40 cartons)"
+      <input type="number" placeholder="Quantité" min="0" step="0.01"
              value="${(l.quantite || '').replace(/"/g, '&quot;')}"
              oninput="_formLignes[${i}].quantite=this.value"
+             onblur="updateSyscoSummary()">
+      <input type="text" list="unitesList" placeholder="Unité (pièce, boîte…)"
+             value="${(l.unite || '').replace(/"/g, '&quot;')}"
+             oninput="_formLignes[${i}].unite=this.value"
              onblur="updateSyscoSummary()">
       <button type="button" class="btn-row ${_formLignes.length === 1 ? 'disabled' : ''}"
               ${_formLignes.length === 1 ? 'disabled' : ''}
@@ -564,11 +573,15 @@ function fmtFRDate(d) {
 }
 
 function ficheHTML(data) {
-  const lignesRows = data.lignes.map((l) => `<tr>
-    <td class="center" style="font-family:monospace;font-weight:700">${l.code || '—'}</td>
-    <td>${l.libelle}</td>
-    <td class="center">${l.quantite || '—'}</td>
-  </tr>`).join('');
+  const lignesRows = data.lignes.map((l) => {
+    const qte = l.quantite || '—';
+    const unite = l.unite ? ` ${l.unite}${(+l.quantite > 1 ? 's' : '')}` : '';
+    return `<tr>
+      <td class="center" style="font-family:monospace;font-weight:700">${l.code || '—'}</td>
+      <td>${l.libelle}</td>
+      <td class="center">${qte}${unite}</td>
+    </tr>`;
+  }).join('');
 
   return `<div class="fiche-eb" id="ficheToPrint">
     <div class="fiche-header">
@@ -667,7 +680,7 @@ function previewEb() {
     .filter((l) => (l.libelle || '').trim())
     .map((l) => {
       const cat = effectiveCategory(l);
-      return { libelle:l.libelle, quantite:l.quantite, code:cat ? cat.code : '?' };
+      return { libelle:l.libelle, quantite:l.quantite, unite:l.unite || '', code:cat ? cat.code : '?' };
     });
   if (!valid.length) {
     alert('Renseignez au moins un libellé de besoin avant l\'aperçu.');
@@ -726,7 +739,7 @@ function updateSyscoSummary() {
 }
 
 function addLigne() {
-  _formLignes.push({ libelle:'', quantite:'' });
+  _formLignes.push({ libelle:'', quantite:'', unite:'' });
   renderLignes();
 }
 
@@ -756,6 +769,7 @@ function submitEb(evt) {
       return {
         libelle: l.libelle,
         quantite: l.quantite,
+        unite: l.unite || '',
         sysco_code: cat ? cat.code : '?',
         sysco_libelle: cat ? cat.libelle : '',
         sysco_famille: cat ? cat.famille : '',
@@ -787,7 +801,7 @@ function submitEb(evt) {
   };
   _ebAll.unshift(nb);
   save();
-  _formLignes = [{ libelle:'', quantite:'' }];
+  _formLignes = [{ libelle:'', quantite:'', unite:'' }];
   alert(`Besoin ${nb.id} ${_lastClickedAction === 'submit' ? 'soumis pour validation' : 'enregistré en brouillon'}\n\nClassification : ${dom ? dom.code + ' — ' + dom.libelle : 'À classer'}\nLigne budgétaire : ${nb.ligne_budget_suggested}`);
   switchTab('mine');
 }
