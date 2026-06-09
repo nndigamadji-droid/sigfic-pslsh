@@ -298,6 +298,7 @@
         icon: 'fa-coins',
         items: [
           { href: '/pages/budget/synthese.html', icon: 'fa-chart-pie', label: 'Synthèse globale' },
+          { href: '/pages/budget/mapping.html',  icon: 'fa-random',    label: 'Mapping Budget ↔ OHADA' },
           { href: '/pages/budget/recettes.html', icon: 'fa-arrow-trend-up', label: 'Recettes' },
           {
             href: '/pages/budget/depenses.html',
@@ -524,6 +525,7 @@
         icon: 'fa-coins',
         items: [
           { href: '/pages/budget/synthese.html', icon: 'fa-chart-pie', label: 'Synthèse globale' },
+          { href: '/pages/budget/mapping.html',  icon: 'fa-random',    label: 'Mapping Budget ↔ OHADA' },
           { href: '/pages/budget/recettes.html', icon: 'fa-arrow-trend-up', label: 'Recettes' },
           {
             href: '/pages/budget/depenses.html',
@@ -815,6 +817,7 @@
         icon: 'fa-coins',
         items: [
           { href: '/pages/budget/synthese.html', icon: 'fa-chart-pie', label: 'Synthèse globale' },
+          { href: '/pages/budget/mapping.html',  icon: 'fa-random',    label: 'Mapping Budget ↔ OHADA' },
           { href: '/pages/budget/recettes.html', icon: 'fa-arrow-trend-up', label: 'Recettes' },
         ],
       },

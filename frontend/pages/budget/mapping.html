@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Mapping Budget ↔ OHADA</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    html, body { height:100%; overflow:hidden; }
+    .app-layout, .main-content { height:100vh; overflow:hidden; }
+    .page-content { flex:1; overflow:hidden; display:flex; flex-direction:column; padding:0; }
+
+    .mp-top { flex-shrink:0; padding:12px 24px 10px; background:#fff; border-bottom:1px solid #e2e8f0; }
+    .mp-title h5 { margin:0; font-size:.96rem; font-weight:800; color:#1b2f52; }
+    .mp-title small { font-size:.7rem; color:#64748b; }
+    .mp-body { flex:1; overflow-y:auto; padding:14px 24px 24px; background:#eef2f7; }
+
+    .mp-kpis { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:14px; }
+    .mp-kpi {
+      background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+      padding:10px 14px; position:relative;
+    }
+    .mp-kpi::before { content:''; position:absolute; top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0; background:#1b3a6b; }
+    .mp-kpi .lbl { font-size:.65rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
+    .mp-kpi .val { font-size:1.05rem; font-weight:800; color:#1b2f52; font-family:monospace; margin-top:2px; }
+
+    .mp-filter {
+      background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+      padding:10px 14px; margin-bottom:12px;
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+    .mp-filter input, .mp-filter select {
+      font-size:.76rem; padding:5px 10px; height:32px;
+      border:1px solid #cbd5e1; border-radius:7px; background:#fff;
+    }
+    .btn-mp-new, .btn-mp-sync {
+      font-size:.74rem; font-weight:700; padding:6px 14px; min-height:32px;
+      border:1px solid; border-radius:7px; cursor:pointer;
+      display:inline-flex; align-items:center; gap:6px;
+    }
+    .btn-mp-new  { background:#1b3a6b; color:#fff; border-color:#1b3a6b; margin-left:auto; }
+    .btn-mp-new:hover { background:#254d8f; }
+    .btn-mp-sync { background:#fff; color:#15803d; border-color:#86efac; }
+    .btn-mp-sync:hover { background:#f0fdf4; }
+
+    .mp-tbl { width:100%; border-collapse:collapse; font-size:.78rem;
+      background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; }
+    .mp-tbl thead th {
+      background:#1b2f52; color:#fff; font-size:.66rem; font-weight:700;
+      text-transform:uppercase; letter-spacing:.04em; padding:9px 12px;
+      text-align:left; white-space:nowrap;
+    }
+    .mp-tbl tbody td { padding:8px 12px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+    .mp-tbl tbody tr:hover td { background:#f8fafc; }
+    .mp-tbl .mono { font-family:monospace; font-weight:700; }
+    .mp-tbl .key { color:#1d4ed8; }
+    .mp-tbl .compte { color:#1b3a6b; }
+
+    .sens-pill { padding:3px 10px; border-radius:14px; font-size:.66rem; font-weight:700; }
+    .sens-D { background:#fef3c7; color:#92400e; }
+    .sens-C { background:#dcfce7; color:#166534; }
+
+    .src-pill { padding:2px 8px; border-radius:6px; font-size:.62rem; font-weight:700; }
+    .src-manuel    { background:#dbeafe; color:#1d4ed8; }
+    .src-auto      { background:#f1f5f9; color:#475569; }
+    .src-auto-classifier { background:#f1f5f9; color:#475569; }
+    .src-seed      { background:#ede9fe; color:#6d28d9; }
+
+    .statut-pill { padding:2px 9px; border-radius:6px; font-size:.62rem; font-weight:700; }
+    .statut-actif    { background:#dcfce7; color:#166534; }
+    .statut-inactif  { background:#fee2e2; color:#b91c1c; }
+
+    .btn-row-act {
+      width:30px; height:30px; border-radius:6px; border:1px solid #cbd5e1;
+      background:#fff; cursor:pointer; color:#475569; font-size:.74rem;
+    }
+    .btn-row-act:hover { background:#475569; color:#fff; }
+    .btn-row-act.del { color:#b91c1c; border-color:#fca5a5; }
+    .btn-row-act.del:hover { background:#fee2e2; color:#b91c1c; }
+
+    .empty { text-align:center; padding:60px 20px; color:#94a3b8;
+      background:#fff; border:1px dashed #e2e8f0; border-radius:12px; }
+    .empty i { font-size:2.5rem; margin-bottom:12px; opacity:.5; }
+
+    .modal-header-mp { background:linear-gradient(135deg,#1b2f52,#1b3a6b); color:#fff; }
+    .modal-header-mp .btn-close { filter:invert(1); }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo">
+      <div class="brand-text">
+        <div class="brand-name">SIGFIC-PSLSH</div>
+        <div class="brand-sub">Gestion Financière</div>
+      </div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item text-muted">Budget</li>
+            <li class="breadcrumb-item active fw-semibold">Mapping Budget ↔ OHADA</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-center"><i class="fas fa-random me-1"></i>Table de correspondance</div>
+      <div class="topbar-right">
+        <div class="topbar-notif"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700" id="userAvatar">?</div>
+            <span id="userName" style="font-size:.82rem;font-weight:600"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="../admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="mp-top">
+        <div class="mp-title">
+          <h5><i class="fas fa-random me-2" style="color:#1b3a6b"></i>Table de correspondance Budget ↔ Comptabilité OHADA</h5>
+          <small>T_Budget_Compta_Mapping — clé budgétaire segmentée (Tchad) ↔ compte du plan SYSCOHADA révisé</small>
+        </div>
+      </div>
+
+      <div class="mp-body">
+        <div class="mp-kpis">
+          <div class="mp-kpi"><div class="lbl">Mappings actifs</div><div class="val" id="kActifs">—</div></div>
+          <div class="mp-kpi" style="--c:#b45309"><div class="lbl">Sens Débit (dépense)</div><div class="val" id="kDebit">—</div></div>
+          <div class="mp-kpi" style="--c:#15803d"><div class="lbl">Sens Crédit (recette)</div><div class="val" id="kCredit">—</div></div>
+          <div class="mp-kpi"><div class="lbl">Source : manuelle</div><div class="val" id="kManuel">—</div></div>
+          <div class="mp-kpi"><div class="lbl">Source : auto-classifier</div><div class="val" id="kAuto">—</div></div>
+        </div>
+
+        <div class="mp-filter">
+          <input type="text" id="fSearch" oninput="render()" placeholder="Rechercher (code, compte, libellé…)" style="min-width:240px">
+          <select id="fSens" onchange="render()">
+            <option value="">Tous sens</option>
+            <option value="D">D — Débit (Dépense)</option>
+            <option value="C">C — Crédit (Recette)</option>
+          </select>
+          <select id="fSrc" onchange="render()">
+            <option value="">Toutes sources</option>
+            <option value="manuel">manuel</option>
+            <option value="auto-classifier">auto-classifier</option>
+            <option value="seed">seed</option>
+          </select>
+          <button class="btn-mp-sync" onclick="syncFromLignes()">
+            <i class="fas fa-sync"></i>Synchroniser depuis lignes budgétaires
+          </button>
+          <button class="btn-mp-new" onclick="openModal()">
+            <i class="fas fa-plus"></i>Nouveau mapping
+          </button>
+        </div>
+
+        <div id="mappingTable"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalMapping" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-mp">
+        <h5 class="modal-title" id="mpModalTitle"><i class="fas fa-plus me-2"></i>Nouveau mapping</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="mpForm" onsubmit="event.preventDefault();saveMapping()">
+          <input type="hidden" id="mpId">
+          <div class="mb-2">
+            <label class="form-label small fw-bold">Code ligne budgétaire (clé segmentée) *</label>
+            <input type="text" class="form-control form-control-sm" id="mpCode" required placeholder="ex. 02-07-01-6064" pattern="[A-Za-z0-9\-/]+">
+            <small class="text-muted">Format : Section-Programme-Structure-Compte (ex. 02-07-01-6064)</small>
+          </div>
+          <div class="row g-2">
+            <div class="col-4">
+              <label class="form-label small fw-bold">Compte OHADA *</label>
+              <input type="text" class="form-control form-control-sm" id="mpCompte" required placeholder="6064">
+            </div>
+            <div class="col-8">
+              <label class="form-label small fw-bold">Libellé du compte</label>
+              <input type="text" class="form-control form-control-sm" id="mpCompteLib" placeholder="Fournitures administratives">
+            </div>
+          </div>
+          <div class="row g-2 mt-2">
+            <div class="col-6">
+              <label class="form-label small fw-bold">Sens du flux *</label>
+              <select class="form-select form-select-sm" id="mpSens" required>
+                <option value="D">D — Débit (Dépense, classe 6 / 2)</option>
+                <option value="C">C — Crédit (Recette, classe 7 / 1)</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Statut du lien</label>
+              <select class="form-select form-select-sm" id="mpStatut">
+                <option value="true">Actif</option>
+                <option value="false">Inactif</option>
+              </select>
+            </div>
+          </div>
+          <div class="text-end mt-3">
+            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-save me-1"></i>Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script src="../../src/js/syscohada.js"></script>
+<script src="../../src/js/budget-engine.js"></script>
+<script>
+const API = 'http://localhost:3000/api/v1/mapping';
+const LIGNES_STORAGE = 'pslsh_lignes_v1';
+
+let _mappings = [];
+
+function token() { return localStorage.getItem('pslsh_token') || ''; }
+function authHeaders() { return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() }; }
+
+async function loadAll() {
+  try {
+    const res = await fetch(API, { headers: authHeaders() });
+    const body = await res.json();
+    if (body && body.success) {
+      _mappings = body.data;
+      render();
+    } else {
+      document.getElementById('mappingTable').innerHTML =
+        `<div class="empty"><i class="fas fa-exclamation-circle d-block"></i>Impossible de charger le mapping.<br><small>${body && body.message || 'API indisponible'}</small></div>`;
+    }
+  } catch (e) {
+    document.getElementById('mappingTable').innerHTML =
+      `<div class="empty"><i class="fas fa-exclamation-circle d-block"></i>Erreur : ${e.message}<br><small>Vérifiez que le backend tourne sur port 3000.</small></div>`;
+  }
+}
+
+function filterList() {
+  const q  = (document.getElementById('fSearch').value || '').toLowerCase();
+  const fs = document.getElementById('fSens').value;
+  const fr = document.getElementById('fSrc').value;
+  return _mappings.filter((m) => {
+    if (fs && m.sens_flux !== fs) return false;
+    if (fr && m.source !== fr) return false;
+    if (q && !(m.code_ligne_budget.toLowerCase().includes(q) ||
+               (m.compte_syscohada || '').toLowerCase().includes(q) ||
+               (m.compte_libelle || '').toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+
+function renderKpis() {
+  const actifs = _mappings.filter((m) => m.statut_lien);
+  document.getElementById('kActifs').textContent = actifs.length;
+  document.getElementById('kDebit').textContent  = actifs.filter((m) => m.sens_flux === 'D').length;
+  document.getElementById('kCredit').textContent = actifs.filter((m) => m.sens_flux === 'C').length;
+  document.getElementById('kManuel').textContent = actifs.filter((m) => m.source === 'manuel').length;
+  document.getElementById('kAuto').textContent   = actifs.filter((m) => m.source === 'auto-classifier').length;
+}
+
+function render() {
+  renderKpis();
+  const list = filterList();
+  const target = document.getElementById('mappingTable');
+  if (!list.length) {
+    target.innerHTML =
+      `<div class="empty"><i class="fas fa-link-slash d-block"></i>Aucun mapping ne correspond.</div>`;
+    return;
+  }
+  const rows = list.map((m) => `<tr>
+    <td class="mono key">${m.code_ligne_budget}</td>
+    <td class="mono compte">${m.compte_syscohada}</td>
+    <td>${m.compte_libelle || '—'}</td>
+    <td><span class="sens-pill sens-${m.sens_flux}">${m.sens_flux === 'D' ? 'D — Débit' : 'C — Crédit'}</span></td>
+    <td><span class="src-pill src-${m.source || 'auto'}">${m.source || 'auto'}</span></td>
+    <td><span class="statut-pill statut-${m.statut_lien ? 'actif' : 'inactif'}">${m.statut_lien ? 'Actif' : 'Inactif'}</span></td>
+    <td style="white-space:nowrap">
+      <button class="btn-row-act" onclick="editMapping(${m.id_mapping})" title="Modifier"><i class="fas fa-pencil-alt"></i></button>
+      <button class="btn-row-act del" onclick="deleteMapping(${m.id_mapping})" title="Désactiver"><i class="fas fa-power-off"></i></button>
+    </td>
+  </tr>`).join('');
+  target.innerHTML = `<table class="mp-tbl">
+    <thead><tr>
+      <th style="width:220px">Code ligne budgétaire</th>
+      <th style="width:110px">Compte OHADA</th>
+      <th>Libellé compte</th>
+      <th style="width:130px">Sens flux</th>
+      <th style="width:140px">Source</th>
+      <th style="width:90px">Statut</th>
+      <th style="width:110px"></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function openModal(m) {
+  document.getElementById('mpModalTitle').innerHTML = m
+    ? `<i class="fas fa-pencil-alt me-2"></i>Modifier le mapping`
+    : `<i class="fas fa-plus me-2"></i>Nouveau mapping`;
+  document.getElementById('mpId').value         = m ? m.id_mapping : '';
+  document.getElementById('mpCode').value       = m ? m.code_ligne_budget : '';
+  document.getElementById('mpCompte').value     = m ? m.compte_syscohada : '';
+  document.getElementById('mpCompteLib').value  = m ? (m.compte_libelle || '') : '';
+  document.getElementById('mpSens').value       = m ? m.sens_flux : 'D';
+  document.getElementById('mpStatut').value     = m ? String(m.statut_lien) : 'true';
+  new bootstrap.Modal(document.getElementById('modalMapping')).show();
+}
+
+function editMapping(id) {
+  const m = _mappings.find((x) => x.id_mapping === id);
+  if (m) openModal(m);
+}
+
+async function saveMapping() {
+  const id = document.getElementById('mpId').value;
+  const payload = {
+    code_ligne_budget: document.getElementById('mpCode').value.trim(),
+    compte_syscohada:  document.getElementById('mpCompte').value.trim(),
+    compte_libelle:    document.getElementById('mpCompteLib').value.trim(),
+    sens_flux:         document.getElementById('mpSens').value,
+    statut_lien:       document.getElementById('mpStatut').value === 'true',
+  };
+  const url = id ? `${API}/${id}` : API;
+  const method = id ? 'PUT' : 'POST';
+  const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(payload) });
+  const body = await res.json();
+  if (body.success) {
+    bootstrap.Modal.getInstance(document.getElementById('modalMapping')).hide();
+    BUDGET.clearMappingCache();
+    loadAll();
+  } else {
+    alert(body.message || 'Erreur lors de la sauvegarde.');
+  }
+}
+
+async function deleteMapping(id) {
+  if (!confirm('Désactiver ce mapping ?')) return;
+  const res = await fetch(`${API}/${id}`, { method:'DELETE', headers: authHeaders() });
+  const body = await res.json();
+  if (body.success) { BUDGET.clearMappingCache(); loadAll(); }
+  else alert(body.message || 'Erreur');
+}
+
+async function syncFromLignes() {
+  let lignes = [];
+  try {
+    const raw = localStorage.getItem(LIGNES_STORAGE);
+    if (raw) {
+      const s = JSON.parse(raw);
+      lignes = (s && s.data) || (Array.isArray(s) ? s : []);
+    }
+  } catch (_) {}
+  if (!lignes.length) {
+    alert('Aucune ligne budgétaire trouvée dans le stockage local. Visitez /pages/budget/lignes.html d\'abord.');
+    return;
+  }
+  if (!confirm(`Synchroniser ${lignes.length} ligne(s) budgétaire(s) avec la table de mapping (insertion en mode auto-classifier) ?`)) return;
+  const result = await BUDGET.bulkSyncMapping(lignes);
+  if (result && result.success) {
+    alert(`✓ Synchro terminée : ${result.data.created} nouveau(x) mapping(s) sur ${result.data.total} ligne(s) traitée(s).`);
+    loadAll();
+  } else {
+    alert('Erreur : ' + (result.error || result.message || 'inconnue'));
+  }
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadAll);
+else loadAll();
+</script>
+</body>
+</html>

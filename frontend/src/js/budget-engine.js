@@ -245,6 +245,57 @@
 
   function fmt(n) { return Math.round(n || 0).toLocaleString('fr-FR'); }
 
+  // ---------- MAPPING T_Budget_Compta_Mapping (API) ----------
+  let _mappingCache = null;
+
+  async function loadMapping() {
+    if (_mappingCache) return _mappingCache;
+    try {
+      const token = localStorage.getItem('pslsh_token');
+      const res = await fetch('http://localhost:3000/api/v1/mapping', {
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      const body = await res.json();
+      if (body && body.success) {
+        _mappingCache = {};
+        body.data.forEach((m) => { _mappingCache[m.code_ligne_budget] = m; });
+        return _mappingCache;
+      }
+    } catch (_) {}
+    return {};
+  }
+
+  function clearMappingCache() { _mappingCache = null; }
+
+  async function mappingFor(codeLigneBudget) {
+    const map = await loadMapping();
+    return map[codeLigneBudget] || null;
+  }
+
+  async function bulkSyncMapping(lignes) {
+    const items = enrichAll(lignes).map((l) => ({
+      code_ligne_budget: l.cle_budgetaire,
+      compte_syscohada:  l.compte_ohada,
+      compte_libelle:    l.compte_ohada_lib,
+      sens_flux:         l.compte_ohada && l.compte_ohada.startsWith('7') ? 'C' : 'D',
+      source:            'auto-classifier',
+      derive_score:      0,
+    }));
+    try {
+      const token = localStorage.getItem('pslsh_token');
+      const res = await fetch('http://localhost:3000/api/v1/mapping/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ items }),
+      });
+      const body = await res.json();
+      _mappingCache = null;
+      return body;
+    } catch (e) {
+      return { success:false, error:e.message };
+    }
+  }
+
   window.BUDGET = {
     EXERCICE_ACTIF, PERIODE_COMPLEMENTAIRE_FIN,
     SEG_INSTITUTIONNEL, SEG_FONCTIONNEL, RUBRIQUE_OHADA,
@@ -253,5 +304,6 @@
     canEngager, engager, virementCredit,
     statutExercice, ecritureDepense, ecritureRecette,
     conformiteKpis, readAudit, logAudit, getCurrentUser, fmt,
+    loadMapping, clearMappingCache, mappingFor, bulkSyncMapping,
   };
 })(window);
