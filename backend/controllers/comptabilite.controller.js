@@ -190,11 +190,110 @@ async function balance(req, res, next) {
   }
 }
 
+async function fromEngagement(req, res, next) {
+  const t = await sequelize.transaction();
+  try {
+    const {
+      code_compte_debit,
+      code_compte_credit,
+      montant,
+      libelle,
+      reference,
+      dossier_ref,
+      dossier_id,
+      journal_code,
+      date_ecriture,
+    } = req.body;
+
+    if (!code_compte_debit || !code_compte_credit || !montant) {
+      await t.rollback();
+      return res.status(400).json({
+        success: false,
+        message: 'code_compte_debit, code_compte_credit et montant sont requis',
+      });
+    }
+    const m = parseFloat(montant);
+    if (!m || m <= 0) {
+      await t.rollback();
+      return res.status(400).json({ success: false, message: 'Montant invalide' });
+    }
+
+    const [cD, cC, journal] = await Promise.all([
+      PlanComptable.findOne({ where: { compte: String(code_compte_debit) }, transaction: t }),
+      PlanComptable.findOne({ where: { compte: String(code_compte_credit) }, transaction: t }),
+      JournalComptable.findOne({ where: { code: journal_code || 'JA' }, transaction: t }),
+    ]);
+
+    const missing = [];
+    if (!cD) missing.push(`compte débit ${code_compte_debit}`);
+    if (!cC) missing.push(`compte crédit ${code_compte_credit}`);
+    if (!journal) missing.push(`journal ${journal_code || 'JA'}`);
+    if (missing.length) {
+      await t.rollback();
+      return res.status(404).json({
+        success: false,
+        message: 'Référentiel comptable incomplet : ' + missing.join(', '),
+      });
+    }
+
+    const ecriture = await EcritureComptable.create({
+      journal_id: journal.id,
+      dossier_id: dossier_id || null,
+      reference: reference || null,
+      date_ecriture: date_ecriture || new Date().toISOString().slice(0, 10),
+      libelle: libelle || `Engagement ${reference || ''}`.trim(),
+      numero_piece: dossier_ref || null,
+      statut: 'brouillon',
+      saisie_par: req.user && req.user.id,
+    }, { transaction: t });
+
+    await LigneEcriture.bulkCreate([
+      { ecriture_id: ecriture.id, compte_id: cD.id, libelle_ligne: libelle || '', debit:  m, credit: 0 },
+      { ecriture_id: ecriture.id, compte_id: cC.id, libelle_ligne: libelle || '', debit:  0, credit: m },
+    ], { transaction: t });
+
+    await t.commit();
+    try {
+      await auditService.log(req.user && req.user.id, 'comptabilite:auto_engagement',
+        'ecriture', ecriture.id,
+        { compte_debit: code_compte_debit, compte_credit: code_compte_credit, montant: m, dossier_ref });
+    } catch (_) {}
+
+    const full = await EcritureComptable.findByPk(ecriture.id, {
+      include: [
+        { model: LigneEcriture, as: 'lignes', include: [{ model: PlanComptable, as: 'compte' }] },
+        { model: JournalComptable, as: 'journal' },
+      ],
+    });
+    res.status(201).json({ success: true, data: full });
+  } catch (err) {
+    try { await t.rollback(); } catch (_) {}
+    next(err);
+  }
+}
+
+async function ecrituresByDossierRef(req, res, next) {
+  try {
+    const ref = req.params.ref;
+    const rows = await EcritureComptable.findAll({
+      where: { numero_piece: ref },
+      include: [
+        { model: LigneEcriture, as: 'lignes', include: [{ model: PlanComptable, as: 'compte' }] },
+        { model: JournalComptable, as: 'journal' },
+      ],
+      order: [['date_ecriture', 'DESC'], ['id', 'DESC']],
+    });
+    res.json({ success: true, data: rows });
+  } catch (err) { next(err); }
+}
+
 module.exports = {
   listPlanComptable,
   listJournaux,
   listEcritures,
   createEcriture,
+  fromEngagement,
+  ecrituresByDossierRef,
   showEcriture,
   validerEcriture,
   grandLivre,

@@ -222,6 +222,44 @@
       .piece-card:not(.print-target) { display:none; }
       .pc-body { display:block !important; background:#fff; }
     }
+
+    /* ── Bloc engagement + écritures comptables ───────────────────────────── */
+    .engage-card {
+      background:#fff; border:1px solid #e2e8f0; border-left:4px solid #1b3a6b;
+      border-radius:10px; padding:14px 16px; margin-bottom:14px;
+    }
+    .ec-head { display:flex; justify-content:space-between; align-items:flex-start; gap:14px;
+      padding-bottom:10px; border-bottom:1px dashed #e2e8f0; flex-wrap:wrap; }
+    .ec-title { font-size:.86rem; font-weight:800; color:#1b2f52; }
+    .ec-sub   { font-size:.7rem; color:#64748b; margin-top:2px; }
+    .ec-meta  { display:flex; gap:18px; flex-wrap:wrap; }
+    .ec-meta div { font-size:.7rem; color:#64748b; text-align:right; }
+    .ec-meta div span { display:block; font-size:.62rem; text-transform:uppercase; letter-spacing:.04em; color:#94a3b8; }
+    .ec-meta div strong { font-size:.86rem; }
+
+    .ec-actions { display:flex; align-items:center; gap:10px; padding:10px 0;
+      flex-wrap:wrap; border-bottom:1px dashed #e2e8f0; }
+    .ec-input  { font-size:.78rem; padding:7px 12px; height:34px; min-width:200px;
+      border:1px solid #cbd5e1; border-radius:7px; font-family:monospace; }
+    .ec-btn { font-size:.74rem; font-weight:700; padding:7px 14px; min-height:34px;
+      border:1px solid #1b3a6b; border-radius:7px; cursor:pointer;
+      display:inline-flex; align-items:center; gap:6px; background:#fff; color:#1b3a6b; }
+    .ec-btn.primary { background:#1b3a6b; color:#fff; }
+    .ec-btn.primary:hover { background:#254d8f; }
+    .ec-pill { display:inline-flex; align-items:center; gap:6px;
+      padding:5px 12px; border-radius:14px; font-size:.72rem; font-weight:700; }
+    .ec-pill.ok { background:#dcfce7; color:#166534; }
+
+    .ec-ecritures { padding-top:10px; }
+    .ec-empty { padding:18px; text-align:center; color:#94a3b8; font-size:.74rem; background:#f8fafc; border-radius:8px; }
+    .ec-empty i { display:block; font-size:1.4rem; margin-bottom:6px; opacity:.6; }
+    .ec-tbl { width:100%; border-collapse:collapse; font-size:.72rem; }
+    .ec-tbl th { background:#f1f5f9; color:#475569; text-align:left; padding:6px 9px;
+      border-bottom:1px solid #cbd5e1; text-transform:uppercase; letter-spacing:.04em; font-size:.64rem; }
+    .ec-tbl td { padding:6px 9px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+    .ec-tbl .mono { font-family:monospace; }
+    .ec-tbl .num  { font-family:monospace; text-align:right; font-weight:700; }
+    .ec-tbl .jrn  { background:#dbeafe; color:#1d4ed8; font-weight:800; text-align:center; }
   </style>
 </head>
 <body>
@@ -298,6 +336,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../../src/js/api.js"></script>
 <script src="../../src/js/roles.js"></script>
+<script src="../../src/js/syscohada.js"></script>
+<script src="../../src/js/budget-engine.js"></script>
 <script>
 const STORAGE_DOSSIERS = 'pslsh_dossiers_v1';
 const STORAGE_PIECES   = 'pslsh_pieces_v1';
@@ -631,8 +671,134 @@ function render() {
   $id('detBody').innerHTML = `
     ${renderHeader()}
     ${notice}
+    ${renderEngagementBox()}
     ${renderPiecesColumn()}
   `;
+  refreshEcritures();
+}
+
+/* ─── Engagement budgétaire & écritures comptables ─────────────────────── */
+function renderEngagementBox() {
+  const dispo = (_dossier.montant_estime || 0) - (_dossier.montant_engage || 0);
+  const engaged = (_dossier.montant_engage || 0) > 0;
+  const codeCompte = (_dossier.compte_ohada) || (window.SYSCOHADA ? (SYSCOHADA.classify(_dossier.objet) || {}).code : null) || '6064';
+  return `<div class="engage-card" id="engageCard">
+    <div class="ec-head">
+      <div>
+        <div class="ec-title"><i class="fas fa-shield-alt me-2" style="color:#1b3a6b"></i>Engagement budgétaire & écritures comptables OHADA</div>
+        <div class="ec-sub">Hard-check sur disponibilité · génération automatique d'écriture JA (Journal Achats) · persistance en BDD</div>
+      </div>
+      <div class="ec-meta">
+        <div><span>Compte OHADA détecté</span><strong style="font-family:monospace;color:#1b3a6b">${codeCompte}</strong></div>
+        <div><span>Disponible estimé</span><strong style="color:${dispo > 0 ? '#15803d' : '#b91c1c'}">${fmt(dispo)} FCFA</strong></div>
+      </div>
+    </div>
+    <div class="ec-actions">
+      ${engaged
+        ? `<span class="ec-pill ok"><i class="fas fa-check-circle"></i>Déjà engagé pour ${fmt(_dossier.montant_engage)} FCFA</span>`
+        : `<input type="number" id="engMontant" class="ec-input" placeholder="Montant à engager (FCFA)" min="1" value="${_dossier.montant_estime || ''}">
+           <button class="ec-btn primary" onclick="engagerDossier()"><i class="fas fa-shield-alt"></i>Engager (hard-check + écriture OHADA)</button>`}
+    </div>
+    <div class="ec-ecritures" id="ecEcritures">
+      <div class="ec-empty"><i class="fas fa-hourglass-half"></i>Chargement des écritures comptables du dossier…</div>
+    </div>
+  </div>`;
+}
+
+async function engagerDossier() {
+  const input = document.getElementById('engMontant');
+  const montant = parseFloat(input.value);
+  if (!montant || montant <= 0) { alert('Saisissez un montant valide.'); return; }
+
+  // 1) Hard-check via budget-engine
+  if (window.BUDGET) {
+    const fakeLigne = {
+      revise: _dossier.montant_estime || montant,
+      engage: _dossier.montant_engage || 0,
+      statut: 'Actif',
+      code: _dossier.ligne,
+    };
+    const check = BUDGET.canEngager(fakeLigne, montant);
+    if (!check.ok) {
+      alert('🚫 Engagement bloqué\n\n' + check.raison);
+      return;
+    }
+  }
+
+  // 2) POST écriture comptable JA
+  const codeCompte = _dossier.compte_ohada
+    || (window.SYSCOHADA ? (SYSCOHADA.classify(_dossier.objet) || {}).code : null)
+    || '6064';
+  try {
+    const token = localStorage.getItem('pslsh_token');
+    const res = await fetch('http://localhost:3000/api/v1/comptabilite/ecritures/from-engagement', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({
+        code_compte_debit:  codeCompte,
+        code_compte_credit: '4011',
+        montant,
+        libelle: `Engagement ${_dossier.objet}`,
+        reference: 'ENG-' + _dossier.id,
+        dossier_ref: _dossier.id,
+        journal_code: 'JA',
+      }),
+    });
+    const body = await res.json();
+    if (!body.success) {
+      alert('Erreur backend : ' + (body.message || 'inconnue'));
+      return;
+    }
+    // 3) Marquer le dossier engagé localement
+    _dossier.montant_engage = (_dossier.montant_engage || 0) + montant;
+    _dossier.etape = _dossier.etape === 'compta' || _dossier.etape === 'coordo' ? 'engagement' : (_dossier.etape || 'engagement');
+    _piecesData[_dossier.id].histo.push({
+      action: `Engagé ${fmt(montant)} FCFA · écriture JA n°${body.data.id} (compte ${codeCompte})`,
+      par: 'admin@pslsh.org',
+      date: new Date().toLocaleString('fr-FR'),
+      color: 'blue',
+    });
+    saveDossiers(); savePieces();
+    if (window.BUDGET) BUDGET.logAudit('dossier_engagement', { dossier: _dossier.id, compte: codeCompte, montant, ecriture_id: body.data.id });
+    render();
+  } catch (e) {
+    alert('Erreur réseau : ' + e.message);
+  }
+}
+
+async function refreshEcritures() {
+  const target = document.getElementById('ecEcritures');
+  if (!target) return;
+  try {
+    const token = localStorage.getItem('pslsh_token');
+    const res = await fetch(`http://localhost:3000/api/v1/comptabilite/ecritures/by-dossier/${encodeURIComponent(_dossier.id)}`, {
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    const body = await res.json();
+    if (!body.success) { target.innerHTML = `<div class="ec-empty"><i class="fas fa-exclamation-circle"></i>Impossible de charger les écritures.</div>`; return; }
+    const rows = body.data || [];
+    if (!rows.length) {
+      target.innerHTML = `<div class="ec-empty"><i class="fas fa-receipt"></i>Aucune écriture comptable encore générée pour ce dossier.</div>`;
+      return;
+    }
+    target.innerHTML = `<table class="ec-tbl">
+      <thead><tr>
+        <th>Journal</th><th>Date</th><th>Référence</th><th>Libellé</th>
+        <th>Compte</th><th class="num">Débit</th><th class="num">Crédit</th>
+      </tr></thead>
+      <tbody>${rows.map((e) => e.lignes.map((l, i) => `<tr>
+        ${i === 0 ? `<td rowspan="${e.lignes.length}" class="jrn">${(e.journal && e.journal.code) || '—'}</td>
+                     <td rowspan="${e.lignes.length}">${e.date_ecriture}</td>
+                     <td rowspan="${e.lignes.length}" class="mono">${e.reference || '—'}</td>
+                     <td rowspan="${e.lignes.length}">${e.libelle}</td>` : ''}
+        <td class="mono">${(l.compte && l.compte.compte) || '—'} <small style="color:#94a3b8">${(l.compte && l.compte.libelle) || ''}</small></td>
+        <td class="num">${parseFloat(l.debit) > 0 ? fmt(l.debit) : ''}</td>
+        <td class="num">${parseFloat(l.credit) > 0 ? fmt(l.credit) : ''}</td>
+      </tr>`).join('')).join('')}</tbody>
+    </table>`;
+  } catch (e) {
+    target.innerHTML = `<div class="ec-empty"><i class="fas fa-exclamation-circle"></i>Erreur réseau : ${e.message}</div>`;
+  }
 }
 
 function renderHeader() {
