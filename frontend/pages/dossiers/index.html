@@ -143,6 +143,15 @@
     }
     .empty i { font-size:2.5rem; margin-bottom:12px; opacity:.5; }
 
+    .dos-tbl tbody tr.archived td { background:#fafbfc; color:#94a3b8; }
+    .dos-tbl tbody tr.archived:hover td { background:#f1f5f9; }
+    .dos-tbl tbody tr.archived .mono { opacity:.7; }
+    .archive-tag {
+      display:inline-flex; align-items:center; gap:5px;
+      background:#475569; color:#fff; padding:2px 8px; border-radius:5px;
+      font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+    }
+
     /* ── Onglets Excel-style en haut du canvas ── */
     .sheet-tabs {
       flex-shrink:0; display:flex; align-items:flex-end; gap:0;
@@ -304,11 +313,13 @@ const FAMILIES = [
   { code:'ACH-P', label:'Achat par passation',   icon:'fa-gavel',            color:'#3730a3' },
   { code:'FOR-M', label:'Formation & missions',  icon:'fa-graduation-cap',   color:'#0f766e' },
   { code:'PER-A', label:'Personnel & assistance',icon:'fa-hand-holding-usd', color:'#9d174d' },
+  { code:'ARC',   label:'Archives',              icon:'fa-archive',          color:'#475569' },
 ];
 
 const SERVICES = ['SAF','SGAS','SPCH','SPCG','SESRO','APMS','SEB','SPSAC','SC','SLNR'];
 
 const DEFAULT_DOSSIERS = [
+  { id:'DOS-2025-0099', type:'ACH-S', objet:'Reconditionnement antirétroviraux Q4 2025',          service:'APMS',  porteur:'Chef APMS',  ligne:'L-APMS-032', source:'PSLSH-032', montant_estime: 18500000, montant_engage:18500000, montant_paye:18500000, etape:'clos',      soumis:'05/10/2025', archived:true, archive_le:'15/01/2026', archive_par:'Coordonnateur' },
   { id:'DOS-2026-0001', type:'ACH-S', objet:'Fournitures bureau et matériels informatiques',     service:'SAF',   porteur:'Resp. SAF',  ligne:'L-SAF-045',  source:'PSLSH-035', montant_estime: 30280000, montant_engage:28650000, montant_paye:28650000, etape:'clos',      soumis:'10/01/2026' },
   { id:'DOS-2026-0002', type:'ACH-P', objet:'Réactifs dépistage VIH — algorithme 3 tests',        service:'APMS',  porteur:'Chef APMS',  ligne:'L-APMS-032', source:'PSLSH-032', montant_estime:248000000, montant_engage:212000000, montant_paye:106000000, etape:'paiement', soumis:'15/01/2026' },
   { id:'DOS-2026-0003', type:'ACH-S', objet:'Service gardiennage et nettoyage locaux PSLSH',      service:'SAF',   porteur:'Resp. SAF',  ligne:'L-SAF-047',  source:'PSLSH-035', montant_estime:  6900000, montant_engage: 6900000, montant_paye: 1725000, etape:'paiement', soumis:'20/01/2026' },
@@ -400,7 +411,13 @@ function filterDossiers() {
   const fE = document.getElementById('fEtape').value;
   const fS = document.getElementById('fService').value;
   return _dossiers.filter((d) => {
-    if (_currentType && d.type !== _currentType) return false;
+    const isArchived = d.archived === true;
+    if (_currentType === 'ARC') {
+      if (!isArchived) return false;
+    } else {
+      if (isArchived) return false;
+      if (_currentType && d.type !== _currentType) return false;
+    }
     if (fE && d.etape !== fE) return false;
     if (fS && d.service !== fS) return false;
     if (q && !(d.id.toLowerCase().includes(q) || d.objet.toLowerCase().includes(q) || (d.porteur || '').toLowerCase().includes(q))) return false;
@@ -410,7 +427,10 @@ function filterDossiers() {
 
 function renderTabs() {
   const html = FAMILIES.map((f) => {
-    const n = f.code ? _dossiers.filter((d) => d.type === f.code).length : _dossiers.length;
+    let n;
+    if (f.code === 'ARC')     n = _dossiers.filter((d) => d.archived === true).length;
+    else if (f.code === '')   n = _dossiers.filter((d) => !d.archived).length;
+    else                       n = _dossiers.filter((d) => d.type === f.code && !d.archived).length;
     const active = f.code === _currentType ? ' active' : '';
     return `<div class="sheet-tab${active}" onclick="switchTab('${f.code}')" title="${f.label}">
       <i class="fas ${f.icon}" style="color:${f.color}"></i>
@@ -435,13 +455,23 @@ function renderTable(list) {
       `<div class="empty"><i class="fas fa-inbox d-block"></i>Aucun dossier ne correspond à ce filtre.</div>`;
     return;
   }
-  const rows = list.map((d) => `<tr>
+  const rows = list.map((d) => {
+    const isArc = d.archived === true;
+    const trCls = isArc ? ' class="archived"' : '';
+    const meta = isArc
+      ? `${d.service} · ${d.porteur} · <span class="archive-tag"><i class="fas fa-archive"></i>Archivé le ${d.archive_le || ''}</span>`
+      : `${d.service} · ${d.porteur} · soumis ${d.soumis}`;
+    const lastCol = isArc
+      ? `<button class="btn-open" style="background:#475569;border-color:#475569" onclick="ouvrirDossier('${d.id}')"><i class="fas fa-eye"></i>Consulter</button>`
+      : `<button class="btn-open" onclick="ouvrirDossier('${d.id}')"><i class="fas fa-folder-open"></i>Ouvrir dossier</button>`;
+    return `<tr${trCls}>
       <td class="mono">${d.id}</td>
-      <td><strong>${d.objet}</strong><br><small style="color:#94a3b8">${d.service} · ${d.porteur} · soumis ${d.soumis}</small></td>
+      <td><strong>${d.objet}</strong><br><small style="color:#94a3b8">${meta}</small></td>
       <td><span class="mono" style="color:#475569">${d.ligne}</span><br><small style="color:#94a3b8">${d.source}</small></td>
       <td>${positionWidget(d.etape)}</td>
-      <td><button class="btn-open" onclick="ouvrirDossier('${d.id}')"><i class="fas fa-folder-open"></i>Ouvrir dossier</button></td>
-    </tr>`).join('');
+      <td>${lastCol}</td>
+    </tr>`;
+  }).join('');
   document.getElementById('dossierTable').innerHTML = `
     <table class="dos-tbl">
       <thead>

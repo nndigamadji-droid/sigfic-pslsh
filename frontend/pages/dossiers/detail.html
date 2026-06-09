@@ -34,6 +34,14 @@
     .amt-lbl { font-size:.62rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
     .amt-val { font-size:.95rem; font-weight:800; color:#1b2f52; font-family:monospace; margin-top:1px; }
 
+    .btn-archive {
+      background:#15803d; color:#fff; border:1px solid #15803d;
+      font-size:.78rem; font-weight:700; padding:8px 18px;
+      border-radius:8px; cursor:pointer; transition:background .15s;
+      display:inline-flex; align-items:center; gap:7px;
+    }
+    .btn-archive:hover { background:#166534; }
+
 
     .pieces-column { display:flex; flex-direction:column; gap:10px; }
 
@@ -628,6 +636,20 @@ function render() {
 }
 
 function renderHeader() {
+  const list = PIECES_BY_TYPE[_dossier.type] || [];
+  const allValid = list.length > 0 && list.every((p) => statusOfPiece(p.code) === 'valide');
+  const isArchived = _dossier.archived === true;
+  const archiveAction = isArchived
+    ? `<div style="text-align:right">
+         <div style="font-size:.66rem;color:#15803d;font-weight:800;text-transform:uppercase;letter-spacing:.05em"><i class="fas fa-archive"></i> Dossier archivé</div>
+         <div style="font-size:.7rem;color:#64748b;margin-top:3px">le ${_dossier.archive_le || ''} ${_dossier.archive_par ? 'par ' + _dossier.archive_par : ''}</div>
+       </div>`
+    : allValid
+      ? `<button class="btn-archive" onclick="archiveDossier()"><i class="fas fa-archive"></i>Archiver ce dossier</button>`
+      : `<div title="Toutes les pièces doivent être validées pour archiver" style="font-size:.7rem;color:#94a3b8;text-align:right;max-width:200px">
+           <i class="fas fa-info-circle me-1"></i>Archivage disponible une fois toutes les pièces validées.
+         </div>`;
+
   return `<div class="det-header">
     <div>
       <h4><i class="fas fa-folder-open me-2" style="color:#1b3a6b"></i>${_dossier.objet}</h4>
@@ -647,7 +669,26 @@ function renderHeader() {
       <div class="amt-card"><div class="amt-lbl">Liquidé</div><div class="amt-val" style="color:#6d28d9">${fmt(_dossier.montant_engage)}</div></div>
       <div class="amt-card"><div class="amt-lbl">Payé</div><div class="amt-val" style="color:#15803d">${fmt(_dossier.montant_paye)}</div></div>
     </div>
+    <div style="grid-column:1 / -1; display:flex; justify-content:flex-end; padding-top:12px; border-top:1px solid #f1f5f9; margin-top:6px">
+      ${archiveAction}
+    </div>
   </div>`;
+}
+
+function archiveDossier() {
+  if (!confirm(`Archiver le dossier ${_dossier.id} ?\nIl sera déplacé vers l'onglet "Archives" et ne pourra plus être modifié.`)) return;
+  _dossier.archived = true;
+  _dossier.archive_le = new Date().toLocaleDateString('fr-FR');
+  _dossier.archive_par = 'admin@pslsh.org';
+  _dossier.etape = 'clos';
+  _piecesData[_dossier.id].histo.push({
+    action: 'Dossier archivé', par: _dossier.archive_par,
+    date: new Date().toLocaleString('fr-FR'), color: 'green',
+  });
+  saveDossiers();
+  savePieces();
+  alert(`Dossier ${_dossier.id} archivé avec succès.`);
+  window.location.href = 'index.html?type=ARC';
 }
 
 const STATUS_MAP = {
