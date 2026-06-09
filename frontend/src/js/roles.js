@@ -280,9 +280,6 @@
         icon: 'fa-cogs',
         items: [
           { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
-          { href: '/pages/dossiers/besoins.html?action=new',     icon: 'fa-plus-circle',   label: 'Saisir un nouveau besoin',         sub: true },
-          { href: '/pages/dossiers/besoins.html?filter=mine',    icon: 'fa-user-clock',    label: 'Mes besoins en cours',             sub: true },
-          { href: '/pages/dossiers/besoins.html?filter=pending', icon: 'fa-hourglass-half',label: 'Besoins en attente de validation', sub: true },
           { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
         ],
       },
@@ -508,9 +505,6 @@
         icon: 'fa-cogs',
         items: [
           { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
-          { href: '/pages/dossiers/besoins.html?action=new',     icon: 'fa-plus-circle',   label: 'Saisir un nouveau besoin',         sub: true },
-          { href: '/pages/dossiers/besoins.html?filter=mine',    icon: 'fa-user-clock',    label: 'Mes besoins en cours',             sub: true },
-          { href: '/pages/dossiers/besoins.html?filter=pending', icon: 'fa-hourglass-half',label: 'Besoins en attente de validation', sub: true },
           { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
         ],
       },
@@ -699,9 +693,6 @@
         icon: 'fa-cogs',
         items: [
           { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
-          { href: '/pages/dossiers/besoins.html?action=new',     icon: 'fa-plus-circle',   label: 'Saisir un nouveau besoin',         sub: true },
-          { href: '/pages/dossiers/besoins.html?filter=mine',    icon: 'fa-user-clock',    label: 'Mes besoins en cours',             sub: true },
-          { href: '/pages/dossiers/besoins.html?filter=pending', icon: 'fa-hourglass-half',label: 'Besoins en attente de validation', sub: true },
           { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
         ],
       },
@@ -892,9 +883,6 @@
         icon: 'fa-cogs',
         items: [
           { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
-          { href: '/pages/dossiers/besoins.html?action=new',     icon: 'fa-plus-circle',   label: 'Saisir un nouveau besoin',         sub: true },
-          { href: '/pages/dossiers/besoins.html?filter=mine',    icon: 'fa-user-clock',    label: 'Mes besoins en cours',             sub: true },
-          { href: '/pages/dossiers/besoins.html?filter=pending', icon: 'fa-hourglass-half',label: 'Besoins en attente de validation', sub: true },
           { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
         ],
       },
@@ -995,9 +983,6 @@
         icon: 'fa-cogs',
         items: [
           { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
-          { href: '/pages/dossiers/besoins.html?action=new',     icon: 'fa-plus-circle',   label: 'Saisir un nouveau besoin',         sub: true },
-          { href: '/pages/dossiers/besoins.html?filter=mine',    icon: 'fa-user-clock',    label: 'Mes besoins en cours',             sub: true },
-          { href: '/pages/dossiers/besoins.html?filter=pending', icon: 'fa-hourglass-half',label: 'Besoins en attente de validation', sub: true },
           { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
         ],
       },

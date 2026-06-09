@@ -4,14 +4,116 @@
   <meta charset="UTF-8">
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SIGFIC-PSLSH | Expressions de besoin</title>
+  <title>SIGFIC-PSLSH | Expression de besoins</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
   <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    html, body { height:100%; overflow:hidden; }
+    .app-layout, .main-content { height:100vh; overflow:hidden; }
+    .page-content { flex:1; overflow:hidden; display:flex; flex-direction:column; padding:0; }
+
+    .eb-top { flex-shrink:0; padding:12px 24px 8px; background:#fff; border-bottom:1px solid #e2e8f0; }
+    .eb-title-row h5 { margin:0; font-size:.96rem; font-weight:800; color:#1b2f52; }
+    .eb-title-row small { font-size:.7rem; color:#64748b; }
+
+    .eb-body { flex:1; overflow:hidden; display:flex; flex-direction:column; background:#eef2f7; }
+    .eb-canvas { flex:1; overflow-y:auto; padding:14px 24px; }
+
+    .sheet-tabs {
+      flex-shrink:0; display:flex; align-items:flex-end; gap:0;
+      background:#dbe1ea; border-bottom:1px solid #94a3b8;
+      padding:6px 16px 0; min-height:36px; overflow-x:auto; overflow-y:hidden;
+    }
+    .sheet-tab {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:7px 18px; font-size:.78rem; font-weight:600; color:#475569;
+      background:#cbd3dd; border:1px solid #94a3b8; border-top:none;
+      border-radius:4px 4px 0 0;
+      cursor:pointer; user-select:none; white-space:nowrap;
+      position:relative; bottom:-1px; transition:background .15s;
+    }
+    .sheet-tab:hover { background:#dee3eb; }
+    .sheet-tab.active {
+      background:#eef2f7; color:#1b3a6b; font-weight:800;
+      border-bottom:2px solid #15803d;
+      box-shadow:0 2px 4px rgba(0,0,0,.04);
+      padding-bottom:6px; bottom:-1px; z-index:2;
+    }
+    .sheet-tab .count {
+      background:rgba(27,58,107,.10); color:#1b3a6b;
+      font-size:.65rem; padding:1px 7px; border-radius:10px;
+      font-family:monospace; font-weight:700;
+    }
+    .sheet-tab.active .count { background:#dcfce7; color:#15803d; }
+
+    .eb-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:18px 22px; }
+    .eb-card-title {
+      font-size:.78rem; font-weight:800; color:#1b2f52;
+      text-transform:uppercase; letter-spacing:.05em; margin-bottom:14px;
+      display:flex; align-items:center; gap:8px;
+      padding-bottom:10px; border-bottom:1px solid #f1f5f9;
+    }
+
+    .eb-tbl { width:100%; border-collapse:collapse; font-size:.79rem; }
+    .eb-tbl thead th {
+      background:#f1f5f9; color:#1b2f52; font-size:.69rem; font-weight:700;
+      text-transform:uppercase; letter-spacing:.03em; padding:10px 12px;
+      border-bottom:2px solid #e2e8f0; text-align:left; white-space:nowrap;
+    }
+    .eb-tbl tbody td { padding:9px 12px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+    .eb-tbl tbody tr:hover td { background:#eff6ff; transition:background .1s; }
+    .eb-tbl .mono { font-family:monospace; color:#1d4ed8; font-weight:700; font-size:.75rem; }
+    .eb-tbl .num { font-family:monospace; text-align:right; font-feature-settings:'tnum' 1; }
+
+    .st-pill {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:3px 9px; border-radius:18px; font-size:.66rem; font-weight:700; white-space:nowrap;
+    }
+    .st-brouillon { background:#f1f5f9; color:#64748b; }
+    .st-soumis    { background:#dbeafe; color:#1d4ed8; }
+    .st-saf       { background:#fef3c7; color:#b45309; }
+    .st-compta    { background:#ede9fe; color:#6d28d9; }
+    .st-coordo    { background:#cffafe; color:#0e7490; }
+    .st-valide    { background:#dcfce7; color:#15803d; }
+    .st-rejete    { background:#fee2e2; color:#b91c1c; }
+
+    .empty {
+      text-align:center; padding:50px 20px; color:#94a3b8;
+      background:#fff; border:1px dashed #e2e8f0; border-radius:12px;
+    }
+    .empty i { font-size:2.5rem; margin-bottom:10px; opacity:.5; }
+
+    .eb-form { display:grid; grid-template-columns:1fr 1fr; gap:14px 22px; }
+    .eb-form .full { grid-column:1 / -1; }
+    .eb-form label {
+      display:block; font-size:.66rem; font-weight:700; color:#64748b;
+      text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px;
+    }
+    .eb-form input, .eb-form select, .eb-form textarea {
+      width:100%; font-size:.82rem; padding:8px 12px;
+      border:1px solid #cbd5e1; border-radius:8px;
+    }
+    .eb-form textarea { min-height:80px; resize:vertical; }
+    .eb-form .form-actions {
+      grid-column:1 / -1; display:flex; gap:10px; justify-content:flex-end;
+      padding-top:14px; border-top:1px solid #f1f5f9;
+    }
+    .btn-eb {
+      font-size:.78rem; font-weight:700; padding:8px 18px; min-height:36px;
+      border-radius:8px; border:1px solid; cursor:pointer;
+      display:inline-flex; align-items:center; gap:7px; transition:all .15s;
+    }
+    .btn-eb-cancel { background:#fff; color:#475569; border-color:#cbd5e1; }
+    .btn-eb-cancel:hover { background:#f8fafc; }
+    .btn-eb-save   { background:#475569; color:#fff; border-color:#475569; }
+    .btn-eb-submit { background:#1b3a6b; color:#fff; border-color:#1b3a6b; }
+    .btn-eb-submit:hover { background:#254d8f; }
+  </style>
 </head>
 <body>
 <div class="app-layout">
+
   <aside class="sidebar">
     <div class="sidebar-brand">
       <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo">
@@ -22,123 +124,51 @@
     </div>
     <div id="sidebarServiceBadge"></div>
     <nav class="sidebar-nav" id="sidebarNav"></nav>
-    <div class="sidebar-footer">
-      <div class="sf-version">SIGFIC-PSLSH v2.0</div>
-    </div>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
   </aside>
 
   <div class="main-content">
+
     <div class="topbar">
       <div class="topbar-left">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="/pages/accueil/index.html">Accueil</a></li>
-            <li class="breadcrumb-item"><a href="/pages/dossiers/index.html">Opérations</a></li>
-            <li class="breadcrumb-item active">Expressions de besoin</li>
+            <li class="breadcrumb-item text-muted">Opérations</li>
+            <li class="breadcrumb-item active fw-semibold" id="bcTitle">Expression de besoins</li>
           </ol>
         </nav>
       </div>
       <div class="topbar-center">
-        <i class="fas fa-calendar-alt"></i>
-        Exercice : <strong id="exLabel">—</strong>
+        <i class="fas fa-list-check me-1"></i>Exercice <strong>2026</strong>
       </div>
       <div class="topbar-right">
-        <span class="me-2 text-muted small" id="userName"></span>
-        <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        <div class="topbar-notif"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700" id="userAvatar">?</div>
+            <span id="userName" style="font-size:.82rem;font-weight:600"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="../admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
       </div>
     </div>
 
     <div class="page-content">
 
-      <!-- En-tête -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h4 class="mb-0"><i class="fas fa-list-check text-primary me-2"></i>Expressions de besoin validées</h4>
-          <small class="text-muted">Expressions ayant passé la Validation 1 — prêtes à déclencher la procédure</small>
-        </div>
-        <a href="/pages/validation/besoins.html" class="btn btn-outline-warning">
-          <i class="fas fa-tasks me-1"></i> Centre de validation
-        </a>
-      </div>
-
-      <!-- Filtres -->
-      <div class="card mb-3">
-        <div class="card-body py-2">
-          <div class="row g-2 align-items-center">
-            <div class="col-md-3">
-              <select class="form-select form-select-sm" id="fStatut" onchange="load()">
-                <option value="">Tous les statuts</option>
-                <option value="valide" selected>Validées</option>
-                <option value="brouillon">Brouillon</option>
-                <option value="soumis">Soumises</option>
-                <option value="a_revoir">À revoir</option>
-                <option value="rejete">Rejetées</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <select class="form-select form-select-sm" id="fExercice" onchange="load()">
-                <option value="">Tous les exercices</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <input type="text" class="form-control form-control-sm" id="fSearch" placeholder="Rechercher…" oninput="filterLocal()">
-            </div>
-            <div class="col-md-2 text-end">
-              <a href="besoins-create.html" class="btn btn-sm btn-primary">
-                <i class="fas fa-plus me-1"></i> Nouvelle expression
-              </a>
-            </div>
-          </div>
+      <div class="eb-top">
+        <div class="eb-title-row">
+          <h5 id="paneTitle"><i class="fas fa-list-check me-2" style="color:#1b3a6b"></i>Expression de besoins</h5>
+          <small id="paneSub">Initialisation de toute opération PSLSH/IST · exercice 2026</small>
         </div>
       </div>
 
-      <!-- Tableau -->
-      <div class="card">
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0" id="mainTable">
-              <thead class="table-light">
-                <tr>
-                  <th>Référence</th>
-                  <th>Titre / Objet</th>
-                  <th>Type</th>
-                  <th>Exercice</th>
-                  <th>Montant estimé</th>
-                  <th>Budget</th>
-                  <th>Statut</th>
-                  <th>Dossier généré</th>
-                  <th class="text-end">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="tbody">
-                <tr><td colspan="9" class="text-center py-4 text-muted">
-                  <i class="fas fa-spinner fa-spin me-2"></i>Chargement…
-                </td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div><!-- /page-content -->
-  </div><!-- /main-content -->
-</div><!-- /app-layout -->
-
-<!-- ── Modal : Déclencher la procédure ───────────────────────────────────── -->
-<div class="modal fade" id="modalDeclencher" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title"><i class="fas fa-rocket me-2"></i>Déclencher la procédure</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="declencherBody">
-        <!-- rempli dynamiquement -->
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-        <button class="btn btn-primary" id="btnConfirmDeclencher" onclick="confirmerDeclencher()">
-          <i class="fas fa-rocket me-1"></i> Générer le dossier automatiquement
-        </button>
+      <div class="eb-body">
+        <div class="sheet-tabs" id="sheetTabs"></div>
+        <div class="eb-canvas" id="ebCanvas"></div>
       </div>
     </div>
   </div>
@@ -146,223 +176,227 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../../src/js/api.js"></script>
-<script>
-requireAuth();
-document.getElementById('userName').textContent = (getUser()?.prenom || '') + ' ' + (getUser()?.nom || '');
-
-let allItems = [];
-let selectedBesoinId = null;
-
-// ── Badges statuts expression de besoin ──────────────────────────────────────
-const statutEB = {
-  brouillon: '<span class="badge bg-secondary">Brouillon</span>',
-  soumis:    '<span class="badge bg-warning text-dark">Soumis</span>',
-  a_revoir:  '<span class="badge bg-warning text-dark">À revoir</span>',
-  rejete:    '<span class="badge bg-danger">Rejeté</span>',
-  valide:    '<span class="badge bg-success">Validé</span>',
-};
-
-// ── Badges lecture budgétaire ─────────────────────────────────────────────────
-function budgetBadge(item) {
-  if (!item.ligne_budgetaire) return '<span class="badge bg-secondary">Non rattaché</span>';
-  if (!item.budget_info)     return '<span class="badge bg-secondary">–</span>';
-  const { disponible, suffisant } = item.budget_info;
-  const fmt = v => Number(v).toLocaleString('fr-FR');
-  if (suffisant) {
-    return `<span class="badge bg-success" title="Disponible : ${fmt(disponible)} XOF"><i class="fas fa-check-circle me-1"></i>Budget disponible</span>`;
-  }
-  return `<span class="badge bg-danger" title="Disponible : ${fmt(disponible)} XOF"><i class="fas fa-times-circle me-1"></i>Budget insuffisant</span>`;
-}
-
-const typeLabels = {
-  fournitures: 'Fournitures', services: 'Services', travaux: 'Travaux',
-  immobilisations: 'Immobilisations', frais_mission: 'Frais de mission', autres: 'Autres',
-};
-
-// ── Chargement des exercices ──────────────────────────────────────────────────
-async function loadExercices() {
-  try {
-    const r = await api.get('/planification/exercices');
-    const sel = document.getElementById('fExercice');
-    (r.data || []).forEach(e => {
-      const o = document.createElement('option');
-      o.value = e.id; o.textContent = `Exercice ${e.annee}`;
-      sel.appendChild(o);
-    });
-    if (r.data?.[0]) {
-      sel.value = r.data[0].id;
-      document.getElementById('exLabel').textContent = r.data[0].annee;
-    }
-  } catch { /* ignore */ }
-}
-
-// ── Chargement principal ──────────────────────────────────────────────────────
-async function load() {
-  document.getElementById('tbody').innerHTML =
-    '<tr><td colspan="9" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Chargement…</td></tr>';
-
-  try {
-    const params = new URLSearchParams();
-    const s = document.getElementById('fStatut').value;
-    const e = document.getElementById('fExercice').value;
-    if (s) params.set('statut', s);
-    if (e) params.set('exercice_id', e);
-
-    const r = await api.get('/passation/besoins?' + params.toString());
-    allItems = r.data || [];
-    renderTable(allItems);
-  } catch(err) {
-    document.getElementById('tbody').innerHTML =
-      `<tr><td colspan="9" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>${err.message || 'Erreur de chargement'}</td></tr>`;
-  }
-}
-
-// ── Rendu du tableau ──────────────────────────────────────────────────────────
-function renderTable(items) {
-  if (!items.length) {
-    document.getElementById('tbody').innerHTML =
-      '<tr><td colspan="9" class="text-center py-5 text-muted"><i class="fas fa-list-check d-block mb-2" style="font-size:1.8rem;opacity:.3"></i>Aucune expression de besoin trouvée</td></tr>';
-    return;
-  }
-
-  document.getElementById('tbody').innerHTML = items.map(item => {
-    const montant = Number(item.montant_total_estime || 0).toLocaleString('fr-FR');
-    const dossierBadge = item.dossier
-      ? `<a href="/pages/dossiers/detail.html?id=${item.dossier.id}" class="badge bg-primary text-decoration-none">
-           <i class="fas fa-folder me-1"></i>${item.dossier.reference}
-         </a>`
-      : '<span class="text-muted small">—</span>';
-
-    const canDeclencher = item.statut === 'valide' && !item.dossier_id;
-    const btnDeclencher = canDeclencher
-      ? `<button class="btn btn-sm btn-primary" onclick="ouvrirDeclencher(${item.id})" title="Déclencher la procédure">
-           <i class="fas fa-rocket me-1"></i>Déclencher
-         </button>`
-      : '';
-
-    return `
-      <tr>
-        <td><code class="text-primary">${item.reference || '—'}</code></td>
-        <td>
-          <strong>${item.titre}</strong>
-          ${item.activite ? `<br><small class="text-muted">${item.activite.libelle}</small>` : ''}
-        </td>
-        <td><span class="badge bg-light text-dark">${typeLabels[item.type_depense] || item.type_depense}</span></td>
-        <td>${item.exercice ? item.exercice.annee : '—'}</td>
-        <td class="text-end"><strong>${montant} XOF</strong></td>
-        <td>${budgetBadge(item)}</td>
-        <td>${statutEB[item.statut] || item.statut}</td>
-        <td>${dossierBadge}</td>
-        <td class="text-end">
-          <div class="d-flex gap-1 justify-content-end">
-            ${btnDeclencher}
-            <button class="btn btn-sm btn-outline-secondary" onclick="voirDetail(${item.id})" title="Voir le détail">
-              <i class="fas fa-eye"></i>
-            </button>
-          </div>
-        </td>
-      </tr>`;
-  }).join('');
-}
-
-// ── Filtre local (recherche texte) ────────────────────────────────────────────
-function filterLocal() {
-  const q = document.getElementById('fSearch').value.toLowerCase();
-  if (!q) { renderTable(allItems); return; }
-  renderTable(allItems.filter(i =>
-    (i.titre || '').toLowerCase().includes(q) ||
-    (i.reference || '').toLowerCase().includes(q) ||
-    (i.activite?.libelle || '').toLowerCase().includes(q)
-  ));
-}
-
-// ── Déclencher la procédure ───────────────────────────────────────────────────
-function ouvrirDeclencher(id) {
-  selectedBesoinId = id;
-  const item = allItems.find(i => i.id === id);
-  if (!item) return;
-
-  const montant = Number(item.montant_total_estime || 0).toLocaleString('fr-FR');
-  const budgetInfo = item.budget_info;
-  let budgetHtml = '';
-
-  if (budgetInfo) {
-    const dispo = Number(budgetInfo.disponible || 0).toLocaleString('fr-FR');
-    const cls   = budgetInfo.suffisant ? 'success' : 'danger';
-    const icon  = budgetInfo.suffisant ? 'check-circle' : 'exclamation-triangle';
-    budgetHtml = `
-      <div class="alert alert-${cls} py-2 mb-3">
-        <i class="fas fa-${icon} me-2"></i>
-        <strong>Lecture budgétaire :</strong>
-        Disponible sur la ligne : <strong>${dispo} XOF</strong>
-        ${!budgetInfo.suffisant ? ' — <em>Ligne insuffisante. L\'imputation sera bloquée à l\'étape correspondante et renvoyée au centre de validation.</em>' : ''}
-      </div>`;
-  } else {
-    budgetHtml = `
-      <div class="alert alert-warning py-2 mb-3">
-        <i class="fas fa-info-circle me-2"></i>
-        Aucune ligne budgétaire rattachée. L'imputation se fera à l'étape dédiée.
-      </div>`;
-  }
-
-  document.getElementById('declencherBody').innerHTML = `
-    <div class="mb-3">
-      <p>Vous êtes sur le point de <strong>déclencher la procédure</strong> pour :</p>
-      <table class="table table-sm table-bordered mb-0">
-        <tr><th>Référence</th><td><code>${item.reference}</code></td></tr>
-        <tr><th>Objet</th><td>${item.titre}</td></tr>
-        <tr><th>Type de dépense</th><td>${typeLabels[item.type_depense] || item.type_depense}</td></tr>
-        <tr><th>Montant estimé</th><td><strong>${montant} XOF</strong></td></tr>
-        <tr><th>Exercice</th><td>${item.exercice?.annee || '—'}</td></tr>
-        <tr><th>Activité</th><td>${item.activite?.libelle || '—'}</td></tr>
-      </table>
-    </div>
-    ${budgetHtml}
-    <div class="alert alert-info py-2">
-      <i class="fas fa-info-circle me-2"></i>
-      Un <strong>dossier d'opération</strong> sera généré automatiquement et envoyé au
-      <strong>centre de validation</strong> pour la validation administrative et financière (SAF).
-    </div>`;
-
-  new bootstrap.Modal(document.getElementById('modalDeclencher')).show();
-}
-
-async function confirmerDeclencher() {
-  if (!selectedBesoinId) return;
-  const btn = document.getElementById('btnConfirmDeclencher');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Génération en cours…';
-
-  try {
-    const r = await api.post(`/passation/besoins/${selectedBesoinId}/declencher`, {});
-    bootstrap.Modal.getInstance(document.getElementById('modalDeclencher'))?.hide();
-    toast(`Dossier ${r.data.dossier.reference} généré avec succès. Envoyé au centre de validation.`, 'success');
-    load();
-  } catch (err) {
-    toast(err.message || 'Erreur lors du déclenchement', 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-rocket me-1"></i> Générer le dossier automatiquement';
-  }
-}
-
-function voirDetail(id) {
-  const item = allItems.find(i => i.id === id);
-  if (item?.dossier_id) {
-    window.location.href = `/pages/dossiers/detail.html?id=${item.dossier_id}`;
-  }
-  // TODO: page de détail de l'expression si pas encore de dossier
-}
-
-// ── Init ──────────────────────────────────────────────────────────────────────
-loadExercices().then(() => load());
-</script>
-
-<footer class="page-footer">
-  &copy; 2026 SIGFIC-PSLSH &nbsp;&middot;&nbsp;
-  Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les IST
-  &nbsp;&middot;&nbsp; République du Tchad &nbsp;&middot;&nbsp; Version 1
-</footer>
 <script src="../../src/js/roles.js"></script>
+<script>
+const STORAGE_EB_ALL = 'pslsh_eb_all_v1';
+const STORAGE_EB_VALIDATED = 'pslsh_eb_v1';
+const CURRENT_USER = 'Resp. SAF';
+
+const TYPES = [
+  { code:'ACH-S', label:'Achat simple' },
+  { code:'ACH-P', label:'Achat par passation' },
+  { code:'FOR-M', label:'Formation / mission' },
+  { code:'PER-A', label:'Personnel / assistance' },
+];
+const SERVICES = ['SAF','SGAS','SPCH','SPCG','SESRO','APMS','SEB','SPSAC','SC','SLNR','COORD'];
+const SOURCES = ['PSLSH-032','PSLSH-033','PSLSH-034','PSLSH-035'];
+
+const DEFAULT_EB_ALL = [
+  { id:'EB-2026-0007', titre:'Tests combinés VIH/Syphilis Dual RDT', service:'APMS',  porteur:'Chef APMS',  type:'ACH-P', montant: 33000000, ligne:'L-APMS-033', source:'PSLSH-033', justification:'Renouvellement stock dépistage Q2', statut:'compta',    soumis:'15/02/2026' },
+  { id:'EB-2026-0008', titre:'Construction entrepôt stockage intrants APMS', service:'APMS',porteur:'Chef APMS',type:'ACH-P',montant: 35000000, ligne:'L-APMS-031', source:'PSLSH-034', justification:'Saturation entrepôt actuel', statut:'saf',       soumis:'20/02/2026' },
+  { id:'EB-2026-0011', titre:'Mission de supervision PEC pédiatrique', service:'SPCH',  porteur:'Chef SPCH', type:'PER-A', montant:  4200000, ligne:'L-SPCH-MIS', source:'PSLSH-035', justification:'Supervision trimestrielle programmée', statut:'soumis',   soumis:'05/03/2026' },
+  { id:'EB-2026-0012', titre:'Don matériel informatique Pasteur',     service:'COORD', porteur:'Coordo',     type:'PER-A', montant:  9800000, ligne:'L-COORD-DON',source:'PSLSH-035', justification:'Partenariat ratification 2026',  statut:'brouillon', soumis:'08/03/2026' },
+  { id:'EB-2026-0013', titre:'Séminaire annuel coordonnateurs régionaux',service:'COORD',porteur:'Coordo',  type:'FOR-M', montant: 18500000, ligne:'L-COORD-SEM',source:'PSLSH-035', justification:'Cadrage exercice 2027',           statut:'coordo',    soumis:'12/03/2026' },
+  { id:'EB-2026-0019', titre:'Renouvellement fournitures bureau SAF', service:'SAF',   porteur:'Resp. SAF', type:'ACH-S', montant:  2400000, ligne:'L-SAF-045',  source:'PSLSH-035', justification:'Stock épuisé Q2',                 statut:'brouillon', soumis:'04/04/2026' },
+];
+
+let _ebAll = [];
+let _currentTab = '';
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_EB_ALL);
+    const data = raw ? JSON.parse(raw) : DEFAULT_EB_ALL;
+    _ebAll = Array.isArray(data) && data.length ? data : DEFAULT_EB_ALL;
+  } catch (_) { _ebAll = DEFAULT_EB_ALL; }
+  if (!localStorage.getItem(STORAGE_EB_ALL)) save();
+}
+
+function save() { localStorage.setItem(STORAGE_EB_ALL, JSON.stringify(_ebAll)); }
+
+function fmt(n) { return Math.round(n).toLocaleString('fr-FR'); }
+
+function statutPill(s) {
+  const map = {
+    brouillon: ['st-brouillon', 'Brouillon'],
+    soumis:    ['st-soumis',    'Soumis — En attente SAF'],
+    saf:       ['st-saf',       'En validation SAF'],
+    compta:    ['st-compta',    'En validation Comptable'],
+    coordo:    ['st-coordo',    'En validation Coordo'],
+    valide:    ['st-valide',    'Validée'],
+    rejete:    ['st-rejete',    'Rejetée'],
+  };
+  const [cls, txt] = map[s] || map.brouillon;
+  return `<span class="st-pill ${cls}">${txt}</span>`;
+}
+
+const TABS = [
+  { code:'new',     label:'Saisir un nouveau besoin', icon:'fa-plus-circle', filter: null },
+  { code:'mine',    label:'Mes besoins en cours',    icon:'fa-user-clock',   filter: (e) => e.porteur === CURRENT_USER && !['valide','rejete'].includes(e.statut) },
+  { code:'pending', label:'Besoins en attente de validation', icon:'fa-hourglass-half',
+    filter: (e) => ['soumis','saf','compta','coordo'].includes(e.statut) },
+];
+
+function countTab(tab) {
+  if (!tab.filter) return null;
+  return _ebAll.filter(tab.filter).length;
+}
+
+function renderTabs() {
+  const html = TABS.map((t) => {
+    const active = t.code === _currentTab ? ' active' : '';
+    const n = countTab(t);
+    return `<div class="sheet-tab${active}" onclick="switchTab('${t.code}')">
+      <i class="fas ${t.icon}"></i>${t.label}
+      ${n != null ? `<span class="count">${n}</span>` : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('sheetTabs').innerHTML = html;
+}
+
+function switchTab(code) {
+  _currentTab = code;
+  const url = new URL(window.location);
+  if (code === 'new') url.searchParams.set('action', 'new');
+  else { url.searchParams.set('filter', code); url.searchParams.delete('action'); }
+  window.history.replaceState({}, '', url);
+  render();
+}
+
+function renderList(items, emptyMsg) {
+  if (!items.length) {
+    return `<div class="empty"><i class="fas fa-inbox d-block"></i>${emptyMsg}</div>`;
+  }
+  const rows = items.map((e) => `<tr>
+    <td class="mono">${e.id}</td>
+    <td><strong>${e.titre}</strong><br><small style="color:#94a3b8">${e.service} · ${e.porteur} · soumis ${e.soumis}</small></td>
+    <td>${e.type}</td>
+    <td class="num"><strong>${fmt(e.montant)}</strong></td>
+    <td><span class="mono" style="color:#475569">${e.ligne}</span></td>
+    <td>${statutPill(e.statut)}</td>
+  </tr>`).join('');
+  return `<div class="eb-card"><table class="eb-tbl">
+    <thead><tr>
+      <th style="width:140px">Référence</th>
+      <th>Désignation</th>
+      <th style="width:90px">Type</th>
+      <th class="num" style="width:130px">Montant (FCFA)</th>
+      <th style="width:140px">Ligne</th>
+      <th style="width:200px">Statut</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function renderForm() {
+  return `<div class="eb-card">
+    <div class="eb-card-title"><i class="fas fa-edit" style="color:#1b3a6b"></i>Nouvelle expression de besoin</div>
+    <form class="eb-form" onsubmit="event.preventDefault();submitEb(event)">
+      <div class="full">
+        <label>Désignation / objet du besoin *</label>
+        <input type="text" name="titre" required placeholder="Ex. Réactifs charge virale VIH — renouvellement T3">
+      </div>
+      <div>
+        <label>Type d'opération *</label>
+        <select name="type" required>
+          ${TYPES.map((t) => `<option value="${t.code}">${t.label}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label>Service porteur *</label>
+        <select name="service" required>
+          ${SERVICES.map((s) => `<option value="${s}">${s}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label>Ligne budgétaire</label>
+        <input type="text" name="ligne" placeholder="Ex. L-APMS-032">
+      </div>
+      <div>
+        <label>Source de financement *</label>
+        <select name="source" required>
+          ${SOURCES.map((s) => `<option value="${s}">${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="full">
+        <label>Montant estimé (FCFA) *</label>
+        <input type="number" name="montant" required min="0" placeholder="0">
+      </div>
+      <div class="full">
+        <label>Justification du besoin</label>
+        <textarea name="justification" placeholder="Indiquer le contexte, l'urgence, la base légale, etc."></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-eb btn-eb-cancel" onclick="switchTab('mine')"><i class="fas fa-times"></i>Annuler</button>
+        <button type="submit" name="action" value="save" class="btn-eb btn-eb-save" onclick="this.value='save'"><i class="fas fa-save"></i>Enregistrer en brouillon</button>
+        <button type="submit" name="action" value="submit" class="btn-eb btn-eb-submit" onclick="this.value='submit'"><i class="fas fa-paper-plane"></i>Soumettre pour validation</button>
+      </div>
+    </form>
+  </div>`;
+}
+
+let _lastClickedAction = 'save';
+document.addEventListener('click', (e) => {
+  if (e.target.matches('button[name="action"]')) _lastClickedAction = e.target.value;
+});
+
+function submitEb(evt) {
+  const form = evt.target;
+  const fd = new FormData(form);
+  const seq = String(_ebAll.length + 20).padStart(4, '0');
+  const nb = {
+    id: `EB-2026-${seq}`,
+    titre: fd.get('titre'),
+    type: fd.get('type'),
+    service: fd.get('service'),
+    porteur: CURRENT_USER,
+    ligne: fd.get('ligne') || `L-${fd.get('service')}-AUTO`,
+    source: fd.get('source'),
+    montant: parseInt(fd.get('montant'), 10) || 0,
+    justification: fd.get('justification') || '',
+    statut: _lastClickedAction === 'submit' ? 'soumis' : 'brouillon',
+    soumis: new Date().toLocaleDateString('fr-FR'),
+  };
+  _ebAll.unshift(nb);
+  save();
+  alert(`Besoin ${nb.id} ${_lastClickedAction === 'submit' ? 'soumis pour validation' : 'enregistré en brouillon'}.`);
+  switchTab('mine');
+}
+
+function render() {
+  renderTabs();
+  let body;
+  if (_currentTab === 'new') {
+    body = renderForm();
+  } else {
+    const tab = TABS.find((t) => t.code === _currentTab);
+    const items = tab.filter ? _ebAll.filter(tab.filter) : _ebAll;
+    body = renderList(items, _currentTab === 'mine'
+      ? 'Vous n\'avez aucun besoin en cours. Cliquez sur l\'onglet « Saisir un nouveau besoin » pour en créer un.'
+      : 'Aucun besoin en attente de validation.');
+  }
+  document.getElementById('ebCanvas').innerHTML = body;
+  const tab = TABS.find((t) => t.code === _currentTab);
+  document.getElementById('bcTitle').textContent = tab.label;
+  document.getElementById('paneSub').textContent = _currentTab === 'new'
+    ? 'Toute opération PSLSH/IST commence par une expression de besoins.'
+    : `${_ebAll.filter(tab.filter || (() => true)).length} besoin(s) · exercice 2026`;
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
+
+function boot() {
+  load();
+  const p = new URLSearchParams(window.location.search);
+  if (p.get('action') === 'new') _currentTab = 'new';
+  else if (p.get('filter') === 'pending') _currentTab = 'pending';
+  else _currentTab = 'mine';
+  render();
+}
+</script>
 </body>
 </html>
