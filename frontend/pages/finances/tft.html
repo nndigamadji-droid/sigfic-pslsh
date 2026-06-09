@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Tableau des flux de trésorerie (TFT)</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    html,body{height:100%;overflow:hidden}
+    .app-layout,.main-content{height:100vh;overflow:hidden}
+    .page-content{flex:1;overflow-y:auto;padding:18px 24px;background:#eef2f7}
+    .pg-hero{background:#fff;border:1px solid #e2e8f0;border-left:4px solid #1b3a6b;border-radius:10px;
+      padding:14px 18px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start}
+    .pg-hero h5{margin:0;font-size:1rem;font-weight:800;color:#1b2f52}
+    .pg-hero small{font-size:.72rem;color:#64748b}
+    .pg-hero .badge-cycle{font-size:.66rem;font-weight:700;padding:5px 12px;border-radius:6px;
+      background:#dbeafe;color:#1d4ed8}
+    .pg-tbl{width:100%;border-collapse:collapse;font-size:.76rem;background:#fff;
+      border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}
+    .pg-tbl thead th{background:#1b2f52;color:#fff;text-align:left;padding:9px 12px;
+      font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;font-weight:700;white-space:nowrap}
+    .pg-tbl tbody td{padding:7px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+    .pg-tbl tbody tr:hover td{background:#f8fafc}
+    .pg-tbl tfoot td{background:#1b3a6b;color:#fff;padding:9px 12px;font-weight:800;font-family:monospace}
+    .pg-tbl .mono{font-family:monospace}
+    .pg-tbl .num{font-family:monospace;text-align:right;font-weight:700}
+    .pg-empty{padding:50px;text-align:center;color:#94a3b8;background:#fff;border:1px dashed #e2e8f0;border-radius:10px}
+    .pg-empty i{display:block;font-size:2rem;margin-bottom:10px;opacity:.6}
+    .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+    .stat{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:11px 14px}
+    .stat-lbl{font-size:.64rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
+    .stat-val{font-size:1.02rem;font-weight:800;color:#1b2f52;font-family:monospace;margin-top:2px}
+    .stat-sub{font-size:.64rem;color:#94a3b8}
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="SIGFIC-PSLSH" class="brand-logo">
+      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Finances</div></div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><nav><ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="index.html" class="text-muted">Finances</a></li>
+        <li class="breadcrumb-item active fw-semibold">Tableau des flux de trésorerie (TFT)</li>
+      </ol></nav></div>
+      <div class="topbar-center"><i class="fas fa-water me-1"></i>Cycle 5 — États financiers</div>
+      <div class="topbar-right">
+        <div class="topbar-notif"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700" id="userAvatar">?</div>
+            <span id="userName" style="font-size:.82rem;font-weight:600"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="../admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="pg-hero">
+        <div>
+          <h5><i class="fas fa-water me-2" style="color:#1b3a6b"></i>Tableau des flux de trésorerie (TFT)</h5>
+          <small>Variation de la trésorerie répartie en 3 flux : opérationnels · investissements · financement (norme SYSCOHADA)</small>
+        </div>
+        <span class="badge-cycle">Cycle 5 — États financiers</span>
+      </div>
+      
+    <div class="stat-row">
+      <div class="stat"><div class="stat-lbl">Trésorerie début</div><div class="stat-val" id="kTd">—</div><div class="stat-sub">01/01/N</div></div>
+      <div class="stat"><div class="stat-lbl">Trésorerie fin</div><div class="stat-val" id="kTf">—</div><div class="stat-sub">31/12/N</div></div>
+      <div class="stat"><div class="stat-lbl">Variation nette</div><div class="stat-val" id="kVn">—</div><div class="stat-sub">Fin − Début</div></div>
+      <div class="stat"><div class="stat-lbl">Cumul flux</div><div class="stat-val" id="kCum">—</div><div class="stat-sub">Σ trois activités</div></div>
+    </div>
+    <div id="tftBox"></div>
+  
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../src/js/api.js"></script>
+<script src="../../src/js/roles.js"></script>
+<script>
+const API = 'http://localhost:3000/api/v1';
+const fmt = (n) => Math.round(parseFloat(n||0)).toLocaleString('fr-FR');
+const tok = () => localStorage.getItem('pslsh_token');
+async function get(url){ const r=await fetch(API+url,{headers:{Authorization:'Bearer '+tok()}}); return r.json(); }
+
+async function load(){
+  const [resB, bilanB, tresB] = await Promise.all([get('/finances/compte-resultat'), get('/finances/bilan'), get('/finances/carnet-tresorerie')]);
+  const res = resB.success ? resB.data : null;
+  const tres = tresB.success ? tresB.data : [];
+  const trEnd = tres.reduce((s,t)=>s+(parseFloat(t.solde)||0), 0);
+  const trBeg = 0;
+  document.getElementById('kTd').textContent = fmt(trBeg);
+  document.getElementById('kTf').textContent = fmt(trEnd);
+  document.getElementById('kVn').textContent = fmt(trEnd - trBeg);
+  const flux_op   = res ? res.resultat : 0;
+  const flux_inv  = bilanB.success ? -bilanB.data.actif.immobilisations.reduce((s,r)=>s+(r.solde||0),0) : 0;
+  const flux_fin  = res ? res.total_produits : 0;
+  const cum = flux_op + flux_inv + flux_fin;
+  document.getElementById('kCum').textContent = fmt(cum);
+  document.getElementById('tftBox').innerHTML = `<table class="pg-tbl">
+    <thead><tr><th>Catégorie de flux</th><th>Détail</th><th style="text-align:right">Montant (FCFA)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Activités opérationnelles</strong></td><td>Capacité d'autofinancement (résultat exercice + dotations)</td><td class="num">${fmt(flux_op)}</td></tr>
+      <tr><td><strong>Activités d'investissement</strong></td><td>Acquisitions − cessions d'immobilisations (classe 2)</td><td class="num">${fmt(flux_inv)}</td></tr>
+      <tr><td><strong>Activités de financement</strong></td><td>Subventions bailleurs (classe 7) − remboursements</td><td class="num">${fmt(flux_fin)}</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="2">VARIATION DE LA TRÉSORERIE NETTE</td><td class="num">${fmt(cum)}</td></tr></tfoot>
+  </table>`;
+}
+if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',load); else load();
+
+</script>
+</body>
+</html>

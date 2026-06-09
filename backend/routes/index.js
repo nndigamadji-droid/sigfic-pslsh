@@ -9,6 +9,7 @@ router.use('/roles', auth, require('./roles.routes'));
 router.use('/exercices', auth, require('./exercices.routes'));
 router.use('/budget', auth, require('./budget.routes'));
 router.use('/mapping', auth, require('./mapping.routes'));
+router.use('/finances', auth, require('./finances.routes'));
 router.use('/fournisseurs', auth, require('./fournisseurs.routes'));
 router.use('/beneficiaires', auth, require('./beneficiaires.routes'));
 router.use('/dossiers', auth, require('./dossiers.routes'));
