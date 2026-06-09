@@ -84,13 +84,18 @@
     .dos-tbl tbody td { padding:9px 12px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
     .dos-tbl tbody tr:hover td { background:#eff6ff; transition:background .1s; }
 
-    .btn-open {
+    .btn-open, .btn-archive-row {
       display:inline-flex; align-items:center; gap:6px;
       font-size:.73rem; font-weight:700; padding:6px 12px; min-height:30px;
-      background:#1b3a6b; color:#fff; border:1px solid #1b3a6b; border-radius:6px;
-      cursor:pointer; transition:background .15s; white-space:nowrap;
+      border-radius:6px; cursor:pointer; transition:background .15s; white-space:nowrap;
+      border:1px solid;
     }
+    .btn-open { background:#1b3a6b; color:#fff; border-color:#1b3a6b; }
     .btn-open:hover { background:#254d8f; }
+    .btn-archive-row { background:#fff; color:#475569; border-color:#cbd5e1; margin-left:6px; }
+    .btn-archive-row:hover { background:#475569; color:#fff; border-color:#475569; }
+    .btn-archive-row.disabled { color:#cbd5e1; cursor:not-allowed; }
+    .btn-archive-row.disabled:hover { background:#fff; color:#cbd5e1; border-color:#cbd5e1; }
     .dos-tbl .mono { font-family:monospace; color:#1d4ed8; font-weight:700; font-size:.75rem; }
     .dos-tbl .num  { font-family:monospace; text-align:right; font-feature-settings:'tnum' 1; }
 
@@ -318,7 +323,10 @@ const FAMILIES = [
 const SERVICES = ['SAF','SGAS','SPCH','SPCG','SESRO','APMS','SEB','SPSAC','SC','SLNR'];
 
 const DEFAULT_DOSSIERS = [
-  { id:'DOS-2025-0099', type:'ACH-S', objet:'Reconditionnement antirétroviraux Q4 2025',          service:'APMS',  porteur:'Chef APMS',  ligne:'L-APMS-032', source:'PSLSH-032', montant_estime: 18500000, montant_engage:18500000, montant_paye:18500000, etape:'clos',      soumis:'05/10/2025', archived:true, archive_le:'15/01/2026', archive_par:'Coordonnateur' },
+  { id:'DOS-2025-0099', type:'ACH-S', objet:'Reconditionnement antirétroviraux Q4 2025',          service:'APMS',  porteur:'Chef APMS',  ligne:'L-APMS-032', source:'PSLSH-032', montant_estime: 18500000, montant_engage:18500000, montant_paye:18500000, etape:'clos',      soumis:'05/10/2025', archived:true, archive_le:'15/01/2026', archive_par:'Coordonnateur', date_engagement:'2025-12-22' },
+  { id:'DOS-2025-0072', type:'FOR-M', objet:'Séminaire bilan PEC Q3 2025',                       service:'COORD', porteur:'Coordo',     ligne:'L-COORD-SEM',source:'PSLSH-035', montant_estime:  8200000, montant_engage: 8200000, montant_paye: 8200000, etape:'clos',      soumis:'05/08/2025', archived:true, archive_le:'10/11/2025', archive_par:'Coordonnateur', date_engagement:'2025-09-30' },
+  { id:'DOS-2025-0084', type:'PER-A', objet:'Indemnités auditeurs externes mission Mongo',       service:'SAF',   porteur:'Resp. SAF',  ligne:'L-SAF-MIS',  source:'PSLSH-035', montant_estime:  3400000, montant_engage: 3400000, montant_paye: 3400000, etape:'clos',      soumis:'02/09/2025', archived:true, archive_le:'25/11/2025', archive_par:'Coordonnateur', date_engagement:'2025-10-18' },
+  { id:'DOS-2025-0091', type:'ACH-P', objet:'Réactifs charge virale VIH — marché annuel',        service:'APMS',  porteur:'Chef APMS',  ligne:'L-APMS-032', source:'PSLSH-032', montant_estime:124000000, montant_engage:124000000, montant_paye:124000000, etape:'clos',    soumis:'10/06/2025', archived:true, archive_le:'05/12/2025', archive_par:'Coordonnateur', date_engagement:'2025-11-14' },
   { id:'DOS-2026-0001', type:'ACH-S', objet:'Fournitures bureau et matériels informatiques',     service:'SAF',   porteur:'Resp. SAF',  ligne:'L-SAF-045',  source:'PSLSH-035', montant_estime: 30280000, montant_engage:28650000, montant_paye:28650000, etape:'clos',      soumis:'10/01/2026' },
   { id:'DOS-2026-0002', type:'ACH-P', objet:'Réactifs dépistage VIH — algorithme 3 tests',        service:'APMS',  porteur:'Chef APMS',  ligne:'L-APMS-032', source:'PSLSH-032', montant_estime:248000000, montant_engage:212000000, montant_paye:106000000, etape:'paiement', soumis:'15/01/2026' },
   { id:'DOS-2026-0003', type:'ACH-S', objet:'Service gardiennage et nettoyage locaux PSLSH',      service:'SAF',   porteur:'Resp. SAF',  ligne:'L-SAF-047',  source:'PSLSH-035', montant_estime:  6900000, montant_engage: 6900000, montant_paye: 1725000, etape:'paiement', soumis:'20/01/2026' },
@@ -449,20 +457,18 @@ function renderTable(list) {
     return;
   }
   const rows = list.map((d) => {
-    const isArc = d.archived === true;
-    const trCls = isArc ? ' class="archived"' : '';
-    const meta = isArc
-      ? `${d.service} · ${d.porteur} · <span class="archive-tag"><i class="fas fa-archive"></i>Archivé le ${d.archive_le || ''}</span>`
-      : `${d.service} · ${d.porteur} · soumis ${d.soumis}`;
-    const lastCol = isArc
-      ? `<button class="btn-open" style="background:#475569;border-color:#475569" onclick="ouvrirDossier('${d.id}')"><i class="fas fa-eye"></i>Consulter</button>`
-      : `<button class="btn-open" onclick="ouvrirDossier('${d.id}')"><i class="fas fa-folder-open"></i>Ouvrir dossier</button>`;
-    return `<tr${trCls}>
+    const canArchive = d.etape === 'clos' || d.etape === 'paiement' || (d.montant_paye > 0 && d.montant_paye >= d.montant_engage * 0.95);
+    return `<tr>
       <td class="mono">${d.id}</td>
-      <td><strong>${d.objet}</strong><br><small style="color:#94a3b8">${meta}</small></td>
+      <td><strong>${d.objet}</strong><br><small style="color:#94a3b8">${d.service} · ${d.porteur} · soumis ${d.soumis}</small></td>
       <td><span class="mono" style="color:#475569">${d.ligne}</span><br><small style="color:#94a3b8">${d.source}</small></td>
       <td>${positionWidget(d.etape)}</td>
-      <td>${lastCol}</td>
+      <td>
+        <button class="btn-open" onclick="ouvrirDossier('${d.id}')"><i class="fas fa-folder-open"></i>Ouvrir dossier</button>
+        ${canArchive
+          ? `<button class="btn-archive-row" onclick="archiveFromList('${d.id}')" title="Archiver ce dossier"><i class="fas fa-archive"></i>Archiver</button>`
+          : `<button class="btn-archive-row disabled" title="Archivable uniquement quand le dossier est clos ou payé"><i class="fas fa-archive"></i>Archiver</button>`}
+      </td>
     </tr>`;
   }).join('');
   document.getElementById('dossierTable').innerHTML = `
@@ -509,6 +515,40 @@ function navTab(dir) {
 
 function ouvrirDossier(id) {
   window.location.href = 'detail.html?id=' + encodeURIComponent(id);
+}
+
+function extractEngagementDate(id) {
+  try {
+    const pieces = (JSON.parse(localStorage.getItem('pslsh_pieces_v1') || '{}')[id] || {}).pieces || {};
+    const ov = pieces.OV && pieces.OV.date_doc;
+    const op = pieces.OP && pieces.OP.date_doc;
+    if (ov) return ov;
+    if (op) return op;
+  } catch (_) {}
+  const d = _dossiers.find((x) => x.id === id);
+  if (d && d.soumis) {
+    const m = d.soumis.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  }
+  return new Date().toISOString().slice(0, 10);
+}
+
+function archiveFromList(id) {
+  const d = _dossiers.find((x) => x.id === id);
+  if (!d) return;
+  const dateEng = extractEngagementDate(id);
+  const human = (() => {
+    const m = dateEng.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : dateEng;
+  })();
+  if (!confirm(`Archiver ${d.id} ?\nDate d'engagement effective retenue : ${human}\nLe dossier passera dans la page Archives.`)) return;
+  d.archived = true;
+  d.archive_le = new Date().toLocaleDateString('fr-FR');
+  d.archive_par = 'admin@pslsh.org';
+  d.date_engagement = dateEng;
+  d.etape = 'clos';
+  save();
+  render();
 }
 
 function toggleEbMenu(event) {
