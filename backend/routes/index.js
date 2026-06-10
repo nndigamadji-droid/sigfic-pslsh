@@ -11,6 +11,7 @@ router.use('/budget', auth, require('./budget.routes'));
 router.use('/mapping', auth, require('./mapping.routes'));
 router.use('/finances', auth, require('./finances.routes'));
 router.use('/notifications', auth, require('./notifications.routes'));
+router.use('/emissions', auth, require('./emissions.routes'));
 router.use('/fournisseurs', auth, require('./fournisseurs.routes'));
 router.use('/beneficiaires', auth, require('./beneficiaires.routes'));
 router.use('/dossiers', auth, require('./dossiers.routes'));

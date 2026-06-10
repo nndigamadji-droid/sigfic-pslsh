@@ -268,11 +268,12 @@ const ETAPES = [
 ];
 
 const ROLE_TO_ETAPE = {
-  chef_service: null,
-  administrateur: 'coordo',
-  coordination:   'coordo',
-  controleur:     'compta',
-  agent:          'saf',
+  chef_service:        'saf',
+  administrateur:      'coordo',
+  coordination:        'coordo',
+  comptable_principal: 'compta',   // ⭐ étape Comptable tenue par le titulaire pécuniairement responsable
+  controleur:          null,        // contrôle ex-post, hors circuit ELOP
+  agent:               'saf',
 };
 
 const SERVICES = ['SAF','SGAS','SPCH','SPCG','SESRO','APMS','SEB','SPSAC','SC','SLNR'];

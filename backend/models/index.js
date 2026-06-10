@@ -11,6 +11,10 @@ const Agent = require('./Agent');
 const AuditLog = require('./AuditLog');
 const BudgetComptaMapping = require('./BudgetComptaMapping');
 const Notification = require('./Notification');
+const AvisComptable = require('./AvisComptable');
+const OrdreVirement = require('./OrdreVirement');
+const BordereauPaie = require('./BordereauPaie');
+const Decharge = require('./Decharge');
 const WorkflowTransition = require('./WorkflowTransition');
 const Exercice = require('./Exercice');
 const PlanAction = require('./PlanAction');
@@ -255,6 +259,10 @@ module.exports = {
   AuditLog,
   BudgetComptaMapping,
   Notification,
+  AvisComptable,
+  OrdreVirement,
+  BordereauPaie,
+  Decharge,
   WorkflowTransition,
   Exercice,
   PlanAction,

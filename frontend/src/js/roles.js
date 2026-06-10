@@ -98,6 +98,7 @@
     COMITE: 'comite_pilotage',
     COORDINATION: 'coordination',
     CHEF_SERVICE: 'chef_service',
+    COMPTABLE_PRINCIPAL: 'comptable_principal',
     CONTROLEUR: 'controleur',
     AGENT: 'agent',
   };
@@ -562,6 +563,197 @@
         ],
       },
 ],
+
+    comptable_principal: [
+      {
+        section: 'TABLEAU DE BORD',
+        icon: 'fa-tachometer-alt',
+        items: [
+          { href: '/pages/dashboard/index.html', icon: 'fa-chart-line', label: 'Tableau de bord' },
+          { href: '/pages/dashboard/alertes.html', icon: 'fa-bell', label: 'Alertes & urgences' },
+          {
+            href: '/pages/dashboard/indicateurs.html',
+            icon: 'fa-chart-bar',
+            label: "Indicateurs d'exécution",
+          },
+        ],
+      },
+      {
+        section: 'PLANIFICATION',
+        icon: 'fa-project-diagram',
+        items: [
+          {
+            href: '/pages/planification/pao-global.html',
+            icon: 'fa-project-diagram',
+            label: 'PAO Global',
+          },
+          {
+            href: '/pages/planification/pao-service.html',
+            icon: 'fa-layer-group',
+            label: 'PAO par service',
+          },
+          {
+            href: '/pages/planification/plan-achat.html',
+            icon: 'fa-shopping-cart',
+            label: "Plan d'achat des intrants",
+          },
+          {
+            href: '/pages/planification/fonds-alloues.html',
+            icon: 'fa-hand-holding-usd',
+            label: 'Fonds alloués',
+          },
+          {
+            href: '/pages/planification/fonds-disponibles.html',
+            icon: 'fa-piggy-bank',
+            label: 'Fonds disponibles',
+          },
+        ],
+      },
+      {
+        section: 'CENTRE DE VALIDATION',
+        icon: 'fa-check-double',
+        items: [
+          {
+            href: '/pages/validation/index.html',
+            icon: 'fa-tasks',
+            label: "File d'attente",
+            badge: 'warning',
+          },
+          {
+            href: '/pages/validation/pao.html',
+            icon: 'fa-project-diagram',
+            label: 'Validations PAO',
+          },
+          {
+            href: '/pages/validation/besoins.html',
+            icon: 'fa-list-check',
+            label: 'Expressions de besoins',
+          },
+          {
+            href: '/pages/validation/commandes.html',
+            icon: 'fa-file-contract',
+            label: 'Bons de commande',
+          },
+          {
+            href: '/pages/validation/paiements.html',
+            icon: 'fa-money-check-alt',
+            label: 'Ordres de paiement',
+          },
+          {
+            href: '/pages/validation/historique.html',
+            icon: 'fa-history',
+            label: 'Historique des décisions',
+          },
+        ],
+      },
+      {
+        section: 'OPÉRATIONS',
+        icon: 'fa-cogs',
+        items: [
+          { href: '/pages/dossiers/besoins.html', icon: 'fa-list-check',  label: 'Expression de besoins' },
+          { href: '/pages/dossiers/index.html',   icon: 'fa-folder-open', label: "Dossiers d'opération" },
+          { href: '/pages/dossiers/archives.html', icon: 'fa-archive', label: 'Archives' },
+        ],
+      },
+      {
+        section: 'RESSOURCES & MOYENS',
+        icon: 'fa-toolbox',
+        items: [
+          { href: '/pages/stock/index.html',     icon: 'fa-boxes',     label: 'Stock & immobilisations' },
+          { href: '/pages/carburant/index.html', icon: 'fa-gas-pump',  label: 'Gestion des carburants' },
+          { href: '/pages/rh/index.html',        icon: 'fa-users',     label: 'Ressources humaines' },
+        ],
+      },
+      {
+        section: 'BUDGET',
+        icon: 'fa-coins',
+        items: [
+          { href: '/pages/budget/synthese.html', icon: 'fa-chart-pie', label: 'Synthèse globale' },
+          { href: '/pages/budget/mapping.html',  icon: 'fa-random',    label: 'Mapping Budget ↔ OHADA' },
+          { href: '/pages/budget/recettes.html', icon: 'fa-arrow-trend-up', label: 'Recettes' },
+          {
+            href: '/pages/budget/depenses.html',
+            icon: 'fa-file-invoice-dollar',
+            label: 'Dépenses',
+          },
+        ],
+      },
+      {
+        section: 'FINANCES',
+        icon: 'fa-university',
+        items: [
+          { href: '/pages/finances/index.html', icon: 'fa-tachometer-alt', label: 'Tableau de bord Finances' },
+          { href: '/pages/comptabilite/journaux.html', icon: 'fa-journal-whills', label: 'Journaux comptables' },
+          { href: '/pages/comptabilite/tresorerie.html', icon: 'fa-wallet', label: 'Carnet de trésorerie' },
+          { href: '/pages/comptabilite/rapprochement.html', icon: 'fa-sync-alt', label: 'Rapprochement bancaire' },
+          { href: '/pages/comptabilite/grand-livre.html', icon: 'fa-book-open', label: 'Grand livre' },
+          { href: '/pages/comptabilite/balance.html', icon: 'fa-balance-scale', label: 'Balance des comptes' },
+          { href: '/pages/finances/balance-budgetaire.html', icon: 'fa-clipboard-list', label: 'Balance budgétaire (Cpt gestion)' },
+          { href: '/pages/finances/etats-financiers.html', icon: 'fa-file-invoice-dollar', label: 'États financiers SYSCOHADA' },
+          { href: '/pages/paiement/index.html', icon: 'fa-money-check-alt', label: 'Paiements & liquidations' },
+          { href: '/pages/paiement/virements.html', icon: 'fa-exchange-alt', label: 'Virements' },
+        ],
+      },
+      {
+        section: 'CONTRÔLE & AUDIT',
+        icon: 'fa-search',
+        items: [
+          {
+            href: '/pages/controle/index.html',
+            icon: 'fa-shield-check',
+            label: 'Contrôle interne',
+          },
+          {
+            href: '/pages/controle/anomalies.html',
+            icon: 'fa-exclamation-triangle',
+            label: 'Anomalies & rejets',
+          },
+          { href: '/pages/controle/audit-log.html', icon: 'fa-history', label: "Journal d'audit" },
+          {
+            href: '/pages/archivage/index.html',
+            icon: 'fa-archive',
+            label: 'Archivage documentaire',
+          },
+          { href: '/pages/reporting/index.html', icon: 'fa-chart-pie', label: 'Reporting & états' },
+        ],
+      },
+      {
+        section: 'ADMINISTRATION',
+        icon: 'fa-cog',
+        items: [
+          { href: '/pages/admin/users.html', icon: 'fa-users-cog', label: 'Utilisateurs & rôles' },
+          {
+            href: '/pages/admin/campagnes.html',
+            icon: 'fa-calendar-check',
+            label: 'Exercices budgétaires',
+          },
+          {
+            href: '/pages/admin/audit-log.html',
+            icon: 'fa-history',
+            label: "Journal d'audit système",
+          },
+        ],
+      },
+          {
+        section: 'MES OUTILS',
+        icon: 'fa-user-circle',
+        items: [
+          { href: '/pages/notifications/index.html', icon: 'fa-bell', label: 'Centre des notifications' },
+          { href: '/pages/aide/index.html', icon: 'fa-question-circle', label: 'Aide' },
+        ],
+      },
+      {
+        section: 'ÉMISSIONS COMPTABLES',
+        icon: 'fa-file-signature',
+        items: [
+          { href: '/pages/finances/emit-ov.html',       icon: 'fa-money-check-alt',    label: 'Émettre un Ordre de Virement' },
+          { href: '/pages/finances/emit-paie.html',     icon: 'fa-users',              label: 'Émettre un État de Salaires' },
+          { href: '/pages/finances/emit-decharge.html', icon: 'fa-receipt',            label: 'Émettre une Décharge' },
+          { href: '/pages/finances/emit-avis.html',     icon: 'fa-stamp',              label: 'Émettre un Avis Comptable' },
+          { href: '/pages/finances/ov-list.html',       icon: 'fa-list-alt',           label: 'Suivi des OV émis' },
+        ],
+      },
+    ],
 
     /* ════════════════════════════════════════════════════════════════
        CHEF DE SERVICE — périmètre de son service
