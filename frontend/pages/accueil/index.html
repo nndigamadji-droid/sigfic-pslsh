@@ -200,7 +200,7 @@
     }
 
     .content {
-      padding: 18px 28px 12px;
+      padding: 18px 28px 10px;
       position: relative; z-index: 1;
       overflow: hidden;
       min-width: 0;
@@ -208,39 +208,113 @@
     }
     .content h2 {
       font-size: 1.22rem; font-weight: 800; color: var(--navy-700);
-      margin: 0 0 4px;
+      margin: 0 0 2px;
       display: flex; align-items: center; gap: 10px;
     }
     .content h2 i { font-size: 1rem; color: var(--navy-700); opacity:.55; }
-    .content > p { font-size: .76rem; color: #64748b; margin: 0 0 14px; }
+    .content > .lead-p { font-size: .76rem; color: #64748b; margin: 0 0 14px; }
 
-    /* ── NAV CARDS ─────────────────────────────────────────────────────────── */
-    .nav-grid {
+    /* ── CARTES DE COMPÉTENCE (role-aware, prennent la majeure partie) ────── */
+    .skills-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 13px;
       flex: 1;
       min-height: 0;
     }
-    .nav-card {
+    .skill-card {
       background: #fff;
       border: 1px solid #e6ebf2;
+      border-left: 4px solid var(--card-color, #1b3a6b);
       border-radius: 12px;
-      padding: 16px 16px 14px;
-      display: flex; flex-direction: column; gap: 7px;
+      padding: 16px 18px 14px;
+      display: flex; flex-direction: column; gap: 8px;
       cursor: pointer; text-decoration: none;
       transition: transform .18s, box-shadow .2s, border-color .2s;
       position: relative; overflow: hidden;
     }
-    .nav-card::before {
-      content:''; position:absolute; top:0; left:0; right:0; height:3px;
-      background: var(--card-color); opacity:0; transition: opacity .2s;
-      border-radius: 12px 12px 0 0;
-    }
-    .nav-card:hover {
+    .skill-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(15,23,42,.09);
+      box-shadow: 0 10px 24px rgba(15,23,42,.10);
       border-color: var(--card-color);
+    }
+    .skill-card .sk-ic {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--card-light);
+      color: var(--card-color);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .skill-card .sk-title { font-size: .98rem; font-weight: 800; color: var(--navy-700); margin-top: 4px; }
+    .skill-card .sk-desc  { font-size: .74rem; color: #64748b; line-height: 1.45; flex: 1; }
+    .skill-card .sk-cta   { font-size: .74rem; font-weight: 700; color: var(--card-color); display: inline-flex; align-items: center; gap: 5px; }
+    .skill-card .sk-cta i { font-size: .65rem; transition: transform .18s; }
+    .skill-card:hover .sk-cta i { transform: translateX(4px); }
+
+    .empty-skills {
+      grid-column: 1 / -1;
+      background: #fff;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 40px 24px;
+      text-align: center; color: #94a3b8;
+      font-size: .82rem;
+    }
+
+    /* ── BARRE NAVIGATEURS (8 boutons compacts en bas) ────────────────────── */
+    .nav-bar {
+      flex-shrink: 0;
+      background: #fff;
+      border-top: 1px solid #e2e8f0;
+      padding: 10px 28px;
+    }
+    .nav-bar-title {
+      font-size: .58rem; font-weight: 800; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: .14em; margin-bottom: 7px;
+    }
+    .nav-bar-grid {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 7px;
+    }
+    .nav-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 11px;
+      background: #f8fafc;
+      border: 1px solid #e6ebf2;
+      border-radius: 8px;
+      text-decoration: none; color: var(--navy-700);
+      transition: all .15s;
+      min-width: 0;
+    }
+    .nav-btn:hover {
+      background: #fff;
+      border-color: var(--btn-color, #1b3a6b);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(15,23,42,.06);
+    }
+    .nav-btn .nb-ic {
+      width: 28px; height: 28px; border-radius: 7px;
+      background: var(--btn-light, #e8f0fb);
+      color: var(--btn-color, #1b3a6b);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .82rem; flex-shrink: 0;
+    }
+    .nav-btn .nb-txt {
+      font-size: .72rem; font-weight: 700;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .nav-btn .nb-num {
+      font-size: .58rem; color: #94a3b8; font-weight: 800;
+    }
+    @media (max-width: 1380px) {
+      .nav-bar-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    /* ── (anciennes nav-card neutralisées) ─────────────────────────────────── */
+    .nav-grid, .nav-card {
+      display: none !important;
     }
     .nav-card:hover::before { opacity:1; }
 
@@ -391,9 +465,22 @@
   <!-- ═══ MAIN ═══ -->
   <main class="main">
     <div class="content">
-      <h2><i class="fas fa-th-large"></i>Votre espace de travail</h2>
-      <p>Accédez rapidement aux outils et informations pour piloter efficacement la gestion financière.</p>
+      <h2><i class="fas fa-th-large"></i><span id="skillsTitle">Votre espace de travail</span></h2>
+      <p class="lead-p" id="skillsSub">Accédez rapidement aux outils et actes engageants selon vos compétences.</p>
+      <div class="skills-grid" id="skillsGrid">
+        <div class="empty-skills">
+          <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block"></i>
+          Chargement de votre espace…
+        </div>
+      </div>
+      <!-- Compat : ancienne grille masquée mais conservée pour ne pas casser le JS -->
       <div class="nav-grid" id="navGrid"></div>
+    </div>
+
+    <!-- Barre de navigation : 8 navigateurs en boutons compacts -->
+    <div class="nav-bar">
+      <div class="nav-bar-title">Navigateurs SIGFIC-PSLSH</div>
+      <div class="nav-bar-grid" id="navBarGrid"></div>
     </div>
 
     <div class="partners">
@@ -570,23 +657,105 @@
     }, 30000);
 
     const allowed = NAVIGATORS.filter(n => n.roles.includes(role));
-    const grid = document.getElementById('navGrid');
 
-    if (!allowed.length) {
-      grid.innerHTML = '<p class="text-muted small" style="grid-column:1/-1">Aucun module disponible pour votre compte.</p>';
-      return;
+    /* ── 1. Cartes de COMPÉTENCE (par rôle) — prennent le haut ─────────── */
+    const SKILLS = {
+      comptable_principal: {
+        title: 'Vos actes engageants — Comptable Principal',
+        sub:   'Agent de l\'État pécuniairement responsable',
+        cards: [
+          { href:'/pages/finances/emit-ov.html',       icon:'fa-money-check-alt', label:'Émettre un OV',         desc:'Ordre de virement à signer comptablement, puis transmis au Coordo.', color:'#15803d', light:'#dcfce7' },
+          { href:'/pages/finances/emit-paie.html',     icon:'fa-users',           label:'État de salaires',      desc:'Bordereau de paie mensuel — agents PSLSH/IST.',                       color:'#0369a1', light:'#e0f2fe' },
+          { href:'/pages/finances/emit-decharge.html', icon:'fa-receipt',         label:'Émettre une décharge',  desc:'Quittance de paiement / reçu pour bénéficiaire.',                     color:'#b45309', light:'#fef3c7' },
+          { href:'/pages/finances/emit-avis.html',     icon:'fa-stamp',           label:'Avis comptable sur EB', desc:'Vérification de la disponibilité des ressources budgétaires.',        color:'#7c3aed', light:'#ede9fe' },
+        ],
+      },
+      coordination: {
+        title: 'Vos actes engageants — Coordonnateur',
+        sub:   'Autorité d\'ordonnancement et de décision',
+        cards: [
+          { href:'/pages/finances/ov-list.html?statut=emis', icon:'fa-file-signature', label:'Ordonnancer un OV',  desc:'OV signés par le Comptable, en attente de votre signature.', color:'#b91c1c', light:'#fee2e2' },
+          { href:'/pages/budget/revisions.html',             icon:'fa-exchange-alt',   label:'Virement de crédit', desc:'Réallocation de crédits entre lignes budgétaires.',          color:'#7c3aed', light:'#ede9fe' },
+          { href:'/pages/planification/pao-global.html',     icon:'fa-calendar-check', label:'Valider PTBA / PAO', desc:'Décisions de coordination sur la planification.',            color:'#0369a1', light:'#e0f2fe' },
+        ],
+      },
+      chef_service: {
+        title: 'Vos actes — Chef de Service',
+        sub:   'Validation administrative au sein de votre service',
+        cards: [
+          { href:'/pages/dossiers/besoins.html?action=new', icon:'fa-edit',         label:'Saisir une EB',             desc:'Nouvelle expression de besoin pour votre service.',  color:'#1b3a6b', light:'#e8f0fb' },
+          { href:'/pages/dossiers/detail.html',             icon:'fa-file-invoice', label:'Émettre un BC',             desc:'Bon de Commande après validation EB.',                color:'#b45309', light:'#fef3c7' },
+          { href:'/pages/dossiers/detail.html',             icon:'fa-check-double', label:'Attestation service fait',  desc:'Confirmation de service fait pour le fournisseur.',   color:'#15803d', light:'#dcfce7' },
+        ],
+      },
+      controleur: {
+        title: 'Vos actes — Contrôleur',
+        sub:   'Audit et contrôle ex-post',
+        cards: [
+          { href:'/pages/controle/audit.html',     icon:'fa-shield-alt',           label:'Émettre rapport d\'audit', desc:'Rapport d\'audit sur les opérations.',          color:'#b91c1c', light:'#fee2e2' },
+          { href:'/pages/controle/anomalies.html', icon:'fa-exclamation-triangle', label:'Signaler anomalie',        desc:'Non-conformité détectée à traiter.',            color:'#b45309', light:'#fef3c7' },
+        ],
+      },
+      agent: {
+        title: 'Vos actes — Agent',
+        sub:   'Saisie opérationnelle',
+        cards: [
+          { href:'/pages/dossiers/besoins.html?action=new', icon:'fa-edit',         label:'Saisir une EB',         desc:'Expression de besoin pour validation.',           color:'#1b3a6b', light:'#e8f0fb' },
+          { href:'/pages/dossiers/index.html',              icon:'fa-folder-open',  label:'Mes dossiers',          desc:'Suivi de vos dossiers d\'opération en cours.',     color:'#b45309', light:'#fef3c7' },
+        ],
+      },
+      administrateur: {
+        title: 'Vos actes — Administrateur système',
+        sub:   'Pilotage complet de la plateforme',
+        cards: [
+          { href:'/pages/admin/users.html',     icon:'fa-users-cog',  label:'Gérer les utilisateurs', desc:'Comptes, rôles, services, mots de passe.',     color:'#1b3a6b', light:'#e8f0fb' },
+          { href:'/pages/admin/parametres.html',icon:'fa-cog',        label:'Paramètres système',     desc:'Configuration, exercice, intégrations.',        color:'#7c3aed', light:'#ede9fe' },
+          { href:'/pages/controle/audit.html',  icon:'fa-history',    label:'Journal d\'audit',       desc:'Toutes les actions tracées du système.',        color:'#b45309', light:'#fef3c7' },
+        ],
+      },
+      comite_pilotage: {
+        title: 'Vos actes — Comité de pilotage',
+        sub:   'Décisions stratégiques et gouvernance',
+        cards: [
+          { href:'/pages/planification/comite.html', icon:'fa-gavel',         label:'Émettre PV de comité', desc:'Procès-verbal de réunion du comité.',           color:'#7c3aed', light:'#ede9fe' },
+          { href:'/pages/dashboard/index.html',      icon:'fa-chart-line',    label:'Synthèse exécutive',   desc:'Vue consolidée pour décision stratégique.',     color:'#1b3a6b', light:'#e8f0fb' },
+        ],
+      },
+    };
+    const skillsBox  = document.getElementById('skillsGrid');
+    const skillsT    = document.getElementById('skillsTitle');
+    const skillsS    = document.getElementById('skillsSub');
+    const spec       = SKILLS[role];
+    if (spec) {
+      skillsT.textContent = spec.title;
+      skillsS.textContent = spec.sub;
+      skillsBox.innerHTML = spec.cards.map(c => `
+        <a class="skill-card" href="${c.href}" style="--card-color:${c.color};--card-light:${c.light}">
+          <div class="sk-ic"><i class="fas ${c.icon}"></i></div>
+          <div class="sk-title">${c.label}</div>
+          <div class="sk-desc">${c.desc}</div>
+          <span class="sk-cta">Ouvrir le formulaire <i class="fas fa-arrow-right"></i></span>
+        </a>`).join('');
+    } else {
+      skillsBox.innerHTML = `<div class="empty-skills">Aucune compétence d'émission configurée pour votre rôle.<br><small>Utilisez les navigateurs ci-dessous pour accéder aux modules.</small></div>`;
     }
 
-    grid.innerHTML = allowed.map((n, i) => `
-      <a href="${n.href}" class="nav-card"
-         style="--card-color:${n.color};--card-light:${n.light}">
-        <span class="nav-card-badge">${n.badge}</span>
-        <div class="nav-card-icon"><i class="fas ${n.icon}"></i></div>
-        <div class="nav-card-label">${i + 1}. ${n.label}</div>
-        <div class="nav-card-desc">${n.desc}</div>
-        <span class="nav-card-btn">Accéder <i class="fas fa-arrow-right"></i></span>
-      </a>
-    `).join('');
+    /* ── 2. Barre des 8 NAVIGATEURS (boutons compacts en bas) ──────────── */
+    const navBar = document.getElementById('navBarGrid');
+    if (navBar) {
+      navBar.innerHTML = (allowed.length ? allowed : NAVIGATORS).slice(0, 8).map((n, i) => `
+        <a class="nav-btn" href="${n.href}" style="--btn-color:${n.color};--btn-light:${n.light}" title="${n.desc}">
+          <div class="nb-ic"><i class="fas ${n.icon}"></i></div>
+          <div style="min-width:0;line-height:1.15">
+            <div class="nb-num">${i + 1}</div>
+            <div class="nb-txt">${n.label}</div>
+          </div>
+        </a>`).join('');
+    }
+
+    /* ── Ancienne grille masquée — vide pour éviter tout artefact ──────── */
+    const grid = document.getElementById('navGrid');
+    if (grid) grid.innerHTML = '';
 
     document.getElementById('btnLogout').addEventListener('click', () => {
       localStorage.removeItem('pslsh_token');
