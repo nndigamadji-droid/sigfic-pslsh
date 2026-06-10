@@ -2,418 +2,444 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SIGFIC-PSLSH | Accueil</title>
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Espace de travail</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
-  <link href="/src/css/main.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #eef2f7;
+    :root {
+      --navy-900: #0e1d3a;
+      --navy-800: #152949;
+      --navy-700: #1b2f52;
+      --navy-600: #243a64;
+      --navy-500: #2e4775;
+      --yellow:   #fbbf24;
+      --yellow-dim:#f59e0b;
+      --text-mute:#94a3b8;
+    }
+    * { box-sizing: border-box; }
+    html, body { height:100%; margin:0; overflow:hidden; font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background:#eef2f7; color:#1b2f52; }
+    a { text-decoration:none; }
+
+    /* ── Layout grid ───────────────────────────────────────────────────────── */
+    .app {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      grid-template-rows: 110px 1fr;
       height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      grid-template-areas: "header header" "sidebar main";
     }
 
-    /* ── HERO BANNER ─────────────────────────────────────────────────────────── */
-    .hero {
-      flex-shrink: 0;
-      background: linear-gradient(110deg, #051830 0%, #0f2f60 45%, #1b4a8a 100%);
-      padding: 20px 48px 18px;
-      display: flex;
+    /* ── HEADER ────────────────────────────────────────────────────────────── */
+    .header {
+      grid-area: header;
+      background: linear-gradient(180deg, var(--navy-900) 0%, var(--navy-800) 100%);
+      color: #fff;
+      padding: 0 28px;
+      display: grid;
+      grid-template-columns: minmax(380px, 1.4fr) auto minmax(380px, 1fr);
       align-items: center;
-      gap: 32px;
+      gap: 24px;
       position: relative;
       overflow: hidden;
     }
-    .hero::before {
-      content: '';
-      position: absolute; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='100'%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='Segoe UI' font-size='18' font-weight='700' fill='%23ffffff' fill-opacity='0.04' transform='rotate(-12%2C130%2C50)'%3EPSLSH%2FIST%3C%2Ftext%3E%3C%2Fsvg%3E");
-      background-size: 260px 100px;
-      pointer-events: none;
+    .header::after {
+      content:''; position:absolute; inset:0;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(251,191,36,.04) 0, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,.03) 0, transparent 40%);
+      pointer-events:none;
     }
-    .hero::after {
-      content: '';
-      position: absolute;
-      right: -80px; top: -80px;
-      width: 260px; height: 260px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.04);
-      pointer-events: none;
-    }
-    .hero-logo-wrap { flex-shrink: 0; position: relative; }
-    .hero-logo-wrap img {
-      height: 68px; width: auto; object-fit: contain;
-      filter: drop-shadow(0 4px 12px rgba(0,0,0,.35));
-    }
-    .hero-logo-fallback {
-      width: 68px; height: 68px; border-radius: 50%;
-      background: rgba(200,150,42,.18);
-      border: 2px solid rgba(200,150,42,.4);
-      display: flex; align-items: center; justify-content: center;
-      color: #c8962a; font-size: 2.2rem;
-    }
-    .hero-content { flex: 1; position: relative; }
-    .hero-program {
-      font-size: .65rem; font-weight: 700;
-      color: rgba(255,255,255,.55);
-      letter-spacing: .12em; text-transform: uppercase;
-      margin-bottom: 3px;
-    }
-    .hero-title {
-      font-size: 1.75rem; font-weight: 900; color: #fff;
-      line-height: 1.1; letter-spacing: -.3px; margin-bottom: 3px;
-    }
-    .hero-title span { color: #c8962a; }
-    .hero-subtitle {
-      font-size: .78rem; color: rgba(255,255,255,.7);
-      line-height: 1.4; max-width: 520px; margin-bottom: 12px;
-    }
-    .hero-welcome-bar {
-      display: inline-flex; align-items: center; gap: 12px;
-      background: rgba(255,255,255,.1);
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 8px; padding: 7px 14px;
-    }
-    .hero-welcome-bar .hw-name { font-size: .82rem; font-weight: 800; color: #fff; }
-    .hero-welcome-bar .hw-sep { width: 1px; height: 16px; background: rgba(255,255,255,.25); }
-    .hero-welcome-bar .hw-role { font-size: .68rem; color: rgba(255,255,255,.65); }
-    .hero-welcome-bar .hw-date { font-size: .65rem; color: rgba(255,255,255,.5); }
-    .hero-right {
-      flex-shrink: 0; display: flex; flex-direction: column;
-      align-items: flex-end; gap: 8px; position: relative;
-    }
-    .hero-logout {
-      display: flex; align-items: center; gap: 7px;
-      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.22);
-      color: rgba(255,255,255,.8); border-radius: 8px;
-      padding: 7px 14px; font-size: .72rem; font-weight: 600;
-      cursor: pointer; transition: background .2s; text-decoration: none;
-    }
-    .hero-logout:hover { background: rgba(255,255,255,.2); color: #fff; }
-    .hero-exercice { font-size: .63rem; color: rgba(255,255,255,.45); text-align: right; }
+    .h-brand { display:flex; align-items:center; gap:16px; position:relative; z-index:1; }
+    .h-coat  { width:60px; height:60px; flex-shrink:0; object-fit:contain;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.3)); }
+    .h-title h1 { font-size:1.45rem; font-weight:800; margin:0; letter-spacing:.5px; color:#fff; }
+    .h-title .sub { font-size:.78rem; font-weight:500; color:#cbd5e1; margin-top:1px; }
+    .h-title .tag { font-size:.6rem; font-weight:600; color:#94a3b8;
+      text-transform:uppercase; letter-spacing:.08em; margin-top:3px; }
 
-    /* ── SECTION NAVIGATEURS ─────────────────────────────────────────────────── */
-    .acc-body {
-      flex: 1;
+    .h-user {
+      background: var(--navy-700);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      padding: 12px 22px 12px 14px;
+      display: flex; align-items: center; gap: 14px;
+      position: relative; z-index: 1;
+      min-width: 320px;
+    }
+    .h-user .avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: var(--navy-500); color: #fff;
+      display:flex; align-items:center; justify-content:center;
+      font-size: 1.4rem; flex-shrink:0;
+    }
+    .h-user .name { font-size:1rem; font-weight:700; color:#fff; line-height:1.2; }
+    .h-user .role { font-size:.78rem; color: var(--yellow); font-weight:600; margin-top:1px; }
+    .h-user .date { font-size:.7rem; color:#cbd5e1; margin-top:4px; display:flex; align-items:center; gap:5px; }
+    .h-user .date i { font-size:.65rem; color: var(--text-mute); }
+
+    .h-right { display:flex; align-items:center; gap:20px; justify-content:flex-end; position:relative; z-index:1; }
+    .h-exercice { text-align:right; }
+    .h-exercice .lbl { font-size:.64rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em; font-weight:600; }
+    .h-exercice .val { font-size:1.7rem; font-weight:800; color:#fff; line-height:1; margin-top:1px; }
+    .h-exercice .time { font-size:.72rem; color:#cbd5e1; margin-top:4px; display:flex; align-items:center; gap:5px; justify-content:flex-end; }
+    .h-logout {
+      border:1.5px solid rgba(251,191,36,.5); background:transparent; color:var(--yellow);
+      padding:11px 20px; border-radius:9px; font-size:.82rem; font-weight:700;
+      display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+      transition: all .18s;
+    }
+    .h-logout:hover { background:var(--yellow); color:var(--navy-900); border-color:var(--yellow); }
+
+    /* ── SIDEBAR ───────────────────────────────────────────────────────────── */
+    .sidebar {
+      grid-area: sidebar;
+      background: var(--navy-800);
+      color: #cbd5e1;
+      display: flex; flex-direction: column;
+      padding-top: 18px;
+      position: relative;
       overflow: hidden;
-      padding: 14px 36px 12px;
-      max-width: 1240px;
-      width: 100%;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
     }
-    .acc-section-title {
-      font-size: .65rem; font-weight: 700;
-      color: #64748b; text-transform: uppercase;
-      letter-spacing: .08em; margin-bottom: 10px;
-      display: flex; align-items: center; gap: 8px;
-      flex-shrink: 0;
+    .sidebar::before {
+      content:''; position:absolute; bottom:130px; left:0; right:0; height:300px;
+      background:
+        radial-gradient(ellipse at center bottom, rgba(251,191,36,.06) 0, transparent 60%);
+      pointer-events:none;
     }
-    .acc-section-title::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+    .side-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 22px;
+      color: #cbd5e1; font-size: .88rem; font-weight: 500;
+      cursor: pointer; position:relative;
+      transition: all .15s;
+    }
+    .side-item i { font-size: 1rem; width: 18px; text-align:center; }
+    .side-item:hover { background: rgba(255,255,255,.04); color: #fff; }
+    .side-item.active {
+      background: rgba(251,191,36,.08);
+      color: var(--yellow);
+      font-weight: 700;
+    }
+    .side-item.active::before {
+      content:''; position:absolute; left:0; top:6px; bottom:6px; width:3px;
+      background: var(--yellow); border-radius: 0 3px 3px 0;
+    }
+    .side-spacer { flex: 1; }
+    .side-tagline {
+      padding: 16px 22px 18px;
+      border-top: 1px solid rgba(255,255,255,.06);
+      position: relative;
+    }
+    .side-tagline::before {
+      content:''; position:absolute; top:-1px; left:22px; width:32px; height:2px;
+      background: var(--yellow);
+    }
+    .side-tagline div {
+      font-size: .72rem; font-weight: 800; color: var(--text-mute);
+      text-transform: uppercase; letter-spacing: .08em; line-height: 1.7;
+    }
+
+    /* ── MAIN CONTENT ──────────────────────────────────────────────────────── */
+    .main {
+      grid-area: main;
+      overflow-y: auto;
+      background: #f7f9fc;
+      display: flex; flex-direction: column;
+      position: relative;
+    }
+    .main::after {
+      content: ''; position: absolute; bottom: 280px; right: -100px;
+      width: 460px; height: 260px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 260" fill="none" stroke="%23dbeafe" stroke-width="1.2"><rect x="30" y="180" width="40" height="60"/><rect x="80" y="150" width="50" height="90"/><rect x="140" y="100" width="70" height="140"/><rect x="220" y="80" width="50" height="160"/><rect x="280" y="130" width="60" height="110"/><rect x="350" y="160" width="40" height="80"/><polygon points="160,100 175,75 190,100"/><polygon points="240,80 250,60 260,80"/></svg>') center/contain no-repeat;
+      opacity: .35; pointer-events: none; z-index: 0;
+    }
+
+    .content {
+      padding: 26px 38px 16px;
+      flex: 1;
+      position: relative; z-index: 1;
+    }
+    .content h2 {
+      font-size: 1.5rem; font-weight: 800; color: var(--navy-700);
+      margin: 0 0 6px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .content h2 i { font-size: 1.15rem; color: var(--navy-700); opacity:.55; }
+    .content > p { font-size: .82rem; color: #64748b; margin: 0 0 20px; }
+
+    /* ── NAV CARDS GRID ────────────────────────────────────────────────────── */
     .nav-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      flex: 1;
-      align-content: start;
+      gap: 16px;
     }
     .nav-card {
       background: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 14px;
-      padding: 20px 22px 18px;
+      padding: 22px 22px 18px;
       display: flex; flex-direction: column; gap: 10px;
       cursor: pointer; text-decoration: none;
-      transition: box-shadow .2s, transform .18s, border-color .2s;
+      transition: transform .18s, box-shadow .2s, border-color .2s;
       position: relative; overflow: hidden;
-      min-height: 170px;
+      min-height: 195px;
     }
     .nav-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0;
-      height: 4px; background: var(--card-color);
-      border-radius: 14px 14px 0 0; opacity: 0; transition: opacity .2s;
+      content:''; position:absolute; top:0; left:0; right:0; height:4px;
+      background: var(--card-color); opacity:0; transition: opacity .2s;
+      border-radius: 14px 14px 0 0;
     }
     .nav-card:hover {
-      box-shadow: 0 8px 24px rgba(0,0,0,.10);
       transform: translateY(-3px);
-      border-color: var(--card-color); text-decoration: none;
+      box-shadow: 0 10px 28px rgba(15,23,42,.10);
+      border-color: var(--card-color);
     }
-    .nav-card:hover::before { opacity: 1; }
-    .nav-card-icon {
-      width: 50px; height: 50px; border-radius: 12px;
-      background: var(--card-light);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--card-color); font-size: 1.45rem; flex-shrink: 0;
-    }
-    .nav-card-label { font-size: .98rem; font-weight: 800; color: #1b2f52; line-height: 1.2; }
-    .nav-card-desc { font-size: .76rem; color: #64748b; line-height: 1.45; flex: 1; }
-    .nav-card-btn {
-      margin-top: 4px;
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: .74rem; font-weight: 700;
-      color: var(--card-color); border: none; background: none;
-      cursor: pointer; text-decoration: none;
-    }
-    .nav-card-btn i { font-size: .66rem; transition: transform .18s; }
-    .nav-card:hover .nav-card-btn i { transform: translateX(4px); }
-    .nav-badge-section {
-      position: absolute; top: 12px; right: 12px;
-      font-size: .58rem; font-weight: 700;
-      color: var(--card-color); background: var(--card-light);
-      border-radius: 4px; padding: 2px 6px;
-      text-transform: uppercase; letter-spacing: .04em;
-    }
+    .nav-card:hover::before { opacity:1; }
 
-    /* ── BANDE PARTENAIRES BAS (compact) ────────────────────────────────────── */
-    .partners-bottom {
+    .nav-card-icon {
+      width: 60px; height: 60px; border-radius: 14px;
+      background: var(--card-light);
+      display:flex; align-items:center; justify-content:center;
+      color: var(--card-color); font-size: 1.55rem;
       flex-shrink: 0;
-      background: #f8fafc;
+    }
+    .nav-card-badge {
+      position: absolute; top: 16px; right: 16px;
+      font-size: .58rem; font-weight: 800;
+      color: var(--card-color);
+      background: var(--card-light);
+      border-radius: 5px; padding: 3px 8px;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .nav-card-label {
+      font-size: 1.04rem; font-weight: 800; color: var(--navy-700);
+      margin-top: 4px;
+    }
+    .nav-card-desc {
+      font-size: .78rem; color: #64748b; line-height: 1.45; flex: 1;
+    }
+    .nav-card-btn {
+      font-size: .76rem; font-weight: 700; color: var(--card-color);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .nav-card-btn i { font-size: .68rem; transition: transform .18s; }
+    .nav-card:hover .nav-card-btn i { transform: translateX(4px); }
+
+    /* ── PARTNERS BAND ─────────────────────────────────────────────────────── */
+    .partners {
+      flex-shrink: 0; background: #f1f5f9;
       border-top: 1px solid #e2e8f0;
-      padding: 5px 48px 4px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
+      padding: 6px 38px 5px;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      position: relative; z-index: 1;
     }
-    .partners-bottom-title {
-      font-size: .52rem; font-weight: 700; color: #94a3b8;
-      text-transform: uppercase; letter-spacing: .12em;
+    .partners-title {
+      font-size: .54rem; font-weight: 800; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: .14em;
     }
-    .partners-bottom-row {
-      display: flex; align-items: center;
-      justify-content: center; flex-wrap: nowrap; gap: 0;
+    .partners-row {
+      display: flex; align-items: center; justify-content: center; flex-wrap: nowrap;
     }
-    .partner-bottom-item {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 3px 14px;
-      border-right: 1px solid #e2e8f0;
-      gap: 2px; min-width: 72px;
+    .partner-item {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 3px 18px; border-right: 1px solid #d1d9e2;
+      gap: 2px; min-width: 84px;
     }
-    .partner-bottom-item:first-child { border-left: 1px solid #e2e8f0; }
-    .partner-bottom-item img {
-      height: 22px; width: auto; max-width: 60px;
-      object-fit: contain; filter: grayscale(20%); transition: filter .2s;
+    .partner-item:first-child { border-left: 1px solid #d1d9e2; }
+    .partner-item img {
+      height: 26px; width: auto; max-width: 70px;
+      object-fit: contain; filter: grayscale(15%); transition: filter .2s;
     }
-    .partner-bottom-item:hover img { filter: grayscale(0%); }
-    .partner-bottom-item span {
-      font-size: .5rem; font-weight: 600; color: #94a3b8;
+    .partner-item:hover img { filter: grayscale(0%); }
+    .partner-item span {
+      font-size: .54rem; font-weight: 600; color: #64748b;
       text-align: center; line-height: 1.2;
     }
 
-    /* ── FOOTER ─────────────────────────────────────────────────────────────── */
-    .acc-footer {
+    /* ── FOOTER ────────────────────────────────────────────────────────────── */
+    .footer {
       flex-shrink: 0;
-      background: #051830;
-      color: rgba(255,255,255,.45);
-      font-size: .6rem;
-      text-align: center;
-      padding: .45rem 1rem;
-      letter-spacing: .25px;
+      background: var(--navy-900);
+      color: #cbd5e1;
+      padding: 9px 38px;
+      font-size: .68rem;
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      position: relative; z-index: 1;
     }
+    .footer img { height: 22px; opacity: .85; }
+    .footer .sep { color: #475569; }
+    .footer .copyright { margin-left: auto; color: var(--text-mute); }
 
-    /* ── RESPONSIVE ─────────────────────────────────────────────────────────── */
-    @media (max-width: 1100px) { .nav-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 900px)  {
-      .hero { flex-wrap: wrap; padding: 16px 24px; gap: 16px; }
-      .hero-right { align-items: flex-start; }
+    /* ── Responsive ────────────────────────────────────────────────────────── */
+    @media (max-width: 1280px) {
+      .nav-grid { grid-template-columns: repeat(2, 1fr); }
+      .header { grid-template-columns: 1fr auto; }
+      .h-right { display: none; }
     }
     @media (max-width: 768px) {
-      .nav-grid { grid-template-columns: repeat(2, 1fr); }
-      .acc-body { padding: 12px 14px 10px; }
-      .hero-title { font-size: 1.3rem; }
+      .app { grid-template-columns: 1fr; grid-template-areas: "header" "main"; }
+      .sidebar { display: none; }
     }
-    @media (max-width: 480px) { .nav-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
-  <!-- ── HERO BANNER ── -->
-  <section class="hero">
-    <div class="hero-logo-wrap">
-      <img src="../../assets/logo/logo-pslsh.png" alt="PSLSH"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-      <div class="hero-logo-fallback" style="display:none">
-        <i class="fas fa-shield-virus"></i>
+<div class="app">
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="header">
+    <div class="h-brand">
+      <img src="/assets/partners/msp-tchad.png" alt="Armoiries Tchad" class="h-coat"
+           onerror="this.src='/assets/logo/logo-pslsh.png'">
+      <div class="h-title">
+        <h1>SIGFIC-PSLSH</h1>
+        <div class="sub">Gestion financière et comptable du PSLSH/IST</div>
+        <div class="tag">Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les IST</div>
       </div>
     </div>
 
-    <div class="hero-content">
-      <div class="hero-program">
-        Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les IST
-      </div>
-      <div class="hero-title">
-        <span>SIGFIC&#8209;PSLSH</span>
-      </div>
-      <div class="hero-subtitle">
-        Gestion financière et comptable du PSLSH/IST.
-        Choisissez votre espace de travail.
-      </div>
-      <div class="hero-welcome-bar">
-        <div>
-          <div class="hw-name" id="accUserName">—</div>
-        </div>
-        <div class="hw-sep"></div>
-        <div class="hw-role" id="accUserRole">—</div>
-        <div class="hw-sep"></div>
-        <div class="hw-date" id="accDate">—</div>
+    <div class="h-user">
+      <div class="avatar"><i class="fas fa-user"></i></div>
+      <div>
+        <div class="name" id="accUserName">—</div>
+        <div class="role" id="accUserRole">—</div>
+        <div class="date"><i class="far fa-calendar"></i><span id="accDate">—</span></div>
       </div>
     </div>
 
-    <div class="hero-right">
-      <button class="hero-logout" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i> Déconnexion
+    <div class="h-right">
+      <div class="h-exercice">
+        <div class="lbl">Exercice</div>
+        <div class="val">2026</div>
+        <div class="time"><i class="far fa-clock"></i><span id="accTime">—</span></div>
+      </div>
+      <button class="h-logout" id="btnLogout">
+        <i class="fas fa-sign-out-alt"></i>Déconnexion
       </button>
-      <div class="hero-exercice">Exercice <strong style="color:rgba(255,255,255,.7)" id="accExercice">2026</strong></div>
-      <div class="hero-exercice" id="accTime" style="margin-top:2px">—</div>
     </div>
-  </section>
+  </header>
 
-  <!-- ── NAVIGATEURS ── -->
-  <div class="acc-body">
-    <div class="acc-section-title">
-      <i class="fas fa-th-large"></i> Votre espace de travail
-    </div>
-    <div class="nav-grid" id="navGrid">
-      <!-- Rempli dynamiquement selon le rôle -->
-    </div>
-  </div>
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <a class="side-item active" href="/pages/accueil/index.html"><i class="fas fa-home"></i>Accueil</a>
+    <a class="side-item" href="/pages/dashboard/index.html"><i class="fas fa-chart-bar"></i>Synthèse</a>
+    <a class="side-item" href="/pages/controle/anomalies.html"><i class="far fa-bell"></i>Alertes</a>
+    <a class="side-item" href="/pages/validation/index.html"><i class="far fa-check-square"></i>Tâches</a>
+    <a class="side-item" href="#"><i class="far fa-comment"></i>Messages</a>
+    <a class="side-item" href="/pages/reporting/index.html"><i class="far fa-file-alt"></i>Rapports</a>
+    <a class="side-item" href="/pages/admin/parametres.html"><i class="fas fa-cog"></i>Paramètres</a>
+    <a class="side-item" href="#"><i class="far fa-question-circle"></i>Aide</a>
 
-  <!-- ── PARTENAIRES BAS ── -->
-  <div class="partners-bottom">
-    <div class="partners-bottom-title">Partenaires techniques et financiers du PSLSH/IST</div>
-    <div class="partners-bottom-row">
-      <div class="partner-bottom-item">
-        <img src="/assets/partners/msp-tchad.png" alt="Ministère de la Santé – Tchad"
-             title="Ministère de la Santé Publique et de la Prévention">
-        <span>Ministère de la Santé<br>République du Tchad</span>
-      </div>
-      <div class="partner-bottom-item">
-        <img src="/assets/partners/fonds-mondial.png" alt="Fonds Mondial"
-             title="Fonds Mondial de lutte contre le Sida, la Tuberculose et le Paludisme">
-        <span>Fonds Mondial</span>
-      </div>
-      <div class="partner-bottom-item">
-        <img src="/assets/partners/onusida.png" alt="ONUSIDA"
-             title="Programme commun des Nations Unies sur le VIH/sida">
-        <span>ONUSIDA</span>
-      </div>
-      <div class="partner-bottom-item">
-        <img src="/assets/partners/oms.png" alt="OMS"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
-             title="Organisation Mondiale de la Santé">
-        <div style="display:none;align-items:center;justify-content:center;width:60px;height:36px;
-                    background:#009edb;border-radius:6px;color:#fff;font-size:.65rem;font-weight:800;
-                    letter-spacing:.05em;">OMS</div>
-        <span>OMS / WHO</span>
-      </div>
-      <div class="partner-bottom-item">
-        <img src="/assets/partners/unicef.png" alt="UNICEF"
-             title="Fonds des Nations Unies pour l'Enfance">
-        <span>UNICEF</span>
-      </div>
-      <div class="partner-bottom-item">
-        <img src="/assets/partners/banque-mondiale.png" alt="Banque Mondiale"
-             title="Banque Mondiale – World Bank Group">
-        <span>Banque Mondiale</span>
+    <div class="side-spacer"></div>
+
+    <div class="side-tagline">
+      <div>Transparence</div>
+      <div>Performance</div>
+      <div>Responsabilité</div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="content">
+      <h2><i class="fas fa-th-large"></i>Votre espace de travail</h2>
+      <p>Accédez rapidement aux outils et informations pour piloter efficacement la gestion financière.</p>
+      <div class="nav-grid" id="navGrid"></div>
+    </div>
+
+    <!-- Partenaires -->
+    <div class="partners">
+      <div class="partners-title">Partenaires techniques et financiers du PSLSH/IST</div>
+      <div class="partners-row">
+        <div class="partner-item"><img src="/assets/partners/msp-tchad.png" alt=""><span>Ministère de la Santé<br>République du Tchad</span></div>
+        <div class="partner-item"><img src="/assets/partners/fonds-mondial.png" alt=""><span>Fonds Mondial</span></div>
+        <div class="partner-item"><img src="/assets/partners/onusida.png" alt=""><span>ONUSIDA</span></div>
+        <div class="partner-item"><img src="/assets/partners/oms.png" alt=""><span>OMS / WHO</span></div>
+        <div class="partner-item"><img src="/assets/partners/unicef.png" alt=""><span>UNICEF</span></div>
+        <div class="partner-item"><img src="/assets/partners/banque-mondiale.png" alt=""><span>Banque Mondiale</span></div>
       </div>
     </div>
-  </div>
 
-  <!-- ── FOOTER ── -->
-  <footer class="acc-footer">
-    Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les IST (PSLSH/IST) &nbsp;·&nbsp;
-    République du Tchad — Ministère de la Santé Publique et de la Prévention &nbsp;·&nbsp;
-    SIGFIC-PSLSH v2.0 &nbsp;·&nbsp; &copy; 2026 — Tous droits réservés
-  </footer>
+    <!-- Footer -->
+    <footer class="footer">
+      <img src="/assets/partners/msp-tchad.png" alt="">
+      <span>Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les IST (PSLSH/IST)</span>
+      <span class="sep">|</span>
+      <span>République du Tchad — Ministère de la Santé Publique et de la Prévention</span>
+      <span class="sep">|</span>
+      <span>SIGFIC-PSLSH v2.0</span>
+      <span class="copyright">© 2026 — Tous droits réservés</span>
+    </footer>
+  </main>
 
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/src/js/api.js"></script>
 <script src="/src/js/roles.js"></script>
 <script>
   requireAuth();
 
-  // ── Navigateurs et accès par rôle ────────────────────────────────────────
   const NAVIGATORS = [
-    {
-      id: 'dashboard', label: 'Tableau de bord', badge: 'Synthèse',
-      desc: 'Budget, alertes, dossiers en cours et indicateurs d\'exécution.',
-      icon: 'fa-chart-line', color: '#1b3a6b', light: '#e8f0fb',
-      href: '/pages/dashboard/index.html',
-      roles: ['administrateur','coordination','chef_service','comite_pilotage','controleur','agent'],
-    },
-    {
-      id: 'planification', label: 'Planification', badge: 'PAO',
-      desc: 'Plans d\'action, activités, calendriers et programmation annuelle.',
-      icon: 'fa-calendar-check', color: '#0369a1', light: '#e0f2fe',
-      href: '/pages/planification/pao-global.html',
-      roles: ['administrateur','coordination','chef_service','comite_pilotage'],
-    },
-    {
-      id: 'validation', label: 'Validation', badge: 'Décisions',
-      desc: 'Approbations en attente : PAO, besoins, commandes et paiements.',
-      icon: 'fa-check-double', color: '#15803d', light: '#dcfce7',
-      href: '/pages/validation/index.html',
-      roles: ['administrateur','coordination','chef_service'],
-    },
-    {
-      id: 'operations', label: 'Opérations', badge: 'Dossiers',
-      desc: 'Expressions de besoin et dossiers d\'opération (achats, formations, personnel).',
-      icon: 'fa-folder-open', color: '#b45309', light: '#fef3c7',
-      href: '/pages/dossiers/index.html',
-      roles: ['administrateur','coordination','chef_service','controleur','agent'],
-    },
-    {
-      id: 'ressources', label: 'Ressources & Moyens', badge: 'Logistique',
-      desc: 'Stock & immobilisations, carburants et ressources humaines.',
-      icon: 'fa-toolbox', color: '#0891b2', light: '#cffafe',
-      href: '/pages/stock/index.html',
-      roles: ['administrateur','coordination','chef_service','controleur','agent'],
-    },
-    {
-      id: 'budget', label: 'Budget', badge: 'Crédits',
-      desc: 'Lignes budgétaires, sources de financement et révisions.',
-      icon: 'fa-coins', color: '#7c3aed', light: '#ede9fe',
-      href: '/pages/budget/synthese.html',
-      roles: ['administrateur','coordination','chef_service','comite_pilotage'],
-    },
-    {
-      id: 'finances', label: 'Finances', badge: 'SYSCOHADA',
-      desc: 'Paiements, journaux comptables, grand livre et trésorerie.',
-      icon: 'fa-university', color: '#0f766e', light: '#ccfbf1',
-      href: '/pages/comptabilite/index.html',
-      roles: ['administrateur','coordination','chef_service','comite_pilotage','controleur'],
-    },
-    {
-      id: 'controle', label: 'Contrôle & Audit', badge: 'Audit',
-      desc: 'Anomalies, conformité des dossiers et piste d\'audit.',
-      icon: 'fa-shield-alt', color: '#b91c1c', light: '#fee2e2',
-      href: '/pages/controle/index.html',
-      roles: ['administrateur','coordination','chef_service','comite_pilotage','controleur','agent'],
-    },
-    {
-      id: 'admin', label: 'Administration', badge: 'Système',
-      desc: 'Comptes utilisateurs, rôles, services et paramètres système.',
-      icon: 'fa-cog', color: '#374151', light: '#f1f5f9',
-      href: '/pages/admin/index.html',
-      roles: ['administrateur'],
-    },
+    { id:'dashboard',    label:'Tableau de bord',     badge:'Synthèse',
+      desc:'Budget, alertes, dossiers en cours et indicateurs d\'exécution.',
+      icon:'fa-chart-line', color:'#1b3a6b', light:'#e8f0fb',
+      href:'/pages/dashboard/index.html',
+      roles:['administrateur','coordination','chef_service','comite_pilotage','controleur','agent'] },
+
+    { id:'planification', label:'Planification',       badge:'PAO',
+      desc:'Plans d\'action, activités, calendriers et programmation annuelle.',
+      icon:'fa-calendar-check', color:'#0369a1', light:'#e0f2fe',
+      href:'/pages/planification/pao-global.html',
+      roles:['administrateur','coordination','chef_service','comite_pilotage'] },
+
+    { id:'validation',   label:'Validation',          badge:'Décisions',
+      desc:'Approbations en attente : PAO, besoins, commandes et paiements.',
+      icon:'fa-check-double', color:'#15803d', light:'#dcfce7',
+      href:'/pages/validation/index.html',
+      roles:['administrateur','coordination','chef_service'] },
+
+    { id:'operations',   label:'Opérations',          badge:'Dossiers',
+      desc:'Expressions de besoin et dossiers d\'opération (achats, formations, personnel).',
+      icon:'fa-folder-open', color:'#b45309', light:'#fef3c7',
+      href:'/pages/dossiers/index.html',
+      roles:['administrateur','coordination','chef_service','controleur','agent'] },
+
+    { id:'ressources',   label:'Ressources & Moyens', badge:'Logistique',
+      desc:'Stock & immobilisations, carburants et ressources humaines.',
+      icon:'fa-toolbox', color:'#0891b2', light:'#cffafe',
+      href:'/pages/stock/index.html',
+      roles:['administrateur','coordination','chef_service','controleur','agent'] },
+
+    { id:'budget',       label:'Budget',              badge:'Crédits',
+      desc:'Lignes budgétaires, sources de financement et révisions.',
+      icon:'fa-coins', color:'#7c3aed', light:'#ede9fe',
+      href:'/pages/budget/synthese.html',
+      roles:['administrateur','coordination','chef_service','comite_pilotage'] },
+
+    { id:'finances',     label:'Finances',            badge:'SYSCOHADA',
+      desc:'Paiements, journaux comptables, grand livre et trésorerie.',
+      icon:'fa-university', color:'#0f766e', light:'#ccfbf1',
+      href:'/pages/finances/index.html',
+      roles:['administrateur','coordination','chef_service','comite_pilotage','controleur'] },
+
+    { id:'controle',     label:'Contrôle & Audit',    badge:'Audit',
+      desc:'Anomalies, conformité des dossiers et piste d\'audit.',
+      icon:'fa-shield-alt', color:'#b91c1c', light:'#fee2e2',
+      href:'/pages/controle/index.html',
+      roles:['administrateur','coordination','chef_service','comite_pilotage','controleur','agent'] },
   ];
 
   const ROLE_LABELS = {
-    administrateur:  'Administrateur système',
+    administrateur:  'Administrateur',
     coordination:    'Coordonnateur',
     chef_service:    'Chef de service',
     comite_pilotage: 'Comité de pilotage',
-    controleur:      'Contrôleur / Auditeur',
+    controleur:      'Contrôleur',
     agent:           'Agent',
   };
 
@@ -421,35 +447,43 @@
     const user = getUser();
     const role = (window.SIGFIC && window.SIGFIC.getRole) ? window.SIGFIC.getRole() : (user?.role || '');
 
-    const nom    = (user && (user.nom || user.name || user.email)) || 'Utilisateur';
     const prenom = (user && user.prenom) || '';
-    const full   = prenom ? prenom + ' ' + nom : nom;
-
-    document.getElementById('accUserName').textContent = full;
-    document.getElementById('accUserRole').textContent = ROLE_LABELS[role] || role;
+    const nom    = (user && (user.nom || user.name || user.email)) || 'Utilisateur';
+    const titre  = (user && user.civilite) || 'Dr';
+    document.getElementById('accUserName').textContent = `${titre} ${prenom ? prenom + ' ' : ''}${nom}`.replace(/\s+/g,' ').trim();
+    document.getElementById('accUserRole').textContent = ROLE_LABELS[role] || (role || '—');
 
     const now = new Date();
     document.getElementById('accDate').textContent = now.toLocaleDateString('fr-FR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
     document.getElementById('accTime').textContent = now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    setInterval(() => {
+      document.getElementById('accTime').textContent = new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    }, 30000);
 
     const allowed = NAVIGATORS.filter(n => n.roles.includes(role));
-    const grid    = document.getElementById('navGrid');
+    const grid = document.getElementById('navGrid');
 
     if (!allowed.length) {
-      grid.innerHTML = '<p class="text-muted small">Aucun module disponible pour votre compte. Contactez l\'administrateur.</p>';
+      grid.innerHTML = '<p class="text-muted small" style="grid-column:1/-1">Aucun module disponible pour votre compte. Contactez l\'administrateur.</p>';
       return;
     }
 
-    grid.innerHTML = allowed.map(n => `
+    grid.innerHTML = allowed.map((n, i) => `
       <a href="${n.href}" class="nav-card"
          style="--card-color:${n.color};--card-light:${n.light}">
-        <span class="nav-badge-section">${n.badge}</span>
+        <span class="nav-card-badge">${n.badge}</span>
         <div class="nav-card-icon"><i class="fas ${n.icon}"></i></div>
-        <div class="nav-card-label">${n.label}</div>
+        <div class="nav-card-label">${i + 1}. ${n.label}</div>
         <div class="nav-card-desc">${n.desc}</div>
         <span class="nav-card-btn">Accéder <i class="fas fa-arrow-right"></i></span>
       </a>
     `).join('');
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      localStorage.removeItem('pslsh_token');
+      localStorage.removeItem('pslsh_user');
+      window.location.href = '/pages/auth/login.html';
+    });
   })();
 </script>
 </body>
