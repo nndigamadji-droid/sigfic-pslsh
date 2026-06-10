@@ -91,18 +91,23 @@ async function seed() {
   }
   console.log(`   ${mappingAdded} liaison(s) rôle↔permission ajoutée(s)`);
 
-  // 4) Utilisateur démo
+  // 4) Utilisateur démo — utilise les vrais noms de colonnes du modèle User
   const pwdHash = await bcrypt.hash('Compta@2026', 12);
   const [user, userCreated] = await User.findOrCreate({
     where: { email: 'comptable@pslsh.org' },
     defaults: {
-      email: 'comptable@pslsh.org', password: pwdHash,
+      email: 'comptable@pslsh.org', password_hash: pwdHash,
       nom: 'NDJEKOUNTA', prenom: 'Marie',
-      civilite: 'Mme', telephone: '+235 66 11 22 33',
+      telephone: '+235 66 11 22 33',
       service_code: 'SAF', is_active: true,
     },
   });
-  console.log(`   Utilisateur comptable@pslsh.org : ${userCreated ? 'créé' : 'déjà présent'} (id=${user.id})`);
+  if (!userCreated) {
+    // Force la mise à jour du mot de passe si l'utilisateur existait déjà
+    user.password_hash = pwdHash;
+    await user.save();
+  }
+  console.log(`   Utilisateur comptable@pslsh.org : ${userCreated ? 'créé' : 'mot de passe réinitialisé'} (id=${user.id})`);
 
   await UserRole.findOrCreate({
     where: { user_id: user.id, role_id: role.id },
