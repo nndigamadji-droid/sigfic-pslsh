@@ -149,6 +149,24 @@
       background: rgba(251,191,36,.18);
       color: var(--yellow);
     }
+    .si-badge {
+      margin-left: auto;
+      background: #b91c1c; color: #fff;
+      font-size: .58rem; font-weight: 800;
+      padding: 1px 7px; border-radius: 10px;
+      min-width: 22px; text-align: center;
+      display: none;
+    }
+    .si-badge.visible { display: inline-block; }
+    .si-badge.urgent {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      box-shadow: 0 0 0 2px rgba(239,68,68,.25);
+      animation: pulse-badge 2s ease-in-out infinite;
+    }
+    @keyframes pulse-badge {
+      0%, 100% { box-shadow: 0 0 0 2px rgba(239,68,68,.25); }
+      50%      { box-shadow: 0 0 0 5px rgba(239,68,68,.08); }
+    }
     .side-spacer { flex: 1; }
     .side-tagline {
       padding: 12px 16px 14px;
@@ -354,12 +372,12 @@
   <aside class="sidebar">
     <a class="side-item active" href="/pages/accueil/index.html"><span class="si-ico"><i class="fas fa-home"></i></span>Accueil</a>
     <a class="side-item" href="/pages/dashboard/index.html"><span class="si-ico"><i class="fas fa-chart-bar"></i></span>Synthèse</a>
-    <a class="side-item" href="/pages/controle/anomalies.html"><span class="si-ico"><i class="far fa-bell"></i></span>Alertes</a>
-    <a class="side-item" href="/pages/validation/index.html"><span class="si-ico"><i class="far fa-check-square"></i></span>Tâches</a>
-    <a class="side-item" href="#"><span class="si-ico"><i class="far fa-comment"></i></span>Messages</a>
+    <a class="side-item" href="/pages/notifications/index.html?tab=alertes"><span class="si-ico"><i class="far fa-bell"></i></span>Alertes <span class="si-badge" id="sbAlertes"></span></a>
+    <a class="side-item" href="/pages/notifications/index.html?tab=taches"><span class="si-ico"><i class="far fa-check-square"></i></span>Tâches <span class="si-badge" id="sbTaches"></span></a>
+    <a class="side-item" href="/pages/notifications/index.html?tab=messages"><span class="si-ico"><i class="far fa-comment"></i></span>Messages <span class="si-badge" id="sbMessages"></span></a>
     <a class="side-item" href="/pages/reporting/index.html"><span class="si-ico"><i class="far fa-file-alt"></i></span>Rapports</a>
     <a class="side-item" href="/pages/admin/parametres.html"><span class="si-ico"><i class="fas fa-cog"></i></span>Paramètres</a>
-    <a class="side-item" href="#"><span class="si-ico"><i class="far fa-question-circle"></i></span>Aide</a>
+    <a class="side-item" href="/pages/aide/index.html"><span class="si-ico"><i class="far fa-question-circle"></i></span>Aide</a>
 
     <div class="side-spacer"></div>
 
@@ -575,6 +593,38 @@
       localStorage.removeItem('pslsh_user');
       window.location.href = '/pages/auth/login.html';
     });
+
+    // ── Badges live (poll API toutes les 60s) ─────────────────────────────
+    async function refreshBadges() {
+      try {
+        const token = localStorage.getItem('pslsh_token');
+        const r = await fetch('http://localhost:3000/api/v1/notifications/count',
+          { headers: { Authorization: 'Bearer ' + token }});
+        const b = await r.json();
+        if (!b.success) return;
+        const k = b.data;
+        const alertes  = k.by_type.alert    || 0;
+        const taches   = (k.by_type.task || 0) + (k.by_type.reminder || 0);
+        const messages = (k.by_type.message || 0) + (k.by_type.info || 0);
+        const urgent   = (k.by_priority.urgent || 0) > 0;
+        applyBadge('sbAlertes',  alertes,  urgent);
+        applyBadge('sbTaches',   taches,   false);
+        applyBadge('sbMessages', messages, false);
+      } catch (_) {}
+    }
+    function applyBadge(id, n, isUrgent) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (n > 0) {
+        el.textContent = n > 99 ? '99+' : n;
+        el.classList.add('visible');
+        if (isUrgent) el.classList.add('urgent'); else el.classList.remove('urgent');
+      } else {
+        el.classList.remove('visible', 'urgent');
+      }
+    }
+    refreshBadges();
+    setInterval(refreshBadges, 60000);
   })();
 </script>
 </body>

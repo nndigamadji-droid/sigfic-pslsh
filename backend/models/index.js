@@ -10,6 +10,7 @@ const Departement = require('./Departement');
 const Agent = require('./Agent');
 const AuditLog = require('./AuditLog');
 const BudgetComptaMapping = require('./BudgetComptaMapping');
+const Notification = require('./Notification');
 const WorkflowTransition = require('./WorkflowTransition');
 const Exercice = require('./Exercice');
 const PlanAction = require('./PlanAction');
@@ -253,6 +254,7 @@ module.exports = {
   Agent,
   AuditLog,
   BudgetComptaMapping,
+  Notification,
   WorkflowTransition,
   Exercice,
   PlanAction,
