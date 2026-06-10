@@ -370,7 +370,15 @@
           { href: '/pages/admin/notifications.html', icon: 'fa-bell', label: 'Notifications' },
         ],
       },
-    ],
+          {
+        section: 'MES OUTILS',
+        icon: 'fa-user-circle',
+        items: [
+          { href: '/pages/notifications/index.html', icon: 'fa-bell', label: 'Centre des notifications' },
+          { href: '/pages/aide/index.html', icon: 'fa-question-circle', label: 'Aide' },
+        ],
+      },
+],
 
     /* ════════════════════════════════════════════════════════════════
        COORDINATION — accès complet métier, pilotage et validation
@@ -545,7 +553,15 @@
           },
         ],
       },
-    ],
+          {
+        section: 'MES OUTILS',
+        icon: 'fa-user-circle',
+        items: [
+          { href: '/pages/notifications/index.html', icon: 'fa-bell', label: 'Centre des notifications' },
+          { href: '/pages/aide/index.html', icon: 'fa-question-circle', label: 'Aide' },
+        ],
+      },
+],
 
     /* ════════════════════════════════════════════════════════════════
        CHEF DE SERVICE — périmètre de son service
@@ -656,7 +672,15 @@
           { href: '/pages/reporting/index.html', icon: 'fa-file-alt', label: 'Mes rapports' },
         ],
       },
-    ],
+          {
+        section: 'MES OUTILS',
+        icon: 'fa-user-circle',
+        items: [
+          { href: '/pages/notifications/index.html', icon: 'fa-bell', label: 'Centre des notifications' },
+          { href: '/pages/aide/index.html', icon: 'fa-question-circle', label: 'Aide' },
+        ],
+      },
+],
 
     /* ════════════════════════════════════════════════════════════════
        COMITÉ DE PILOTAGE — lecture, synthèse, revue stratégique
@@ -747,7 +771,15 @@
           },
         ],
       },
-    ],
+          {
+        section: 'MES OUTILS',
+        icon: 'fa-user-circle',
+        items: [
+          { href: '/pages/notifications/index.html', icon: 'fa-bell', label: 'Centre des notifications' },
+          { href: '/pages/aide/index.html', icon: 'fa-question-circle', label: 'Aide' },
+        ],
+      },
+],
 
     /* ════════════════════════════════════════════════════════════════
        CONTRÔLEUR / AUDITEUR — lecture renforcée, traçabilité
@@ -824,7 +856,15 @@
           { href: '/pages/reporting/index.html', icon: 'fa-chart-pie', label: 'Reporting & états' },
         ],
       },
-    ],
+          {
+        section: 'MES OUTILS',
+        icon: 'fa-user-circle',
+        items: [
+          { href: '/pages/notifications/index.html', icon: 'fa-bell', label: 'Centre des notifications' },
+          { href: '/pages/aide/index.html', icon: 'fa-question-circle', label: 'Aide' },
+        ],
+      },
+],
 
     /* ════════════════════════════════════════════════════════════════
        AGENT — accès de base, tâches ciblées
@@ -860,7 +900,15 @@
           { href: '/pages/archivage/index.html', icon: 'fa-archive', label: 'Mes documents' },
         ],
       },
-    ],
+          {
+        section: 'MES OUTILS',
+        icon: 'fa-user-circle',
+        items: [
+          { href: '/pages/notifications/index.html', icon: 'fa-bell', label: 'Centre des notifications' },
+          { href: '/pages/aide/index.html', icon: 'fa-question-circle', label: 'Aide' },
+        ],
+      },
+],
   };
 
   /* ── 5. Helpers utilisateur ──────────────────────────────────────────────── */
@@ -918,56 +966,54 @@
   /* Détecte le navigateur actif d'après l'URL courante.
    * Retourne le nom de section exact (tel que défini dans MENUS),
    * ou null si la page n'appartient à aucun navigateur (ex. accueil). */
+  /* ────────────────────────────────────────────────────────────────────────
+     _detectActiveNavigator — solution DÉFINITIVE
+     ────────────────────────────────────────────────────────────────────────
+     La détection du navigateur actif est désormais DÉRIVÉE AUTOMATIQUEMENT
+     de la structure MENUS (source de vérité unique). Lorsqu'on ajoute une
+     nouvelle page :
+       1. Ajouter un item { href: '/pages/<dir>/...', label, icon } dans la
+          section concernée d'un ou plusieurs menus.
+       2. C'est tout. La sidebar reconnaît automatiquement le navigateur.
+
+     Plus besoin de modifier cette fonction à chaque création de page.
+     ──────────────────────────────────────────────────────────────────────── */
+  let _navCache = null;
+  function _buildNavCache() {
+    const cache = new Map();
+    for (const roleKey in MENUS) {
+      const roleMenu = MENUS[roleKey];
+      if (!Array.isArray(roleMenu)) continue;
+      for (const group of roleMenu) {
+        if (!group || !group.section || !Array.isArray(group.items)) continue;
+        for (const item of group.items) {
+          if (!item || !item.href) continue;
+          // /pages/budget/lignes.html → /pages/budget/
+          const cleanHref = item.href.split('?')[0].split('#')[0];
+          const dir = cleanHref.replace(/\/[^/]*$/, '/');
+          if (dir && dir !== '/' && !cache.has(dir)) {
+            cache.set(dir, group.section);
+          }
+        }
+      }
+    }
+    // Chemins les plus spécifiques d'abord (longueur décroissante)
+    return [...cache.entries()].sort((a, b) => b[0].length - a[0].length);
+  }
+
   function _detectActiveNavigator(pathname) {
-    if (
-      pathname.indexOf('/dashboard') !== -1 ||
-      pathname.indexOf('/alertes') !== -1 ||
-      pathname.indexOf('/indicateurs') !== -1
-    ) {
-      return 'TABLEAU DE BORD';
+    if (!_navCache) _navCache = _buildNavCache();
+    for (const [dir, section] of _navCache) {
+      if (pathname.indexOf(dir) === 0) return section;
     }
-    if (pathname.indexOf('/planification') !== -1) {
-      return 'PLANIFICATION';
+    if (typeof console !== 'undefined' && pathname
+        && pathname.indexOf('/pages/') === 0
+        && pathname.indexOf('/accueil') === -1
+        && pathname.indexOf('/auth') === -1) {
+      console.warn('[SIGFIC] Page non rattachée à un navigateur :', pathname,
+        "— ajoutez l'item correspondant dans MENUS (roles.js) pour la rattacher.");
     }
-    if (pathname.indexOf('/validation') !== -1) {
-      return 'CENTRE DE VALIDATION';
-    }
-    if (
-      pathname.indexOf('/dossiers') !== -1 ||
-      pathname.indexOf('/passation') !== -1 ||
-      pathname.indexOf('/commandes') !== -1 ||
-      pathname.indexOf('/reception') !== -1
-    ) {
-      return 'OP\u00c9RATIONS';
-    }
-    if (
-      pathname.indexOf('/stock') !== -1 ||
-      pathname.indexOf('/carburant') !== -1 ||
-      pathname.indexOf('/rh') !== -1
-    ) {
-      return 'RESSOURCES & MOYENS';
-    }
-    if (pathname.indexOf('/budget') !== -1) {
-      return 'BUDGET';
-    }
-    if (
-      pathname.indexOf('/finances') !== -1 ||
-      pathname.indexOf('/paiement') !== -1 ||
-      pathname.indexOf('/comptabilite') !== -1
-    ) {
-      return 'FINANCES';
-    }
-    if (
-      pathname.indexOf('/controle') !== -1 ||
-      pathname.indexOf('/archivage') !== -1 ||
-      pathname.indexOf('/reporting') !== -1
-    ) {
-      return 'CONTR\u00d4LE \u0026 AUDIT';
-    }
-    if (pathname.indexOf('/admin') !== -1) {
-      return 'ADMINISTRATION';
-    }
-    return null; // accueil ou page inconnue → pas de filtrage
+    return null;
   }
 
   function renderSidebarNav(targetId) {
