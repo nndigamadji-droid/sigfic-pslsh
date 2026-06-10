@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Actes d'engagement SAF</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    html,body{height:100%;overflow:hidden}
+    .app-layout,.main-content{height:100vh;overflow:hidden}
+    .page-content{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:0}
+
+    .sf-top{flex-shrink:0;padding:14px 28px 0;background:#fff;border-bottom:1px solid #e2e8f0}
+    .sf-title{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+    .sf-title h5{margin:0;font-size:1rem;font-weight:800;color:#1b2f52}
+    .sf-title small{font-size:.72rem;color:#64748b}
+    .sf-tag{font-size:.66rem;font-weight:800;padding:5px 12px;border-radius:6px;background:#dbeafe;color:#1d4ed8;text-transform:uppercase;letter-spacing:.04em}
+
+    .sf-tabs{display:flex;gap:1px;padding-top:6px;border-bottom:2px solid #1d4ed8;flex-wrap:wrap;overflow-x:auto}
+    .sf-tab{font-size:.74rem;font-weight:600;padding:9px 13px;cursor:pointer;background:#f1f5f9;color:#64748b;
+      border:1px solid #e2e8f0;border-bottom:none;border-radius:7px 7px 0 0;
+      display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
+    .sf-tab:hover:not(.active){background:#e2e8f0;color:#1d4ed8}
+    .sf-tab.active{background:#1d4ed8;color:#fff;border-color:#1d4ed8;font-weight:700}
+
+    .sf-body{flex:1;overflow-y:auto;padding:18px 28px;background:#eef2f7}
+    .sf-form{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px 22px;max-width:1100px}
+    .sf-form label{font-size:.7rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px}
+    .sf-form input,.sf-form select,.sf-form textarea{width:100%;font-size:.82rem;padding:7px 11px;
+      border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#1b2f52;font-family:inherit}
+    .sf-form input:focus,.sf-form select:focus,.sf-form textarea:focus{outline:none;border-color:#1d4ed8;box-shadow:0 0 0 3px #dbeafe}
+    .sf-form textarea{min-height:60px;resize:vertical}
+    .sf-form input[readonly]{background:#f8fafc;color:#475569}
+    .sf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+    .sf-grid .full{grid-column:1/-1}
+    .sf-grid .half{grid-column:span 2}
+
+    .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .panel-head h6{margin:0;font-size:.92rem;font-weight:800;color:#1b2f52;display:flex;align-items:center;gap:8px}
+    .panel-head h6 i{color:#1d4ed8}
+    .panel-head .pa-sub{font-size:.7rem;color:#64748b}
+
+    .actions{display:flex;gap:10px;justify-content:flex-end;padding-top:14px;border-top:1px solid #f1f5f9;margin-top:10px}
+    .btn-sf{font-size:.76rem;font-weight:700;padding:8px 16px;border-radius:7px;cursor:pointer;
+      display:inline-flex;align-items:center;gap:6px;border:1px solid}
+    .btn-sf.primary{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+    .btn-sf.primary:hover{filter:brightness(.92)}
+    .btn-sf.ghost{background:#fff;color:#64748b;border-color:#cbd5e1}
+
+    .sf-alert{padding:10px 14px;border-radius:8px;font-size:.78rem;margin-bottom:12px;display:none}
+    .sf-alert.ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
+    .sf-alert.err{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+    .sf-alert.visible{display:block}
+
+    .panel{display:none}
+    .panel.active{display:block}
+
+    .lig-tbl{width:100%;border-collapse:collapse;font-size:.76rem;margin-top:8px}
+    .lig-tbl th{background:#f1f5f9;color:#475569;text-align:left;padding:7px 10px;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em}
+    .lig-tbl td{padding:4px 6px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+    .lig-tbl input,.lig-tbl select{padding:5px 8px;font-size:.76rem;border:1px solid #cbd5e1;border-radius:5px;width:100%}
+    .lig-tbl .btn-rm{background:none;border:none;color:#b91c1c;cursor:pointer;font-size:.95rem;padding:0 4px}
+    .totals{display:flex;gap:14px;justify-content:flex-end;padding:10px 0;font-size:.86rem;font-weight:800;color:#1b2f52}
+
+    .eb-info,.dossier-info{background:#fafbfc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin-bottom:12px}
+    .eb-info h6,.dossier-info h6{margin:0 0 8px;font-size:.74rem;color:#475569;font-weight:800}
+    .info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-size:.76rem}
+    .info-grid .lbl{color:#94a3b8;font-size:.62rem;text-transform:uppercase;letter-spacing:.04em}
+    .info-grid .val{font-weight:700;color:#1b2f52;font-family:monospace}
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="" class="brand-logo">
+      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Actes SAF</div></div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><nav><ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/pages/accueil/index.html" class="text-muted">Accueil</a></li>
+        <li class="breadcrumb-item active fw-semibold">Actes d'engagement SAF</li>
+      </ol></nav></div>
+      <div class="topbar-center"><i class="fas fa-stamp me-1"></i>Service Administratif et Financier</div>
+      <div class="topbar-right">
+        <div class="topbar-notif"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700" id="userAvatar">?</div>
+            <span id="userName" style="font-size:.82rem;font-weight:600"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/pages/admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="sf-top">
+        <div class="sf-title">
+          <div>
+            <h5><i class="fas fa-stamp me-2" style="color:#1d4ed8"></i>Actes d'engagement & pièces administratives — SAF</h5>
+            <small>Visa des EB, TDR, tableau comparatif, bon de commande, contrat, notification, PV de réception, attestation de service fait, ordre de paiement, note de service.</small>
+          </div>
+          <span class="sf-tag">SAF — Chef de service</span>
+        </div>
+        <div class="sf-tabs">
+          <button class="sf-tab active" data-panel="visa"    onclick="sw('visa')"><i class="fas fa-check-double"></i>Visa EB</button>
+          <button class="sf-tab"        data-panel="tdr"     onclick="sw('tdr')"><i class="fas fa-file-alt"></i>TDR</button>
+          <button class="sf-tab"        data-panel="tcp"     onclick="sw('tcp')"><i class="fas fa-balance-scale"></i>TCP — Comparatif</button>
+          <button class="sf-tab"        data-panel="bc"      onclick="sw('bc')"><i class="fas fa-file-invoice"></i>Bon de commande</button>
+          <button class="sf-tab"        data-panel="contrat" onclick="sw('contrat')"><i class="fas fa-file-contract"></i>Contrat</button>
+          <button class="sf-tab"        data-panel="notif"   onclick="sw('notif')"><i class="fas fa-envelope-open-text"></i>Notification</button>
+          <button class="sf-tab"        data-panel="pv"      onclick="sw('pv')"><i class="fas fa-clipboard-check"></i>PV Réception</button>
+          <button class="sf-tab"        data-panel="asf"     onclick="sw('asf')"><i class="fas fa-certificate"></i>Att. Service Fait</button>
+          <button class="sf-tab"        data-panel="op"      onclick="sw('op')"><i class="fas fa-money-bill-wave"></i>Ordre de paiement</button>
+          <button class="sf-tab"        data-panel="note"    onclick="sw('note')"><i class="fas fa-sticky-note"></i>Note de service</button>
+        </div>
+      </div>
+
+      <div class="sf-body">
+        <div id="alert" class="sf-alert"></div>
+
+        <!-- ── VISA EB ───────────────────────────────────────────────────── -->
+        <div class="panel active" id="panel-visa">
+          <div class="panel-head"><h6><i class="fas fa-check-double"></i>Viser une expression de besoin</h6><span class="pa-sub">Étape SAF du circuit ELOP</span></div>
+          <form class="sf-form" id="visaForm" onsubmit="event.preventDefault();submitVisa()">
+            <div class="sf-grid">
+              <div class="half">
+                <label>Référence EB *</label>
+                <select id="visaEb" required onchange="loadEbInfo()"><option value="">— Choisir une EB —</option></select>
+              </div>
+              <div>
+                <label>Décision *</label>
+                <select name="decision" required>
+                  <option value="vise_favorable">Visa favorable</option>
+                  <option value="vise_reserve">Visa avec réserve</option>
+                  <option value="rejete">Rejet</option>
+                </select>
+              </div>
+            </div>
+            <div id="visaInfo" class="eb-info" style="display:none">
+              <h6><i class="fas fa-info-circle me-1"></i>Détails de l'EB</h6>
+              <div class="info-grid" id="visaInfoGrid"></div>
+            </div>
+            <div class="sf-grid">
+              <div class="full"><label>Motif / observations *</label><textarea name="motif" required placeholder="Justification du visa, réserves éventuelles…"></textarea></div>
+            </div>
+            <div class="actions">
+              <a href="/pages/accueil/index.html" class="btn-sf ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sf primary"><i class="fas fa-stamp"></i>Apposer le visa SAF</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── TDR ──────────────────────────────────────────────────────── -->
+        <div class="panel" id="panel-tdr">
+          <div class="panel-head"><h6><i class="fas fa-file-alt"></i>Rédiger des Termes de Référence (TDR)</h6><span class="pa-sub">Cahier des charges pour une prestation / mission</span></div>
+          <form class="sf-form" id="tdrForm" onsubmit="event.preventDefault();submitTdr()">
+            <div class="sf-grid">
+              <div class="full"><label>Intitulé du marché / mission *</label><input type="text" name="intitule" required placeholder="Ex: Fourniture de matériel informatique 2026"></div>
+              <div><label>Référence dossier</label><input type="text" name="dossier_ref" placeholder="DOS-2026-…"></div>
+              <div><label>Date *</label><input type="date" name="date_tdr" required></div>
+              <div><label>Budget estimé (FCFA)</label><input type="number" name="budget" min="0" step="1"></div>
+              <div class="full"><label>Contexte *</label><textarea name="contexte" required rows="3" placeholder="Description du contexte général du besoin"></textarea></div>
+              <div class="full"><label>Objectifs *</label><textarea name="objectifs" required rows="2" placeholder="Objectifs précis et mesurables"></textarea></div>
+              <div class="full"><label>Résultats attendus / livrables *</label><textarea name="livrables" required rows="2" placeholder="Liste des livrables et délais"></textarea></div>
+              <div><label>Date de démarrage</label><input type="date" name="date_debut"></div>
+              <div><label>Durée (jours)</label><input type="number" name="duree" min="1" step="1"></div>
+              <div><label>Méthode de sélection</label><select name="methode">
+                <option>Demande de cotation (3 fournisseurs min.)</option>
+                <option>Appel d'offres ouvert</option>
+                <option>Appel d'offres restreint</option>
+                <option>Gré à gré justifié</option>
+              </select></div>
+              <div class="full"><label>Profils / qualifications requis</label><textarea name="profils" rows="2"></textarea></div>
+              <div class="full"><label>Critères d'évaluation</label><textarea name="criteres" rows="2" placeholder="Technique 60%, financier 40%, etc."></textarea></div>
+            </div>
+            <div class="actions">
+              <a href="/pages/accueil/index.html" class="btn-sf ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sf primary"><i class="fas fa-save"></i>Enregistrer les TDR</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── TCP ──────────────────────────────────────────────────────── -->
+        <div class="panel" id="panel-tcp">
+          <div class="panel-head"><h6><i class="fas fa-balance-scale"></i>Tableau Comparatif des Prix (TCP)</h6><span class="pa-sub">Analyse comparative des offres fournisseurs</span></div>
+          <form class="sf-form" id="tcpForm" onsubmit="event.preventDefault();submitTcp()">
+            <div class="sf-grid">
+              <div class="full"><label>Objet du marché *</label><input type="text" name="objet" required></div>
+              <div><label>Dossier référence</label><input type="text" name="dossier_ref" placeholder="DOS-2026-…"></div>
+              <div><label>Date du TCP *</label><input type="date" name="date_tcp" required></div>
+              <div><label>Nb fournisseurs consultés</label><input type="number" id="tcpNbF" min="2" max="10" value="3" onchange="renderTcpFournisseurs()"></div>
+            </div>
+            <label style="margin-top:8px">Offres reçues</label>
+            <table class="lig-tbl"><thead><tr>
+              <th>#</th><th>Fournisseur</th><th>Prix TTC (FCFA)</th><th>Délai livraison</th><th>Qualité technique /20</th><th>Score final /100</th>
+            </tr></thead><tbody id="tcpBody"></tbody></table>
+            <div class="sf-grid" style="margin-top:14px">
+              <div class="full"><label>Fournisseur retenu *</label><input type="text" name="retenu" id="tcpRetenu" required placeholder="Sera repris dans le BC/contrat"></div>
+              <div class="full"><label>Justification du choix *</label><textarea name="justification" required rows="3" placeholder="Pourquoi ce fournisseur (rapport qualité-prix, délai, fiabilité)"></textarea></div>
+            </div>
+            <div class="actions">
+              <a href="/pages/accueil/index.html" class="btn-sf ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sf primary"><i class="fas fa-trophy"></i>Valider le TCP</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── BC ───────────────────────────────────────────────────────── -->
+        <div class="panel" id="panel-bc">
+          <div class="panel-head"><h6><i class="fas fa-file-invoice"></i>Bon de Commande (BC)</h6><span class="pa-sub">Commande officielle au fournisseur retenu</span></div>
+          <form class="sf-form" id="bcForm" onsubmit="event.preventDefault();submitBc()">
+            <div class="sf-grid">
+              <div><label>N° BC *</label><input type="text" name="num_bc" placeholder="Auto-généré"></div>
+              <div><label>Date *</label><input type="date" name="date_bc" required></div>
+              <div><label>Dossier référence</label><input type="text" name="dossier_ref" placeholder="DOS-2026-…"></div>
+              <div class="full"><label>Fournisseur *</label><input type="text" name="fournisseur" required></div>
+              <div><label>Délai livraison</label><input type="text" name="delai" placeholder="15 jours, au plus tard le …"></div>
+              <div><label>Lieu de livraison</label><input type="text" name="lieu" placeholder="N'Djamena, magasin PSLSH"></div>
+              <div><label>Modalité paiement</label><select name="modalite">
+                <option>Virement bancaire à 30 jours</option><option>Comptant à la livraison</option>
+                <option>50% commande / 50% livraison</option><option>Selon échéancier</option>
+              </select></div>
+            </div>
+            <label style="margin-top:8px">Articles commandés</label>
+            <table class="lig-tbl"><thead><tr>
+              <th>#</th><th>Désignation</th><th>Qté</th><th>Unité</th><th>P.U. HT</th><th>Total HT</th><th></th>
+            </tr></thead><tbody id="bcBody"></tbody></table>
+            <button type="button" class="btn-sf ghost" onclick="addBcLig()" style="margin-top:8px"><i class="fas fa-plus"></i>Ajouter une ligne</button>
+            <div class="totals">
+              <span>Total HT : <span id="bcTotalHt" style="color:#0369a1">0</span> FCFA</span>
+              <span>TVA 18% : <span id="bcTva" style="color:#b45309">0</span></span>
+              <span>Total TTC : <span id="bcTotalTtc" style="color:#15803d">0</span></span>
+            </div>
+            <div class="actions">
+              <a href="/pages/accueil/index.html" class="btn-sf ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sf primary"><i class="fas fa-file-signature"></i>Émettre le BC</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── CONTRAT ──────────────────────────────────────────────────── -->
+        <div class="panel" id="panel-contrat">
+          <div class="panel-head"><h6><i class="fas fa-file-contract"></i>Contrat / Marché</h6><span class="pa-sub">Engagement contractuel formel</span></div>
+          <form class="sf-form" id="contratForm" onsubmit="event.preventDefault();submitContrat()">
+            <div class="sf-grid">
+              <div><label>N° de marché *</label><input type="text" name="num_marche" placeholder="M-2026-NNN"></div>
+              <div><label>Type *</label><select name="type" required>
+                <option>Marché de fournitures</option><option>Marché de services</option>
+                <option>Marché de travaux</option><option>Convention de partenariat</option>
+                <option>Contrat de prestation</option>
+              </select></div>
+              <div><label>Date signature *</label><input type="date" name="date_sign" required></div>
+              <div class="full"><label>Objet du marché *</label><input type="text" name="objet" required></div>
+              <div class="full"><label>Titulaire (entreprise / personne) *</label><input type="text" name="titulaire" required></div>
+              <div><label>Montant TTC *</label><input type="number" name="montant" required min="1" step="1"></div>
+              <div><label>Devise</label><select name="devise"><option>FCFA</option><option>EUR</option><option>USD</option></select></div>
+              <div><label>Durée</label><input type="text" name="duree" placeholder="6 mois renouvelable"></div>
+              <div><label>Date début exécution</label><input type="date" name="date_debut"></div>
+              <div><label>Date fin prévue</label><input type="date" name="date_fin"></div>
+              <div><label>Garantie</label><input type="text" name="garantie" placeholder="5% du montant pendant 1 an"></div>
+              <div class="full"><label>Conditions particulières</label><textarea name="conditions" rows="3"></textarea></div>
+              <div class="full"><label>Pénalités de retard</label><textarea name="penalites" rows="2"></textarea></div>
+            </div>
+            <div class="actions">
+              <a href="/pages/accueil/index.html" class="btn-sf ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sf primary"><i class="fas fa-file-contract"></i>Enregistrer le contrat</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── NOTIFICATION ─────────────────────────────────────────────── -->
+        <div class="panel" id="panel-notif">
+          <div class="panel-head"><h6><i class="fas fa-envelope-open-text"></i>Notification de contrat / attribution</h6><span class="pa-sub">Information officielle au fournisseur retenu ou non retenu</span></div>
+          <form class="sf-form" id="notifForm" onsubmit="event.preventDefault();submitNotif()">
+            <div class="sf-grid">
+              <div><label>Type de notification *</label><select name="type" required>
+                <option value="attribution">Notification d'attribution (titulaire)</option>
+                <option value="rejet">Notification de rejet</option>
+                <option value="execution">Notification d'exécution</option>
+                <option value="resiliation">Notification de résiliation</option>
+              </select></div>
+              <div><label>Date *</label><input type="date" name="date_notif" required></div>
+              <div><label>N° contrat / dossier</label><input type="text" name="ref_contrat"></div>
+              <div class="full"><label>Destinataire *</label><input type="text" name="destinataire" required placeholder="Nom du fournisseur / soumissionnaire"></div>
+              <div><label>Adresse / e-mail</label><input type="text" name="adresse"></div>
+              <div><label>Réf. votre offre</label><input type="text" name="ref_offre"></div>
+              <div class="full"><label>Objet *</label><input type="text" name="objet" required placeholder="Objet du marché"></div>
+              <div class="full"><label>Corps du message *</label><textarea name="message" required rows="5" placeholder="Texte de la notification (motivation, suites à donner, délais)…"></textarea></div>
+            </div>
+            <div class="actions">
+              <a href="/pages/accueil/index.html" class="btn-sf ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sf primary"><i class="fas fa-paper-plane"></i>Émettre la notification</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── PV RÉCEPTION ─────────────────────────────────────────────── -->
+        <div class="panel" id="panel-pv">
+          <div class="panel-head"><h6><i class="fas fa-clipboard-check"></i>PV de Réception</h6><span class="pa-sub">Procès-verbal de réception des fournitures / prestations</span></div>
+          <form class="sf-form" id="pvForm" onsubmit="event.preventDefault();submitPv()">
+            <div class="sf-grid">
+              <div><label>N° PV *</label><input type="text" name="num_pv"></div>
+              <div><label>Date réception *</label><input type="date" name="date_recep" required></div>
+              <div><label>Référence BC / Contrat *</label><input type="text" name="ref_bc" required></div>
+              <div class="full"><label>Fournisseur *</label><input type="text" name="fournisseur" required></div>
+              <div class="full"><label>Lieu de réception</label><input type="text" name="lieu" value="Magasin PSLSH N'Djamena"></div>
+              <div><label>Conformité *</label><select name="conformite" required>
+                <option value="conforme">✓ Conforme</option>
+                <option value="partielle">Partiellement conforme</option>
+                <option value="non_conforme">Non conforme</option>
+              </select></div>
+              <div><label>Quantité reçue / commandée</label><input type="text" name="qte_recu" placeholder="40/40, 38/40…"></div>
+              <div><label>État des biens</label><select name="etat">
+                <option>Bon état</option><option>Légers défauts (tolérés)</option><option>Défauts majeurs</option>
+              </select></div>
+              <div class="full"><label>Observations *</label><textarea name="observations" required rows="3"></textarea></div>
+              <div class="full"><label>Membres de la commission de réception</label><textarea name="membres" rows="2" placeholder="Noms, fonctions, signatures"></textarea></div>
+            </div>
+            <div class="actions">
+              <a href="/pages/accueil/index.html" class="btn-sf ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sf primary"><i class="fas fa-clipboard-check"></i>Émettre le PV</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── ATTESTATION SERVICE FAIT ─────────────────────────────────── -->
+        <div class="panel" id="panel-asf">
+          <div class="panel-head"><h6><i class="fas fa-certificate"></i>Attestation de Service Fait (ASF)</h6><span class="pa-sub">Certification qu'une prestation a été réalisée conformément</span></div>
+          <form class="sf-form" id="asfForm" onsubmit="event.preventDefault();submitAsf()">
+            <div class="sf-grid">
+              <div><label>N° ASF *</label><input type="text" name="num_asf"></div>
+              <div><label>Date *</label><input type="date" name="date_asf" required></div>
+              <div><label>Réf. BC / contrat *</label><input type="text" name="ref_bc" required></div>
+              <div class="full"><label>Prestataire *</label><input type="text" name="prestataire" required></div>
+              <div class="full"><label>Nature de la prestation *</label><input type="text" name="nature" required></div>
+              <div><label>Période d'exécution</label><input type="text" name="periode" placeholder="Du … au …"></div>
+              <div><label>Montant prestation (FCFA)</label><input type="number" name="montant" min="0" step="1"></div>
+              <div><label>Conformité *</label><select name="conformite" required>
+                <option value="conforme">✓ Conforme au cahier des charges</option>
+                <option value="reserve">Avec réserves</option>
+              </select></div>
+              <div class="full"><label>Détails de la prestation effectuée *</label><textarea name="details" required rows="3"></textarea></div>
+              <div class="full"><label>Réserves éventuelles</label><textarea name="reserves" rows="2"></textarea></div>
+            </div>
+            <div class="actions">
+              <a href="/pages/accueil/index.html" class="btn-sf ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sf primary"><i class="fas fa-certificate"></i>Délivrer l'attestation</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── OP ───────────────────────────────────────────────────────── -->
+        <div class="panel" id="panel-op">
+          <div class="panel-head"><h6><i class="fas fa-money-bill-wave"></i>Ordre de Paiement (OP)</h6><span class="pa-sub">Préparation OP par le SAF, signé ensuite par le Coordonnateur</span></div>
+          <form class="sf-form" id="opForm" onsubmit="event.preventDefault();submitOp()">
+            <div class="sf-grid">
+              <div><label>N° OP *</label><input type="text" name="num_op"></div>
+              <div><label>Date *</label><input type="date" name="date_op" required></div>
+              <div><label>Dossier référence</label><input type="text" name="dossier_ref"></div>
+              <div class="full"><label>Bénéficiaire *</label><input type="text" name="beneficiaire" required></div>
+              <div><label>Banque</label><input type="text" name="banque"></div>
+              <div><label>N° compte</label><input type="text" name="compte"></div>
+              <div><label>Montant (FCFA) *</label><input type="number" name="montant" required min="1" step="1"></div>
+              <div><label>Ligne budgétaire</label><input type="text" name="ligne_budgetaire"></div>
+              <div><label>Imputation comptable</label><input type="text" name="imputation" placeholder="6064, 6065…"></div>
+              <div class="full"><label>Objet du paiement *</label><textarea name="objet" required rows="2"></textarea></div>
+              <div class="full"><label>Pièces justificatives jointes</label><textarea name="pj" rows="2" placeholder="Liste : BC, ASF, facture, PV réception…"></textarea></div>
+            </div>
+            <div class="actions">
+              <a href="/pages/accueil/index.html" class="btn-sf ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sf primary"><i class="fas fa-money-bill-wave"></i>Émettre l'OP (vers Coordo)</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── NOTE DE SERVICE ──────────────────────────────────────────── -->
+        <div class="panel" id="panel-note">
+          <div class="panel-head"><h6><i class="fas fa-sticky-note"></i>Note de service interne</h6><span class="pa-sub">Communication administrative interne</span></div>
+          <form class="sf-form" id="noteForm" onsubmit="event.preventDefault();submitNote()">
+            <div class="sf-grid">
+              <div><label>N° note *</label><input type="text" name="num_note"></div>
+              <div><label>Date *</label><input type="date" name="date_note" required></div>
+              <div><label>Type</label><select name="type">
+                <option>Information générale</option><option>Décision administrative</option>
+                <option>Instruction de service</option><option>Rappel de procédure</option>
+                <option>Communiqué interne</option>
+              </select></div>
+              <div class="full"><label>Destinataires *</label><input type="text" name="destinataires" required placeholder="Tous services / Service X / Mme X, M. Y"></div>
+              <div class="full"><label>Objet *</label><input type="text" name="objet" required></div>
+              <div class="full"><label>Corps du message *</label><textarea name="message" required rows="6"></textarea></div>
+              <div class="full"><label>Signataire</label><input type="text" name="signataire" placeholder="Chef SAF"></div>
+            </div>
+            <div class="actions">
+              <a href="/pages/accueil/index.html" class="btn-sf ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sf primary"><i class="fas fa-paper-plane"></i>Diffuser la note</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/src/js/api.js"></script>
+<script src="/src/js/roles.js"></script>
+<script>
+const STORAGE = 'pslsh_saf_actes_v1';
+const fmt = n => Math.round(parseFloat(n||0)).toLocaleString('fr-FR');
+function getStore() { try { return JSON.parse(localStorage.getItem(STORAGE) || '{}'); } catch(_) { return {}; } }
+function push(key, obj) {
+  const s = getStore();
+  s[key] = s[key] || [];
+  const ref = obj.num_bc || obj.num_marche || obj.num_pv || obj.num_asf || obj.num_op || obj.num_note || ('SAF-' + key.toUpperCase() + '-' + Date.now().toString(36).slice(-5).toUpperCase());
+  const me = (window.SIGFIC && window.SIGFIC.getUser && window.SIGFIC.getUser()) || {};
+  s[key].unshift({ ...obj, _ref: ref, _ts: Date.now(), _by: me.email || 'admin' });
+  localStorage.setItem(STORAGE, JSON.stringify(s));
+  return ref;
+}
+function showAlert(type, msg) {
+  const a = document.getElementById('alert');
+  a.className = 'sf-alert visible ' + type;
+  a.innerHTML = msg;
+  a.scrollIntoView({behavior:'smooth', block:'start'});
+  if (type === 'ok') setTimeout(() => a.classList.remove('visible'), 6000);
+}
+function sw(name) {
+  document.querySelectorAll('.sf-tab').forEach(t => t.classList.toggle('active', t.dataset.panel === name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+}
+function _collect(formId) {
+  const fd = new FormData(document.getElementById(formId));
+  const o = {}; for (const [k,v] of fd.entries()) o[k] = v; return o;
+}
+
+/* ── Charger les EB pour visa ───────────────────────────────────────── */
+function loadEbs() {
+  let ebs = [];
+  try {
+    const raw = localStorage.getItem('pslsh_eb_all_v1');
+    if (raw) ebs = JSON.parse(raw) || [];
+  } catch(_) {}
+  const sel = document.getElementById('visaEb');
+  if (!ebs.length) { sel.innerHTML = '<option value="">— Aucune EB en stock —</option>'; return; }
+  sel.innerHTML = '<option value="">— Choisir une EB —</option>' +
+    ebs.filter(e => ['soumis','attente_visa_saf','saf'].includes(e.statut)).map(e => {
+      const obj = (e.lignes && e.lignes[0] && e.lignes[0].libelle) || e.motif || '';
+      return '<option value="' + e.id + '">' + e.id + ' · ' + obj.slice(0,55) + ' (' + (e.service || '?') + ')</option>';
+    }).join('');
+}
+
+function loadEbInfo() {
+  const id = document.getElementById('visaEb').value;
+  const box = document.getElementById('visaInfo');
+  if (!id) { box.style.display = 'none'; return; }
+  let eb = null;
+  try { eb = (JSON.parse(localStorage.getItem('pslsh_eb_all_v1') || '[]')).find(e => e.id === id); } catch(_){}
+  if (!eb) { box.style.display = 'none'; return; }
+  const lib = (eb.lignes && eb.lignes[0] && eb.lignes[0].libelle) || '';
+  let total = 0;
+  if (eb.lignes) total = eb.lignes.reduce((s,l)=>s+((parseFloat(l.quantite)||0)*(parseFloat(l.prix_unit)||0)),0);
+  document.getElementById('visaInfoGrid').innerHTML =
+    '<div><div class="lbl">Réf</div><div class="val">'+eb.id+'</div></div>' +
+    '<div><div class="lbl">Service</div><div class="val">'+(eb.service||'—')+'</div></div>' +
+    '<div><div class="lbl">Type SYSCOHADA</div><div class="val">'+(eb.sysco_code||'—')+'</div></div>' +
+    '<div><div class="lbl">Soumise le</div><div class="val">'+(eb.soumis||'—')+'</div></div>' +
+    '<div style="grid-column:span 2"><div class="lbl">Objet principal</div><div class="val" style="font-family:inherit">'+lib+'</div></div>' +
+    '<div><div class="lbl">Lignes</div><div class="val">'+(eb.lignes?eb.lignes.length:0)+'</div></div>' +
+    '<div><div class="lbl">Montant estimé</div><div class="val">'+fmt(total)+' FCFA</div></div>';
+  box.style.display = 'block';
+}
+
+/* ── TCP : fournisseurs dynamiques ─────────────────────────────────── */
+let _tcpRows = [];
+function renderTcpFournisseurs() {
+  const n = parseInt(document.getElementById('tcpNbF').value, 10) || 3;
+  while (_tcpRows.length < n) _tcpRows.push({ nom:'', prix:0, delai:'', qualite:0, score:0 });
+  while (_tcpRows.length > n) _tcpRows.pop();
+  document.getElementById('tcpBody').innerHTML = _tcpRows.map((r,i) => `<tr>
+    <td>${i+1}</td>
+    <td><input value="${r.nom||''}" oninput="_tcpRows[${i}].nom=this.value" placeholder="Nom fournisseur"></td>
+    <td><input type="number" value="${r.prix||''}" oninput="_tcpRows[${i}].prix=+this.value" placeholder="0"></td>
+    <td><input value="${r.delai||''}" oninput="_tcpRows[${i}].delai=this.value" placeholder="15j"></td>
+    <td><input type="number" min="0" max="20" value="${r.qualite||''}" oninput="_tcpRows[${i}].qualite=+this.value"></td>
+    <td><input type="number" min="0" max="100" value="${r.score||''}" oninput="_tcpRows[${i}].score=+this.value"></td>
+  </tr>`).join('');
+}
+renderTcpFournisseurs();
+
+/* ── BC : lignes dynamiques ─────────────────────────────────────────── */
+let _bcLig = [{ design:'', qte:1, unite:'pièce', pu:0 }];
+function renderBcBody() {
+  document.getElementById('bcBody').innerHTML = _bcLig.map((l,i) => `<tr>
+    <td>${i+1}</td>
+    <td><input value="${l.design||''}" oninput="updBc(${i},'design',this.value)" placeholder="Désignation article"></td>
+    <td><input type="number" min="0" step="0.01" value="${l.qte||''}" oninput="updBc(${i},'qte',+this.value)" style="width:80px"></td>
+    <td><input value="${l.unite||''}" oninput="updBc(${i},'unite',this.value)" style="width:90px" placeholder="pièce"></td>
+    <td><input type="number" min="0" step="1" value="${l.pu||''}" oninput="updBc(${i},'pu',+this.value)" style="width:110px"></td>
+    <td style="text-align:right;font-family:monospace;font-weight:700">${fmt((l.qte||0)*(l.pu||0))}</td>
+    <td><button type="button" class="btn-rm" onclick="rmBc(${i})">×</button></td>
+  </tr>`).join('');
+  const totHt = _bcLig.reduce((s,l)=>s+((l.qte||0)*(l.pu||0)),0);
+  const tva = totHt * 0.18;
+  document.getElementById('bcTotalHt').textContent = fmt(totHt);
+  document.getElementById('bcTva').textContent = fmt(tva);
+  document.getElementById('bcTotalTtc').textContent = fmt(totHt + tva);
+}
+function addBcLig() { _bcLig.push({ design:'', qte:1, unite:'pièce', pu:0 }); renderBcBody(); }
+function rmBc(i) { if (_bcLig.length > 1) _bcLig.splice(i,1); renderBcBody(); }
+function updBc(i, k, v) { _bcLig[i][k] = v; renderBcBody(); }
+renderBcBody();
+
+/* ── Submissions ────────────────────────────────────────────────────── */
+function submitVisa() {
+  const o = _collect('visaForm'); o.eb_ref = document.getElementById('visaEb').value;
+  if (!o.eb_ref) { showAlert('err','Veuillez choisir une EB.'); return; }
+  const ref = push('visa_eb', o);
+  // Mettre à jour le statut de l'EB localement
+  try {
+    const ebs = JSON.parse(localStorage.getItem('pslsh_eb_all_v1') || '[]');
+    const eb = ebs.find(e => e.id === o.eb_ref);
+    if (eb) {
+      eb.statut = o.decision === 'rejete' ? 'rejete' : 'compta';
+      eb.visa_saf = { decision: o.decision, motif: o.motif, date: new Date().toLocaleDateString('fr-FR') };
+      localStorage.setItem('pslsh_eb_all_v1', JSON.stringify(ebs));
+    }
+  } catch(_) {}
+  showAlert('ok','✓ Visa SAF sur <strong>'+o.eb_ref+'</strong> enregistré ('+o.decision+'). Référence : '+ref);
+  document.getElementById('visaForm').reset();
+  document.getElementById('visaInfo').style.display = 'none';
+}
+function submitTdr() {
+  const o = _collect('tdrForm'); const ref = push('tdr', o);
+  showAlert('ok','✓ TDR <strong>'+ref+'</strong> enregistrés ('+o.intitule+').');
+  document.getElementById('tdrForm').reset();
+}
+function submitTcp() {
+  const o = _collect('tcpForm'); o.fournisseurs = _tcpRows.filter(r => r.nom);
+  if (o.fournisseurs.length < 2) { showAlert('err','Au moins 2 fournisseurs requis.'); return; }
+  const ref = push('tcp', o);
+  showAlert('ok','✓ TCP <strong>'+ref+'</strong> validé ('+o.fournisseurs.length+' fournisseurs, retenu: '+o.retenu+').');
+  document.getElementById('tcpForm').reset(); _tcpRows = []; renderTcpFournisseurs();
+}
+function submitBc() {
+  const o = _collect('bcForm'); o.articles = _bcLig.filter(l => l.design);
+  if (!o.articles.length) { showAlert('err','Au moins un article requis.'); return; }
+  o.total_ht = o.articles.reduce((s,l)=>s+((l.qte||0)*(l.pu||0)),0);
+  o.total_ttc = o.total_ht * 1.18;
+  const ref = push('bc', o);
+  showAlert('ok','✓ BC <strong>'+ref+'</strong> émis ('+o.articles.length+' lignes, '+fmt(o.total_ttc)+' FCFA TTC).');
+  document.getElementById('bcForm').reset(); _bcLig = [{ design:'', qte:1, unite:'pièce', pu:0 }]; renderBcBody();
+}
+function submitContrat() {
+  const o = _collect('contratForm'); const ref = push('contrat', o);
+  showAlert('ok','✓ Contrat <strong>'+ref+'</strong> enregistré ('+o.titulaire+', '+fmt(o.montant)+' '+o.devise+').');
+  document.getElementById('contratForm').reset();
+}
+function submitNotif() {
+  const o = _collect('notifForm'); const ref = push('notification', o);
+  showAlert('ok','✓ Notification <strong>'+ref+'</strong> émise vers '+o.destinataire+'.');
+  document.getElementById('notifForm').reset();
+}
+function submitPv() {
+  const o = _collect('pvForm'); const ref = push('pv_reception', o);
+  showAlert('ok','✓ PV de réception <strong>'+ref+'</strong> émis ('+o.conformite+').');
+  document.getElementById('pvForm').reset();
+}
+function submitAsf() {
+  const o = _collect('asfForm'); const ref = push('asf', o);
+  showAlert('ok','✓ ASF <strong>'+ref+'</strong> délivré à '+o.prestataire+'.');
+  document.getElementById('asfForm').reset();
+}
+function submitOp() {
+  const o = _collect('opForm'); const ref = push('op', o);
+  showAlert('ok','✓ OP <strong>'+ref+'</strong> émis ('+fmt(o.montant)+' FCFA). Transmis au Coordonnateur.');
+  document.getElementById('opForm').reset();
+}
+function submitNote() {
+  const o = _collect('noteForm'); const ref = push('note_service', o);
+  showAlert('ok','✓ Note de service <strong>'+ref+'</strong> diffusée.');
+  document.getElementById('noteForm').reset();
+}
+
+loadEbs();
+const tab = new URLSearchParams(location.search).get('tab');
+if (tab && ['visa','tdr','tcp','bc','contrat','notif','pv','asf','op','note'].includes(tab)) sw(tab);
+</script>
+</body></html>
