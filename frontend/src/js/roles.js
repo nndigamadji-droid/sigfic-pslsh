@@ -31,7 +31,6 @@
     if (p.indexOf('/archivage') !== -1) return 'Chargement de l\u2019archivage\u2026';
     if (p.indexOf('/reporting') !== -1) return 'Chargement du reporting\u2026';
     if (p.indexOf('/admin') !== -1) return 'Chargement du module administration\u2026';
-    if (p.indexOf('/manuel') !== -1) return 'Chargement du manuel des proc\u00e9dures\u2026';
     return 'Chargement en cours\u2026';
   }
 
@@ -371,28 +370,6 @@
           { href: '/pages/admin/notifications.html', icon: 'fa-bell', label: 'Notifications' },
         ],
       },
-      {
-        section: 'MANUEL DES PROC\u00c9DURES',
-        icon: 'fa-book-open',
-        items: [
-          { href: '/pages/manuel/index.html', icon: 'fa-book-open', label: 'Vue d\u2019ensemble' },
-          {
-            href: '/pages/manuel/index.html#part1',
-            icon: 'fa-users-cog',
-            label: 'Partie I : Proc\u00e9dures administratives',
-          },
-          {
-            href: '/pages/manuel/index.html#part2',
-            icon: 'fa-coins',
-            label: 'Partie II : Proc\u00e9dures financi\u00e8res',
-          },
-          {
-            href: '/pages/manuel/index.html#part3',
-            icon: 'fa-calculator',
-            label: 'Partie III : Comptabilit\u00e9 & March\u00e9s',
-          },
-        ],
-      },
     ],
 
     /* ════════════════════════════════════════════════════════════════
@@ -568,28 +545,6 @@
           },
         ],
       },
-      {
-        section: 'MANUEL DES PROC\u00c9DURES',
-        icon: 'fa-book-open',
-        items: [
-          { href: '/pages/manuel/index.html', icon: 'fa-book-open', label: 'Vue d\u2019ensemble' },
-          {
-            href: '/pages/manuel/index.html#part1',
-            icon: 'fa-users-cog',
-            label: 'Partie I : Proc\u00e9dures administratives',
-          },
-          {
-            href: '/pages/manuel/index.html#part2',
-            icon: 'fa-coins',
-            label: 'Partie II : Proc\u00e9dures financi\u00e8res',
-          },
-          {
-            href: '/pages/manuel/index.html#part3',
-            icon: 'fa-calculator',
-            label: 'Partie III : Comptabilit\u00e9 & March\u00e9s',
-          },
-        ],
-      },
     ],
 
     /* ════════════════════════════════════════════════════════════════
@@ -701,28 +656,6 @@
           { href: '/pages/reporting/index.html', icon: 'fa-file-alt', label: 'Mes rapports' },
         ],
       },
-      {
-        section: 'MANUEL DES PROC\u00c9DURES',
-        icon: 'fa-book-open',
-        items: [
-          { href: '/pages/manuel/index.html', icon: 'fa-book-open', label: 'Vue d\u2019ensemble' },
-          {
-            href: '/pages/manuel/index.html#part1',
-            icon: 'fa-users-cog',
-            label: 'Partie I : Proc\u00e9dures administratives',
-          },
-          {
-            href: '/pages/manuel/index.html#part2',
-            icon: 'fa-coins',
-            label: 'Partie II : Proc\u00e9dures financi\u00e8res',
-          },
-          {
-            href: '/pages/manuel/index.html#part3',
-            icon: 'fa-calculator',
-            label: 'Partie III : Comptabilit\u00e9 & March\u00e9s',
-          },
-        ],
-      },
     ],
 
     /* ════════════════════════════════════════════════════════════════
@@ -814,28 +747,6 @@
           },
         ],
       },
-      {
-        section: 'MANUEL DES PROC\u00c9DURES',
-        icon: 'fa-book-open',
-        items: [
-          { href: '/pages/manuel/index.html', icon: 'fa-book-open', label: 'Vue d\u2019ensemble' },
-          {
-            href: '/pages/manuel/index.html#part1',
-            icon: 'fa-users-cog',
-            label: 'Partie I : Proc\u00e9dures administratives',
-          },
-          {
-            href: '/pages/manuel/index.html#part2',
-            icon: 'fa-coins',
-            label: 'Partie II : Proc\u00e9dures financi\u00e8res',
-          },
-          {
-            href: '/pages/manuel/index.html#part3',
-            icon: 'fa-calculator',
-            label: 'Partie III : Comptabilit\u00e9 & March\u00e9s',
-          },
-        ],
-      },
     ],
 
     /* ════════════════════════════════════════════════════════════════
@@ -913,28 +824,6 @@
           { href: '/pages/reporting/index.html', icon: 'fa-chart-pie', label: 'Reporting & états' },
         ],
       },
-      {
-        section: 'MANUEL DES PROC\u00c9DURES',
-        icon: 'fa-book-open',
-        items: [
-          { href: '/pages/manuel/index.html', icon: 'fa-book-open', label: 'Vue d\u2019ensemble' },
-          {
-            href: '/pages/manuel/index.html#part1',
-            icon: 'fa-users-cog',
-            label: 'Partie I : Proc\u00e9dures administratives',
-          },
-          {
-            href: '/pages/manuel/index.html#part2',
-            icon: 'fa-coins',
-            label: 'Partie II : Proc\u00e9dures financi\u00e8res',
-          },
-          {
-            href: '/pages/manuel/index.html#part3',
-            icon: 'fa-calculator',
-            label: 'Partie III : Comptabilit\u00e9 & March\u00e9s',
-          },
-        ],
-      },
     ],
 
     /* ════════════════════════════════════════════════════════════════
@@ -969,28 +858,6 @@
         icon: 'fa-search',
         items: [
           { href: '/pages/archivage/index.html', icon: 'fa-archive', label: 'Mes documents' },
-        ],
-      },
-      {
-        section: 'MANUEL DES PROC\u00c9DURES',
-        icon: 'fa-book-open',
-        items: [
-          { href: '/pages/manuel/index.html', icon: 'fa-book-open', label: 'Vue d\u2019ensemble' },
-          {
-            href: '/pages/manuel/index.html#part1',
-            icon: 'fa-users-cog',
-            label: 'Partie I : Proc\u00e9dures administratives',
-          },
-          {
-            href: '/pages/manuel/index.html#part2',
-            icon: 'fa-coins',
-            label: 'Partie II : Proc\u00e9dures financi\u00e8res',
-          },
-          {
-            href: '/pages/manuel/index.html#part3',
-            icon: 'fa-calculator',
-            label: 'Partie III : Comptabilit\u00e9 & March\u00e9s',
-          },
         ],
       },
     ],
@@ -1099,9 +966,6 @@
     }
     if (pathname.indexOf('/admin') !== -1) {
       return 'ADMINISTRATION';
-    }
-    if (pathname.indexOf('/manuel') !== -1) {
-      return 'MANUEL DES PROC\u00c9DURES';
     }
     return null; // accueil ou page inconnue → pas de filtrage
   }
@@ -1361,20 +1225,6 @@
       icon: 'fa-cog',
       href: '/pages/admin/index.html',
       roles: ['administrateur'],
-    },
-    {
-      section: 'MANUEL DES PROC\u00c9DURES',
-      label: 'Manuel des Proc\u00e9dures',
-      icon: 'fa-book-open',
-      href: '/pages/manuel/index.html',
-      roles: [
-        'administrateur',
-        'coordination',
-        'chef_service',
-        'comite_pilotage',
-        'controleur',
-        'agent',
-      ],
     },
   ];
 
