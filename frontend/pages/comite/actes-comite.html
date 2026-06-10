@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGFIC-PSLSH | Actes du Comité de pilotage</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="../../src/css/main.css" rel="stylesheet">
+<style>
+html,body{{height:100%;overflow:hidden}}
+.app-layout,.main-content{{height:100vh;overflow:hidden}}
+.page-content{{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:0}}
+.h-top{{flex-shrink:0;padding:14px 28px 0;background:#fff;border-bottom:1px solid #e2e8f0}}
+.h-title{{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}}
+.h-title h5{{margin:0;font-size:1rem;font-weight:800;color:#1b2f52}}
+.h-title small{{font-size:.72rem;color:#64748b}}
+.h-tag{{font-size:.66rem;font-weight:800;padding:5px 12px;border-radius:6px;background:#ede9fe;color:#7c3aed;text-transform:uppercase;letter-spacing:.04em}}
+.h-tabs{{display:flex;gap:1px;padding-top:6px;border-bottom:2px solid #7c3aed;flex-wrap:wrap;overflow-x:auto}}
+.h-tab{{font-size:.74rem;font-weight:600;padding:9px 13px;cursor:pointer;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-bottom:none;border-radius:7px 7px 0 0;display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}}
+.h-tab:hover:not(.active){{background:#e2e8f0;color:#7c3aed}}
+.h-tab.active{{background:#7c3aed;color:#fff;border-color:#7c3aed;font-weight:700}}
+.h-body{{flex:1;overflow-y:auto;padding:18px 28px;background:#eef2f7}}
+.h-form{{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px 22px;max-width:1100px}}
+.h-form label{{font-size:.7rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px}}
+.h-form input,.h-form select,.h-form textarea{{width:100%;font-size:.82rem;padding:7px 11px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#1b2f52;font-family:inherit}}
+.h-form input:focus,.h-form select:focus,.h-form textarea:focus{{outline:none;border-color:#7c3aed;box-shadow:0 0 0 3px #ede9fe}}
+.h-form textarea{{min-height:80px;resize:vertical}}
+.h-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}}
+.h-grid .full{{grid-column:1/-1}}
+.actions{{display:flex;gap:10px;justify-content:flex-end;padding-top:14px;border-top:1px solid #f1f5f9;margin-top:8px}}
+.btn-h{{font-size:.78rem;font-weight:700;padding:9px 16px;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:1px solid;white-space:nowrap}}
+.btn-h.primary{{background:#7c3aed;color:#fff;border-color:#7c3aed}}
+.btn-h.ghost{{background:#fff;color:#1b3a6b;border-color:#cbd5e1}}
+.h-alert{{padding:10px 14px;border-radius:8px;font-size:.78rem;margin-bottom:12px;display:none}}
+.h-alert.ok{{background:#dcfce7;color:#166534;border:1px solid #86efac}}
+.h-alert.visible{{display:block}}
+.panel{{display:none}}
+.panel.active{{display:block}}
+.panel-head{{margin-bottom:14px}}
+.panel-head h6{{margin:0;font-size:.92rem;font-weight:800;color:#1b2f52;display:flex;align-items:center;gap:8px}}
+.panel-head h6 i{{color:#7c3aed}}
+.panel-head .pa-sub{{font-size:.7rem;color:#64748b;margin-top:3px}}
+</style>
+</head>
+<body>
+<div class="app-layout">
+<aside class="sidebar">
+<div class="sidebar-brand">
+<img src="../../assets/logo/logo-pslsh.png" alt="" class="brand-logo">
+<div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Comité</div></div>
+</div>
+<div id="sidebarServiceBadge"></div>
+<nav class="sidebar-nav" id="sidebarNav"></nav>
+<div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+</aside>
+<div class="main-content">
+<div class="topbar">
+<div class="topbar-left"><nav><ol class="breadcrumb mb-0">
+<li class="breadcrumb-item"><a href="/pages/accueil/index.html" class="text-muted">Accueil</a></li>
+<li class="breadcrumb-item active fw-semibold">Actes du Comité de pilotage</li>
+</ol></nav></div>
+<div class="topbar-center"><i class="fas fa-gavel me-1"></i>Gouvernance</div>
+<div class="topbar-right">
+<div class="topbar-notif"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+<div class="dropdown">
+<button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+<div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700" id="userAvatar">?</div>
+<span id="userName" style="font-size:.82rem;font-weight:600"></span>
+</button>
+<ul class="dropdown-menu dropdown-menu-end">
+<li><a class="dropdown-item" href="/pages/admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+<li><hr class="dropdown-divider"></li>
+<li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="page-content">
+<div class="h-top">
+<div class="h-title">
+<div>
+<h5><i class="fas fa-gavel me-2" style="color:#7c3aed"></i>Actes du Comité de pilotage</h5>
+<small>Décisions stratégiques, PV et validations du Comité de pilotage</small>
+</div>
+<span class="h-tag">Comité</span>
+</div>
+<div class="h-tabs"><button class="h-tab active" data-panel="pv" onclick="sw('pv')"><i class="fas fa-clipboard-list"></i>PV de comité</button><button class="h-tab" data-panel="ptca" onclick="sw('ptca')"><i class="fas fa-calendar-check"></i>Validation PTCA</button><button class="h-tab" data-panel="arbitrage" onclick="sw('arbitrage')"><i class="fas fa-balance-scale"></i>Arbitrage</button><button class="h-tab" data-panel="approbation" onclick="sw('approbation')"><i class="fas fa-stamp"></i>Approbation</button></div>
+</div>
+<div class="h-body">
+<div id="alert" class="h-alert"></div>
+<div class="panel" id="panel-pv">
+<div class="panel-head"><h6><i class="fas fa-stamp"></i>PV de Comité de pilotage</h6><div class="pa-sub">Procès-verbal d'une réunion du comité</div></div>
+<form class="h-form" id="pvForm" onsubmit="event.preventDefault();_submit('pvForm','pv_comite','PV')">
+<div class="h-grid"><div class=""><label>N° PV*</label><input type="text" name="num_pv" required placeholder=""></div><div class=""><label>Date réunion*</label><input type="date" name="date_reunion" required placeholder=""></div><div class=""><label>Lieu*</label><input type="text" name="lieu" required placeholder=""></div><div class="full"><label>Participants*</label><textarea name="participants" rows="3" required placeholder=""></textarea></div><div class="full"><label>Ordre du jour*</label><textarea name="ordre_du_jour" rows="3" required placeholder=""></textarea></div><div class="full"><label>Délibérations*</label><textarea name="deliberations" rows="3" required placeholder=""></textarea></div><div class="full"><label>Décisions prises*</label><textarea name="decisions" rows="3" required placeholder=""></textarea></div></div>
+<div class="actions"><a href="/pages/accueil/index.html" class="btn-h ghost"><i class="fas fa-times"></i>Annuler</a><button type="submit" class="btn-h primary"><i class="fas fa-paper-plane"></i>PV</button></div>
+</form></div>
+<div class="panel" id="panel-ptca">
+<div class="panel-head"><h6><i class="fas fa-stamp"></i>Validation PTCA / budget annuel</h6><div class="pa-sub">Approbation du plan triennal et du budget</div></div>
+<form class="h-form" id="ptcaForm" onsubmit="event.preventDefault();_submit('ptcaForm','validation_ptca','Validation PTCA')">
+<div class="h-grid"><div class=""><label>Référence plan*</label><input type="text" name="ref_plan" required placeholder=""></div><div class=""><label>Date validation*</label><input type="date" name="date" required placeholder=""></div><div class=""><label>Budget total FCFA</label><input type="number" name="budget_total" placeholder=""></div><div class=""><label>Décision</label><select name="decision"><option value="Approuvé">Approuvé</option><option value="Approuvé avec réserves">Approuvé avec réserves</option><option value="Renvoyé">Renvoyé</option></select></div><div class="full"><label>Observations</label><textarea name="observations" rows="3" placeholder=""></textarea></div></div>
+<div class="actions"><a href="/pages/accueil/index.html" class="btn-h ghost"><i class="fas fa-times"></i>Annuler</a><button type="submit" class="btn-h primary"><i class="fas fa-paper-plane"></i>Validation PTCA</button></div>
+</form></div>
+<div class="panel" id="panel-arbitrage">
+<div class="panel-head"><h6><i class="fas fa-stamp"></i>Arbitrage stratégique</h6><div class="pa-sub">Décision sur dossier stratégique</div></div>
+<form class="h-form" id="arbitrageForm" onsubmit="event.preventDefault();_submit('arbitrageForm','arbitrage_strategique','Arbitrage')">
+<div class="h-grid"><div class=""><label>Date*</label><input type="date" name="date" required placeholder=""></div><div class="full"><label>Sujet*</label><input type="text" name="sujet" required placeholder=""></div><div class="full"><label>Décision*</label><textarea name="decision" rows="3" required placeholder=""></textarea></div></div>
+<div class="actions"><a href="/pages/accueil/index.html" class="btn-h ghost"><i class="fas fa-times"></i>Annuler</a><button type="submit" class="btn-h primary"><i class="fas fa-paper-plane"></i>Arbitrage</button></div>
+</form></div>
+<div class="panel" id="panel-approbation">
+<div class="panel-head"><h6><i class="fas fa-stamp"></i>Approbation rapport bailleurs</h6><div class="pa-sub">Validation du rapport pour les PTF</div></div>
+<form class="h-form" id="approbationForm" onsubmit="event.preventDefault();_submit('approbationForm','approbation_rapport','Approbation')">
+<div class="h-grid"><div class=""><label>Référence rapport*</label><input type="text" name="ref_rapport" required placeholder=""></div><div class=""><label>Date*</label><input type="date" name="date" required placeholder=""></div><div class=""><label>Bailleur destinataire*</label><input type="text" name="bailleur" required placeholder=""></div><div class="full"><label>Observations</label><textarea name="observations" rows="3" placeholder=""></textarea></div></div>
+<div class="actions"><a href="/pages/accueil/index.html" class="btn-h ghost"><i class="fas fa-times"></i>Annuler</a><button type="submit" class="btn-h primary"><i class="fas fa-paper-plane"></i>Approbation</button></div>
+</form></div>
+</div>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/src/js/api.js"></script>
+<script src="/src/js/roles.js"></script>
+<script>
+const STORAGE = 'pslsh_comite_actes_v1';
+const fmt = n => Math.round(parseFloat(n||0)).toLocaleString('fr-FR');
+function getStore() {{ try {{ return JSON.parse(localStorage.getItem(STORAGE) || '{{}}'); }} catch(_) {{ return {{}}; }} }}
+function push(key, obj) {{
+  const s = getStore();
+  s[key] = s[key] || [];
+  const me = (window.SIGFIC && window.SIGFIC.getUser && window.SIGFIC.getUser()) || {{}};
+  const ref = ('REF-' + key.toUpperCase() + '-' + Date.now().toString(36).slice(-5).toUpperCase());
+  s[key].unshift({{ ...obj, _ref: ref, _ts: Date.now(), _by: me.email || 'admin' }});
+  localStorage.setItem(STORAGE, JSON.stringify(s));
+  return ref;
+}}
+function showAlert(type, msg) {{
+  const a = document.getElementById('alert');
+  a.className = 'h-alert visible ' + type;
+  a.innerHTML = msg;
+  if (type === 'ok') setTimeout(() => a.classList.remove('visible'), 6000);
+}}
+function sw(name) {{
+  document.querySelectorAll('.h-tab').forEach(t => t.classList.toggle('active', t.dataset.panel === name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+}}
+function _collect(formId) {{
+  const fd = new FormData(document.getElementById(formId));
+  const o = {{}}; for (const [k,v] of fd.entries()) o[k] = v; return o;
+}}
+function _submit(formId, key, label) {{
+  const o = _collect(formId);
+  const ref = push(key, o);
+  showAlert('ok','✓ ' + label + ' enregistré — référence <strong>' + ref + '</strong>.');
+  document.getElementById(formId).reset();
+}}
+const tab = new URLSearchParams(location.search).get('tab');
+if (tab) sw(tab);
+</script>
+</body></html>

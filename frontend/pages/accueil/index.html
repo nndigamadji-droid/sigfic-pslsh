@@ -815,44 +815,258 @@
           },
         ],
       },
-      controleur: {
-        title: 'Vos actes — Contrôleur',
-        sub:   'Audit et contrôle ex-post',
+      coordination_full: {
+        title: 'Vos actes engageants — Coordonnateur',
+        sub:   'Autorité d\'ordonnancement et de décision — 4 axes',
         cards: [
-          { href:'/pages/controle/audit.html',     icon:'fa-shield-alt',           label:'Émettre rapport d\'audit', desc:'Rapport d\'audit sur les opérations.',          color:'#b91c1c', light:'#fee2e2' },
-          { href:'/pages/controle/anomalies.html', icon:'fa-exclamation-triangle', label:'Signaler anomalie',        desc:'Non-conformité détectée à traiter.',            color:'#b45309', light:'#fef3c7' },
-        ],
-      },
-      agent: {
-        title: 'Vos actes — Agent',
-        sub:   'Saisie opérationnelle',
-        cards: [
-          { href:'/pages/dossiers/besoins.html?action=new', icon:'fa-edit',         label:'Saisir une EB',         desc:'Expression de besoin pour validation.',           color:'#1b3a6b', light:'#e8f0fb' },
-          { href:'/pages/dossiers/index.html',              icon:'fa-folder-open',  label:'Mes dossiers',          desc:'Suivi de vos dossiers d\'opération en cours.',     color:'#b45309', light:'#fef3c7' },
-        ],
-      },
-      administrateur: {
-        title: 'Vos actes — Administrateur système',
-        sub:   'Pilotage complet de la plateforme',
-        cards: [
-          { href:'/pages/admin/users.html',     icon:'fa-users-cog',  label:'Gérer les utilisateurs', desc:'Comptes, rôles, services, mots de passe.',     color:'#1b3a6b', light:'#e8f0fb' },
-          { href:'/pages/admin/parametres.html',icon:'fa-cog',        label:'Paramètres système',     desc:'Configuration, exercice, intégrations.',        color:'#7c3aed', light:'#ede9fe' },
-          { href:'/pages/controle/audit.html',  icon:'fa-history',    label:'Journal d\'audit',       desc:'Toutes les actions tracées du système.',        color:'#b45309', light:'#fef3c7' },
+          {
+            icon:'fa-file-signature', label:'Ordonnancer', desc:'OV, OP, mandats à signer pour exécution.',
+            color:'#b91c1c', light:'#fee2e2',
+            menu: [
+              { href:'/pages/finances/ov-list.html?statut=emis', icon:'fa-money-check-alt',  label:'Ordonnancer un OV (signature)' },
+              { href:'/pages/coordo/actes-coordo.html?tab=op',   icon:'fa-money-bill-wave',  label:'Signer un Ordre de Paiement' },
+              { href:'/pages/coordo/actes-coordo.html?tab=mandat', icon:'fa-stamp',          label:'Signer un mandat' },
+              { href:'/pages/paiement/index.html',                icon:'fa-check-double',   label:'Approuver une liquidation' },
+            ],
+          },
+          {
+            icon:'fa-gavel', label:'Décider', desc:'Virements de crédit, validations PTBA, arbitrages.',
+            color:'#7c3aed', light:'#ede9fe',
+            menu: [
+              { href:'/pages/coordo/actes-coordo.html?tab=virement',  icon:'fa-exchange-alt',  label:'Virement de crédit budgétaire' },
+              { href:'/pages/coordo/actes-coordo.html?tab=ptba',      icon:'fa-calendar-check', label:'Validation PTBA / PAO / PTCA' },
+              { href:'/pages/coordo/actes-coordo.html?tab=arbitrage', icon:'fa-balance-scale', label:'Arbitrage budgétaire' },
+            ],
+          },
+          {
+            icon:'fa-pen-fancy', label:'Émettre', desc:'Lettres officielles, notes de coordination, décisions.',
+            color:'#1b3a6b', light:'#e8f0fb',
+            menu: [
+              { href:'/pages/coordo/actes-coordo.html?tab=lettre',   icon:'fa-envelope-open-text', label:'Lettre officielle' },
+              { href:'/pages/coordo/actes-coordo.html?tab=note',     icon:'fa-sticky-note',        label:'Note de coordination' },
+              { href:'/pages/coordo/actes-coordo.html?tab=decision', icon:'fa-file-contract',      label:'Décision administrative' },
+            ],
+          },
+          {
+            icon:'fa-binoculars', label:'Suivre', desc:'Indicateurs gouvernance, dossiers, audit global.',
+            color:'#0369a1', light:'#e0f2fe',
+            menu: [
+              { href:'/pages/dashboard/index.html',          icon:'fa-chart-line',     label:'Tableau de bord exécutif' },
+              { href:'/pages/dossiers/index.html',           icon:'fa-folder-open',    label:'Dossiers d\'opération' },
+              { href:'/pages/finances/etats-financiers.html',icon:'fa-file-invoice-dollar', label:'États financiers' },
+              { href:'/pages/controle/audit.html',           icon:'fa-history',        label:'Journal d\'audit' },
+            ],
+          },
         ],
       },
       comite_pilotage: {
         title: 'Vos actes — Comité de pilotage',
-        sub:   'Décisions stratégiques et gouvernance',
+        sub:   'Décisions stratégiques et gouvernance — 3 axes',
         cards: [
-          { href:'/pages/planification/comite.html', icon:'fa-gavel',         label:'Émettre PV de comité', desc:'Procès-verbal de réunion du comité.',           color:'#7c3aed', light:'#ede9fe' },
-          { href:'/pages/dashboard/index.html',      icon:'fa-chart-line',    label:'Synthèse exécutive',   desc:'Vue consolidée pour décision stratégique.',     color:'#1b3a6b', light:'#e8f0fb' },
+          {
+            icon:'fa-gavel', label:'Décider', desc:'PV de comité, validation PTCA, arbitrages budgétaires.',
+            color:'#7c3aed', light:'#ede9fe',
+            menu: [
+              { href:'/pages/comite/actes-comite.html?tab=pv',         icon:'fa-clipboard-list', label:'PV de Comité de pilotage' },
+              { href:'/pages/comite/actes-comite.html?tab=ptca',       icon:'fa-calendar-check', label:'Validation PTCA / budget annuel' },
+              { href:'/pages/comite/actes-comite.html?tab=arbitrage',  icon:'fa-balance-scale',  label:'Arbitrage stratégique' },
+              { href:'/pages/comite/actes-comite.html?tab=approbation',icon:'fa-stamp',          label:'Approbation rapport bailleurs' },
+            ],
+          },
+          {
+            icon:'fa-chart-pie', label:'Analyser', desc:'Synthèse exécutive, rapports bailleurs.',
+            color:'#1b3a6b', light:'#e8f0fb',
+            menu: [
+              { href:'/pages/dashboard/index.html',           icon:'fa-chart-line', label:'Tableau de bord stratégique' },
+              { href:'/pages/finances/etats-financiers.html', icon:'fa-file-invoice-dollar', label:'États financiers consolidés' },
+              { href:'/pages/reporting/index.html',           icon:'fa-file-export',label:'Rapports bailleurs' },
+            ],
+          },
+          {
+            icon:'fa-binoculars', label:'Consulter', desc:'Vue d\'ensemble des 8 navigateurs.',
+            color:'#0e7490', light:'#cffafe',
+            menu: [
+              { href:'/pages/dossiers/index.html',  icon:'fa-folder-open', label:'Dossiers en cours' },
+              { href:'/pages/budget/synthese.html', icon:'fa-coins',       label:'Synthèse budgétaire' },
+              { href:'/pages/controle/index.html',  icon:'fa-shield-alt',  label:'Contrôle & conformité' },
+            ],
+          },
+        ],
+      },
+      controleur: {
+        title: 'Vos actes — Contrôleur',
+        sub:   'Audit et contrôle ex-post — 3 axes',
+        cards: [
+          {
+            icon:'fa-pen-fancy', label:'Émettre', desc:'Rapports d\'audit, recommandations, signalements.',
+            color:'#b91c1c', light:'#fee2e2',
+            menu: [
+              { href:'/pages/controle/actes-controle.html?tab=audit',          icon:'fa-shield-alt',           label:'Rapport d\'audit' },
+              { href:'/pages/controle/actes-controle.html?tab=recommandation', icon:'fa-lightbulb',            label:'Recommandation' },
+              { href:'/pages/controle/actes-controle.html?tab=anomalie',       icon:'fa-exclamation-triangle', label:'Signalement d\'anomalie' },
+              { href:'/pages/controle/actes-controle.html?tab=conformite',     icon:'fa-clipboard-check',      label:'Constat de conformité' },
+            ],
+          },
+          {
+            icon:'fa-search-plus', label:'Vérifier', desc:'Pointage, rapprochement, audit écritures.',
+            color:'#b45309', light:'#fef3c7',
+            menu: [
+              { href:'/pages/comptabilite/journaux.html',     icon:'fa-journal-whills', label:'Pointage des écritures' },
+              { href:'/pages/comptabilite/rapprochement.html',icon:'fa-sync-alt',       label:'Rapprochement bancaire' },
+              { href:'/pages/comptabilite/balance.html',      icon:'fa-balance-scale',  label:'Vérification de balance' },
+              { href:'/pages/dossiers/index.html',            icon:'fa-folder-open',    label:'Contrôle de dossiers' },
+            ],
+          },
+          {
+            icon:'fa-binoculars', label:'Consulter', desc:'Journaux, audit log, indicateurs.',
+            color:'#0e7490', light:'#cffafe',
+            menu: [
+              { href:'/pages/controle/audit.html',     icon:'fa-history',        label:'Journal d\'audit complet' },
+              { href:'/pages/controle/anomalies.html', icon:'fa-exclamation-triangle', label:'Anomalies signalées' },
+              { href:'/pages/budget/lignes.html',      icon:'fa-coins',          label:'Lignes budgétaires' },
+            ],
+          },
+        ],
+      },
+      agent: {
+        title: 'Vos actes — Agent',
+        sub:   'Saisie opérationnelle — 3 axes',
+        cards: [
+          {
+            icon:'fa-edit', label:'Saisir', desc:'Expressions de besoin, fiches stock, demandes.',
+            color:'#1b3a6b', light:'#e8f0fb',
+            menu: [
+              { href:'/pages/dossiers/besoins.html?action=new', icon:'fa-file-signature', label:'Expression de besoin (EB)' },
+              { href:'/pages/agent/actes-agent.html?tab=stock_in',   icon:'fa-arrow-down', label:'Fiche entrée de stock' },
+              { href:'/pages/agent/actes-agent.html?tab=stock_out',  icon:'fa-arrow-up',   label:'Fiche sortie de stock' },
+              { href:'/pages/agent/actes-agent.html?tab=demande',    icon:'fa-paper-plane',label:'Demande / requête' },
+            ],
+          },
+          {
+            icon:'fa-tasks', label:'Suivre', desc:'Mes dossiers, mes EB, mes pièces.',
+            color:'#b45309', light:'#fef3c7',
+            menu: [
+              { href:'/pages/dossiers/besoins.html?tab=mine',  icon:'fa-list-alt',    label:'Mes expressions de besoin' },
+              { href:'/pages/dossiers/index.html?filter=mine', icon:'fa-folder-open', label:'Mes dossiers en cours' },
+              { href:'/pages/dossiers/archives.html',          icon:'fa-archive',     label:'Mes dossiers archivés' },
+            ],
+          },
+          {
+            icon:'fa-binoculars', label:'Consulter', desc:'Vue d\'ensemble du système.',
+            color:'#0e7490', light:'#cffafe',
+            menu: [
+              { href:'/pages/dashboard/index.html', icon:'fa-chart-line', label:'Tableau de bord' },
+              { href:'/pages/budget/synthese.html', icon:'fa-coins',      label:'Budget — vue synthèse' },
+            ],
+          },
+        ],
+      },
+      administrateur: {
+        title: 'Vos actes — Administrateur système',
+        sub:   'Pilotage complet de la plateforme — 4 axes',
+        cards: [
+          {
+            icon:'fa-users-cog', label:'Gérer', desc:'Utilisateurs, rôles, services, permissions.',
+            color:'#1b3a6b', light:'#e8f0fb',
+            menu: [
+              { href:'/pages/admin/users.html',         icon:'fa-users',     label:'Utilisateurs' },
+              { href:'/pages/admin/roles.html',         icon:'fa-user-tag',  label:'Rôles & permissions' },
+              { href:'/pages/admin/services.html',      icon:'fa-sitemap',   label:'Services & unités' },
+              { href:'/pages/admin/agents.html',        icon:'fa-id-card',   label:'Agents PSLSH' },
+            ],
+          },
+          {
+            icon:'fa-sliders-h', label:'Paramétrer', desc:'Exercice, configuration, référentiels.',
+            color:'#7c3aed', light:'#ede9fe',
+            menu: [
+              { href:'/pages/admin/parametres.html',  icon:'fa-cog',         label:'Paramètres système' },
+              { href:'/pages/admin/exercices.html',   icon:'fa-calendar-alt',label:'Exercices budgétaires' },
+              { href:'/pages/budget/mapping.html',    icon:'fa-random',      label:'Mapping Budget ↔ OHADA' },
+              { href:'/pages/admin/notifications.html',icon:'fa-bell',       label:'Modèles de notifications' },
+            ],
+          },
+          {
+            icon:'fa-history', label:'Auditer', desc:'Journal d\'actions, sessions, sécurité.',
+            color:'#b45309', light:'#fef3c7',
+            menu: [
+              { href:'/pages/controle/audit.html',     icon:'fa-shield-alt',  label:'Journal d\'audit système' },
+              { href:'/pages/admin/sessions.html',     icon:'fa-user-clock',  label:'Sessions actives' },
+              { href:'/pages/admin/securite.html',     icon:'fa-lock',        label:'Sécurité & connexions' },
+            ],
+          },
+          {
+            icon:'fa-tools', label:'Maintenir', desc:'Sauvegarde, restauration, migrations.',
+            color:'#0e7490', light:'#cffafe',
+            menu: [
+              { href:'/pages/admin/sauvegarde.html',  icon:'fa-save',       label:'Sauvegarde des données' },
+              { href:'/pages/admin/restauration.html',icon:'fa-undo',       label:'Restauration' },
+              { href:'/pages/admin/migration.html',   icon:'fa-database',   label:'Migrations & schéma' },
+            ],
+          },
+        ],
+      },
+      chef_service_other: {
+        title: 'Vos actes engageants — Chef de Service',
+        sub:   'Pilotage et alimentation de votre service — 4 axes',
+        cards: [
+          {
+            icon:'fa-edit', label:'Saisir un acte', desc:'EB de mon service, activité du PTBA, demandes.',
+            color:'#1b3a6b', light:'#e8f0fb',
+            menu: [
+              { href:'/pages/dossiers/besoins.html?action=new',   icon:'fa-file-signature', label:'Expression de besoin (service)' },
+              { href:'/pages/services/actes-service.html?tab=activite', icon:'fa-calendar-plus', label:'Activité du PTBA' },
+              { href:'/pages/services/actes-service.html?tab=demande',  icon:'fa-paper-plane',   label:'Demande administrative' },
+              { href:'/pages/services/actes-service.html?tab=note',     icon:'fa-sticky-note',   label:'Note de service interne' },
+            ],
+          },
+          {
+            icon:'fa-clipboard-check', label:'Valider une procédure', desc:'EB de l\'équipe, demandes du service.',
+            color:'#15803d', light:'#dcfce7',
+            menu: [
+              { href:'/pages/services/actes-service.html?tab=valider_eb',     icon:'fa-check-double', label:'Valider EB de mon équipe' },
+              { href:'/pages/services/actes-service.html?tab=valider_demande',icon:'fa-thumbs-up',    label:'Approuver demandes service' },
+              { href:'/pages/services/actes-service.html?tab=valider_conge',  icon:'fa-calendar',     label:'Valider congés / absences' },
+            ],
+          },
+          {
+            icon:'fa-chart-bar', label:'Reporter', desc:'Rapport mensuel, bilan, statistiques.',
+            color:'#d97706', light:'#fef3c7',
+            menu: [
+              { href:'/pages/services/actes-service.html?tab=rapport_mensuel', icon:'fa-file-alt',  label:'Rapport mensuel d\'activité' },
+              { href:'/pages/services/actes-service.html?tab=bilan',           icon:'fa-chart-pie', label:'Bilan d\'activité' },
+              { href:'/pages/services/actes-service.html?tab=indicateurs',     icon:'fa-tachometer-alt', label:'Saisie des indicateurs' },
+            ],
+          },
+          {
+            icon:'fa-binoculars', label:'Suivre', desc:'Dossiers de mon service, indicateurs.',
+            color:'#7c3aed', light:'#ede9fe',
+            menu: [
+              { href:'/pages/dossiers/index.html?service=mine',     icon:'fa-folder-open',    label:'Dossiers de mon service' },
+              { href:'/pages/dashboard/index.html?filter=service', icon:'fa-chart-line',     label:'Tableau de bord service' },
+              { href:'/pages/dossiers/besoins.html?tab=service',   icon:'fa-list-alt',       label:'EB de mon équipe' },
+              { href:'/pages/stock/index.html',                    icon:'fa-boxes',          label:'Stock du service' },
+            ],
+          },
         ],
       },
     };
+
+    /* Aliasing : la clé exposée doit être 'coordination' (legacy) et 'chef_service' */
+    SKILLS.coordination = SKILLS.coordination_full;
     const skillsBox  = document.getElementById('skillsGrid');
     const skillsT    = document.getElementById('skillsTitle');
     const skillsS    = document.getElementById('skillsSub');
-    const spec       = SKILLS[role];
+
+    /* ── Détection fine du contexte pour le chef_service :
+       - service SAF → catalogue Chef SAF (10 actes regroupés en 4 axes)
+       - autres services → catalogue Chef de service générique (4 axes)
+    ─────────────────────────────────────────────────────────────── */
+    let resolvedKey = role;
+    if (role === 'chef_service') {
+      const svc = (user && (user.service_code || user.service)) || '';
+      resolvedKey = (svc.toUpperCase() === 'SAF') ? 'chef_service' : 'chef_service_other';
+    }
+    const spec       = SKILLS[resolvedKey];
     if (spec) {
       skillsT.textContent = spec.title;
       skillsS.textContent = spec.sub;

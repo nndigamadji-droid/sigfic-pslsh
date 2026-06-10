@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGFIC-PSLSH | Actes du Contrôleur</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="../../src/css/main.css" rel="stylesheet">
+<style>
+html,body{{height:100%;overflow:hidden}}
+.app-layout,.main-content{{height:100vh;overflow:hidden}}
+.page-content{{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:0}}
+.h-top{{flex-shrink:0;padding:14px 28px 0;background:#fff;border-bottom:1px solid #e2e8f0}}
+.h-title{{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}}
+.h-title h5{{margin:0;font-size:1rem;font-weight:800;color:#1b2f52}}
+.h-title small{{font-size:.72rem;color:#64748b}}
+.h-tag{{font-size:.66rem;font-weight:800;padding:5px 12px;border-radius:6px;background:#fee2e2;color:#b91c1c;text-transform:uppercase;letter-spacing:.04em}}
+.h-tabs{{display:flex;gap:1px;padding-top:6px;border-bottom:2px solid #b91c1c;flex-wrap:wrap;overflow-x:auto}}
+.h-tab{{font-size:.74rem;font-weight:600;padding:9px 13px;cursor:pointer;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-bottom:none;border-radius:7px 7px 0 0;display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}}
+.h-tab:hover:not(.active){{background:#e2e8f0;color:#b91c1c}}
+.h-tab.active{{background:#b91c1c;color:#fff;border-color:#b91c1c;font-weight:700}}
+.h-body{{flex:1;overflow-y:auto;padding:18px 28px;background:#eef2f7}}
+.h-form{{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px 22px;max-width:1100px}}
+.h-form label{{font-size:.7rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px}}
+.h-form input,.h-form select,.h-form textarea{{width:100%;font-size:.82rem;padding:7px 11px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#1b2f52;font-family:inherit}}
+.h-form input:focus,.h-form select:focus,.h-form textarea:focus{{outline:none;border-color:#b91c1c;box-shadow:0 0 0 3px #fee2e2}}
+.h-form textarea{{min-height:80px;resize:vertical}}
+.h-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}}
+.h-grid .full{{grid-column:1/-1}}
+.actions{{display:flex;gap:10px;justify-content:flex-end;padding-top:14px;border-top:1px solid #f1f5f9;margin-top:8px}}
+.btn-h{{font-size:.78rem;font-weight:700;padding:9px 16px;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:1px solid;white-space:nowrap}}
+.btn-h.primary{{background:#b91c1c;color:#fff;border-color:#b91c1c}}
+.btn-h.ghost{{background:#fff;color:#1b3a6b;border-color:#cbd5e1}}
+.h-alert{{padding:10px 14px;border-radius:8px;font-size:.78rem;margin-bottom:12px;display:none}}
+.h-alert.ok{{background:#dcfce7;color:#166534;border:1px solid #86efac}}
+.h-alert.visible{{display:block}}
+.panel{{display:none}}
+.panel.active{{display:block}}
+.panel-head{{margin-bottom:14px}}
+.panel-head h6{{margin:0;font-size:.92rem;font-weight:800;color:#1b2f52;display:flex;align-items:center;gap:8px}}
+.panel-head h6 i{{color:#b91c1c}}
+.panel-head .pa-sub{{font-size:.7rem;color:#64748b;margin-top:3px}}
+</style>
+</head>
+<body>
+<div class="app-layout">
+<aside class="sidebar">
+<div class="sidebar-brand">
+<img src="../../assets/logo/logo-pslsh.png" alt="" class="brand-logo">
+<div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Audit</div></div>
+</div>
+<div id="sidebarServiceBadge"></div>
+<nav class="sidebar-nav" id="sidebarNav"></nav>
+<div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+</aside>
+<div class="main-content">
+<div class="topbar">
+<div class="topbar-left"><nav><ol class="breadcrumb mb-0">
+<li class="breadcrumb-item"><a href="/pages/accueil/index.html" class="text-muted">Accueil</a></li>
+<li class="breadcrumb-item active fw-semibold">Actes du Contrôleur</li>
+</ol></nav></div>
+<div class="topbar-center"><i class="fas fa-shield-alt me-1"></i>Contrôle & audit</div>
+<div class="topbar-right">
+<div class="topbar-notif"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+<div class="dropdown">
+<button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+<div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700" id="userAvatar">?</div>
+<span id="userName" style="font-size:.82rem;font-weight:600"></span>
+</button>
+<ul class="dropdown-menu dropdown-menu-end">
+<li><a class="dropdown-item" href="/pages/admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+<li><hr class="dropdown-divider"></li>
+<li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="page-content">
+<div class="h-top">
+<div class="h-title">
+<div>
+<h5><i class="fas fa-shield-alt me-2" style="color:#b91c1c"></i>Actes du Contrôleur</h5>
+<small>Rapports d'audit, recommandations et signalements d'anomalies</small>
+</div>
+<span class="h-tag">Contrôleur</span>
+</div>
+<div class="h-tabs"><button class="h-tab active" data-panel="audit" onclick="sw('audit')"><i class="fas fa-shield-alt"></i>Rapport d'audit</button><button class="h-tab" data-panel="recommandation" onclick="sw('recommandation')"><i class="fas fa-lightbulb"></i>Recommandation</button><button class="h-tab" data-panel="anomalie" onclick="sw('anomalie')"><i class="fas fa-exclamation-triangle"></i>Anomalie</button><button class="h-tab" data-panel="conformite" onclick="sw('conformite')"><i class="fas fa-clipboard-check"></i>Conformité</button></div>
+</div>
+<div class="h-body">
+<div id="alert" class="h-alert"></div>
+<div class="panel" id="panel-audit">
+<div class="panel-head"><h6><i class="fas fa-stamp"></i>Rapport d'audit</h6><div class="pa-sub">Émettre un rapport d'audit sur les opérations</div></div>
+<form class="h-form" id="auditForm" onsubmit="event.preventDefault();_submit('auditForm','rapport_audit','Rapport audit')">
+<div class="h-grid"><div class=""><label>N° rapport*</label><input type="text" name="num_rapport" required placeholder=""></div><div class=""><label>Date*</label><input type="date" name="date" required placeholder=""></div><div class="full"><label>Périmètre audité*</label><input type="text" name="perimetre" required placeholder=""></div><div class="full"><label>Méthodologie</label><textarea name="methodologie" rows="3" placeholder=""></textarea></div><div class="full"><label>Constats*</label><textarea name="constats" rows="3" required placeholder=""></textarea></div><div class="full"><label>Recommandations*</label><textarea name="recommandations" rows="3" required placeholder=""></textarea></div></div>
+<div class="actions"><a href="/pages/accueil/index.html" class="btn-h ghost"><i class="fas fa-times"></i>Annuler</a><button type="submit" class="btn-h primary"><i class="fas fa-paper-plane"></i>Rapport audit</button></div>
+</form></div>
+<div class="panel" id="panel-recommandation">
+<div class="panel-head"><h6><i class="fas fa-stamp"></i>Recommandation</h6><div class="pa-sub">Suggestion d'amélioration</div></div>
+<form class="h-form" id="recommandationForm" onsubmit="event.preventDefault();_submit('recommandationForm','recommandation','Recommandation')">
+<div class="h-grid"><div class=""><label>N°*</label><input type="text" name="num" required placeholder=""></div><div class=""><label>Date*</label><input type="date" name="date" required placeholder=""></div><div class="full"><label>Destinataire*</label><input type="text" name="destinataire" required placeholder=""></div><div class="full"><label>Objet*</label><input type="text" name="objet" required placeholder=""></div><div class="full"><label>Recommandation*</label><textarea name="recommandation" rows="3" required placeholder=""></textarea></div><div class=""><label>Échéance suggérée</label><input type="date" name="echeance" placeholder=""></div></div>
+<div class="actions"><a href="/pages/accueil/index.html" class="btn-h ghost"><i class="fas fa-times"></i>Annuler</a><button type="submit" class="btn-h primary"><i class="fas fa-paper-plane"></i>Recommandation</button></div>
+</form></div>
+<div class="panel" id="panel-anomalie">
+<div class="panel-head"><h6><i class="fas fa-stamp"></i>Signalement d'anomalie</h6><div class="pa-sub">Non-conformité détectée</div></div>
+<form class="h-form" id="anomalieForm" onsubmit="event.preventDefault();_submit('anomalieForm','anomalie','Anomalie')">
+<div class="h-grid"><div class=""><label>Date détection*</label><input type="date" name="date" required placeholder=""></div><div class=""><label>Gravité</label><select name="gravite"><option value="Mineure">Mineure</option><option value="Modérée">Modérée</option><option value="Majeure">Majeure</option><option value="Critique">Critique</option></select></div><div class="full"><label>Périmètre concerné*</label><input type="text" name="perimetre" required placeholder=""></div><div class="full"><label>Description*</label><textarea name="description" rows="3" required placeholder=""></textarea></div><div class="full"><label>Actions correctives suggérées</label><textarea name="actions_correctives" rows="3" placeholder=""></textarea></div></div>
+<div class="actions"><a href="/pages/accueil/index.html" class="btn-h ghost"><i class="fas fa-times"></i>Annuler</a><button type="submit" class="btn-h primary"><i class="fas fa-paper-plane"></i>Anomalie</button></div>
+</form></div>
+<div class="panel" id="panel-conformite">
+<div class="panel-head"><h6><i class="fas fa-stamp"></i>Constat de conformité</h6><div class="pa-sub">Validation positive d'une vérification</div></div>
+<form class="h-form" id="conformiteForm" onsubmit="event.preventDefault();_submit('conformiteForm','conformite','Conformité')">
+<div class="h-grid"><div class=""><label>Date*</label><input type="date" name="date" required placeholder=""></div><div class="full"><label>Périmètre vérifié*</label><input type="text" name="perimetre" required placeholder=""></div><div class="full"><label>Observations*</label><textarea name="observations" rows="3" required placeholder=""></textarea></div></div>
+<div class="actions"><a href="/pages/accueil/index.html" class="btn-h ghost"><i class="fas fa-times"></i>Annuler</a><button type="submit" class="btn-h primary"><i class="fas fa-paper-plane"></i>Conformité</button></div>
+</form></div>
+</div>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/src/js/api.js"></script>
+<script src="/src/js/roles.js"></script>
+<script>
+const STORAGE = 'pslsh_controle_actes_v1';
+const fmt = n => Math.round(parseFloat(n||0)).toLocaleString('fr-FR');
+function getStore() {{ try {{ return JSON.parse(localStorage.getItem(STORAGE) || '{{}}'); }} catch(_) {{ return {{}}; }} }}
+function push(key, obj) {{
+  const s = getStore();
+  s[key] = s[key] || [];
+  const me = (window.SIGFIC && window.SIGFIC.getUser && window.SIGFIC.getUser()) || {{}};
+  const ref = ('REF-' + key.toUpperCase() + '-' + Date.now().toString(36).slice(-5).toUpperCase());
+  s[key].unshift({{ ...obj, _ref: ref, _ts: Date.now(), _by: me.email || 'admin' }});
+  localStorage.setItem(STORAGE, JSON.stringify(s));
+  return ref;
+}}
+function showAlert(type, msg) {{
+  const a = document.getElementById('alert');
+  a.className = 'h-alert visible ' + type;
+  a.innerHTML = msg;
+  if (type === 'ok') setTimeout(() => a.classList.remove('visible'), 6000);
+}}
+function sw(name) {{
+  document.querySelectorAll('.h-tab').forEach(t => t.classList.toggle('active', t.dataset.panel === name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+}}
+function _collect(formId) {{
+  const fd = new FormData(document.getElementById(formId));
+  const o = {{}}; for (const [k,v] of fd.entries()) o[k] = v; return o;
+}}
+function _submit(formId, key, label) {{
+  const o = _collect(formId);
+  const ref = push(key, o);
+  showAlert('ok','✓ ' + label + ' enregistré — référence <strong>' + ref + '</strong>.');
+  document.getElementById(formId).reset();
+}}
+const tab = new URLSearchParams(location.search).get('tab');
+if (tab) sw(tab);
+</script>
+</body></html>
