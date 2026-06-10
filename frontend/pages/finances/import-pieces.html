@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Importer des pièces</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    html,body{height:100%;overflow:hidden}
+    .app-layout,.main-content{height:100vh;overflow:hidden}
+    .page-content{flex:1;overflow-y:auto;padding:20px 28px;background:#eef2f7}
+
+    .ip-hero{background:#fff;border:1px solid #e2e8f0;border-left:4px solid #d97706;border-radius:10px;
+      padding:14px 18px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+    .ip-hero h5{margin:0;font-size:1rem;font-weight:800;color:#1b2f52}
+    .ip-hero small{font-size:.72rem;color:#64748b}
+    .ip-tag{font-size:.66rem;font-weight:800;padding:5px 12px;border-radius:6px;background:#fef3c7;color:#92400e;text-transform:uppercase;letter-spacing:.04em}
+
+    .ip-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+    .ip-stat{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:11px 14px}
+    .ip-stat-lbl{font-size:.62rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
+    .ip-stat-val{font-size:1.05rem;font-weight:800;color:#1b2f52;font-family:monospace;margin-top:2px}
+
+    .ip-cols{display:grid;grid-template-columns:5fr 7fr;gap:14px}
+    @media (max-width:1100px){.ip-cols{grid-template-columns:1fr}}
+
+    .ip-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px 22px}
+    .ip-card h6{margin:0 0 14px;font-size:.88rem;font-weight:800;color:#1b2f52;display:flex;align-items:center;gap:8px}
+    .ip-card h6 i{color:#d97706}
+
+    .ip-form label{font-size:.68rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px}
+    .ip-form input,.ip-form select,.ip-form textarea{width:100%;font-size:.82rem;padding:8px 12px;
+      border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#1b2f52;font-family:inherit}
+    .ip-form input:focus,.ip-form select:focus,.ip-form textarea:focus{outline:none;border-color:#d97706;box-shadow:0 0 0 3px #fef3c7}
+    .ip-form textarea{min-height:60px;resize:vertical}
+    .ip-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+    .ip-grid .full{grid-column:1/-1}
+
+    .file-drop{border:2px dashed #cbd5e1;border-radius:10px;padding:24px 16px;text-align:center;cursor:pointer;
+      background:#fafbfc;color:#64748b;font-size:.84rem;transition:all .15s;margin-bottom:14px}
+    .file-drop:hover{border-color:#d97706;background:#fffbeb;color:#92400e}
+    .file-drop.drag{border-color:#d97706;background:#fef3c7;border-style:solid}
+    .file-drop i{font-size:2rem;color:#d97706;display:block;margin-bottom:8px}
+    .file-drop input[type=file]{display:none}
+    .file-info{background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:10px 14px;display:none;margin-bottom:12px;font-size:.78rem;color:#166534}
+    .file-info.visible{display:flex;align-items:center;gap:10px;justify-content:space-between}
+    .file-info button{background:none;border:none;color:#b91c1c;cursor:pointer;font-size:1rem}
+
+    .actions{display:flex;gap:10px;justify-content:flex-end;padding-top:14px;border-top:1px solid #f1f5f9;margin-top:8px}
+    .btn-act{font-size:.78rem;font-weight:700;padding:9px 16px;border-radius:7px;cursor:pointer;
+      display:inline-flex;align-items:center;gap:6px;border:1px solid;white-space:nowrap}
+    .btn-act.primary{background:#d97706;color:#fff;border-color:#d97706}
+    .btn-act.primary:hover{filter:brightness(.92)}
+    .btn-act.ghost{background:#fff;color:#1b3a6b;border-color:#cbd5e1}
+
+    .alert{padding:10px 14px;border-radius:8px;font-size:.78rem;margin-bottom:12px;display:none}
+    .alert.ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
+    .alert.err{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+    .alert.visible{display:block}
+
+    .imports-tbl{width:100%;border-collapse:collapse;font-size:.76rem}
+    .imports-tbl th{background:#f1f5f9;color:#475569;text-align:left;padding:9px 12px;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;font-weight:700;position:sticky;top:0}
+    .imports-tbl td{padding:8px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+    .imports-tbl tr:hover td{background:#fafbfc}
+    .imports-tbl .ref{font-family:monospace;font-weight:700;color:#1d4ed8;font-size:.72rem}
+    .imports-tbl .pill{padding:2px 8px;border-radius:14px;font-size:.62rem;font-weight:700;display:inline-block}
+    .pill-proforma{background:#dbeafe;color:#1d4ed8}
+    .pill-facture{background:#dcfce7;color:#15803d}
+    .pill-bl{background:#fef3c7;color:#92400e}
+    .pill-pv{background:#ede9fe;color:#7c3aed}
+    .pill-rapport{background:#cffafe;color:#0e7490}
+    .pill-conv{background:#fce7f3;color:#9d174d}
+    .pill-relevé{background:#f1f5f9;color:#475569}
+    .pill-autre{background:#f1f5f9;color:#64748b}
+
+    .empty{text-align:center;padding:40px 20px;color:#94a3b8;background:#fafbfc;border:1px dashed #e2e8f0;border-radius:10px}
+    .empty i{display:block;font-size:2rem;margin-bottom:10px;opacity:.5}
+
+    .btn-row{background:none;border:none;color:#1b3a6b;cursor:pointer;font-size:.85rem;padding:2px 6px}
+    .btn-row:hover{color:#15803d}
+    .btn-row.del:hover{color:#b91c1c}
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="" class="brand-logo">
+      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Import pièces</div></div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><nav><ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/pages/accueil/index.html" class="text-muted">Accueil</a></li>
+        <li class="breadcrumb-item"><a href="/pages/finances/index.html" class="text-muted">Finances</a></li>
+        <li class="breadcrumb-item active fw-semibold">Importer des pièces</li>
+      </ol></nav></div>
+      <div class="topbar-center"><i class="fas fa-file-upload me-1"></i>Alimentation des dossiers d'opération en pièces externes</div>
+      <div class="topbar-right">
+        <div class="topbar-notif"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700" id="userAvatar">?</div>
+            <span id="userName" style="font-size:.82rem;font-weight:600"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/pages/admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="ip-hero">
+        <div>
+          <h5><i class="fas fa-file-upload me-2" style="color:#d97706"></i>Importer des pièces dans un dossier d'opération</h5>
+          <small>Factures proforma & définitives, bons de livraison, PV de réception, rapports d'activités, rapports financiers, conventions fournisseur, relevés, etc. Ces pièces alimentent automatiquement le dossier d'opération de référence.</small>
+        </div>
+        <span class="ip-tag">Pièces externes — Comptable</span>
+      </div>
+
+      <div class="ip-stats">
+        <div class="ip-stat"><div class="ip-stat-lbl">Pièces importées</div><div class="ip-stat-val" id="kTotal">—</div></div>
+        <div class="ip-stat"><div class="ip-stat-lbl">Dossiers alimentés</div><div class="ip-stat-val" id="kDossiers">—</div></div>
+        <div class="ip-stat"><div class="ip-stat-lbl">Factures</div><div class="ip-stat-val" id="kFact" style="color:#15803d">—</div></div>
+        <div class="ip-stat"><div class="ip-stat-lbl">Rapports</div><div class="ip-stat-val" id="kRap" style="color:#0e7490">—</div></div>
+      </div>
+
+      <div id="alert" class="alert"></div>
+
+      <div class="ip-cols">
+
+        <!-- ═══ FORMULAIRE D'IMPORT ═══ -->
+        <div class="ip-card">
+          <h6><i class="fas fa-upload"></i>Nouveau fichier à importer</h6>
+          <form class="ip-form" id="ipForm" onsubmit="event.preventDefault();submitImport()">
+
+            <div class="ip-grid">
+              <div class="full">
+                <label>Type de pièce *</label>
+                <select name="type" required>
+                  <option value="">— Choisir —</option>
+                  <option value="proforma">Facture proforma</option>
+                  <option value="facture">Facture définitive</option>
+                  <option value="bl">Bon de livraison</option>
+                  <option value="pv">PV de réception</option>
+                  <option value="rapport_activite">Rapport d'activité</option>
+                  <option value="rapport_financier">Rapport financier</option>
+                  <option value="convention">Convention / contrat fournisseur</option>
+                  <option value="releve">Relevé bancaire</option>
+                  <option value="recu">Reçu de paiement externe</option>
+                  <option value="memorandum">Mémorandum technique</option>
+                  <option value="autre">Autre justificatif</option>
+                </select>
+              </div>
+
+              <div class="full">
+                <label>Dossier d'opération de rattachement *</label>
+                <select name="dossier_ref" id="dossierSel" required>
+                  <option value="">— Choisir un dossier —</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Référence de la pièce</label>
+                <input type="text" name="reference" placeholder="N° facture, BL, etc.">
+              </div>
+              <div>
+                <label>Date de la pièce</label>
+                <input type="date" name="date_piece">
+              </div>
+
+              <div>
+                <label>Fournisseur / émetteur</label>
+                <input type="text" name="emetteur" placeholder="Raison sociale">
+              </div>
+              <div>
+                <label>Montant (FCFA, optionnel)</label>
+                <input type="number" name="montant" min="0" step="1">
+              </div>
+
+              <div class="full">
+                <label>Description / commentaire</label>
+                <textarea name="description" placeholder="Période couverte, contenu, observations…"></textarea>
+              </div>
+            </div>
+
+            <label for="fileInput" class="file-drop" id="fileDrop">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <strong>Cliquez ou déposez un fichier</strong><br>
+              <small>PDF, image, Excel, Word — max 5 Mo</small>
+              <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.docx,.doc" onchange="onFileSelect(this)">
+            </label>
+
+            <div class="file-info" id="fileInfo">
+              <span><i class="fas fa-file-alt me-2"></i><strong id="fName">—</strong> <small id="fSize" style="color:#64748b"></small></span>
+              <button type="button" onclick="clearFile()" title="Retirer">✕</button>
+            </div>
+
+            <div class="actions">
+              <a href="/pages/accueil/index.html" class="btn-act ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-act primary"><i class="fas fa-paper-plane"></i>Importer dans le dossier</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ═══ HISTORIQUE DES IMPORTS ═══ -->
+        <div class="ip-card">
+          <h6 style="justify-content:space-between">
+            <span><i class="fas fa-history"></i>Pièces déjà importées</span>
+            <input type="text" id="searchInput" oninput="renderList()" placeholder="🔍 rechercher…"
+              style="font-size:.74rem;padding:6px 11px;border:1px solid #cbd5e1;border-radius:7px;width:200px">
+          </h6>
+          <div id="importsList" style="max-height:62vh;overflow-y:auto"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/src/js/api.js"></script>
+<script src="/src/js/roles.js"></script>
+<script>
+const STORAGE = 'pslsh_imports_v1';
+const fmt = n => Math.round(parseFloat(n)||0).toLocaleString('fr-FR');
+const TYPE_META = {
+  proforma:          {label:'Proforma',         cls:'pill-proforma'},
+  facture:           {label:'Facture',          cls:'pill-facture'},
+  bl:                {label:'Bon livraison',    cls:'pill-bl'},
+  pv:                {label:'PV réception',     cls:'pill-pv'},
+  rapport_activite:  {label:'Rapport activité', cls:'pill-rapport'},
+  rapport_financier: {label:'Rapport financ.',  cls:'pill-rapport'},
+  convention:        {label:'Convention',       cls:'pill-conv'},
+  releve:            {label:'Relevé bancaire',  cls:'pill-relevé'},
+  recu:              {label:'Reçu',             cls:'pill-recu'},
+  memorandum:        {label:'Mémorandum',       cls:'pill-autre'},
+  autre:             {label:'Autre',            cls:'pill-autre'},
+};
+
+let _imports = [];
+let _file = null;  // { name, size, dataUrl }
+
+function showAlert(type, msg) {
+  const a = document.getElementById('alert');
+  a.className = 'alert visible ' + type;
+  a.innerHTML = msg;
+  if (type === 'ok') setTimeout(() => a.classList.remove('visible'), 6000);
+}
+
+function loadDossiers() {
+  let dossiers = [];
+  try {
+    const raw = localStorage.getItem('pslsh_dossiers_v1');
+    if (raw) {
+      const p = JSON.parse(raw);
+      dossiers = (p && p.data) || (Array.isArray(p) ? p : []);
+    }
+  } catch (_) {}
+  const sel = document.getElementById('dossierSel');
+  if (!dossiers.length) {
+    sel.innerHTML = '<option value="">— Aucun dossier en local —</option>';
+    return;
+  }
+  sel.innerHTML = '<option value="">— Choisir un dossier —</option>' +
+    dossiers.map(d => '<option value="' + d.id + '">' + d.id + ' · ' + (d.objet || '').slice(0, 60) + ' (' + (d.service || '?') + ')</option>').join('');
+}
+
+function loadImports() {
+  try { _imports = JSON.parse(localStorage.getItem(STORAGE) || '[]'); }
+  catch (_) { _imports = []; }
+  updateStats();
+  renderList();
+}
+function saveImports() { localStorage.setItem(STORAGE, JSON.stringify(_imports)); }
+
+function updateStats() {
+  document.getElementById('kTotal').textContent    = _imports.length;
+  document.getElementById('kDossiers').textContent = new Set(_imports.map(i => i.dossier_ref)).size;
+  document.getElementById('kFact').textContent     = _imports.filter(i => ['proforma','facture'].includes(i.type)).length;
+  document.getElementById('kRap').textContent      = _imports.filter(i => ['rapport_activite','rapport_financier'].includes(i.type)).length;
+}
+
+function renderList() {
+  const q = (document.getElementById('searchInput').value || '').toLowerCase();
+  const list = q
+    ? _imports.filter(i => (i.dossier_ref + ' ' + (i.reference || '') + ' ' + (i.emetteur || '') + ' ' + (i.description || '')).toLowerCase().includes(q))
+    : _imports;
+  const tgt = document.getElementById('importsList');
+  if (!list.length) {
+    tgt.innerHTML = '<div class="empty"><i class="fas fa-folder-open"></i>Aucune pièce importée pour le moment.</div>';
+    return;
+  }
+  tgt.innerHTML = '<table class="imports-tbl"><thead><tr><th>Type</th><th>Dossier</th><th>Réf./Émetteur</th><th>Date</th><th style="text-align:right">Montant</th><th></th></tr></thead><tbody>' +
+    list.map((it, i) => {
+      const t = TYPE_META[it.type] || TYPE_META.autre;
+      return '<tr>' +
+        '<td><span class="pill ' + t.cls + '">' + t.label + '</span></td>' +
+        '<td class="ref">' + it.dossier_ref + '</td>' +
+        '<td><strong>' + (it.reference || '—') + '</strong><br><small style="color:#94a3b8">' + (it.emetteur || '') + '</small></td>' +
+        '<td>' + (it.date_piece || it._imported_at_short || '—') + '</td>' +
+        '<td style="text-align:right;font-family:monospace">' + (it.montant ? fmt(it.montant) : '—') + '</td>' +
+        '<td style="white-space:nowrap">' +
+          (it.file_data_url ? '<button class="btn-row" onclick="viewFile(' + i + ')" title="Voir"><i class="fas fa-eye"></i></button>' : '') +
+          '<button class="btn-row del" onclick="removeImport(' + i + ')" title="Supprimer"><i class="fas fa-trash"></i></button>' +
+        '</td>' +
+        '</tr>';
+    }).join('') + '</tbody></table>';
+}
+
+function onFileSelect(input) {
+  const f = input.files[0];
+  if (!f) return;
+  if (f.size > 5 * 1024 * 1024) { showAlert('err','✗ Fichier trop volumineux (max 5 Mo).'); input.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    _file = { name: f.name, size: f.size, dataUrl: e.target.result, mime: f.type };
+    document.getElementById('fName').textContent = f.name;
+    document.getElementById('fSize').textContent = '(' + (f.size / 1024).toFixed(1) + ' Ko)';
+    document.getElementById('fileInfo').classList.add('visible');
+  };
+  reader.readAsDataURL(f);
+}
+function clearFile() {
+  _file = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileInfo').classList.remove('visible');
+}
+
+// Drag & drop
+const drop = document.getElementById('fileDrop');
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+drop.addEventListener('drop', e => {
+  e.preventDefault(); drop.classList.remove('drag');
+  if (e.dataTransfer.files[0]) {
+    document.getElementById('fileInput').files = e.dataTransfer.files;
+    onFileSelect(document.getElementById('fileInput'));
+  }
+});
+
+function submitImport() {
+  const f = document.getElementById('ipForm');
+  const fd = new FormData(f); const body = {};
+  for (const [k,v] of fd.entries()) body[k] = v;
+  if (!body.type || !body.dossier_ref) { showAlert('err','✗ Type et dossier de rattachement requis.'); return; }
+
+  const me = (window.SIGFIC && window.SIGFIC.getUser && window.SIGFIC.getUser()) || {};
+  const piece = {
+    ...body,
+    _id: 'IMP-' + Date.now().toString(36).toUpperCase(),
+    file_name: _file ? _file.name : null,
+    file_size: _file ? _file.size : null,
+    file_data_url: _file ? _file.dataUrl : null,
+    imported_by: me.email || 'admin',
+    imported_at: new Date().toISOString(),
+    _imported_at_short: new Date().toLocaleDateString('fr-FR'),
+  };
+  _imports.unshift(piece);
+  saveImports();
+
+  // Alimenter le dossier de destination dans pslsh_pieces_v1
+  try {
+    const allPieces = JSON.parse(localStorage.getItem('pslsh_pieces_v1') || '{}');
+    if (!allPieces[body.dossier_ref]) allPieces[body.dossier_ref] = { pieces: [], histo: [] };
+    allPieces[body.dossier_ref].pieces = allPieces[body.dossier_ref].pieces || [];
+    allPieces[body.dossier_ref].pieces.push({
+      code: piece._id, label: (TYPE_META[body.type] || TYPE_META.autre).label + ' — ' + (body.reference || body.emetteur || ''),
+      source: 'externe', statut: 'valide',
+      file_name: piece.file_name, file_data_url: piece.file_data_url,
+      imported_at: piece.imported_at, imported_by: piece.imported_by,
+      type_externe: body.type, description: body.description,
+    });
+    allPieces[body.dossier_ref].histo = allPieces[body.dossier_ref].histo || [];
+    allPieces[body.dossier_ref].histo.unshift({
+      action: 'Pièce externe importée : ' + (TYPE_META[body.type] || TYPE_META.autre).label,
+      par: me.email || 'admin', date: new Date().toLocaleString('fr-FR'), color: 'orange',
+    });
+    localStorage.setItem('pslsh_pieces_v1', JSON.stringify(allPieces));
+  } catch (e) { console.warn('Échec alimentation dossier:', e); }
+
+  showAlert('ok', '✓ Pièce <strong>' + (body.reference || piece._id) + '</strong> importée et rattachée au dossier <strong>' + body.dossier_ref + '</strong>.');
+  f.reset();
+  clearFile();
+  updateStats();
+  renderList();
+}
+
+function removeImport(i) {
+  if (!confirm('Supprimer cette pièce de l\'historique ?\n(le dossier d\'opération conserve sa copie)')) return;
+  _imports.splice(i, 1);
+  saveImports();
+  updateStats();
+  renderList();
+}
+
+function viewFile(i) {
+  const it = _imports[i];
+  if (!it.file_data_url) { alert('Aucun fichier joint.'); return; }
+  const w = window.open();
+  w.document.write('<title>' + it.file_name + '</title><body style="margin:0"><iframe src="' + it.file_data_url + '" style="width:100vw;height:100vh;border:none"></iframe></body>');
+}
+
+loadDossiers();
+loadImports();
+</script>
+</body></html>
