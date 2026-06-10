@@ -459,12 +459,136 @@ function renderList(items, emptyMsg) {
 let _formLignes = [{ libelle:'', quantite:'', unite:'' }];
 
 function renderForm() {
-  return `<div class="eb-card">
-    <div class="eb-card-title"><i class="fas fa-edit" style="color:#1b3a6b"></i>Nouvelle expression de besoin</div>
-    <form class="eb-form" id="ebForm" onsubmit="event.preventDefault();submitEb(event)">
+  return `
+  <style>
+    .eb-stepper{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 22px;margin-bottom:14px;
+      display:flex;justify-content:space-between;position:relative;gap:0}
+    .eb-stepper::before{content:'';position:absolute;top:32px;left:60px;right:60px;height:2px;background:#e2e8f0;z-index:0}
+    .eb-step{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
+    .eb-step .st-circle{width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:2px solid #cbd5e1;
+      display:flex;align-items:center;justify-content:center;color:#94a3b8;font-weight:800;font-size:.86rem;transition:all .25s}
+    .eb-step.done .st-circle{background:#dbeafe;border-color:#1b3a6b;color:#1b3a6b}
+    .eb-step.done .st-circle::before{content:'\\f00c';font-family:'Font Awesome 6 Free';font-weight:900;font-size:.78rem}
+    .eb-step.done .st-circle .st-num{display:none}
+    .eb-step.active .st-circle{background:#1b3a6b;border-color:#1b3a6b;color:#fff;box-shadow:0 0 0 5px rgba(27,58,107,.18)}
+    .eb-step .st-label{font-size:.72rem;font-weight:700;color:#94a3b8;text-align:center}
+    .eb-step.done .st-label,.eb-step.active .st-label{color:#1b2f52}
+    .ctx-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px}
+    .ctx-grid label{font-size:.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px}
+    .ctx-grid input,.ctx-grid select{width:100%;font-size:.84rem;padding:8px 12px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#1b2f52}
+    .ctx-grid input:focus,.ctx-grid select:focus{outline:none;border-color:#1b3a6b;box-shadow:0 0 0 3px #dbeafe}
+    .budget-card{background:#f0f7ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;margin:10px 0}
+    .budget-card h6{margin:0 0 10px;font-size:.84rem;color:#1b3a6b;font-weight:800}
+    .budget-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+    .budget-field label{font-size:.6rem;font-weight:700;color:#64748b;text-transform:uppercase;display:block;margin-bottom:3px}
+    .budget-field .val{font-size:.92rem;font-weight:800;color:#1b2f52;font-family:monospace}
+    .budget-field .val.green{color:#15803d}
+    .budget-field .val.warn{color:#b45309}
+    .budget-field .val.alert{color:#b91c1c}
+    .verif-bar{background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:14px 18px;margin:14px 0;
+      display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+    .verif-bar.verified{background:#dcfce7;border-color:#86efac}
+    .verif-bar > i{font-size:1.4rem;color:#b45309;margin-top:2px}
+    .verif-bar.verified > i{color:#15803d}
+    .verif-bar .vb-msg{flex:1;font-size:.82rem;color:#92400e;font-weight:600;min-width:300px}
+    .verif-bar.verified .vb-msg{color:#166534}
+    .verif-checks{margin-top:10px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .verif-check{display:flex;align-items:center;gap:7px;font-size:.76rem;font-weight:500;color:#475569}
+    .verif-check input{margin:0;cursor:pointer;width:16px;height:16px;accent-color:#1b3a6b}
+    .verif-check label{cursor:pointer;margin:0}
+    .locked-msg{text-align:center;padding:32px 20px;color:#94a3b8;font-size:.84rem;background:#fafbfc;border:2px dashed #e2e8f0;border-radius:10px}
+    .locked-msg i{display:block;font-size:1.8rem;margin-bottom:10px;opacity:.5}
+  </style>
+
+  <div class="eb-stepper">
+    <div class="eb-step active" id="ebStep1"><div class="st-circle"><span class="st-num">1</span></div><div class="st-label">Contexte du besoin</div></div>
+    <div class="eb-step"        id="ebStep2"><div class="st-circle"><span class="st-num">2</span></div><div class="st-label">Vérifier le crédit</div></div>
+    <div class="eb-step"        id="ebStep3"><div class="st-circle"><span class="st-num">3</span></div><div class="st-label">Saisir l'EB</div></div>
+  </div>
+
+  <!-- ═══ ÉTAPE 1 : CONTEXTE ═══ -->
+  <div class="eb-card" id="ebCardCtx">
+    <div class="eb-card-title"><i class="fas fa-compass" style="color:#1b3a6b"></i>Étape 1 — Identifier le contexte du besoin</div>
+    <div class="ctx-grid">
       <div>
         <label>Service porteur *</label>
-        <select name="service" required onchange="updateSyscoSummary()">
+        <select id="ctxService" required>
+          ${SERVICES.map((s) => `<option value="${s}">${s}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label>Activité PTBA / PAO</label>
+        <input type="text" id="ctxActivite" placeholder="Ex: AS-12.4 Sensibilisation"
+          list="activitesList">
+        <datalist id="activitesList"></datalist>
+      </div>
+      <div>
+        <label>Ligne budgétaire pressentie *</label>
+        <input type="text" id="ctxLigne" required placeholder="Ex: L-DF2-001"
+          list="lignesBudgList">
+        <datalist id="lignesBudgList"></datalist>
+      </div>
+      <div>
+        <label>Estimation budgétaire (FCFA) *</label>
+        <input type="number" id="ctxEstimation" required min="1" step="1" placeholder="0">
+      </div>
+      <div style="grid-column:span 2">
+        <label>Justification rapide du besoin</label>
+        <input type="text" id="ctxJustif" placeholder="Ex: Rupture de stock prévue au 30/06">
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9">
+      <button type="button" class="btn-eb btn-eb-cancel" onclick="switchTab('mine')"><i class="fas fa-times"></i>Annuler</button>
+      <button type="button" class="btn-eb btn-eb-submit" onclick="loadBudgetContext()" style="background:#1b3a6b">
+        <i class="fas fa-search-dollar"></i>Charger le contexte budgétaire
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ ÉTAPE 2 : VÉRIFICATION ═══ -->
+  <div class="eb-card" id="ebCardVerif" style="display:none">
+    <div class="eb-card-title"><i class="fas fa-search-plus" style="color:#1b3a6b"></i>Étape 2 — Vérifier la disponibilité budgétaire</div>
+
+    <div class="budget-card" id="budgetCard">
+      <h6 id="budgetLigneTitle">—</h6>
+      <div class="budget-grid">
+        <div class="budget-field"><label>Crédit ouvert</label><div class="val" id="bCredit">—</div></div>
+        <div class="budget-field"><label>Révisé</label><div class="val" id="bRevise">—</div></div>
+        <div class="budget-field"><label>Engagé</label><div class="val warn" id="bEngage">—</div></div>
+        <div class="budget-field"><label>Disponible</label><div class="val green" id="bDispo">—</div></div>
+        <div class="budget-field"><label>Estimation EB</label><div class="val" id="bEstim">—</div></div>
+      </div>
+      <div id="bComparaison" style="margin-top:10px;padding:8px 12px;border-radius:6px;font-size:.78rem;font-weight:600"></div>
+    </div>
+
+    <div class="verif-bar" id="ebVerifBar">
+      <i class="fas fa-exclamation-triangle"></i>
+      <div class="vb-msg">
+        <strong>Vérification requise</strong> — Cochez les 4 contrôles avant de pouvoir saisir l'EB.
+        <div class="verif-checks">
+          <div class="verif-check"><input type="checkbox" id="ebChk1" onchange="updateEbVerif()"><label for="ebChk1">Ligne budgétaire appropriée</label></div>
+          <div class="verif-check"><input type="checkbox" id="ebChk2" onchange="updateEbVerif()"><label for="ebChk2">Crédit disponible couvre l'estimation</label></div>
+          <div class="verif-check"><input type="checkbox" id="ebChk3" onchange="updateEbVerif()"><label for="ebChk3">Besoin conforme au PTBA / PAO</label></div>
+          <div class="verif-check"><input type="checkbox" id="ebChk4" onchange="updateEbVerif()"><label for="ebChk4">Besoin non déjà exprimé en double</label></div>
+        </div>
+      </div>
+      <button type="button" class="btn-eb btn-eb-submit" id="ebUnlockBtn" onclick="unlockEbForm()" disabled style="background:#94a3b8;cursor:not-allowed">
+        <i class="fas fa-unlock"></i>Saisir l'EB
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ ÉTAPE 3 : SAISIE EB ═══ -->
+  <div class="eb-card" id="ebCardForm" style="display:none">
+    <div class="eb-card-title"><i class="fas fa-edit" style="color:#1b3a6b"></i>Étape 3 — Saisir l'expression de besoin</div>
+    <div id="ebFormLockMsg" class="locked-msg">
+      <i class="fas fa-lock"></i>
+      Le formulaire de saisie s'ouvre après vérification complète à l'étape&nbsp;2.
+    </div>
+    <form class="eb-form" id="ebForm" style="display:none" onsubmit="event.preventDefault();submitEb(event)">
+      <div>
+        <label>Service porteur *</label>
+        <select name="service" id="formService" required onchange="updateSyscoSummary()">
           ${SERVICES.map((s) => `<option value="${s}">${s}</option>`).join('')}
         </select>
       </div>
@@ -487,7 +611,7 @@ function renderForm() {
 
       <div class="full">
         <label>Motif du besoin *</label>
-        <textarea name="motif" required placeholder="Pourquoi ce besoin ? Contexte, urgence, finalité…"></textarea>
+        <textarea name="motif" id="formMotif" required placeholder="Pourquoi ce besoin ? Contexte, urgence, finalité…"></textarea>
       </div>
 
       <datalist id="unitesList">${UNITES.map((u) => `<option value="${u}">`).join('')}</datalist>
@@ -499,8 +623,146 @@ function renderForm() {
         <button type="submit" name="action" value="submit" class="btn-eb btn-eb-submit" onclick="this.value='submit'"><i class="fas fa-paper-plane"></i>Soumettre pour validation</button>
       </div>
     </form>
-  </div>`;
+  </div>
+  `;
 }
+
+/* ═══ Étape 1 → 2 : chargement du contexte budgétaire ═══ */
+let _ebContext = null;
+function _fmt(n) { return Math.round(parseFloat(n) || 0).toLocaleString('fr-FR'); }
+
+function _loadLignesBudgetaires() {
+  try {
+    const raw = localStorage.getItem('pslsh_lignes_v1');
+    if (!raw) return [];
+    const p = JSON.parse(raw);
+    return (p && p.data) || (Array.isArray(p) ? p : []);
+  } catch (_) { return []; }
+}
+
+function _populateDatalists() {
+  const lignes = _loadLignesBudgetaires();
+  const dl = document.getElementById('lignesBudgList');
+  if (dl) {
+    dl.innerHTML = lignes.map(l =>
+      `<option value="${l.code || l.id}">${l.libelle || ''} — ${l.rubrique || ''}</option>`
+    ).join('');
+  }
+  // Activités : on tire celles de pslsh_plan_achat_v1 si présent
+  const act = document.getElementById('activitesList');
+  if (act) {
+    let activites = [];
+    try {
+      const r = JSON.parse(localStorage.getItem('pslsh_plan_achat_v1') || '{}');
+      activites = (r && r.data) || [];
+    } catch (_) {}
+    act.innerHTML = activites.slice(0, 30).map(a =>
+      `<option value="${a.code || a.id || ''}">${a.libelle || a.activite || ''}</option>`
+    ).join('');
+  }
+}
+
+function loadBudgetContext() {
+  const service = document.getElementById('ctxService').value;
+  const ligneCode = document.getElementById('ctxLigne').value.trim();
+  const estimation = parseFloat(document.getElementById('ctxEstimation').value) || 0;
+  const activite = document.getElementById('ctxActivite').value.trim();
+  const justif = document.getElementById('ctxJustif').value.trim();
+
+  if (!service || !ligneCode || !estimation) {
+    alert('Veuillez renseigner le service, la ligne budgétaire et une estimation.');
+    return;
+  }
+
+  const lignes = _loadLignesBudgetaires();
+  const ligne = lignes.find(l => l.code === ligneCode || l.id === ligneCode);
+
+  _ebContext = { service, ligneCode, estimation, activite, justif, ligne };
+
+  // Pré-remplir l'étape 3
+  document.getElementById('formService').value = service;
+
+  // Afficher l'étape 2
+  document.getElementById('ebCardVerif').style.display = 'block';
+  document.getElementById('ebCardForm').style.display  = 'block';
+  document.getElementById('ebStep1').classList.add('done');
+  document.getElementById('ebStep2').classList.add('active');
+
+  if (ligne) {
+    const credit = parseFloat(ligne.montant) || 0;
+    const revise = parseFloat(ligne.revise) || credit;
+    const engage = parseFloat(ligne.engage) || 0;
+    const dispo  = Math.max(0, revise - engage);
+    document.getElementById('budgetLigneTitle').textContent = `${ligne.code} — ${ligne.libelle || ''}`;
+    document.getElementById('bCredit').textContent = _fmt(credit) + ' FCFA';
+    document.getElementById('bRevise').textContent = _fmt(revise) + ' FCFA';
+    document.getElementById('bEngage').textContent = _fmt(engage) + ' FCFA';
+    document.getElementById('bDispo').textContent  = _fmt(dispo) + ' FCFA';
+    document.getElementById('bEstim').textContent  = _fmt(estimation) + ' FCFA';
+
+    const cmp = document.getElementById('bComparaison');
+    if (estimation > dispo) {
+      cmp.style.background = '#fee2e2'; cmp.style.color = '#b91c1c';
+      cmp.innerHTML = `<i class="fas fa-times-circle me-1"></i>⚠ Crédit insuffisant : il manque ${_fmt(estimation - dispo)} FCFA pour couvrir l'estimation.`;
+    } else if (estimation > dispo * 0.8) {
+      cmp.style.background = '#fef3c7'; cmp.style.color = '#92400e';
+      cmp.innerHTML = `<i class="fas fa-exclamation-triangle me-1"></i>Crédit suffisant mais > 80% du disponible — vérifiez les engagements prévus.`;
+    } else {
+      cmp.style.background = '#dcfce7'; cmp.style.color = '#166534';
+      cmp.innerHTML = `<i class="fas fa-check-circle me-1"></i>Crédit disponible largement suffisant. Marge : ${_fmt(dispo - estimation)} FCFA.`;
+    }
+  } else {
+    document.getElementById('budgetLigneTitle').textContent = `${ligneCode} — Ligne non référencée`;
+    document.getElementById('bCredit').textContent = '—';
+    document.getElementById('bRevise').textContent = '—';
+    document.getElementById('bEngage').textContent = '—';
+    document.getElementById('bDispo').textContent  = '—';
+    document.getElementById('bEstim').textContent  = _fmt(estimation) + ' FCFA';
+    document.getElementById('bComparaison').style.background = '#fef3c7';
+    document.getElementById('bComparaison').style.color = '#92400e';
+    document.getElementById('bComparaison').innerHTML = `<i class="fas fa-info-circle me-1"></i>Ligne « ${ligneCode} » non trouvée dans le référentiel. Vérification visuelle requise.`;
+  }
+
+  document.getElementById('ebCardVerif').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function updateEbVerif() {
+  const ok = ['ebChk1','ebChk2','ebChk3','ebChk4'].every(id => document.getElementById(id).checked);
+  const btn = document.getElementById('ebUnlockBtn');
+  const bar = document.getElementById('ebVerifBar');
+  btn.disabled = !ok;
+  btn.style.background = ok ? '#15803d' : '#94a3b8';
+  btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+  bar.classList.toggle('verified', ok);
+  if (ok) {
+    bar.querySelector('i').className = 'fas fa-check-circle';
+    bar.querySelector('.vb-msg strong').textContent = 'Vérification validée ✓';
+  } else {
+    bar.querySelector('i').className = 'fas fa-exclamation-triangle';
+    bar.querySelector('.vb-msg strong').textContent = 'Vérification requise';
+  }
+}
+
+function unlockEbForm() {
+  if (document.getElementById('ebUnlockBtn').disabled) return;
+  document.getElementById('ebFormLockMsg').style.display = 'none';
+  document.getElementById('ebForm').style.display = 'grid';
+  document.getElementById('ebStep2').classList.add('done');
+  document.getElementById('ebStep3').classList.add('active');
+
+  // Pré-remplir motif depuis la justification rapide saisie en étape 1
+  if (_ebContext && _ebContext.justif && !document.getElementById('formMotif').value) {
+    document.getElementById('formMotif').value = _ebContext.justif;
+  }
+
+  // Re-render libellés (au cas où)
+  if (typeof renderLignes === 'function') renderLignes();
+
+  document.getElementById('ebCardForm').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// Hook : peupler datalists au chargement du form
+setTimeout(() => _populateDatalists(), 100);
 
 function renderLignes() {
   const target = document.getElementById('lignesList');
