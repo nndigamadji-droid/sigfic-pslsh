@@ -224,18 +224,7 @@
             href: '/pages/planification/plan-achat.html',
             icon: 'fa-shopping-cart',
             label: "Plan d'achat des intrants",
-          },
-          {
-            href: '/pages/planification/fonds-alloues.html',
-            icon: 'fa-hand-holding-usd',
-            label: 'Fonds alloués',
-          },
-          {
-            href: '/pages/planification/fonds-disponibles.html',
-            icon: 'fa-piggy-bank',
-            label: 'Fonds disponibles',
-          },
-        ],
+          },        ],
       },
       {
         section: 'CENTRE DE VALIDATION',
@@ -305,6 +294,8 @@
             icon: 'fa-file-invoice-dollar',
             label: 'Dépenses',
           },
+          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
+          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
         ],
       },
       {
@@ -416,18 +407,7 @@
             href: '/pages/planification/plan-achat.html',
             icon: 'fa-shopping-cart',
             label: "Plan d'achat des intrants",
-          },
-          {
-            href: '/pages/planification/fonds-alloues.html',
-            icon: 'fa-hand-holding-usd',
-            label: 'Fonds alloués',
-          },
-          {
-            href: '/pages/planification/fonds-disponibles.html',
-            icon: 'fa-piggy-bank',
-            label: 'Fonds disponibles',
-          },
-        ],
+          },        ],
       },
       {
         section: 'CENTRE DE VALIDATION',
@@ -496,6 +476,8 @@
             icon: 'fa-file-invoice-dollar',
             label: 'Dépenses',
           },
+          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
+          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
         ],
       },
       {
@@ -596,18 +578,7 @@
             href: '/pages/planification/plan-achat.html',
             icon: 'fa-shopping-cart',
             label: "Plan d'achat des intrants",
-          },
-          {
-            href: '/pages/planification/fonds-alloues.html',
-            icon: 'fa-hand-holding-usd',
-            label: 'Fonds alloués',
-          },
-          {
-            href: '/pages/planification/fonds-disponibles.html',
-            icon: 'fa-piggy-bank',
-            label: 'Fonds disponibles',
-          },
-        ],
+          },        ],
       },
       {
         section: 'CENTRE DE VALIDATION',
@@ -676,6 +647,8 @@
             icon: 'fa-file-invoice-dollar',
             label: 'Dépenses',
           },
+          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
+          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
         ],
       },
       {
@@ -785,18 +758,7 @@
             href: '/pages/planification/plan-achat.html',
             icon: 'fa-shopping-cart',
             label: "Plan d'achat des intrants",
-          },
-          {
-            href: '/pages/planification/fonds-alloues.html',
-            icon: 'fa-hand-holding-usd',
-            label: 'Fonds alloués',
-          },
-          {
-            href: '/pages/planification/fonds-disponibles.html',
-            icon: 'fa-piggy-bank',
-            label: 'Fonds disponibles',
-          },
-        ],
+          },        ],
       },
       {
         section: 'CENTRE DE VALIDATION',
@@ -838,6 +800,8 @@
             icon: 'fa-file-invoice-dollar',
             label: 'Mes dépenses',
           },
+          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
+          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
         ],
       },
       {
@@ -909,18 +873,7 @@
             href: '/pages/planification/plan-achat.html',
             icon: 'fa-shopping-cart',
             label: "Plan d'achat des intrants",
-          },
-          {
-            href: '/pages/planification/fonds-alloues.html',
-            icon: 'fa-hand-holding-usd',
-            label: 'Fonds alloués',
-          },
-          {
-            href: '/pages/planification/fonds-disponibles.html',
-            icon: 'fa-piggy-bank',
-            label: 'Fonds disponibles',
-          },
-        ],
+          },        ],
       },
       {
         section: 'BUDGET',
@@ -929,6 +882,8 @@
           { href: '/pages/budget/synthese.html', icon: 'fa-chart-pie', label: 'Synthèse globale' },
           { href: '/pages/budget/mapping.html',  icon: 'fa-random',    label: 'Mapping Budget ↔ OHADA' },
           { href: '/pages/budget/recettes.html', icon: 'fa-arrow-trend-up', label: 'Recettes' },
+          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
+          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
         ],
       },
       {

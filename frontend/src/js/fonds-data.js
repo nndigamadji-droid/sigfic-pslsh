@@ -231,7 +231,7 @@ function fondsRenderDashboard() {
       const taux = fondsTaux(r.decaisse, r.allocation);
       const ecart = r.allocation - r.decaisse;
       const pill = `<span class="src-pill" style="background:${r.bg};color:${r.couleur}">${r.label}</span>`;
-      const lien = `/pages/planification/fonds-alloues.html#${r.anchor}`;
+      const lien = `/pages/budget/fonds-alloues.html#${r.anchor}`;
       return `<tr style="cursor:pointer" onclick="window.location='${lien}'" title="Voir le détail dans Fonds alloués">
       <td>${pill} <a href="${lien}" onclick="event.stopPropagation()" style="font-size:.68rem;color:#94a3b8;margin-left:4px" title="Détail"><i class="fas fa-arrow-right"></i></a></td>
       <td class="text-end fw-semibold">${fondsN(r.allocation)}</td>
