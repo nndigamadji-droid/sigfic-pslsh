@@ -195,18 +195,6 @@
     ════════════════════════════════════════════════════════════════ */
     administrateur: [
       {
-        section: 'TABLEAU DE BORD',
-        icon: 'fa-tachometer-alt',
-        items: [
-          {
-            href: '/pages/dashboard/index.html',
-            icon: 'fa-chart-line',
-            label: 'Vue système globale',
-          },
-          { href: '/pages/dashboard/alertes.html', icon: 'fa-bell', label: 'Alertes & urgences' },
-        ],
-      },
-      {
         section: 'PLANIFICATION',
         icon: 'fa-project-diagram',
         items: [
@@ -227,41 +215,19 @@
           },        ],
       },
       {
-        section: 'CENTRE DE VALIDATION',
-        icon: 'fa-check-double',
+        section: 'BUDGET',
+        icon: 'fa-coins',
         items: [
+          { href: '/pages/budget/synthese.html', icon: 'fa-chart-pie', label: 'Synthèse globale' },
+          { href: '/pages/budget/mapping.html',  icon: 'fa-random',    label: 'Mapping Budget ↔ OHADA' },
+          { href: '/pages/budget/recettes.html', icon: 'fa-arrow-trend-up', label: 'Recettes' },
           {
-            href: '/pages/validation/index.html',
-            icon: 'fa-tasks',
-            label: "File d'attente globale",
-            badge: 'warning',
+            href: '/pages/budget/depenses.html',
+            icon: 'fa-file-invoice-dollar',
+            label: 'Dépenses',
           },
-          {
-            href: '/pages/validation/pao.html',
-            icon: 'fa-project-diagram',
-            label: 'Validations PAO',
-          },
-          {
-            href: '/pages/validation/besoins.html',
-            icon: 'fa-list-check',
-            label: 'Expressions de besoins',
-          },
-          {
-            href: '/pages/validation/commandes.html',
-            icon: 'fa-file-contract',
-            label: 'Bons de commande',
-          },
-          {
-            href: '/pages/validation/paiements.html',
-            icon: 'fa-money-check-alt',
-            label: 'Ordres de paiement',
-          },
-          { href: '/pages/validation/rapports.html', icon: 'fa-file-alt', label: 'Rapports' },
-          {
-            href: '/pages/validation/historique.html',
-            icon: 'fa-history',
-            label: 'Historique des décisions',
-          },
+          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
+          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
         ],
       },
       {
@@ -283,22 +249,6 @@
         ],
       },
       {
-        section: 'BUDGET',
-        icon: 'fa-coins',
-        items: [
-          { href: '/pages/budget/synthese.html', icon: 'fa-chart-pie', label: 'Synthèse globale' },
-          { href: '/pages/budget/mapping.html',  icon: 'fa-random',    label: 'Mapping Budget ↔ OHADA' },
-          { href: '/pages/budget/recettes.html', icon: 'fa-arrow-trend-up', label: 'Recettes' },
-          {
-            href: '/pages/budget/depenses.html',
-            icon: 'fa-file-invoice-dollar',
-            label: 'Dépenses',
-          },
-          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
-          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
-        ],
-      },
-      {
         section: 'FINANCES',
         icon: 'fa-university',
         items: [
@@ -315,7 +265,7 @@
         ],
       },
       {
-        section: 'CONTRÔLE & AUDIT',
+        section: 'AUDIT & CONTRÔLE',
         icon: 'fa-search',
         items: [
           {
@@ -370,25 +320,12 @@
           { href: '/pages/aide/index.html', icon: 'fa-question-circle', label: 'Aide' },
         ],
       },
-],
+    ],
 
     /* ════════════════════════════════════════════════════════════════
        COORDINATION — accès complet métier, pilotage et validation
     ════════════════════════════════════════════════════════════════ */
     coordination: [
-      {
-        section: 'TABLEAU DE BORD',
-        icon: 'fa-tachometer-alt',
-        items: [
-          { href: '/pages/dashboard/index.html', icon: 'fa-chart-line', label: 'Tableau de bord' },
-          { href: '/pages/dashboard/alertes.html', icon: 'fa-bell', label: 'Alertes & urgences' },
-          {
-            href: '/pages/dashboard/indicateurs.html',
-            icon: 'fa-chart-bar',
-            label: "Indicateurs d'exécution",
-          },
-        ],
-      },
       {
         section: 'PLANIFICATION',
         icon: 'fa-project-diagram',
@@ -410,40 +347,19 @@
           },        ],
       },
       {
-        section: 'CENTRE DE VALIDATION',
-        icon: 'fa-check-double',
+        section: 'BUDGET',
+        icon: 'fa-coins',
         items: [
+          { href: '/pages/budget/synthese.html', icon: 'fa-chart-pie', label: 'Synthèse globale' },
+          { href: '/pages/budget/mapping.html',  icon: 'fa-random',    label: 'Mapping Budget ↔ OHADA' },
+          { href: '/pages/budget/recettes.html', icon: 'fa-arrow-trend-up', label: 'Recettes' },
           {
-            href: '/pages/validation/index.html',
-            icon: 'fa-tasks',
-            label: "File d'attente",
-            badge: 'warning',
+            href: '/pages/budget/depenses.html',
+            icon: 'fa-file-invoice-dollar',
+            label: 'Dépenses',
           },
-          {
-            href: '/pages/validation/pao.html',
-            icon: 'fa-project-diagram',
-            label: 'Validations PAO',
-          },
-          {
-            href: '/pages/validation/besoins.html',
-            icon: 'fa-list-check',
-            label: 'Expressions de besoins',
-          },
-          {
-            href: '/pages/validation/commandes.html',
-            icon: 'fa-file-contract',
-            label: 'Bons de commande',
-          },
-          {
-            href: '/pages/validation/paiements.html',
-            icon: 'fa-money-check-alt',
-            label: 'Ordres de paiement',
-          },
-          {
-            href: '/pages/validation/historique.html',
-            icon: 'fa-history',
-            label: 'Historique des décisions',
-          },
+          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
+          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
         ],
       },
       {
@@ -465,22 +381,6 @@
         ],
       },
       {
-        section: 'BUDGET',
-        icon: 'fa-coins',
-        items: [
-          { href: '/pages/budget/synthese.html', icon: 'fa-chart-pie', label: 'Synthèse globale' },
-          { href: '/pages/budget/mapping.html',  icon: 'fa-random',    label: 'Mapping Budget ↔ OHADA' },
-          { href: '/pages/budget/recettes.html', icon: 'fa-arrow-trend-up', label: 'Recettes' },
-          {
-            href: '/pages/budget/depenses.html',
-            icon: 'fa-file-invoice-dollar',
-            label: 'Dépenses',
-          },
-          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
-          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
-        ],
-      },
-      {
         section: 'FINANCES',
         icon: 'fa-university',
         items: [
@@ -497,7 +397,7 @@
         ],
       },
       {
-        section: 'CONTRÔLE & AUDIT',
+        section: 'AUDIT & CONTRÔLE',
         icon: 'fa-search',
         items: [
           {
@@ -544,22 +444,9 @@
           { href: '/pages/aide/index.html', icon: 'fa-question-circle', label: 'Aide' },
         ],
       },
-],
+    ],
 
     comptable_principal: [
-      {
-        section: 'TABLEAU DE BORD',
-        icon: 'fa-tachometer-alt',
-        items: [
-          { href: '/pages/dashboard/index.html', icon: 'fa-chart-line', label: 'Tableau de bord' },
-          { href: '/pages/dashboard/alertes.html', icon: 'fa-bell', label: 'Alertes & urgences' },
-          {
-            href: '/pages/dashboard/indicateurs.html',
-            icon: 'fa-chart-bar',
-            label: "Indicateurs d'exécution",
-          },
-        ],
-      },
       {
         section: 'PLANIFICATION',
         icon: 'fa-project-diagram',
@@ -581,40 +468,19 @@
           },        ],
       },
       {
-        section: 'CENTRE DE VALIDATION',
-        icon: 'fa-check-double',
+        section: 'BUDGET',
+        icon: 'fa-coins',
         items: [
+          { href: '/pages/budget/synthese.html', icon: 'fa-chart-pie', label: 'Synthèse globale' },
+          { href: '/pages/budget/mapping.html',  icon: 'fa-random',    label: 'Mapping Budget ↔ OHADA' },
+          { href: '/pages/budget/recettes.html', icon: 'fa-arrow-trend-up', label: 'Recettes' },
           {
-            href: '/pages/validation/index.html',
-            icon: 'fa-tasks',
-            label: "File d'attente",
-            badge: 'warning',
+            href: '/pages/budget/depenses.html',
+            icon: 'fa-file-invoice-dollar',
+            label: 'Dépenses',
           },
-          {
-            href: '/pages/validation/pao.html',
-            icon: 'fa-project-diagram',
-            label: 'Validations PAO',
-          },
-          {
-            href: '/pages/validation/besoins.html',
-            icon: 'fa-list-check',
-            label: 'Expressions de besoins',
-          },
-          {
-            href: '/pages/validation/commandes.html',
-            icon: 'fa-file-contract',
-            label: 'Bons de commande',
-          },
-          {
-            href: '/pages/validation/paiements.html',
-            icon: 'fa-money-check-alt',
-            label: 'Ordres de paiement',
-          },
-          {
-            href: '/pages/validation/historique.html',
-            icon: 'fa-history',
-            label: 'Historique des décisions',
-          },
+          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
+          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
         ],
       },
       {
@@ -636,22 +502,6 @@
         ],
       },
       {
-        section: 'BUDGET',
-        icon: 'fa-coins',
-        items: [
-          { href: '/pages/budget/synthese.html', icon: 'fa-chart-pie', label: 'Synthèse globale' },
-          { href: '/pages/budget/mapping.html',  icon: 'fa-random',    label: 'Mapping Budget ↔ OHADA' },
-          { href: '/pages/budget/recettes.html', icon: 'fa-arrow-trend-up', label: 'Recettes' },
-          {
-            href: '/pages/budget/depenses.html',
-            icon: 'fa-file-invoice-dollar',
-            label: 'Dépenses',
-          },
-          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
-          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
-        ],
-      },
-      {
         section: 'FINANCES',
         icon: 'fa-university',
         items: [
@@ -668,7 +518,7 @@
         ],
       },
       {
-        section: 'CONTRÔLE & AUDIT',
+        section: 'AUDIT & CONTRÔLE',
         icon: 'fa-search',
         items: [
           {
@@ -733,14 +583,6 @@
     ════════════════════════════════════════════════════════════════ */
     chef_service: [
       {
-        section: 'TABLEAU DE BORD',
-        icon: 'fa-tachometer-alt',
-        items: [
-          { href: '/pages/dashboard/index.html', icon: 'fa-home', label: 'Mon tableau de bord' },
-          { href: '/pages/dashboard/alertes.html', icon: 'fa-bell', label: 'Mes alertes' },
-        ],
-      },
-      {
         section: 'PLANIFICATION',
         icon: 'fa-project-diagram',
         items: [
@@ -761,16 +603,16 @@
           },        ],
       },
       {
-        section: 'CENTRE DE VALIDATION',
-        icon: 'fa-check-double',
+        section: 'BUDGET',
+        icon: 'fa-coins',
         items: [
           {
-            href: '/pages/validation/index.html',
-            icon: 'fa-tasks',
-            label: 'Mes soumissions',
-            badge: 'warning',
+            href: '/pages/budget/depenses.html',
+            icon: 'fa-file-invoice-dollar',
+            label: 'Mes dépenses',
           },
-          { href: '/pages/validation/historique.html', icon: 'fa-history', label: 'Historique' },
+          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
+          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
         ],
       },
       {
@@ -792,19 +634,6 @@
         ],
       },
       {
-        section: 'BUDGET',
-        icon: 'fa-coins',
-        items: [
-          {
-            href: '/pages/budget/depenses.html',
-            icon: 'fa-file-invoice-dollar',
-            label: 'Mes dépenses',
-          },
-          { href: '/pages/budget/fonds-alloues.html',     icon: 'fa-hand-holding-usd', label: 'Fonds alloués' },
-          { href: '/pages/budget/fonds-disponibles.html', icon: 'fa-piggy-bank',       label: 'Fonds disponibles' },
-        ],
-      },
-      {
         section: 'FINANCES',
         icon: 'fa-university',
         items: [
@@ -821,7 +650,7 @@
         ],
       },
       {
-        section: 'CONTRÔLE & AUDIT',
+        section: 'AUDIT & CONTRÔLE',
         icon: 'fa-search',
         items: [
           { href: '/pages/archivage/index.html', icon: 'fa-archive', label: 'Mes justificatifs' },
@@ -836,25 +665,12 @@
           { href: '/pages/aide/index.html', icon: 'fa-question-circle', label: 'Aide' },
         ],
       },
-],
+    ],
 
     /* ════════════════════════════════════════════════════════════════
        COMITÉ DE PILOTAGE — lecture, synthèse, revue stratégique
     ════════════════════════════════════════════════════════════════ */
     comite_pilotage: [
-      {
-        section: 'TABLEAU DE BORD',
-        icon: 'fa-tachometer-alt',
-        items: [
-          { href: '/pages/dashboard/index.html', icon: 'fa-chart-line', label: 'Vue globale' },
-          {
-            href: '/pages/dashboard/indicateurs.html',
-            icon: 'fa-chart-bar',
-            label: "Indicateurs d'exécution",
-          },
-          { href: '/pages/dashboard/alertes.html', icon: 'fa-bell', label: 'Alertes' },
-        ],
-      },
       {
         section: 'PLANIFICATION',
         icon: 'fa-project-diagram',
@@ -903,7 +719,7 @@
         ],
       },
       {
-        section: 'CONTRÔLE & AUDIT',
+        section: 'AUDIT & CONTRÔLE',
         icon: 'fa-search',
         items: [
           {
@@ -932,14 +748,6 @@
        CONTRÔLEUR / AUDITEUR — lecture renforcée, traçabilité
     ════════════════════════════════════════════════════════════════ */
     controleur: [
-      {
-        section: 'TABLEAU DE BORD',
-        icon: 'fa-tachometer-alt',
-        items: [
-          { href: '/pages/dashboard/index.html', icon: 'fa-chart-line', label: 'Vue de contrôle' },
-          { href: '/pages/dashboard/alertes.html', icon: 'fa-bell', label: 'Alertes & anomalies' },
-        ],
-      },
       {
         section: 'OPÉRATIONS',
         icon: 'fa-cogs',
@@ -975,7 +783,7 @@
         ],
       },
       {
-        section: 'CONTRÔLE & AUDIT',
+        section: 'AUDIT & CONTRÔLE',
         icon: 'fa-search',
         items: [
           {
@@ -1018,11 +826,6 @@
     ════════════════════════════════════════════════════════════════ */
     agent: [
       {
-        section: 'TABLEAU DE BORD',
-        icon: 'fa-tachometer-alt',
-        items: [{ href: '/pages/dashboard/index.html', icon: 'fa-home', label: 'Accueil' }],
-      },
-      {
         section: 'OPÉRATIONS',
         icon: 'fa-cogs',
         items: [
@@ -1041,7 +844,7 @@
         ],
       },
       {
-        section: 'CONTRÔLE & AUDIT',
+        section: 'AUDIT & CONTRÔLE',
         icon: 'fa-search',
         items: [
           { href: '/pages/archivage/index.html', icon: 'fa-archive', label: 'Mes documents' },
@@ -1349,32 +1152,11 @@
   /* Navigateurs disponibles par section — synchronisé avec la page accueil */
   const _NAV_ITEMS = [
     {
-      section: 'TABLEAU DE BORD',
-      label: 'Tableau de bord',
-      icon: 'fa-chart-line',
-      href: '/pages/dashboard/index.html',
-      roles: [
-        'administrateur',
-        'coordination',
-        'chef_service',
-        'comite_pilotage',
-        'controleur',
-        'agent',
-      ],
-    },
-    {
       section: 'PLANIFICATION',
       label: 'Planification',
       icon: 'fa-calendar-check',
       href: '/pages/planification/pao-global.html',
       roles: ['administrateur', 'coordination', 'chef_service', 'comite_pilotage'],
-    },
-    {
-      section: 'CENTRE DE VALIDATION',
-      label: 'Centre de validation',
-      icon: 'fa-check-double',
-      href: '/pages/validation/index.html',
-      roles: ['administrateur', 'coordination', 'chef_service'],
     },
     {
       section: 'OP\u00c9RATIONS',

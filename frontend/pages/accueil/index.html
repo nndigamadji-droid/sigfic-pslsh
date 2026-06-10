@@ -354,7 +354,7 @@
     }
     .nav-bar-grid {
       display: grid;
-      grid-template-columns: repeat(8, minmax(0, 1fr));
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 7px;
     }
     .nav-btn {
@@ -389,7 +389,7 @@
       font-size: .58rem; color: #94a3b8; font-weight: 800;
     }
     @media (max-width: 1380px) {
-      .nav-bar-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .nav-bar-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
     /* ── (anciennes nav-card neutralisées) ─────────────────────────────────── */
@@ -658,24 +658,21 @@
 <script>
   requireAuth();
 
+  /* 6 navigateurs (Tableau de bord + Validation supprimés)
+     Ordre : Planification → Budget → Opérations → Ressources →
+             Finances → Audit & Contrôle */
   const NAVIGATORS = [
-    { id:'dashboard',    label:'Tableau de bord',     badge:'Synthèse',
-      desc:'Budget, alertes, dossiers en cours et indicateurs d\'exécution.',
-      icon:'fa-chart-line', color:'#1b3a6b', light:'#e8f0fb',
-      href:'/pages/dashboard/index.html',
-      roles:['administrateur','coordination','chef_service','comite_pilotage','controleur','agent'] },
-
     { id:'planification', label:'Planification',       badge:'PAO',
       desc:'Plans d\'action, activités, calendriers et programmation annuelle.',
       icon:'fa-calendar-check', color:'#0369a1', light:'#e0f2fe',
       href:'/pages/planification/pao-global.html',
       roles:['administrateur','coordination','chef_service','comite_pilotage'] },
 
-    { id:'validation',   label:'Validation',          badge:'Décisions',
-      desc:'Approbations en attente : PAO, besoins, commandes et paiements.',
-      icon:'fa-check-double', color:'#15803d', light:'#dcfce7',
-      href:'/pages/validation/index.html',
-      roles:['administrateur','coordination','chef_service'] },
+    { id:'budget',       label:'Budget',              badge:'Crédits',
+      desc:'Lignes budgétaires, sources de financement et révisions.',
+      icon:'fa-coins', color:'#7c3aed', light:'#ede9fe',
+      href:'/pages/budget/synthese.html',
+      roles:['administrateur','coordination','chef_service','comite_pilotage'] },
 
     { id:'operations',   label:'Opérations',          badge:'Dossiers',
       desc:'Expressions de besoin et dossiers d\'opération (achats, formations, personnel).',
@@ -689,23 +686,17 @@
       href:'/pages/stock/index.html',
       roles:['administrateur','coordination','chef_service','controleur','agent'] },
 
-    { id:'budget',       label:'Budget',              badge:'Crédits',
-      desc:'Lignes budgétaires, sources de financement et révisions.',
-      icon:'fa-coins', color:'#7c3aed', light:'#ede9fe',
-      href:'/pages/budget/synthese.html',
-      roles:['administrateur','coordination','chef_service','comite_pilotage'] },
-
     { id:'finances',     label:'Finances',            badge:'SYSCOHADA',
       desc:'Paiements, journaux comptables, grand livre et trésorerie.',
       icon:'fa-university', color:'#0f766e', light:'#ccfbf1',
       href:'/pages/finances/index.html',
-      roles:['administrateur','coordination','chef_service','comite_pilotage','controleur'] },
+      roles:['administrateur','coordination','chef_service','comite_pilotage','controleur','comptable_principal'] },
 
-    { id:'controle',     label:'Contrôle & Audit',    badge:'Audit',
+    { id:'audit',        label:'Audit & Contrôle',    badge:'Audit',
       desc:'Anomalies, conformité des dossiers et piste d\'audit.',
       icon:'fa-shield-alt', color:'#b91c1c', light:'#fee2e2',
       href:'/pages/controle/index.html',
-      roles:['administrateur','coordination','chef_service','comite_pilotage','controleur','agent'] },
+      roles:['administrateur','coordination','chef_service','comite_pilotage','controleur','agent','comptable_principal'] },
   ];
 
   const ROLE_LABELS = {
@@ -744,6 +735,7 @@
         title: 'Vos actes engageants — Comptable Principal',
         sub:   'Agent de l\'État pécuniairement responsable',
         cards: [
+          { href:'/pages/validation/index.html',       icon:'fa-check-double',    label:'Centre de validation',  desc:'Vos dossiers en attente d\'avis comptable.', color:'#b91c1c', light:'#fee2e2' },
           { href:'/pages/finances/emit-ov.html',       icon:'fa-money-check-alt', label:'Émettre un OV',         desc:'Ordre de virement à signer comptablement.', color:'#15803d', light:'#dcfce7' },
           { href:'/pages/finances/emit-paie.html',     icon:'fa-users',           label:'État de salaires',      desc:'Bordereau de paie mensuel — agents PSLSH.', color:'#0369a1', light:'#e0f2fe' },
           { href:'/pages/finances/emit-decharge.html', icon:'fa-receipt',         label:'Émettre une décharge',  desc:'Quittance de paiement / reçu signé.',       color:'#b45309', light:'#fef3c7' },
@@ -780,9 +772,10 @@
           },
           {
             icon:'fa-clipboard-check', label:'Valider une procédure',
-            desc:'Visa EB, PV de réception, attestations…',
+            desc:'Centre de validation, visa EB, PV, attestations…',
             color:'#15803d', light:'#dcfce7',
             menu: [
+              { href:'/pages/validation/index.html',       icon:'fa-inbox',            label:'Centre de validation — ma file' },
               { href:'/pages/saf/actes-saf.html?tab=visa', icon:'fa-check-double',     label:'Viser une expression de besoin' },
               { href:'/pages/saf/actes-saf.html?tab=pv',   icon:'fa-clipboard-check',  label:'PV de Réception' },
               { href:'/pages/saf/actes-saf.html?tab=asf',  icon:'fa-certificate',      label:'Attestation de Service Fait' },
@@ -820,13 +813,14 @@
         sub:   'Autorité d\'ordonnancement et de décision — 4 axes',
         cards: [
           {
-            icon:'fa-file-signature', label:'Ordonnancer', desc:'OV, OP, mandats à signer pour exécution.',
+            icon:'fa-file-signature', label:'Ordonnancer', desc:'Centre de validation, OV, OP, mandats à signer.',
             color:'#b91c1c', light:'#fee2e2',
             menu: [
-              { href:'/pages/finances/ov-list.html?statut=emis', icon:'fa-money-check-alt',  label:'Ordonnancer un OV (signature)' },
-              { href:'/pages/coordo/actes-coordo.html?tab=op',   icon:'fa-money-bill-wave',  label:'Signer un Ordre de Paiement' },
-              { href:'/pages/coordo/actes-coordo.html?tab=mandat', icon:'fa-stamp',          label:'Signer un mandat' },
-              { href:'/pages/paiement/index.html',                icon:'fa-check-double',   label:'Approuver une liquidation' },
+              { href:'/pages/validation/index.html',              icon:'fa-inbox',           label:'Centre de validation — ma file' },
+              { href:'/pages/finances/ov-list.html?statut=emis',  icon:'fa-money-check-alt', label:'Ordonnancer un OV (signature)' },
+              { href:'/pages/coordo/actes-coordo.html?tab=op',    icon:'fa-money-bill-wave', label:'Signer un Ordre de Paiement' },
+              { href:'/pages/coordo/actes-coordo.html?tab=mandat',icon:'fa-stamp',           label:'Signer un mandat' },
+              { href:'/pages/paiement/index.html',                icon:'fa-check-double',    label:'Approuver une liquidation' },
             ],
           },
           {
@@ -1111,7 +1105,7 @@
     /* ── 2. Barre des 8 NAVIGATEURS (boutons compacts en bas) ──────────── */
     const navBar = document.getElementById('navBarGrid');
     if (navBar) {
-      navBar.innerHTML = (allowed.length ? allowed : NAVIGATORS).slice(0, 8).map((n, i) => `
+      navBar.innerHTML = (allowed.length ? allowed : NAVIGATORS).slice(0, 6).map((n, i) => `
         <a class="nav-btn" href="${n.href}" style="--btn-color:${n.color};--btn-light:${n.light}" title="${n.desc}">
           <div class="nb-ic"><i class="fas ${n.icon}"></i></div>
           <div style="min-width:0;line-height:1.15">
