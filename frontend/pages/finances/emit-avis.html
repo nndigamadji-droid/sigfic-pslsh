@@ -12,31 +12,88 @@
     html,body{height:100%;overflow:hidden}
     .app-layout,.main-content{height:100vh;overflow:hidden}
     .page-content{flex:1;overflow-y:auto;padding:20px 28px;background:#eef2f7}
+
     .em-hero{background:#fff;border:1px solid #e2e8f0;border-left:4px solid #7c3aed;border-radius:10px;
       padding:14px 18px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
     .em-hero h5{margin:0;font-size:1rem;font-weight:800;color:#1b2f52}
     .em-hero small{font-size:.72rem;color:#64748b}
-    .em-hero .em-tag{font-size:.66rem;font-weight:800;padding:5px 12px;border-radius:6px;
+    .em-tag{font-size:.66rem;font-weight:800;padding:5px 12px;border-radius:6px;
       background:#ede9fe;color:#7c3aed;text-transform:uppercase;letter-spacing:.04em}
-    .em-form{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:20px 24px;max-width:980px}
-    .em-form label{font-size:.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px}
+
+    .stepper{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 22px;margin-bottom:14px;
+      display:flex;justify-content:space-between;position:relative;gap:0}
+    .stepper::before{content:'';position:absolute;top:32px;left:60px;right:60px;height:2px;background:#e2e8f0;z-index:0}
+    .step{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
+    .step .st-circle{width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:2px solid #cbd5e1;
+      display:flex;align-items:center;justify-content:center;color:#94a3b8;font-weight:800;font-size:.86rem;transition:all .25s}
+    .step.done .st-circle{background:#ede9fe;border-color:#7c3aed;color:#7c3aed}
+    .step.active .st-circle{background:#7c3aed;border-color:#7c3aed;color:#fff;box-shadow:0 0 0 5px rgba(124,58,237,.18)}
+    .step .st-label{font-size:.72rem;font-weight:700;color:#94a3b8;text-align:center}
+    .step.done .st-label,.step.active .st-label{color:#1b2f52}
+
+    .card-em{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px 22px;margin-bottom:14px}
+    .card-em h6{margin:0 0 12px;font-size:.88rem;font-weight:800;color:#1b2f52;display:flex;align-items:center;gap:8px}
+    .card-em h6 i{color:#7c3aed}
+
+    .pick{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end}
+    .pick label{font-size:.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px}
+    .pick select,.pick input{width:100%;font-size:.84rem;padding:8px 12px;
+      border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#1b2f52}
+    .btn-action{font-size:.78rem;font-weight:700;padding:9px 16px;border-radius:7px;cursor:pointer;
+      display:inline-flex;align-items:center;gap:6px;border:1px solid;white-space:nowrap}
+    .btn-action.primary{background:#7c3aed;color:#fff;border-color:#7c3aed}
+    .btn-action.primary:hover{filter:brightness(.92)}
+    .btn-action.primary:disabled{background:#94a3b8;border-color:#94a3b8;cursor:not-allowed;filter:none}
+    .btn-action.ghost{background:#fff;color:#1b3a6b;border-color:#cbd5e1}
+
+    .eb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+    .eb-field label{font-size:.62rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:3px}
+    .eb-field .val{font-size:.88rem;font-weight:800;color:#1b2f52;font-family:monospace}
+    .eb-field .val.money{color:#15803d}
+
+    .eb-libs{background:#fafbfc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin-bottom:12px}
+    .eb-libs h6{margin:0 0 8px;font-size:.74rem;color:#475569;font-weight:800}
+    .eb-libs ul{margin:0;padding-left:18px;font-size:.78rem;color:#1b2f52}
+    .eb-libs li{padding:3px 0}
+    .eb-libs li small{color:#94a3b8;margin-left:6px}
+
+    .budget-card{background:#f0f7ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;margin:10px 0}
+    .budget-card h6{margin:0 0 10px;font-size:.84rem;color:#1b3a6b;font-weight:800}
+    .budget-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+    .b-field label{font-size:.6rem;font-weight:700;color:#64748b;text-transform:uppercase;display:block;margin-bottom:3px}
+    .b-field .val{font-size:.92rem;font-weight:800;color:#1b2f52;font-family:monospace}
+    .b-field .val.green{color:#15803d}
+    .b-field .val.warn{color:#b45309}
+
+    .verif-bar{background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:14px 18px;margin:14px 0;
+      display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+    .verif-bar.verified{background:#dcfce7;border-color:#86efac}
+    .verif-bar > i{font-size:1.4rem;color:#b45309;margin-top:2px}
+    .verif-bar.verified > i{color:#15803d}
+    .verif-bar .vb-msg{flex:1;font-size:.82rem;color:#92400e;font-weight:600;min-width:300px}
+    .verif-bar.verified .vb-msg{color:#166534}
+    .verif-checks{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .verif-check{display:flex;align-items:center;gap:7px;font-size:.76rem;font-weight:500;color:#475569}
+    .verif-check input{margin:0;cursor:pointer;width:16px;height:16px;accent-color:#7c3aed}
+    .verif-check label{cursor:pointer;margin:0}
+
+    .em-form{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:22px 26px}
+    .em-form label{font-size:.7rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px}
     .em-form input,.em-form select,.em-form textarea{width:100%;font-size:.84rem;padding:8px 12px;
       border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#1b2f52;font-family:inherit}
     .em-form input:focus,.em-form select:focus,.em-form textarea:focus{outline:none;border-color:#7c3aed;box-shadow:0 0 0 3px #ede9fe}
-    .em-form textarea{resize:vertical;min-height:80px}
+    .em-form input[readonly]{background:#f8fafc;color:#475569;cursor:not-allowed}
     .em-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px}
     .em-grid .full{grid-column:1/-1}
     .em-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:14px;border-top:1px solid #f1f5f9;margin-top:8px}
-    .btn-em{font-size:.78rem;font-weight:700;padding:9px 18px;border-radius:8px;cursor:pointer;
-      display:inline-flex;align-items:center;gap:6px;border:1px solid}
-    .btn-em.primary{background:#7c3aed;color:#fff;border-color:#7c3aed}
-    .btn-em.primary:hover{filter:brightness(.92)}
-    .btn-em.ghost{background:#fff;color:#64748b;border-color:#cbd5e1}
-    .btn-em.ghost:hover{border-color:#1b3a6b;color:#1b3a6b}
-    .em-alert{padding:10px 14px;border-radius:8px;font-size:.78rem;margin-bottom:12px;display:none}
+
+    .em-alert{padding:11px 16px;border-radius:8px;font-size:.82rem;margin-bottom:12px;display:none}
     .em-alert.ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
     .em-alert.err{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
     .em-alert.visible{display:block}
+
+    .locked-msg{text-align:center;padding:36px 20px;color:#94a3b8;font-size:.84rem;background:#fafbfc;border:2px dashed #e2e8f0;border-radius:10px}
+    .locked-msg i{display:block;font-size:2rem;margin-bottom:10px;opacity:.5}
   </style>
 </head>
 <body>
@@ -44,19 +101,21 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <img src="../../assets/logo/logo-pslsh.png" alt="" class="brand-logo">
-      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Émissions</div></div>
+      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Avis comptable</div></div>
     </div>
     <div id="sidebarServiceBadge"></div>
     <nav class="sidebar-nav" id="sidebarNav"></nav>
     <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
   </aside>
+
   <div class="main-content">
     <div class="topbar">
       <div class="topbar-left"><nav><ol class="breadcrumb mb-0">
-        <li class="breadcrumb-item"><a href="/pages/dashboard/index.html" class="text-muted">Tableau de bord</a></li>
-        <li class="breadcrumb-item active fw-semibold">Émettre un Avis Comptable</li>
+        <li class="breadcrumb-item"><a href="/pages/accueil/index.html" class="text-muted">Accueil</a></li>
+        <li class="breadcrumb-item"><a href="/pages/finances/index.html" class="text-muted">Finances</a></li>
+        <li class="breadcrumb-item active fw-semibold">Avis comptable sur EB</li>
       </ol></nav></div>
-      <div class="topbar-center"><i class="fas fa-stamp me-1"></i>Avis sur EB</div>
+      <div class="topbar-center"><i class="fas fa-stamp me-1"></i>Workflow contrôlé d'avis comptable</div>
       <div class="topbar-right">
         <div class="topbar-notif"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
         <div class="dropdown">
@@ -72,67 +131,332 @@
         </div>
       </div>
     </div>
+
     <div class="page-content">
       <div class="em-hero">
         <div>
           <h5><i class="fas fa-stamp me-2" style="color:#7c3aed"></i>Émettre un Avis Comptable</h5>
-          <small>Vérification de la disponibilité des crédits budgétaires pour une Expression de Besoin.</small>
+          <small>Un avis sur EB ne peut être émis qu'après importation de l'EB et vérification de la disponibilité des crédits sur la ligne budgétaire concernée.</small>
         </div>
-        <span class="em-tag">AVIS — préalable</span>
+        <span class="em-tag">AVIS — Préalable comptable</span>
       </div>
+
+      <div class="stepper">
+        <div class="step active" id="step1"><div class="st-circle">1</div><div class="st-label">Importer l'EB</div></div>
+        <div class="step"        id="step2"><div class="st-circle">2</div><div class="st-label">Vérifier le crédit</div></div>
+        <div class="step"        id="step3"><div class="st-circle">3</div><div class="st-label">Émettre l'avis</div></div>
+      </div>
+
       <div id="alert" class="em-alert"></div>
-      
-      <form class="em-form" id="avisForm" onsubmit="event.preventDefault();submitAvis()">
-        <div class="em-grid">
-          <div><label>Référence EB *</label><input type="text" name="eb_reference" required placeholder="EB-2026-NNNN"></div>
-          <div><label>Décision *</label><select name="decision" required>
-            <option value="favorable">Favorable (crédit disponible)</option>
-            <option value="reserve">Avec réserve (conditions)</option>
-            <option value="defavorable">Défavorable (insuffisant)</option>
-          </select></div>
-          <div><label>Ligne budgétaire</label><input type="text" name="ligne_budgetaire" placeholder="L-DF1-001"></div>
-          <div><label>Source financement</label><input type="text" name="source_financement" placeholder="ETAT / FM / OMS…"></div>
-          <div><label>Montant demandé (FCFA)</label><input type="number" name="montant_demande" min="0" step="1"></div>
-          <div><label>Crédit disponible (FCFA)</label><input type="number" name="credit_disponible" min="0" step="1"></div>
-          <div class="full"><label>Motif de la décision *</label><textarea name="motif" required placeholder="Justification de votre avis"></textarea></div>
-          <div class="full"><label>Conditions (si avec réserve)</label><textarea name="conditions" placeholder="Conditions à remplir avant exécution"></textarea></div>
+
+      <div class="card-em">
+        <h6><i class="fas fa-file-import"></i>Étape 1 — Importer l'EB à examiner</h6>
+        <div class="pick">
+          <div>
+            <label>Sélectionner une EB (soumises)</label>
+            <select id="ebSelect" onchange="onSelectChange()">
+              <option value="">— Choisir une EB —</option>
+            </select>
+          </div>
+          <div>
+            <label>OU référence directe</label>
+            <input type="text" id="ebManual" placeholder="EB-2026-NNNN">
+          </div>
+          <button class="btn-action primary" onclick="importEb()">
+            <i class="fas fa-file-import"></i>Importer & voir
+          </button>
         </div>
-        <div class="em-actions">
-          <a href="/pages/dashboard/index.html" class="btn-em ghost"><i class="fas fa-times"></i>Annuler</a>
-          <button type="submit" class="btn-em primary"><i class="fas fa-stamp"></i>Émettre l'avis</button>
+      </div>
+
+      <div class="card-em" id="cardVerif" style="display:none">
+        <h6><i class="fas fa-search-plus"></i>Étape 2 — Vérifier l'EB & la disponibilité budgétaire</h6>
+
+        <div class="eb-grid">
+          <div class="eb-field"><label>Référence EB</label><div class="val" id="ebRef">—</div></div>
+          <div class="eb-field"><label>Service porteur</label><div class="val" id="ebService">—</div></div>
+          <div class="eb-field"><label>Type SYSCOHADA</label><div class="val" id="ebSysco">—</div></div>
+          <div class="eb-field"><label>Date soumission</label><div class="val" id="ebDate">—</div></div>
+          <div class="eb-field" style="grid-column:span 2"><label>Motif</label><div class="val" id="ebMotif" style="font-family:inherit;font-weight:600">—</div></div>
+          <div class="eb-field"><label>Estimation</label><div class="val money" id="ebMontant">—</div></div>
+          <div class="eb-field"><label>Statut</label><div class="val" id="ebStatut">—</div></div>
         </div>
-      </form>
-  
+
+        <div class="eb-libs">
+          <h6><i class="fas fa-list-ul me-1"></i>Libellés du besoin</h6>
+          <ul id="ebLibs"><li>—</li></ul>
+        </div>
+
+        <div class="budget-card">
+          <h6 id="budgetTitle">Ligne budgétaire</h6>
+          <div class="budget-grid">
+            <div class="b-field"><label>Crédit ouvert</label><div class="val" id="bCredit">—</div></div>
+            <div class="b-field"><label>Révisé</label><div class="val" id="bRevise">—</div></div>
+            <div class="b-field"><label>Engagé</label><div class="val warn" id="bEngage">—</div></div>
+            <div class="b-field"><label>Disponible</label><div class="val green" id="bDispo">—</div></div>
+            <div class="b-field"><label>Montant EB</label><div class="val" id="bEstim">—</div></div>
+          </div>
+          <div id="bComparaison" style="margin-top:10px;padding:8px 12px;border-radius:6px;font-size:.78rem;font-weight:600"></div>
+        </div>
+
+        <div class="verif-bar" id="verifBar">
+          <i class="fas fa-exclamation-triangle"></i>
+          <div class="vb-msg">
+            <strong>Vérification requise</strong> — Cochez les 6 contrôles avant de pouvoir émettre votre avis.
+            <div class="verif-checks">
+              <div class="verif-check"><input type="checkbox" id="chk1" onchange="updateVerif()"><label for="chk1">EB complète et cohérente</label></div>
+              <div class="verif-check"><input type="checkbox" id="chk2" onchange="updateVerif()"><label for="chk2">Ligne budgétaire valide</label></div>
+              <div class="verif-check"><input type="checkbox" id="chk3" onchange="updateVerif()"><label for="chk3">Crédit examiné</label></div>
+              <div class="verif-check"><input type="checkbox" id="chk4" onchange="updateVerif()"><label for="chk4">Pas de doublon</label></div>
+              <div class="verif-check"><input type="checkbox" id="chk5" onchange="updateVerif()"><label for="chk5">Conformité PTBA / PAO</label></div>
+              <div class="verif-check"><input type="checkbox" id="chk6" onchange="updateVerif()"><label for="chk6">Imputation correcte</label></div>
+            </div>
+          </div>
+          <button class="btn-action primary" id="btnUnlock" onclick="unlockEmission()" disabled>
+            <i class="fas fa-unlock"></i>Émettre l'avis
+          </button>
+        </div>
+      </div>
+
+      <div class="card-em" id="cardForm" style="display:none">
+        <h6><i class="fas fa-stamp"></i>Étape 3 — Saisie & signature de l'avis</h6>
+        <div id="formLockMsg" class="locked-msg">
+          <i class="fas fa-lock"></i>
+          Le formulaire d'avis s'ouvre une fois la vérification complète à l'étape&nbsp;2.
+        </div>
+        <form class="em-form" id="avisForm" style="display:none" onsubmit="event.preventDefault();submitAvis()">
+          <div class="em-grid">
+            <div><label>Référence EB</label><input type="text" name="eb_reference" id="avEbRef" readonly></div>
+            <div><label>Décision *</label><select name="decision" id="avDecision" required onchange="onDecisionChange()">
+              <option value="favorable">Favorable (crédit disponible)</option>
+              <option value="reserve">Avec réserve (conditions)</option>
+              <option value="defavorable">Défavorable (insuffisant)</option>
+            </select></div>
+            <div><label>Ligne budgétaire</label><input type="text" name="ligne_budgetaire" id="avLigne"></div>
+            <div><label>Source financement</label><input type="text" name="source_financement" placeholder="ETAT / FM / OMS…"></div>
+            <div><label>Montant demandé (FCFA)</label><input type="number" name="montant_demande" id="avMontant" min="0" step="1"></div>
+            <div><label>Crédit disponible (FCFA)</label><input type="number" name="credit_disponible" id="avDispo" min="0" step="1"></div>
+            <div class="full"><label>Motif de la décision *</label><textarea name="motif" required placeholder="Justification de votre avis"></textarea></div>
+            <div class="full" id="condRow"><label>Conditions (si avec réserve)</label><textarea name="conditions" placeholder="Conditions à remplir avant exécution"></textarea></div>
+          </div>
+          <div class="em-actions">
+            <a href="/pages/accueil/index.html" class="btn-action ghost"><i class="fas fa-times"></i>Annuler</a>
+            <button type="submit" class="btn-action primary"><i class="fas fa-stamp"></i>Émettre & signer l'avis</button>
+          </div>
+        </form>
+      </div>
+
     </div>
   </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/src/js/api.js"></script>
 <script src="/src/js/roles.js"></script>
 <script>
 const API = 'http://localhost:3000/api/v1';
+const fmt = n => Math.round(parseFloat(n)||0).toLocaleString('fr-FR');
 const tok = () => localStorage.getItem('pslsh_token');
-async function post(url, body) {{
-  const r = await fetch(API+url, {{method:'POST', headers:{{'Content-Type':'application/json',Authorization:'Bearer '+tok()}}, body: JSON.stringify(body)}});
-  return r.json();
-}}
-function showAlert(type, msg) {{
+function showAlert(type, msg) {
   const a = document.getElementById('alert');
   a.className = 'em-alert visible ' + type;
   a.innerHTML = msg;
-  a.scrollIntoView({{behavior:'smooth'}});
-}}
+  a.scrollIntoView({behavior:'smooth', block:'start'});
+  if (type === 'ok') setTimeout(() => a.classList.remove('visible'), 8000);
+}
+
+let _eb = null;
+let _ligne = null;
+
+function _loadEbAll() {
+  try {
+    const raw = localStorage.getItem('pslsh_eb_all_v1');
+    if (raw) {
+      const p = JSON.parse(raw);
+      return Array.isArray(p) ? p : (p.data || []);
+    }
+  } catch (_) {}
+  return [];
+}
+
+function _loadLignes() {
+  try {
+    const raw = localStorage.getItem('pslsh_lignes_v1');
+    if (raw) {
+      const p = JSON.parse(raw);
+      return (p && p.data) || (Array.isArray(p) ? p : []);
+    }
+  } catch(_) {}
+  return [];
+}
+
+function loadEbList() {
+  const ebs = _loadEbAll().filter(e => ['soumis','saf','attente_avis'].includes(e.statut));
+  const sel = document.getElementById('ebSelect');
+  if (!ebs.length) {
+    sel.innerHTML = '<option value="">— Aucune EB en attente d\'avis —</option>';
+    return;
+  }
+  sel.innerHTML = '<option value="">— Choisir une EB —</option>' +
+    ebs.map(e => {
+      const objet = (e.lignes && e.lignes[0] && e.lignes[0].libelle) || e.motif || e.objet || '';
+      return '<option value="' + e.id + '">' + e.id + ' · ' + objet.slice(0,55) + ' (' + (e.service || '?') + ')</option>';
+    }).join('');
+}
+
+function onSelectChange() {
+  const id = document.getElementById('ebSelect').value;
+  if (id) document.getElementById('ebManual').value = id;
+}
+
+function importEb() {
+  const id = (document.getElementById('ebManual').value
+            || document.getElementById('ebSelect').value || '').trim();
+  if (!id) { showAlert('err','✗ Sélectionnez ou saisissez la référence d\'une EB.'); return; }
+
+  _eb = _loadEbAll().find(e => e.id === id);
+  if (!_eb) {
+    showAlert('err', '✗ EB <strong>' + id + '</strong> introuvable dans le stockage local.');
+    return;
+  }
+
+  const lignes = _loadLignes();
+  const lignePressentie = (_eb.ligne_budget_suggested || _eb.ligne || '').split('/')[0];
+  _ligne = lignes.find(l => l.code === lignePressentie);
+  if (!_ligne && _eb.sysco_code) {
+    _ligne = lignes.find(l => (l.libelle || '').toLowerCase().includes((_eb.sysco_libelle || '').toLowerCase().split(' ')[0]));
+  }
+
+  renderEb();
+  document.getElementById('cardVerif').style.display = 'block';
+  document.getElementById('cardForm').style.display  = 'block';
+  document.getElementById('step1').classList.add('done');
+  document.getElementById('step2').classList.add('active');
+  document.getElementById('cardVerif').scrollIntoView({behavior:'smooth', block:'start'});
+  showAlert('ok', '✓ EB <strong>' + id + '</strong> importée. Procédez à la vérification.');
+}
+
+function renderEb() {
+  document.getElementById('ebRef').textContent     = _eb.id;
+  document.getElementById('ebService').textContent = _eb.service || '—';
+  document.getElementById('ebSysco').textContent   = _eb.sysco_code || '—';
+  document.getElementById('ebDate').textContent    = _eb.soumis || '—';
+  document.getElementById('ebMotif').textContent   = _eb.motif || '—';
+  document.getElementById('ebStatut').textContent  = _eb.statut || '—';
+
+  let montant = parseFloat(_eb.montant) || 0;
+  if (!montant && _eb.lignes) {
+    montant = _eb.lignes.reduce((s, l) => s + ((parseFloat(l.quantite) || 0) * (parseFloat(l.prix_unit) || 0)), 0);
+  }
+  document.getElementById('ebMontant').textContent = fmt(montant) + ' FCFA';
+
+  const libs = _eb.lignes || [];
+  document.getElementById('ebLibs').innerHTML = libs.length
+    ? libs.map(l => '<li>' + (l.libelle || '—') + ' <small>· ' + (l.quantite || '?') + ' ' + (l.unite || '') + '</small>' + (l.sysco_code ? ' <small style="color:#7c3aed">[' + l.sysco_code + ']</small>' : '') + '</li>').join('')
+    : '<li><em style="color:#94a3b8">Aucun libellé détaillé</em></li>';
+
+  const bTitle = document.getElementById('budgetTitle');
+  if (_ligne) {
+    bTitle.textContent = _ligne.code + ' — ' + (_ligne.libelle || '');
+    const credit = parseFloat(_ligne.montant) || 0;
+    const revise = parseFloat(_ligne.revise) || credit;
+    const engage = parseFloat(_ligne.engage) || 0;
+    const dispo  = Math.max(0, revise - engage);
+    document.getElementById('bCredit').textContent = fmt(credit) + ' FCFA';
+    document.getElementById('bRevise').textContent = fmt(revise) + ' FCFA';
+    document.getElementById('bEngage').textContent = fmt(engage) + ' FCFA';
+    document.getElementById('bDispo').textContent  = fmt(dispo) + ' FCFA';
+    document.getElementById('bEstim').textContent  = fmt(montant) + ' FCFA';
+
+    const cmp = document.getElementById('bComparaison');
+    if (montant > dispo) {
+      cmp.style.background = '#fee2e2'; cmp.style.color = '#b91c1c';
+      cmp.innerHTML = '<i class="fas fa-times-circle me-1"></i>⚠ Crédit insuffisant : il manque ' + fmt(montant - dispo) + ' FCFA. Avis devra être DÉFAVORABLE.';
+      document.getElementById('avDecision').value = 'defavorable';
+    } else if (montant > dispo * 0.8) {
+      cmp.style.background = '#fef3c7'; cmp.style.color = '#92400e';
+      cmp.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Crédit suffisant mais > 80% du disponible. Envisager AVIS AVEC RÉSERVE.';
+      document.getElementById('avDecision').value = 'reserve';
+    } else {
+      cmp.style.background = '#dcfce7'; cmp.style.color = '#166534';
+      cmp.innerHTML = '<i class="fas fa-check-circle me-1"></i>Crédit suffisant. Marge : ' + fmt(dispo - montant) + ' FCFA. Avis FAVORABLE possible.';
+      document.getElementById('avDecision').value = 'favorable';
+    }
+
+    document.getElementById('avLigne').value = _ligne.code;
+    document.getElementById('avDispo').value = Math.round(dispo);
+  } else {
+    bTitle.textContent = 'Ligne budgétaire non identifiée';
+    ['bCredit','bRevise','bEngage','bDispo'].forEach(id => document.getElementById(id).textContent = '—');
+    document.getElementById('bEstim').textContent = fmt(montant) + ' FCFA';
+    document.getElementById('bComparaison').style.background = '#fef3c7';
+    document.getElementById('bComparaison').style.color = '#92400e';
+    document.getElementById('bComparaison').innerHTML = '<i class="fas fa-info-circle me-1"></i>Aucune ligne référencée. Saisie manuelle requise dans le formulaire.';
+  }
+
+  document.getElementById('avEbRef').value = _eb.id;
+  document.getElementById('avMontant').value = Math.round(montant);
+  onDecisionChange();
+}
+
+function updateVerif() {
+  const checks = ['chk1','chk2','chk3','chk4','chk5','chk6'].map(id => document.getElementById(id).checked);
+  const ok = checks.every(Boolean);
+  const btn = document.getElementById('btnUnlock');
+  const bar = document.getElementById('verifBar');
+  btn.disabled = !ok;
+  bar.classList.toggle('verified', ok);
+  if (ok) {
+    bar.querySelector('i').className = 'fas fa-check-circle';
+    bar.querySelector('.vb-msg strong').textContent = 'Vérification validée ✓';
+  } else {
+    bar.querySelector('i').className = 'fas fa-exclamation-triangle';
+    bar.querySelector('.vb-msg strong').textContent = 'Vérification requise';
+  }
+}
+
+function unlockEmission() {
+  if (document.getElementById('btnUnlock').disabled) return;
+  document.getElementById('formLockMsg').style.display = 'none';
+  document.getElementById('avisForm').style.display = 'block';
+  document.getElementById('step2').classList.add('done');
+  document.getElementById('step3').classList.add('active');
+  document.getElementById('cardForm').scrollIntoView({behavior:'smooth', block:'start'});
+  showAlert('ok', '✓ Vérification validée. Le formulaire d\'émission de l\'avis est ouvert.');
+}
+
+function onDecisionChange() {
+  const v = document.getElementById('avDecision').value;
+  document.getElementById('condRow').style.display = (v === 'reserve') ? 'block' : 'none';
+}
 
 async function submitAvis() {
   const f = document.getElementById('avisForm');
   const fd = new FormData(f); const body = {};
   for (const [k,v] of fd.entries()) body[k] = v;
-  const r = await post('/emissions/avis', body);
-  if (r.success) {
-    showAlert('ok','✓ Avis <strong>'+r.data.reference+'</strong> émis ('+r.data.decision+')');
-    f.reset();
-  } else showAlert('err','✗ ' + (r.message || 'Erreur'));
+  try {
+    const r = await fetch(API + '/emissions/avis', {
+      method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok()},
+      body: JSON.stringify(body),
+    });
+    const b = await r.json();
+    if (b.success) {
+      document.getElementById('step3').classList.add('done');
+      showAlert('ok', '✓ Avis <strong>' + b.data.reference + '</strong> (' + body.decision + ') émis avec succès.');
+      f.reset();
+    } else {
+      showAlert('err','✗ ' + (b.message || 'Erreur'));
+    }
+  } catch (e) {
+    showAlert('err','✗ Erreur réseau : ' + e.message);
+  }
 }
 
+loadEbList();
+const params = new URLSearchParams(location.search);
+if (params.get('eb')) {
+  document.getElementById('ebManual').value = params.get('eb');
+  importEb();
+}
 </script>
 </body></html>
