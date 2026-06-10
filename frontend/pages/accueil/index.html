@@ -255,6 +255,82 @@
     .skill-card .sk-cta i { font-size: .58rem; transition: transform .15s; }
     .skill-card:hover .sk-cta i { transform: translateX(3px); }
 
+    /* ── MODE BOUTONS-ACTIONS LARGES (chef_service) ─────────────────────── */
+    .skills-grid.skills-grid-bigbtn {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px; align-content: start;
+      overflow-y: auto;
+    }
+    @media (max-width: 920px) {
+      .skills-grid.skills-grid-bigbtn { grid-template-columns: 1fr; }
+    }
+    .skill-bigbtn {
+      background: #fff; border: 1px solid #e6ebf2;
+      border-left: 4px solid var(--card-color, #1b3a6b);
+      border-radius: 12px; overflow: hidden;
+      transition: box-shadow .18s, border-color .15s;
+    }
+    .skill-bigbtn:hover {
+      box-shadow: 0 8px 22px rgba(15,23,42,.10);
+      border-color: var(--card-color);
+    }
+    .bb-toggle {
+      width: 100%; border: 0; background: transparent; cursor: pointer;
+      display: grid; grid-template-columns: auto 1fr auto; gap: 14px;
+      align-items: center; padding: 14px 16px; text-align: left;
+    }
+    .bb-ic {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--card-light);
+      color: var(--card-color);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .bb-text { min-width: 0; }
+    .bb-title { font-size: 1rem; font-weight: 800; color: var(--navy-700); }
+    .bb-desc  { font-size: .72rem; color: #64748b; line-height: 1.4; margin-top: 2px; }
+    .bb-chev {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--card-light); color: var(--card-color);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .82rem;
+      transition: transform .25s;
+    }
+    .skill-bigbtn.open .bb-chev { transform: rotate(180deg); }
+
+    .bb-menu {
+      max-height: 0; overflow: hidden;
+      background: #fafbfc; border-top: 0;
+      transition: max-height .3s ease;
+    }
+    .skill-bigbtn.open .bb-menu {
+      max-height: 600px;
+      border-top: 1px solid #e6ebf2;
+    }
+    .bb-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 18px; font-size: .8rem; font-weight: 600;
+      color: #1b2f52; text-decoration: none;
+      border-bottom: 1px solid #f1f5f9;
+      transition: all .12s;
+    }
+    .bb-item:last-child { border-bottom: 0; }
+    .bb-item:hover {
+      background: var(--card-light);
+      color: var(--card-color);
+      padding-left: 24px;
+    }
+    .bb-item > i:first-child {
+      width: 22px; color: var(--card-color);
+      font-size: .92rem; text-align: center;
+    }
+    .bb-item span { flex: 1; }
+    .bb-arrow {
+      opacity: 0; color: var(--card-color); font-size: .7rem;
+      transition: opacity .15s, transform .15s;
+    }
+    .bb-item:hover .bb-arrow { opacity: 1; transform: translateX(3px); }
+
     .empty-skills {
       grid-column: 1 / -1;
       background: #fff;
@@ -687,18 +763,56 @@
       },
       chef_service: {
         title: 'Vos actes engageants — Chef SAF',
-        sub:   'Service Administratif et Financier — actes administratifs et de passation',
+        sub:   'Service Administratif et Financier — 4 axes de compétence',
         cards: [
-          { href:'/pages/saf/actes-saf.html?tab=visa',    icon:'fa-check-double',      label:'Viser une EB',          desc:'Visa SAF du circuit ELOP — favorable / réserve / rejet.', color:'#1b3a6b', light:'#e8f0fb' },
-          { href:'/pages/saf/actes-saf.html?tab=tdr',     icon:'fa-file-alt',          label:'Rédiger TDR',           desc:'Termes de référence pour passation de marché.',            color:'#0369a1', light:'#e0f2fe' },
-          { href:'/pages/saf/actes-saf.html?tab=tcp',     icon:'fa-balance-scale',     label:'Tableau Comparatif',    desc:'Analyse comparative des offres fournisseurs.',             color:'#7c3aed', light:'#ede9fe' },
-          { href:'/pages/saf/actes-saf.html?tab=bc',      icon:'fa-file-invoice',      label:'Bon de Commande',       desc:'BC avec articles, TVA et total TTC calculés.',             color:'#b45309', light:'#fef3c7' },
-          { href:'/pages/saf/actes-saf.html?tab=contrat', icon:'fa-file-contract',     label:'Contrat / Marché',      desc:'Engagement contractuel formel avec un titulaire.',          color:'#9d174d', light:'#fce7f3' },
-          { href:'/pages/saf/actes-saf.html?tab=notif',   icon:'fa-envelope-open-text',label:'Notification de contrat', desc:'Notification d\'attribution / rejet / exécution.',          color:'#0e7490', light:'#cffafe' },
-          { href:'/pages/saf/actes-saf.html?tab=pv',      icon:'fa-clipboard-check',   label:'PV de Réception',       desc:'Procès-verbal de réception des fournitures.',               color:'#15803d', light:'#dcfce7' },
-          { href:'/pages/saf/actes-saf.html?tab=asf',     icon:'fa-certificate',       label:'Attestation Serv. Fait',desc:'Certification de prestation conformément exécutée.',        color:'#d97706', light:'#fef3c7' },
-          { href:'/pages/saf/actes-saf.html?tab=op',      icon:'fa-money-bill-wave',   label:'Ordre de paiement',     desc:'OP préparé par le SAF, signé par le Coordo.',               color:'#166534', light:'#dcfce7' },
-          { href:'/pages/saf/actes-saf.html?tab=note',    icon:'fa-sticky-note',       label:'Note de service',       desc:'Communication administrative interne.',                      color:'#475569', light:'#f1f5f9' },
+          {
+            icon:'fa-pen-fancy', label:'Rédiger un acte',
+            desc:'TDR, contrat, BC, notification, note de service…',
+            color:'#1b3a6b', light:'#e8f0fb',
+            menu: [
+              { href:'/pages/saf/actes-saf.html?tab=tdr',     icon:'fa-file-alt',           label:'Termes de Référence (TDR)' },
+              { href:'/pages/saf/actes-saf.html?tab=tcp',     icon:'fa-balance-scale',      label:'Tableau Comparatif des Prix' },
+              { href:'/pages/saf/actes-saf.html?tab=bc',      icon:'fa-file-invoice',       label:'Bon de Commande' },
+              { href:'/pages/saf/actes-saf.html?tab=contrat', icon:'fa-file-contract',      label:'Contrat / Marché' },
+              { href:'/pages/saf/actes-saf.html?tab=notif',   icon:'fa-envelope-open-text', label:'Notification de contrat' },
+              { href:'/pages/saf/actes-saf.html?tab=note',    icon:'fa-sticky-note',        label:'Note de service' },
+            ],
+          },
+          {
+            icon:'fa-clipboard-check', label:'Valider une procédure',
+            desc:'Visa EB, PV de réception, attestations…',
+            color:'#15803d', light:'#dcfce7',
+            menu: [
+              { href:'/pages/saf/actes-saf.html?tab=visa', icon:'fa-check-double',     label:'Viser une expression de besoin' },
+              { href:'/pages/saf/actes-saf.html?tab=pv',   icon:'fa-clipboard-check',  label:'PV de Réception' },
+              { href:'/pages/saf/actes-saf.html?tab=asf',  icon:'fa-certificate',      label:'Attestation de Service Fait' },
+            ],
+          },
+          {
+            icon:'fa-file-upload', label:'Importer une pièce',
+            desc:'Factures, BL, rapports, conventions…',
+            color:'#d97706', light:'#fef3c7',
+            menu: [
+              { href:'/pages/finances/import-pieces.html?type=facture',          icon:'fa-file-invoice',  label:'Facture définitive' },
+              { href:'/pages/finances/import-pieces.html?type=proforma',         icon:'fa-file-invoice',  label:'Facture proforma' },
+              { href:'/pages/finances/import-pieces.html?type=bl',               icon:'fa-truck',         label:'Bon de livraison' },
+              { href:'/pages/finances/import-pieces.html?type=convention',       icon:'fa-handshake',     label:'Convention / contrat fournisseur' },
+              { href:'/pages/finances/import-pieces.html?type=rapport_activite', icon:'fa-chart-bar',     label:'Rapport d\'activité' },
+              { href:'/pages/finances/import-pieces.html',                       icon:'fa-folder-plus',   label:'Autre justificatif…' },
+            ],
+          },
+          {
+            icon:'fa-folder-open', label:'Ouvrir un dossier financier',
+            desc:'OP, suivi dossiers, accès comptable…',
+            color:'#7c3aed', light:'#ede9fe',
+            menu: [
+              { href:'/pages/saf/actes-saf.html?tab=op',   icon:'fa-money-bill-wave', label:'Préparer un Ordre de Paiement' },
+              { href:'/pages/dossiers/index.html',          icon:'fa-folder-open',     label:'Dossiers d\'opération en cours' },
+              { href:'/pages/finances/etats-financiers.html', icon:'fa-file-invoice-dollar', label:'États financiers consolidés' },
+              { href:'/pages/finances/ov-list.html',        icon:'fa-list-alt',        label:'Suivi des OV émis' },
+              { href:'/pages/budget/lignes.html',           icon:'fa-coins',           label:'Lignes budgétaires (consultation)' },
+            ],
+          },
         ],
       },
       controleur: {
@@ -742,13 +856,40 @@
     if (spec) {
       skillsT.textContent = spec.title;
       skillsS.textContent = spec.sub;
-      skillsBox.innerHTML = spec.cards.map(c => `
-        <a class="skill-card" href="${c.href}" style="--card-color:${c.color};--card-light:${c.light}">
-          <div class="sk-ic"><i class="fas ${c.icon}"></i></div>
-          <div class="sk-title">${c.label}</div>
-          <div class="sk-desc">${c.desc}</div>
-          <span class="sk-cta">Ouvrir le formulaire <i class="fas fa-arrow-right"></i></span>
-        </a>`).join('');
+      // Mode "menu déroulant" si au moins une carte porte un .menu — sinon mode carte classique
+      const hasMenu = spec.cards.some(c => Array.isArray(c.menu));
+      if (hasMenu) {
+        skillsBox.classList.add('skills-grid-bigbtn');
+        skillsBox.innerHTML = spec.cards.map((c, i) => `
+          <div class="skill-bigbtn" style="--card-color:${c.color};--card-light:${c.light}">
+            <button class="bb-toggle" type="button" onclick="toggleBigBtn(${i})">
+              <div class="bb-ic"><i class="fas ${c.icon}"></i></div>
+              <div class="bb-text">
+                <div class="bb-title">${c.label}</div>
+                <div class="bb-desc">${c.desc}</div>
+              </div>
+              <div class="bb-chev"><i class="fas fa-chevron-down"></i></div>
+            </button>
+            ${Array.isArray(c.menu) ? `
+            <div class="bb-menu" id="bbMenu${i}">
+              ${c.menu.map(m => `
+                <a href="${m.href}" class="bb-item">
+                  <i class="fas ${m.icon}"></i>
+                  <span>${m.label}</span>
+                  <i class="fas fa-arrow-right bb-arrow"></i>
+                </a>`).join('')}
+            </div>` : ''}
+          </div>`).join('');
+      } else {
+        skillsBox.classList.remove('skills-grid-bigbtn');
+        skillsBox.innerHTML = spec.cards.map(c => `
+          <a class="skill-card" href="${c.href}" style="--card-color:${c.color};--card-light:${c.light}">
+            <div class="sk-ic"><i class="fas ${c.icon}"></i></div>
+            <div class="sk-title">${c.label}</div>
+            <div class="sk-desc">${c.desc}</div>
+            <span class="sk-cta">Ouvrir le formulaire <i class="fas fa-arrow-right"></i></span>
+          </a>`).join('');
+      }
     } else {
       skillsBox.innerHTML = `<div class="empty-skills">Aucune compétence d'émission configurée pour votre rôle.<br><small>Utilisez les navigateurs ci-dessous pour accéder aux modules.</small></div>`;
     }
@@ -769,6 +910,20 @@
     /* ── Ancienne grille masquée — vide pour éviter tout artefact ──────── */
     const grid = document.getElementById('navGrid');
     if (grid) grid.innerHTML = '';
+
+    // ── Toggle des boutons-actions avec menu déroulant ────────────────────
+    window.toggleBigBtn = function (idx) {
+      const all = document.querySelectorAll('.skill-bigbtn');
+      all.forEach((el, i) => {
+        if (i === idx) el.classList.toggle('open');
+        else el.classList.remove('open');
+      });
+    };
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.skill-bigbtn')) {
+        document.querySelectorAll('.skill-bigbtn.open').forEach(el => el.classList.remove('open'));
+      }
+    });
 
     document.getElementById('btnLogout').addEventListener('click', () => {
       localStorage.removeItem('pslsh_token');
