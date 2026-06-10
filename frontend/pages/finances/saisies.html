@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGFIC-PSLSH | Saisies manuelles comptables</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="../../src/css/main.css" rel="stylesheet">
+  <style>
+    html,body{height:100%;overflow:hidden}
+    .app-layout,.main-content{height:100vh;overflow:hidden}
+    .page-content{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:0}
+
+    .sz-top{flex-shrink:0;padding:14px 28px 0;background:#fff;border-bottom:1px solid #e2e8f0}
+    .sz-title{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+    .sz-title h5{margin:0;font-size:1rem;font-weight:800;color:#1b2f52}
+    .sz-title small{font-size:.72rem;color:#64748b}
+    .sz-tag{font-size:.66rem;font-weight:800;padding:5px 12px;border-radius:6px;background:#ccfbf1;color:#0f766e;text-transform:uppercase;letter-spacing:.04em}
+
+    .sz-tabs{display:flex;gap:1px;padding-top:6px;border-bottom:2px solid #0f766e;flex-wrap:wrap}
+    .sz-tab{font-size:.74rem;font-weight:600;padding:9px 14px;cursor:pointer;background:#f1f5f9;color:#64748b;
+      border:1px solid #e2e8f0;border-bottom:none;border-radius:7px 7px 0 0;
+      display:inline-flex;align-items:center;gap:7px;transition:all .15s;white-space:nowrap}
+    .sz-tab:hover:not(.active){background:#e2e8f0;color:#0f766e}
+    .sz-tab.active{background:#0f766e;color:#fff;border-color:#0f766e;font-weight:700}
+
+    .sz-body{flex:1;overflow-y:auto;padding:18px 28px;background:#eef2f7}
+    .sz-form{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px 22px;max-width:1040px}
+    .sz-form label{font-size:.7rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px}
+    .sz-form input,.sz-form select,.sz-form textarea{width:100%;font-size:.82rem;padding:7px 11px;
+      border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#1b2f52;font-family:inherit}
+    .sz-form input:focus,.sz-form select:focus,.sz-form textarea:focus{outline:none;border-color:#0f766e;box-shadow:0 0 0 3px #ccfbf1}
+    .sz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+    .sz-grid .full{grid-column:1/-1}
+    .sz-grid .half{grid-column:span 2}
+    .sz-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:12px;border-top:1px solid #f1f5f9;margin-top:10px}
+    .btn-sz{font-size:.76rem;font-weight:700;padding:8px 16px;border-radius:7px;cursor:pointer;
+      display:inline-flex;align-items:center;gap:6px;border:1px solid}
+    .btn-sz.primary{background:#0f766e;color:#fff;border-color:#0f766e}
+    .btn-sz.primary:hover{filter:brightness(.92)}
+    .btn-sz.ghost{background:#fff;color:#64748b;border-color:#cbd5e1}
+
+    .sz-alert{padding:10px 14px;border-radius:8px;font-size:.78rem;margin-bottom:12px;display:none}
+    .sz-alert.ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
+    .sz-alert.err{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+    .sz-alert.visible{display:block}
+
+    .panel{display:none}
+    .panel.active{display:block}
+
+    .lig-tbl{width:100%;border-collapse:collapse;font-size:.76rem}
+    .lig-tbl th{background:#f1f5f9;color:#475569;text-align:left;padding:7px 10px;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em}
+    .lig-tbl td{padding:4px 6px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+    .lig-tbl input,.lig-tbl select{padding:5px 8px;font-size:.76rem;border:1px solid #cbd5e1;border-radius:5px}
+    .lig-tbl .btn-rm{background:none;border:none;color:#b91c1c;cursor:pointer;font-size:.95rem;padding:0 4px}
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../../assets/logo/logo-pslsh.png" alt="" class="brand-logo">
+      <div class="brand-text"><div class="brand-name">SIGFIC-PSLSH</div><div class="brand-sub">Saisies</div></div>
+    </div>
+    <div id="sidebarServiceBadge"></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><div class="sf-version">SIGFIC-PSLSH v2.0</div></div>
+  </aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><nav><ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/pages/accueil/index.html" class="text-muted">Accueil</a></li>
+        <li class="breadcrumb-item"><a href="/pages/finances/index.html" class="text-muted">Finances</a></li>
+        <li class="breadcrumb-item active fw-semibold">Saisies manuelles</li>
+      </ol></nav></div>
+      <div class="topbar-center"><i class="fas fa-keyboard me-1"></i>Saisies comptables — alimentation données externes</div>
+      <div class="topbar-right">
+        <div class="topbar-notif"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700" id="userAvatar">?</div>
+            <span id="userName" style="font-size:.82rem;font-weight:600"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/pages/admin/profile.html"><i class="fas fa-user me-2"></i>Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="btnLogout"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="sz-top">
+        <div class="sz-title">
+          <div>
+            <h5><i class="fas fa-keyboard me-2" style="color:#0f766e"></i>Saisies manuelles comptables</h5>
+            <small>Données qui ne peuvent être captées automatiquement par le système : relevés bancaires, écritures OD, soldes d'ouverture, encaissements, taux de change.</small>
+          </div>
+          <span class="sz-tag">Comptable Principal</span>
+        </div>
+        <div class="sz-tabs">
+          <button class="sz-tab active" data-panel="releve"   onclick="sw('releve')"><i class="fas fa-university"></i>Relevé bancaire</button>
+          <button class="sz-tab"        data-panel="od"       onclick="sw('od')"><i class="fas fa-sliders-h"></i>Écriture OD</button>
+          <button class="sz-tab"        data-panel="ouverture" onclick="sw('ouverture')"><i class="fas fa-play-circle"></i>Solde d'ouverture</button>
+          <button class="sz-tab"        data-panel="caisse"   onclick="sw('caisse')"><i class="fas fa-coins"></i>Caisse</button>
+          <button class="sz-tab"        data-panel="recette"  onclick="sw('recette')"><i class="fas fa-hand-holding-usd"></i>Recette / Don</button>
+          <button class="sz-tab"        data-panel="taux"     onclick="sw('taux')"><i class="fas fa-percent"></i>Taux de change</button>
+        </div>
+      </div>
+
+      <div class="sz-body">
+        <div id="alert" class="sz-alert"></div>
+
+        <!-- ── PANEL RELEVÉ BANCAIRE ──────────────────────────────────────── -->
+        <div class="panel active" id="panel-releve">
+          <form class="sz-form" id="releveForm" onsubmit="event.preventDefault();submitReleve()">
+            <div class="sz-grid">
+              <div><label>Banque *</label><select name="banque" required>
+                <option value="">— Choisir —</option><option>CBT</option><option>Ecobank</option><option>UBA</option><option>BCC</option><option>SGT</option><option>Orabank</option>
+              </select></div>
+              <div><label>N° de compte *</label><input type="text" name="compte" required placeholder="TD12 …"></div>
+              <div><label>Période (mois) *</label><input type="month" name="periode" required></div>
+              <div><label>Solde initial (FCFA) *</label><input type="number" name="solde_initial" required step="1"></div>
+              <div><label>Solde final (FCFA) *</label><input type="number" name="solde_final" required step="1"></div>
+              <div><label>Date du relevé</label><input type="date" name="date_releve"></div>
+            </div>
+
+            <label style="margin-top:8px">Lignes du relevé</label>
+            <table class="lig-tbl">
+              <thead><tr>
+                <th>#</th><th>Date</th><th>Libellé</th><th>Référence</th>
+                <th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th></th>
+              </tr></thead>
+              <tbody id="releveLignes"></tbody>
+            </table>
+            <button type="button" class="btn-sz ghost" onclick="addRel()" style="margin-top:8px"><i class="fas fa-plus"></i>Ajouter une ligne</button>
+
+            <div style="display:flex;gap:14px;justify-content:flex-end;padding:10px 0;font-size:.86rem;font-weight:800;color:#1b2f52">
+              <span>Σ Débit : <span id="rTotD" style="color:#b91c1c">0</span></span>
+              <span>Σ Crédit : <span id="rTotC" style="color:#15803d">0</span></span>
+              <span>Variation calculée : <span id="rVar" style="color:#0f766e">0</span></span>
+            </div>
+
+            <div class="sz-actions">
+              <a href="/pages/accueil/index.html" class="btn-sz ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sz primary"><i class="fas fa-save"></i>Enregistrer le relevé</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── PANEL OD ───────────────────────────────────────────────────── -->
+        <div class="panel" id="panel-od">
+          <form class="sz-form" id="odForm" onsubmit="event.preventDefault();submitOd()">
+            <div class="sz-grid">
+              <div><label>Date d'écriture *</label><input type="date" name="date_ecriture" required></div>
+              <div class="half"><label>Libellé *</label><input type="text" name="libelle" required placeholder="Ex: Amortissement matériel info — mensuel"></div>
+              <div><label>Référence pièce</label><input type="text" name="reference" placeholder="OD-2026-001"></div>
+              <div><label>Compte débit *</label><input type="text" name="compte_debit" required placeholder="6811"></div>
+              <div><label>Compte crédit *</label><input type="text" name="compte_credit" required placeholder="2818"></div>
+              <div><label>Montant (FCFA) *</label><input type="number" name="montant" required step="1" min="0"></div>
+              <div class="full"><label>Justification</label><textarea name="justification" rows="2" placeholder="Détails de l'écriture, base légale, calcul…"></textarea></div>
+            </div>
+            <div class="sz-actions">
+              <a href="/pages/accueil/index.html" class="btn-sz ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sz primary"><i class="fas fa-save"></i>Enregistrer l'écriture OD</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── PANEL OUVERTURE ────────────────────────────────────────────── -->
+        <div class="panel" id="panel-ouverture">
+          <form class="sz-form" id="ouvertureForm" onsubmit="event.preventDefault();submitOuverture()">
+            <div class="sz-grid">
+              <div><label>Compte OHADA *</label><input type="text" name="compte" required placeholder="5121"></div>
+              <div><label>Libellé compte</label><input type="text" name="libelle_compte" placeholder="Banque CBT"></div>
+              <div><label>Exercice *</label><input type="number" name="exercice" value="2026" required min="2020" max="2099"></div>
+              <div><label>Solde débit (FCFA)</label><input type="number" name="solde_debit" step="1" min="0" value="0"></div>
+              <div><label>Solde crédit (FCFA)</label><input type="number" name="solde_credit" step="1" min="0" value="0"></div>
+              <div><label>Date d'ouverture</label><input type="date" name="date_ouverture"></div>
+              <div class="full"><label>Commentaire</label><textarea name="commentaire" rows="2" placeholder="Origine du solde, PV de rapprochement antérieur, etc."></textarea></div>
+            </div>
+            <div class="sz-actions">
+              <a href="/pages/accueil/index.html" class="btn-sz ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sz primary"><i class="fas fa-save"></i>Enregistrer le solde d'ouverture</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── PANEL CAISSE ───────────────────────────────────────────────── -->
+        <div class="panel" id="panel-caisse">
+          <form class="sz-form" id="caisseForm" onsubmit="event.preventDefault();submitCaisse()">
+            <div class="sz-grid">
+              <div><label>Type *</label><select name="type" required>
+                <option value="entree">Encaissement (entrée)</option>
+                <option value="sortie">Décaissement (sortie)</option>
+              </select></div>
+              <div><label>Caisse *</label><select name="caisse" required>
+                <option>Caisse principale (5710)</option>
+                <option>Caisse menues dépenses (5711)</option>
+                <option>Caisse régie d'avance (5712)</option>
+              </select></div>
+              <div><label>Date *</label><input type="date" name="date_op" required></div>
+              <div><label>Montant (FCFA) *</label><input type="number" name="montant" required step="1" min="1"></div>
+              <div class="half"><label>Bénéficiaire / Payeur</label><input type="text" name="contrepartie" placeholder="Nom complet"></div>
+              <div class="full"><label>Objet *</label><input type="text" name="objet" required placeholder="Motif du mouvement"></div>
+              <div><label>N° de pièce</label><input type="text" name="num_piece" placeholder="CSS-2026-…"></div>
+              <div><label>Compte de contrepartie</label><input type="text" name="compte_cp" placeholder="Ex: 6063, 4011…"></div>
+            </div>
+            <div class="sz-actions">
+              <a href="/pages/accueil/index.html" class="btn-sz ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sz primary"><i class="fas fa-save"></i>Enregistrer le mouvement</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── PANEL RECETTE ──────────────────────────────────────────────── -->
+        <div class="panel" id="panel-recette">
+          <form class="sz-form" id="recetteForm" onsubmit="event.preventDefault();submitRecette()">
+            <div class="sz-grid">
+              <div><label>Source / bailleur *</label><select name="source" required>
+                <option value="">— Choisir —</option>
+                <option>État Tchad (Trésor)</option><option>Fonds Mondial</option><option>OMS</option>
+                <option>UNICEF</option><option>ONUSIDA</option><option>Banque Mondiale</option>
+                <option>USAID</option><option>UE</option><option>AFD</option><option>Don privé</option>
+              </select></div>
+              <div><label>Type *</label><select name="type_recette" required>
+                <option value="subvention">Subvention bailleur</option>
+                <option value="dotation">Dotation État</option>
+                <option value="don">Don / libéralité</option>
+                <option value="autre">Autre produit</option>
+              </select></div>
+              <div><label>Date d'encaissement *</label><input type="date" name="date_encaiss" required></div>
+              <div><label>Montant brut (FCFA) *</label><input type="number" name="montant" required step="1" min="1"></div>
+              <div><label>Devise origine</label><select name="devise"><option>FCFA</option><option>EUR</option><option>USD</option></select></div>
+              <div><label>Taux de change appliqué</label><input type="number" name="taux" step="0.0001" placeholder="1.0000"></div>
+              <div class="half"><label>Compte bancaire destinataire</label><input type="text" name="compte_bq" placeholder="5121 — CBT"></div>
+              <div><label>Référence avis bailleur</label><input type="text" name="ref_bailleur"></div>
+              <div class="full"><label>Objet / convention</label><input type="text" name="objet" placeholder="Ex: Subvention FM Cycle 7 — tranche Q2 2026"></div>
+            </div>
+            <div class="sz-actions">
+              <a href="/pages/accueil/index.html" class="btn-sz ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sz primary"><i class="fas fa-save"></i>Enregistrer la recette</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── PANEL TAUX DE CHANGE ───────────────────────────────────────── -->
+        <div class="panel" id="panel-taux">
+          <form class="sz-form" id="tauxForm" onsubmit="event.preventDefault();submitTaux()">
+            <div class="sz-grid">
+              <div><label>Devise *</label><select name="devise" required>
+                <option value="">— Choisir —</option>
+                <option>EUR</option><option>USD</option><option>GBP</option><option>CHF</option><option>NGN</option>
+              </select></div>
+              <div><label>Taux (1 X = ? FCFA) *</label><input type="number" name="taux" required step="0.0001" min="0.0001" placeholder="655.957"></div>
+              <div><label>Date d'effet *</label><input type="date" name="date_effet" required></div>
+              <div><label>Source du taux</label><select name="source"><option>BEAC</option><option>BCEAO</option><option>Banque commerciale</option><option>Manuel</option></select></div>
+              <div class="full"><label>Commentaire</label><textarea name="commentaire" rows="2" placeholder="Bulletin officiel, n° d'avis, etc."></textarea></div>
+            </div>
+            <div class="sz-actions">
+              <a href="/pages/accueil/index.html" class="btn-sz ghost"><i class="fas fa-times"></i>Annuler</a>
+              <button type="submit" class="btn-sz primary"><i class="fas fa-save"></i>Enregistrer le taux</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/src/js/api.js"></script>
+<script src="/src/js/roles.js"></script>
+<script>
+const fmt = n => Math.round(parseFloat(n||0)).toLocaleString('fr-FR');
+const STORAGE = 'pslsh_saisies_v1';
+function getStore() { try { return JSON.parse(localStorage.getItem(STORAGE) || '{}'); } catch(_) { return {}; } }
+function pushStore(key, obj) {
+  const s = getStore();
+  s[key] = s[key] || [];
+  s[key].push({ ...obj, _ts: Date.now(), _by: (window.SIGFIC && window.SIGFIC.getUser && window.SIGFIC.getUser().email) || 'admin' });
+  localStorage.setItem(STORAGE, JSON.stringify(s));
+}
+function showAlert(type, msg) {
+  const a = document.getElementById('alert');
+  a.className = 'sz-alert visible ' + type;
+  a.innerHTML = msg;
+  setTimeout(() => a.classList.remove('visible'), 6000);
+}
+
+function sw(name) {
+  document.querySelectorAll('.sz-tab').forEach(t => t.classList.toggle('active', t.dataset.panel === name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+}
+
+/* ── Relevé bancaire : lignes dynamiques ──────────────────────────────── */
+let _rel = [{ date:'', libelle:'', ref:'', debit:0, credit:0 }];
+function renderRel() {
+  document.getElementById('releveLignes').innerHTML = _rel.map((l,i) => `<tr>
+    <td>${i+1}</td>
+    <td><input type="date" value="${l.date||''}" oninput="updR(${i},'date',this.value)"></td>
+    <td><input type="text" value="${(l.libelle||'').replace(/"/g,'&quot;')}" oninput="updR(${i},'libelle',this.value)" placeholder="Description du mouvement"></td>
+    <td><input type="text" value="${l.ref||''}" oninput="updR(${i},'ref',this.value)" placeholder="N° chèque/virement" style="width:120px"></td>
+    <td><input type="number" min="0" step="1" value="${l.debit||''}" oninput="updR(${i},'debit',+this.value)" style="width:110px;text-align:right"></td>
+    <td><input type="number" min="0" step="1" value="${l.credit||''}" oninput="updR(${i},'credit',+this.value)" style="width:110px;text-align:right"></td>
+    <td><button type="button" class="btn-rm" onclick="rmR(${i})">×</button></td>
+  </tr>`).join('');
+  const tD = _rel.reduce((s,l) => s + (+l.debit||0), 0);
+  const tC = _rel.reduce((s,l) => s + (+l.credit||0), 0);
+  document.getElementById('rTotD').textContent = fmt(tD);
+  document.getElementById('rTotC').textContent = fmt(tC);
+  document.getElementById('rVar').textContent  = fmt(tC - tD);
+}
+function addRel() { _rel.push({ date:'', libelle:'', ref:'', debit:0, credit:0 }); renderRel(); }
+function rmR(i) { if (_rel.length > 1) _rel.splice(i,1); renderRel(); }
+function updR(i,k,v) { _rel[i][k] = v; renderRel(); }
+renderRel();
+
+/* ── Soumissions (toutes en local pour l'instant — base prête à brancher) */
+function _collect(formId) {
+  const fd = new FormData(document.getElementById(formId));
+  const o = {}; for (const [k,v] of fd.entries()) o[k] = v;
+  return o;
+}
+function submitReleve() {
+  const o = _collect('releveForm');
+  o.lignes = _rel.filter(l => l.libelle && l.libelle.trim());
+  if (!o.lignes.length) { showAlert('err','Saisissez au moins une ligne de relevé.'); return; }
+  pushStore('releves', o);
+  showAlert('ok', `✓ Relevé bancaire enregistré (${o.lignes.length} ligne${o.lignes.length>1?'s':''}, banque ${o.banque}).`);
+  document.getElementById('releveForm').reset();
+  _rel = [{ date:'', libelle:'', ref:'', debit:0, credit:0 }]; renderRel();
+}
+function submitOd() {
+  const o = _collect('odForm');
+  if (!o.compte_debit || !o.compte_credit) { showAlert('err','Comptes débit et crédit requis.'); return; }
+  pushStore('od', o);
+  showAlert('ok', `✓ Écriture OD enregistrée — ${o.compte_debit} → ${o.compte_credit} : ${fmt(o.montant)} FCFA.`);
+  document.getElementById('odForm').reset();
+}
+function submitOuverture() {
+  const o = _collect('ouvertureForm');
+  pushStore('ouvertures', o);
+  showAlert('ok', `✓ Solde d'ouverture enregistré — compte ${o.compte} (exercice ${o.exercice}).`);
+  document.getElementById('ouvertureForm').reset();
+}
+function submitCaisse() {
+  const o = _collect('caisseForm');
+  pushStore('caisse', o);
+  showAlert('ok', `✓ Mouvement caisse ${o.type === 'entree' ? 'Encaissement' : 'Décaissement'} de ${fmt(o.montant)} FCFA enregistré.`);
+  document.getElementById('caisseForm').reset();
+}
+function submitRecette() {
+  const o = _collect('recetteForm');
+  pushStore('recettes', o);
+  showAlert('ok', `✓ Recette ${o.type_recette} de ${o.source} : ${fmt(o.montant)} ${o.devise || 'FCFA'} enregistrée.`);
+  document.getElementById('recetteForm').reset();
+}
+function submitTaux() {
+  const o = _collect('tauxForm');
+  pushStore('taux', o);
+  showAlert('ok', `✓ Taux ${o.devise} = ${o.taux} FCFA (effet ${o.date_effet}) enregistré.`);
+  document.getElementById('tauxForm').reset();
+}
+
+// Onglet via query ?tab=
+const tab = new URLSearchParams(location.search).get('tab');
+if (tab && ['releve','od','ouverture','caisse','recette','taux'].includes(tab)) sw(tab);
+</script>
+</body></html>

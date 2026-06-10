@@ -214,42 +214,44 @@
     .content h2 i { font-size: 1rem; color: var(--navy-700); opacity:.55; }
     .content > .lead-p { font-size: .76rem; color: #64748b; margin: 0 0 14px; }
 
-    /* ── CARTES DE COMPÉTENCE (role-aware, prennent la majeure partie) ────── */
+    /* ── CARTES DE COMPÉTENCE (compactes, denses, role-aware) ────────────── */
     .skills-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 13px;
+      grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+      gap: 10px;
       flex: 1;
       min-height: 0;
+      align-content: start;
     }
     .skill-card {
       background: #fff;
       border: 1px solid #e6ebf2;
-      border-left: 4px solid var(--card-color, #1b3a6b);
-      border-radius: 12px;
-      padding: 16px 18px 14px;
-      display: flex; flex-direction: column; gap: 8px;
+      border-left: 3px solid var(--card-color, #1b3a6b);
+      border-radius: 10px;
+      padding: 12px 13px 11px;
+      display: flex; flex-direction: column; gap: 6px;
       cursor: pointer; text-decoration: none;
-      transition: transform .18s, box-shadow .2s, border-color .2s;
+      transition: transform .15s, box-shadow .18s, border-color .15s;
       position: relative; overflow: hidden;
+      min-height: 120px;
     }
     .skill-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(15,23,42,.10);
+      box-shadow: 0 8px 18px rgba(15,23,42,.09);
       border-color: var(--card-color);
     }
     .skill-card .sk-ic {
-      width: 48px; height: 48px; border-radius: 12px;
+      width: 36px; height: 36px; border-radius: 9px;
       background: var(--card-light);
       color: var(--card-color);
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.3rem; flex-shrink: 0;
+      font-size: 1rem; flex-shrink: 0;
     }
-    .skill-card .sk-title { font-size: .98rem; font-weight: 800; color: var(--navy-700); margin-top: 4px; }
-    .skill-card .sk-desc  { font-size: .74rem; color: #64748b; line-height: 1.45; flex: 1; }
-    .skill-card .sk-cta   { font-size: .74rem; font-weight: 700; color: var(--card-color); display: inline-flex; align-items: center; gap: 5px; }
-    .skill-card .sk-cta i { font-size: .65rem; transition: transform .18s; }
-    .skill-card:hover .sk-cta i { transform: translateX(4px); }
+    .skill-card .sk-title { font-size: .82rem; font-weight: 800; color: var(--navy-700); line-height: 1.2; margin-top: 2px; }
+    .skill-card .sk-desc  { font-size: .66rem; color: #64748b; line-height: 1.35; flex: 1; }
+    .skill-card .sk-cta   { font-size: .66rem; font-weight: 700; color: var(--card-color); display: inline-flex; align-items: center; gap: 4px; }
+    .skill-card .sk-cta i { font-size: .58rem; transition: transform .15s; }
+    .skill-card:hover .sk-cta i { transform: translateX(3px); }
 
     .empty-skills {
       grid-column: 1 / -1;
@@ -664,10 +666,11 @@
         title: 'Vos actes engageants — Comptable Principal',
         sub:   'Agent de l\'État pécuniairement responsable',
         cards: [
-          { href:'/pages/finances/emit-ov.html',       icon:'fa-money-check-alt', label:'Émettre un OV',         desc:'Ordre de virement à signer comptablement, puis transmis au Coordo.', color:'#15803d', light:'#dcfce7' },
-          { href:'/pages/finances/emit-paie.html',     icon:'fa-users',           label:'État de salaires',      desc:'Bordereau de paie mensuel — agents PSLSH/IST.',                       color:'#0369a1', light:'#e0f2fe' },
-          { href:'/pages/finances/emit-decharge.html', icon:'fa-receipt',         label:'Émettre une décharge',  desc:'Quittance de paiement / reçu pour bénéficiaire.',                     color:'#b45309', light:'#fef3c7' },
-          { href:'/pages/finances/emit-avis.html',     icon:'fa-stamp',           label:'Avis comptable sur EB', desc:'Vérification de la disponibilité des ressources budgétaires.',        color:'#7c3aed', light:'#ede9fe' },
+          { href:'/pages/finances/emit-ov.html',       icon:'fa-money-check-alt', label:'Émettre un OV',         desc:'Ordre de virement à signer comptablement.', color:'#15803d', light:'#dcfce7' },
+          { href:'/pages/finances/emit-paie.html',     icon:'fa-users',           label:'État de salaires',      desc:'Bordereau de paie mensuel — agents PSLSH.', color:'#0369a1', light:'#e0f2fe' },
+          { href:'/pages/finances/emit-decharge.html', icon:'fa-receipt',         label:'Émettre une décharge',  desc:'Quittance de paiement / reçu signé.',       color:'#b45309', light:'#fef3c7' },
+          { href:'/pages/finances/emit-avis.html',     icon:'fa-stamp',           label:'Avis comptable sur EB', desc:'Vérification disponibilité des crédits.',   color:'#7c3aed', light:'#ede9fe' },
+          { href:'/pages/finances/saisies.html',       icon:'fa-keyboard',        label:'Saisies manuelles',     desc:'Relevés bancaires, écritures OD, encaissements, taux de change…', color:'#0f766e', light:'#ccfbf1' },
         ],
       },
       coordination: {
