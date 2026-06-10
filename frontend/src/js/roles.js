@@ -1116,20 +1116,26 @@
   function getRole() {
     const u = getUser();
     if (!u) return null;
-    // Supporte u.role (string), u.roles (array du backend), ou u.profil
-    let raw = u.role || u.profil || '';
-    if (!raw && Array.isArray(u.roles) && u.roles.length) raw = u.roles[0];
-    const r = `${raw}`.toLowerCase();
-    if (r === 'administrateur' || r === 'admin' || r === 'super_admin') return 'administrateur';
-    if (r.includes('coordin') || r === 'coordinateur') return 'coordination';
-    // SAF (gestionnaire) et Comptable (AC) ont les mêmes accès que la coordination
-    if (r === 'gestionnaire' || r === 'comptable') return 'coordination';
-    if (r.includes('comite') || r.includes('pilotage') || r.includes('direction'))
-      return 'comite_pilotage';
-    if (r.includes('chef') || r.includes('responsable') || r.includes('directeur'))
-      return 'chef_service';
-    if (r === 'auditeur' || r === 'archiviste' || r === 'controleur' || r === 'inspecteur')
-      return 'controleur';
+    // Itère sur TOUS les rôles du user (u.role string, u.profil, u.roles array)
+    // et applique une PRIORITÉ : le rôle le plus spécifique l'emporte sur le générique.
+    const all = [];
+    if (u.role)   all.push(u.role);
+    if (u.profil) all.push(u.profil);
+    if (Array.isArray(u.roles)) all.push(...u.roles);
+    const codes = all.map((r) => `${r}`.toLowerCase()).filter(Boolean);
+    const has = (...xs) => xs.some((x) => codes.includes(x));
+    const some = (re) => codes.some((c) => re.test(c));
+
+    // ── Ordre de priorité : du plus spécifique au plus générique ──────────
+    if (has('administrateur', 'admin', 'super_admin'))         return 'administrateur';
+    if (has('comptable_principal'))                            return 'comptable_principal'; // ⭐ avant 'coordination'
+    if (has('coordination', 'coordinateur') || some(/coordin/)) return 'coordination';
+    if (has('comite_pilotage') || some(/comite|pilotage|direction/)) return 'comite_pilotage';
+    if (has('controleur', 'auditeur', 'archiviste', 'inspecteur'))   return 'controleur';
+    if (has('chef_service') || some(/chef|responsable|directeur/))   return 'chef_service';
+    // Rétrocompatibilité legacy : SAF (gestionnaire) et ancien rôle "comptable"
+    // alignés sur coordination uniquement si aucun rôle plus spécifique n'a matché.
+    if (has('gestionnaire', 'comptable'))                       return 'coordination';
     return 'agent'; // défaut
   }
 
