@@ -27,7 +27,8 @@
     body.mode-saisi .sidebar { display: none !important; }
     body.mode-saisi .app-layout { grid-template-columns: 1fr !important; display: block; }
     body.mode-saisi .main-content { width: 100vw; }
-    body.mode-saisi .sheet-tabs { display: none !important; }
+    /* En mode saisi, on GARDE les onglets pour offrir saisie + historique + validation */
+    body.mode-saisi .sheet-tabs { display: flex; }
     body.mode-saisi .eb-top { padding-top: 18px; background: #fff; border-bottom: 1px solid #e2e8f0; }
     body.mode-saisi .breadcrumb { display: none !important; }
     body.mode-saisi #saisiAutonomeBar {
@@ -432,11 +433,86 @@ function statutPill(s) {
 }
 
 const TABS = [
-  { code:'new',     label:'Saisir un nouveau besoin', icon:'fa-plus-circle', filter: null },
-  { code:'mine',    label:'Mes besoins en cours',    icon:'fa-user-clock',   filter: (e) => e.porteur === CURRENT_USER && !['valide','rejete'].includes(e.statut) },
-  { code:'pending', label:'Besoins en attente de validation', icon:'fa-hourglass-half',
+  { code:'new',       label:'Saisir un nouveau besoin', icon:'fa-plus-circle', filter: null },
+  { code:'mine',      label:'Mes besoins en cours',    icon:'fa-user-clock',   filter: (e) => e.porteur === CURRENT_USER && !['valide','rejete'].includes(e.statut) },
+  { code:'pending',   label:'En attente de validation', icon:'fa-hourglass-half',
     filter: (e) => ['soumis','saf','compta','coordo'].includes(e.statut) },
+  { code:'validated', label:'Validés',                  icon:'fa-check-double',
+    filter: (e) => e.statut === 'valide' },
+  { code:'history',   label:'Historique',               icon:'fa-archive',
+    filter: (e) => ['valide','rejete','archive'].includes(e.statut) },
 ];
+
+/* ─── Validation role-aware : qui peut faire avancer une EB selon statut ── */
+function _currentRole() {
+  try {
+    if (window.SIGFIC && typeof window.SIGFIC.getRole === 'function') return window.SIGFIC.getRole();
+  } catch (_) {}
+  return null;
+}
+function canValidate(eb) {
+  const role = _currentRole();
+  if (!role) return false;
+  // Mapping rôle → statut sur lequel il peut agir
+  const ALLOWED = {
+    chef_service:        ['soumis'],         // SAF avance soumis → saf
+    comptable_principal: ['saf'],            // Comptable avance saf → compta
+    coordination:        ['compta'],         // Coordo avance compta → valide
+    administrateur:      ['soumis','saf','compta'], // admin peut tout
+  };
+  const allowed = ALLOWED[role] || [];
+  return allowed.includes(eb.statut);
+}
+function nextStatutFor(eb) {
+  const role = _currentRole();
+  const TRANSITION = {
+    chef_service:        { soumis: 'saf' },
+    comptable_principal: { saf: 'compta' },
+    coordination:        { compta: 'valide' },
+    administrateur:      { soumis: 'saf', saf: 'compta', compta: 'valide' },
+  };
+  return (TRANSITION[role] || {})[eb.statut] || null;
+}
+function actorLabel() {
+  const map = {
+    chef_service:        'SAF',
+    comptable_principal: 'Comptable Principal',
+    coordination:        'Coordonnateur',
+    administrateur:      'Administrateur',
+  };
+  return map[_currentRole()] || 'Utilisateur';
+}
+
+function validateEb(id) {
+  const eb = _ebAll.find((e) => e.id === id);
+  if (!eb) return;
+  const nxt = nextStatutFor(eb);
+  if (!nxt) { alert('Aucune action possible pour ce statut.'); return; }
+  const motif = prompt(`Confirmer le visa ${actorLabel()} sur ${eb.id} ?\n\nMotif (facultatif) :`, '');
+  if (motif === null) return; // annulé
+  eb.statut = nxt;
+  eb[`visa_${_currentRole()}`] = {
+    date: new Date().toLocaleDateString('fr-FR'),
+    motif: motif || '',
+    actor: actorLabel(),
+  };
+  save();
+  switchTab(_currentTab);
+}
+function rejectEb(id) {
+  const eb = _ebAll.find((e) => e.id === id);
+  if (!eb) return;
+  const motif = prompt(`Rejeter ${eb.id} ?\n\nMotif (obligatoire) :`, '');
+  if (!motif) { if (motif !== null) alert('Le motif est obligatoire.'); return; }
+  eb.statut = 'rejete';
+  eb.rejet = {
+    date: new Date().toLocaleDateString('fr-FR'),
+    motif,
+    par: actorLabel(),
+  };
+  save();
+  switchTab(_currentTab);
+}
 
 function countTab(tab) {
   if (!tab.filter) return null;
@@ -468,6 +544,7 @@ function renderList(items, emptyMsg) {
   if (!items.length) {
     return `<div class="empty"><i class="fas fa-inbox d-block"></i>${emptyMsg}</div>`;
   }
+  const showActions = _currentTab === 'pending';
   const rows = items.map((e) => {
     const lignes = e.lignes || (e.titre ? [{ libelle:e.titre, quantite:'' }] : []);
     const firstLine = lignes[0]?.libelle || '—';
@@ -476,24 +553,48 @@ function renderList(items, emptyMsg) {
     const syscoCell = dom
       ? `<span style="font-family:monospace;color:#1b3a6b;font-weight:700">${dom.code}</span><br><small style="color:#94a3b8">${dom.famille}</small>`
       : `<span style="color:#b91c1c;font-size:.7rem">À classer</span>`;
+
+    let actionCell = '';
+    if (showActions) {
+      if (canValidate(e)) {
+        actionCell = `<td style="white-space:nowrap">
+          <button onclick="validateEb('${e.id}')" style="font-size:.7rem;font-weight:700;padding:5px 10px;background:#15803d;color:#fff;border:none;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:5px"><i class="fas fa-check"></i>Valider</button>
+          <button onclick="rejectEb('${e.id}')" style="font-size:.7rem;font-weight:700;padding:5px 10px;background:#fff;color:#b91c1c;border:1px solid #fca5a5;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;margin-left:4px"><i class="fas fa-times"></i>Rejeter</button>
+        </td>`;
+      } else {
+        actionCell = `<td><small style="color:#94a3b8;font-style:italic">en attente de ${nextActorName(e.statut)}</small></td>`;
+      }
+    }
+
     return `<tr>
       <td class="mono">${e.id}</td>
       <td><strong>${firstLine}</strong>${more}<br><small style="color:#94a3b8">${e.service} · ${e.porteur} · soumis ${e.soumis}</small></td>
       <td>${syscoCell}</td>
       <td><small style="color:#475569">${(e.motif || '').slice(0, 80)}${(e.motif || '').length > 80 ? '…' : ''}</small></td>
       <td>${statutPill(e.statut)}</td>
+      ${actionCell}
     </tr>`;
   }).join('');
+
   return `<div class="eb-card"><table class="eb-tbl">
     <thead><tr>
       <th style="width:140px">Référence</th>
       <th>Libellé principal</th>
       <th style="width:140px">Compte SYSCOHADA</th>
       <th>Motif</th>
-      <th style="width:200px">Statut</th>
+      <th style="width:160px">Statut</th>
+      ${showActions ? '<th style="width:220px">Action</th>' : ''}
     </tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
+}
+
+function nextActorName(statut) {
+  return {
+    soumis: 'visa SAF',
+    saf:    'avis Comptable',
+    compta: 'ordonnancement Coordo',
+  }[statut] || 'traitement';
 }
 
 let _formLignes = [{ libelle:'', quantite:'', unite:'' }];
