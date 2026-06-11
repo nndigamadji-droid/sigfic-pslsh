@@ -25,8 +25,14 @@
        uniquement le formulaire de saisie. La page devient une feuille
        de travail isolée du contexte navigateur. */
     body.mode-saisi .sidebar { display: none !important; }
-    body.mode-saisi .app-layout { grid-template-columns: 1fr !important; display: block; }
-    body.mode-saisi .main-content { width: 100vw; }
+    body.mode-saisi .app-layout {
+      grid-template-columns: 1fr !important;
+      grid-template-areas: "main" !important;
+    }
+    body.mode-saisi .main-content {
+      grid-area: main;
+      width: 100%; margin: 0; padding: 0;
+    }
     /* En mode saisi, on GARDE les onglets pour offrir saisie + historique + validation */
     body.mode-saisi .sheet-tabs { display: flex; }
     body.mode-saisi .eb-top { padding-top: 18px; background: #fff; border-bottom: 1px solid #e2e8f0; }
