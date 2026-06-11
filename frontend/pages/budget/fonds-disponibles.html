@@ -490,7 +490,7 @@
     } else {
       SOURCES.push({ id:'S'+_nid++, libelle, banque,
         compte:        document.getElementById('inCompte').value.trim(),
-        allocation:    parseFloat(document.getElementById('inAllocation').value) || 0,
+        allocation:    0, // pas de champ dans le modal — alloué via Fonds alloués
         soldeBancaire: parseFloat(document.getElementById('inSolde').value) || 0,
         credits: [],
         note:          document.getElementById('inNote').value.trim() });
