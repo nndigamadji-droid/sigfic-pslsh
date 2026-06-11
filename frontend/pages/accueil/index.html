@@ -735,6 +735,7 @@
         title: 'Vos actes engageants — Comptable Principal',
         sub:   'Agent de l\'État pécuniairement responsable',
         cards: [
+          { href:'/pages/dossiers/besoins.html?action=new', icon:'fa-file-signature', label:'Saisir une EB', desc:'Nouvelle expression de besoin pour validation.', color:'#1b3a6b', light:'#e8f0fb' },
           { href:'/pages/validation/index.html',       icon:'fa-check-double',    label:'Centre de validation',  desc:'Vos dossiers en attente d\'avis comptable.', color:'#b91c1c', light:'#fee2e2' },
           { href:'/pages/finances/emit-ov.html',       icon:'fa-money-check-alt', label:'Émettre un OV',         desc:'Ordre de virement à signer comptablement.', color:'#15803d', light:'#dcfce7' },
           { href:'/pages/finances/emit-paie.html',     icon:'fa-users',           label:'État de salaires',      desc:'Bordereau de paie mensuel — agents PSLSH.', color:'#0369a1', light:'#e0f2fe' },
@@ -757,6 +758,7 @@
         title: 'Vos actes engageants — Chef SAF',
         sub:   'Service Administratif et Financier — 4 axes de compétence',
         cards: [
+          { href:'/pages/dossiers/besoins.html?action=new', icon:'fa-file-signature', label:'Saisir une EB', desc:'Nouvelle expression de besoin pour validation.', color:'#1b3a6b', light:'#e8f0fb' },
           {
             icon:'fa-pen-fancy', label:'Rédiger un acte',
             desc:'TDR, contrat, BC, notification, note de service…',
@@ -812,6 +814,7 @@
         title: 'Vos actes engageants — Coordonnateur',
         sub:   'Autorité d\'ordonnancement et de décision — 4 axes',
         cards: [
+          { href:'/pages/dossiers/besoins.html?action=new', icon:'fa-file-signature', label:'Saisir une EB', desc:'Nouvelle expression de besoin pour validation.', color:'#1b3a6b', light:'#e8f0fb' },
           {
             icon:'fa-file-signature', label:'Ordonnancer', desc:'Centre de validation, OV, OP, mandats à signer.',
             color:'#b91c1c', light:'#fee2e2',
@@ -857,6 +860,7 @@
         title: 'Vos actes — Comité de pilotage',
         sub:   'Décisions stratégiques et gouvernance — 3 axes',
         cards: [
+          { href:'/pages/dossiers/besoins.html?action=new', icon:'fa-file-signature', label:'Saisir une EB', desc:'Nouvelle expression de besoin pour validation.', color:'#1b3a6b', light:'#e8f0fb' },
           {
             icon:'fa-gavel', label:'Décider', desc:'PV de comité, validation PTCA, arbitrages budgétaires.',
             color:'#7c3aed', light:'#ede9fe',
@@ -891,6 +895,7 @@
         title: 'Vos actes — Contrôleur',
         sub:   'Audit et contrôle ex-post — 3 axes',
         cards: [
+          { href:'/pages/dossiers/besoins.html?action=new', icon:'fa-file-signature', label:'Saisir une EB', desc:'Nouvelle expression de besoin pour validation.', color:'#1b3a6b', light:'#e8f0fb' },
           {
             icon:'fa-pen-fancy', label:'Émettre', desc:'Rapports d\'audit, recommandations, signalements.',
             color:'#b91c1c', light:'#fee2e2',
@@ -959,6 +964,7 @@
         title: 'Vos actes — Administrateur système',
         sub:   'Pilotage complet de la plateforme — 4 axes',
         cards: [
+          { href:'/pages/dossiers/besoins.html?action=new', icon:'fa-file-signature', label:'Saisir une EB', desc:'Nouvelle expression de besoin pour validation.', color:'#1b3a6b', light:'#e8f0fb' },
           {
             icon:'fa-users-cog', label:'Gérer', desc:'Utilisateurs, rôles, services, permissions.',
             color:'#1b3a6b', light:'#e8f0fb',
@@ -1068,7 +1074,25 @@
       const hasMenu = spec.cards.some(c => Array.isArray(c.menu));
       if (hasMenu) {
         skillsBox.classList.add('skills-grid-bigbtn');
-        skillsBox.innerHTML = spec.cards.map((c, i) => `
+        skillsBox.innerHTML = spec.cards.map((c, i) => {
+          const isDirect = !Array.isArray(c.menu) && c.href;
+          if (isDirect) {
+            // Carte-bouton DIRECT — clic ouvre l'URL sans dropdown
+            return `
+              <a class="skill-bigbtn skill-bigbtn-direct" href="${c.href}"
+                 style="--card-color:${c.color};--card-light:${c.light}">
+                <div class="bb-toggle">
+                  <div class="bb-ic"><i class="fas ${c.icon}"></i></div>
+                  <div class="bb-text">
+                    <div class="bb-title">${c.label}</div>
+                    <div class="bb-desc">${c.desc}</div>
+                  </div>
+                  <div class="bb-chev bb-chev-direct"><i class="fas fa-arrow-right"></i></div>
+                </div>
+              </a>`;
+          }
+          // Carte avec menu déroulant
+          return `
           <div class="skill-bigbtn" style="--card-color:${c.color};--card-light:${c.light}">
             <button class="bb-toggle" type="button" onclick="toggleBigBtn(${i})">
               <div class="bb-ic"><i class="fas ${c.icon}"></i></div>
@@ -1078,7 +1102,6 @@
               </div>
               <div class="bb-chev"><i class="fas fa-chevron-down"></i></div>
             </button>
-            ${Array.isArray(c.menu) ? `
             <div class="bb-menu" id="bbMenu${i}">
               ${c.menu.map(m => `
                 <a href="${m.href}" class="bb-item">
@@ -1086,8 +1109,9 @@
                   <span>${m.label}</span>
                   <i class="fas fa-arrow-right bb-arrow"></i>
                 </a>`).join('')}
-            </div>` : ''}
-          </div>`).join('');
+            </div>
+          </div>`;
+        }).join('');
       } else {
         skillsBox.classList.remove('skills-grid-bigbtn');
         skillsBox.innerHTML = spec.cards.map(c => `
