@@ -113,6 +113,9 @@
       if (el.closest('.sidebar, .topbar, .breadcrumb, .dropdown-menu')) return;
       // Skip si dans le bandeau readonly que nous venons de poser
       if (el.closest('#nav-readonly-banner')) return;
+      // Skip si dans un modal Bootstrap (le modal sert à éditer/voir un détail —
+      // une fois ouvert, ses actions sont métier et ne doivent pas être masquées)
+      if (el.closest('.modal, [role="dialog"]')) return;
 
       // Garder explicitement
       for (const k of KEEP_PATTERNS) if (k.test(label)) return;
