@@ -10,11 +10,19 @@ const app = express();
 // ─── Sécurité ──────────────────────────────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));
 
-// CORS : autorise le frontend servi sur 5500 (dev) et toute URL de production
+function parseOrigins(value) {
+  return (value || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
+
+// CORS : autorise le frontend servi sur 5500 (dev) et les URLs de production
 const allowedOrigins = [
   'http://localhost:5500',
   'http://127.0.0.1:5500',
   process.env.FRONTEND_URL,
+  ...parseOrigins(process.env.FRONTEND_URLS),
 ].filter(Boolean);
 
 app.use(

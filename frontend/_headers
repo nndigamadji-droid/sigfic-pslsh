@@ -2,3 +2,14 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://sigfic-pslsh-backend.onrender.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+
+/index.html
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/pages/*
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/src/*
+  Cache-Control: no-cache, must-revalidate

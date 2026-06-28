@@ -21,7 +21,9 @@ services:
       - key: BCRYPT_ROUNDS
         value: "12"
       - key: FRONTEND_URL
-        value: https://sigfic-pslsh.netlify.app
+        value: https://sigfic-pslsh-ist.netlify.app
+      - key: FRONTEND_URLS
+        value: https://sigfic-pslsh.netlify.app,https://sigfic-pslsh-ist.netlify.app
       - key: DATABASE_SSL
         value: "false"
       - key: DATABASE_URL
