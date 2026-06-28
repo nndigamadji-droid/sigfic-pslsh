@@ -66,7 +66,7 @@ describe('Auth', () => {
   it('un compte cree depuis le formulaire admin avec role agent peut se connecter avec son mot de passe provisoire', async () => {
     const token = await loginAsAdmin();
     const suffix = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
-    const email = `agent.${suffix}@pslsh.test`;
+    const email = `agent.${suffix}@sigfic.invalid`;
     const password = `Agent@2026!${suffix}`;
 
     const createRes = await request(app)
@@ -94,6 +94,8 @@ describe('Auth', () => {
     expect(loginRes.body.success).toBe(true);
     expect(loginRes.body.data.token).toBeDefined();
     expect(loginRes.body.data.user.roles).toContain('lecture');
+    expect(loginRes.body.data.user.service_code).toBe('saf');
+    expect(loginRes.body.data.user.fonction).toBe('Compte test');
 
     await UserRole.destroy({ where: { user_id: createRes.body.data.id } });
     await AuditLog.destroy({ where: { user_id: createRes.body.data.id } });

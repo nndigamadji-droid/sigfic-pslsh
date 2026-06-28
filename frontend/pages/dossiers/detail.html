@@ -633,6 +633,15 @@ function saveDossiers() {
 
 function fmt(n) { return Math.round(n).toLocaleString('fr-FR'); }
 
+function currentActor() {
+  try {
+    const u = JSON.parse(localStorage.getItem('pslsh_user') || 'null');
+    return (u && (u.email || `${u.prenom || ''} ${u.nom || ''}`.trim())) || 'systeme';
+  } catch (_) {
+    return 'systeme';
+  }
+}
+
 function statusOfPiece(code) {
   const p = _piecesData[_dossier.id].pieces[code];
   if (!p) return 'vide';
@@ -754,7 +763,7 @@ async function engagerDossier() {
     _dossier.etape = _dossier.etape === 'compta' || _dossier.etape === 'coordo' ? 'engagement' : (_dossier.etape || 'engagement');
     _piecesData[_dossier.id].histo.push({
       action: `Engagé ${fmt(montant)} FCFA · écriture JA n°${body.data.id} (compte ${codeCompte})`,
-      par: 'admin@pslsh.org',
+      par: currentActor(),
       date: new Date().toLocaleString('fr-FR'),
       color: 'blue',
     });
@@ -845,7 +854,7 @@ function archiveDossier() {
   if (!confirm(`Archiver le dossier ${_dossier.id} ?\nIl sera déplacé vers l'onglet "Archives" et ne pourra plus être modifié.`)) return;
   _dossier.archived = true;
   _dossier.archive_le = new Date().toLocaleDateString('fr-FR');
-  _dossier.archive_par = 'admin@pslsh.org';
+  _dossier.archive_par = currentActor();
   _dossier.etape = 'clos';
   _piecesData[_dossier.id].histo.push({
     action: 'Dossier archivé', par: _dossier.archive_par,
@@ -966,7 +975,7 @@ function saveEdit() {
   _piecesData[_dossier.id].pieces[_selectedPiece] = current;
   _piecesData[_dossier.id].histo.push({
     action: 'Pièce modifiée manuellement', piece: _selectedPiece,
-    par: 'admin@pslsh.org', date: new Date().toLocaleString('fr-FR'), color: 'blue',
+    par: currentActor(), date: new Date().toLocaleString('fr-FR'), color: 'blue',
   });
   savePieces();
   bootstrap.Modal.getInstance(document.getElementById('modalEditPiece')).hide();
@@ -979,7 +988,7 @@ function quickSubmit(code) {
   _piecesData[_dossier.id].pieces[code] = p;
   _piecesData[_dossier.id].histo.push({
     action: 'Soumis pour validation', piece: code,
-    par: 'admin@pslsh.org', date: new Date().toLocaleString('fr-FR'), color: 'orange',
+    par: currentActor(), date: new Date().toLocaleString('fr-FR'), color: 'orange',
   });
   savePieces();
   render();
@@ -992,7 +1001,7 @@ function validateOne(code) {
   _piecesData[_dossier.id].pieces[code] = p;
   _piecesData[_dossier.id].histo.push({
     action: 'Validée', piece: code,
-    par: 'admin@pslsh.org', date: new Date().toLocaleString('fr-FR'), color: 'green',
+    par: currentActor(), date: new Date().toLocaleString('fr-FR'), color: 'green',
   });
   syncDossierEtape();
   savePieces();
@@ -1007,7 +1016,7 @@ function reopenOne(code) {
   _piecesData[_dossier.id].pieces[code] = p;
   _piecesData[_dossier.id].histo.push({
     action: 'Reprise', piece: code,
-    par: 'admin@pslsh.org', date: new Date().toLocaleString('fr-FR'), color: 'blue',
+    par: currentActor(), date: new Date().toLocaleString('fr-FR'), color: 'blue',
   });
   savePieces();
   render();
@@ -1061,7 +1070,7 @@ function importPiece(code) {
     _piecesData[_dossier.id].pieces[code] = current;
     _piecesData[_dossier.id].histo.push({
       action: `Pièce jointe importée : ${file.name} (${Math.round(file.size / 1024)} ko)`,
-      piece: code, par: 'admin@pslsh.org',
+      piece: code, par: currentActor(),
       date: new Date().toLocaleString('fr-FR'), color: 'green',
     });
     savePieces();
@@ -1090,7 +1099,7 @@ function printAll() {
 function logHisto(action, color, motif) {
   _piecesData[_dossier.id].histo.push({
     action, piece: _selectedPiece,
-    par: 'admin@pslsh.org', date: new Date().toLocaleString('fr-FR'),
+    par: currentActor(), date: new Date().toLocaleString('fr-FR'),
     color, motif,
   });
 }

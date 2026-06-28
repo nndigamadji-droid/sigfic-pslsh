@@ -1,7 +1,14 @@
 require('dotenv').config();
 const { sequelize, Permission, Role, RolePermission, User, JournalComptable, DocumentType, Exercice, SourceFinancement, RubriqueBudgetaire } = require('../models');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { PERMISSIONS } = require('../config/permissions');
+
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
+const seedAdminEmail = process.env.SEED_ADMIN_EMAIL || '';
+const seedAdminPassword =
+  process.env.SEED_ADMIN_PASSWORD ||
+  (!isProduction ? `${crypto.randomBytes(18).toString('base64url')}Aa1!` : '');
 
 async function seed() {
   try {
@@ -78,23 +85,42 @@ async function seed() {
 
     console.log('   ✓ Permissions attribuées');
 
-    // ── 4. Utilisateur admin par défaut ───────────────────────────────────────
-    console.log('4. Création utilisateur admin...');
-    const [adminUser, created] = await User.findOrCreate({
-      where: { email: 'admin@pslsh.org' },
-      defaults: {
-        nom:          'Administrateur',
-        prenom:       'Système',
-        email:        'admin@pslsh.org',
-        password_hash: await bcrypt.hash('Admin@2026', 10),
-        is_active:    true,
-      },
-    });
-    if (created) {
-      const { UserRole } = require('../models');
-      await UserRole.findOrCreate({ where: { user_id: adminUser.id, role_id: roles.admin.id }, defaults: { assigned_by: adminUser.id } });
+    // ── 4. Utilisateur administrateur ─────────────────────────────────────────
+    console.log('4. Vérification utilisateur administrateur...');
+    const { UserRole } = require('../models');
+    const existingAdminRole = await UserRole.findOne({ where: { role_id: roles.admin.id } });
+    let adminUser = existingAdminRole ? await User.findByPk(existingAdminRole.user_id) : null;
+
+    if (!adminUser && seedAdminEmail) {
+      adminUser = await User.findOne({ where: { email: seedAdminEmail } });
     }
-    console.log(`   ✓ Admin: admin@pslsh.org / Admin@2026`);
+
+    if (!adminUser) {
+      if (!seedAdminEmail || !seedAdminPassword) {
+        throw new Error(
+          'SEED_ADMIN_EMAIL et SEED_ADMIN_PASSWORD sont requis pour creer le premier administrateur.'
+        );
+      }
+
+      adminUser = await User.create({
+        nom: 'Administrateur',
+        prenom: 'Systeme',
+        email: seedAdminEmail,
+        password_hash: await bcrypt.hash(seedAdminPassword, 10),
+        is_active: true,
+      });
+      console.log(`   ✓ Admin cree: ${seedAdminEmail}`);
+      if (!isProduction && !process.env.SEED_ADMIN_PASSWORD) {
+        console.log(`   Mot de passe genere pour le seed local: ${seedAdminPassword}`);
+      }
+    } else {
+      console.log(`   ✓ Admin existant: ${adminUser.email}`);
+    }
+
+    await UserRole.findOrCreate({
+      where: { user_id: adminUser.id, role_id: roles.admin.id },
+      defaults: { assigned_by: adminUser.id, assigned_at: new Date() },
+    });
 
     // ── 5. Journaux comptables ────────────────────────────────────────────────
     console.log('5. Seeding journaux comptables...');
@@ -252,7 +278,6 @@ async function seed() {
     console.log(`   ✓ ${rubriques.length} rubriques budgétaires`);
 
     console.log('\n✅ Seeding terminé avec succès!\n');
-    console.log('Connexion: admin@pslsh.org / Admin@2026\n');
     process.exit(0);
   } catch (err) {
     console.error('Erreur seeding:', err);

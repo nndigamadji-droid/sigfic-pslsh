@@ -750,57 +750,13 @@ const SERVICES_PSLSH = [
 ];
 
 /* Données par défaut : 24 agents PSLSH/IST */
-const DEFAULT_AGENTS = [
-  { mat:'PSLSH-A001', nom:'NDIGAMADJI', prenom:'Mahamat', fonction:'Coordonnateur National', service:'Coordination Nationale',          cat:'Cadre',         contrat:'CDI',  salaire:1450000, soldeConges:18, statut:'Actif',     dateEmb:'2018-03-15' },
-  { mat:'PSLSH-A002', nom:'OUSMANE',     prenom:'Fatimé',   fonction:'Chef SAF',                  service:'Service Administratif & Financier (SAF)', cat:'Cadre',         contrat:'CDI',  salaire:1200000, soldeConges:22, statut:'Actif',     dateEmb:'2019-01-10' },
-  { mat:'PSLSH-A003', nom:'DJIBRINE',    prenom:'Adam',     fonction:'Comptable principal',       service:'Service Comptabilité',       cat:'Cadre',         contrat:'CDI',  salaire:850000,  soldeConges:25, statut:'Actif',     dateEmb:'2020-06-01' },
-  { mat:'PSLSH-A004', nom:'HASSANA',     prenom:'Achta',    fonction:'Comptable assistante',      service:'Service Comptabilité',       cat:'Administratif', contrat:'CDD',  salaire:425000,  soldeConges:30, statut:'Actif',     dateEmb:'2024-09-15' },
-  { mat:'PSLSH-A005', nom:'MAHAMAT',     prenom:'Issa',     fonction:'Chef Achats & Logistique',  service:'Service Achats & Logistique (SAL)',       cat:'Cadre',         contrat:'CDI',  salaire:980000,  soldeConges:15, statut:'En mission', dateEmb:'2017-11-20' },
-  { mat:'PSLSH-A006', nom:'ABAKAR',      prenom:'Hawa',     fonction:'Gestionnaire stock',        service:'Service Achats & Logistique (SAL)',       cat:'Technique',     contrat:'CDI',  salaire:520000,  soldeConges:20, statut:'Actif',     dateEmb:'2021-04-12' },
-  { mat:'PSLSH-A007', nom:'YAYA',        prenom:'Brahim',   fonction:'Pharmacien-chef CPA',       service:'Pharmacie Centrale (CPA)',   cat:'Cadre',         contrat:'CDI',  salaire:1100000, soldeConges:12, statut:'Actif',     dateEmb:'2016-08-01' },
-  { mat:'PSLSH-A008', nom:'ALI',         prenom:'Kaltouma', fonction:'Préparatrice pharmacie',    service:'Pharmacie Centrale (CPA)',   cat:'Technique',     contrat:'CDI',  salaire:485000,  soldeConges:28, statut:'Actif',     dateEmb:'2022-02-15' },
-  { mat:'PSLSH-A009', nom:'MAHADI',      prenom:'Souleyman',fonction:'Médecin référent',          service:'Service Médical & Clinique', cat:'Cadre',         contrat:'CDI',  salaire:1350000, soldeConges:10, statut:'Actif',     dateEmb:'2015-05-20' },
-  { mat:'PSLSH-A010', nom:'NGARMBASSA',  prenom:'Esther',   fonction:'Infirmière diplômée',       service:'Service Médical & Clinique', cat:'Technique',     contrat:'CDI',  salaire:520000,  soldeConges:22, statut:'En congé', dateEmb:'2020-11-01' },
-  { mat:'PSLSH-A011', nom:'TCHAGAYE',    prenom:'Moussa',   fonction:'Chef Laboratoire',          service:'Service Laboratoire & Réactifs', cat:'Cadre',     contrat:'CDI',  salaire:1050000, soldeConges:18, statut:'Actif',     dateEmb:'2019-03-10' },
-  { mat:'PSLSH-A012', nom:'AMINE',       prenom:'Roukia',   fonction:'Technicienne biologiste',   service:'Service Laboratoire & Réactifs', cat:'Technique', contrat:'CDD',  salaire:485000,  soldeConges:25, statut:'Actif',     dateEmb:'2024-01-20' },
-  { mat:'PSLSH-A013', nom:'YOUSSOUF',    prenom:'Aïcha',    fonction:'Chargée Suivi-Évaluation',  service:'Service Suivi-Évaluation',   cat:'Cadre',         contrat:'CDI',  salaire:925000,  soldeConges:20, statut:'Actif',     dateEmb:'2020-07-15' },
-  { mat:'PSLSH-A014', nom:'ABDOULAYE',   prenom:'Fatima',   fonction:'Statisticienne',            service:'Service Suivi-Évaluation',   cat:'Technique',     contrat:'Personnel financé', salaire:680000, soldeConges:30, statut:'Actif', dateEmb:'2023-04-01' },
-  { mat:'PSLSH-A015', nom:'ADOUM',       prenom:'Hamid',    fonction:'Chargé Communication',      service:'Service Communication & Plaidoyer', cat:'Cadre', contrat:'CDI',  salaire:825000,  soldeConges:24, statut:'Actif',     dateEmb:'2021-09-01' },
-  { mat:'PSLSH-A016', nom:'ALI',         prenom:'Mariam',   fonction:'Chargée Plaidoyer',         service:'Service Communication & Plaidoyer', cat:'Cadre', contrat:'CDD',  salaire:620000,  soldeConges:20, statut:'Actif',     dateEmb:'2024-03-15' },
-  { mat:'PSLSH-A017', nom:'IBRAHIM',     prenom:'Halime',   fonction:'Documentaliste',            service:'Service Information & Recherche',   cat:'Administratif', contrat:'CDI', salaire:485000, soldeConges:22, statut:'Actif', dateEmb:'2019-12-01' },
-  { mat:'PSLSH-A018', nom:'MOUSSA',      prenom:'Khadidja', fonction:'Secrétaire de direction',   service:'Coordination Nationale',     cat:'Administratif', contrat:'CDI',  salaire:425000,  soldeConges:18, statut:'Actif',     dateEmb:'2018-09-10' },
-  { mat:'PSLSH-A019', nom:'HAROUN',      prenom:'Saleh',    fonction:'Chef Antenne Nord',         service:'Antenne Régionale Nord',     cat:'Cadre',         contrat:'CDI',  salaire:870000,  soldeConges:15, statut:'En mission', dateEmb:'2017-03-20' },
-  { mat:'PSLSH-A020', nom:'TIDJANI',     prenom:'Aminata',  fonction:'Coordinatrice Antenne Sud', service:'Antenne Régionale Sud',      cat:'Cadre',         contrat:'CDI',  salaire:870000,  soldeConges:20, statut:'Actif',     dateEmb:'2019-06-15' },
-  { mat:'PSLSH-A021', nom:'KOUSSOU',     prenom:'Mahamoud', fonction:'Chauffeur principal',       service:'Coordination Nationale',     cat:'Soutien',       contrat:'CDI',  salaire:285000,  soldeConges:25, statut:'Actif',     dateEmb:'2016-11-01' },
-  { mat:'PSLSH-A022', nom:'ZARA',        prenom:'Boukar',   fonction:'Agent d\'entretien',        service:'Service Administratif & Financier (SAF)', cat:'Soutien',  contrat:'CDI',  salaire:215000, soldeConges:30, statut:'Actif', dateEmb:'2020-01-15' },
-  { mat:'PSLSH-A023', nom:'ABDALLAH',    prenom:'Mahamat',  fonction:'Stagiaire achats',          service:'Service Achats & Logistique (SAL)',       cat:'Administratif', contrat:'Stagiaire', salaire:150000, soldeConges:0, statut:'Actif', dateEmb:'2026-01-10' },
-  { mat:'PSLSH-A024', nom:'NADJI',       prenom:'Bichara',  fonction:'Consultant suivi',          service:'Service Suivi-Évaluation',   cat:'Cadre',         contrat:'Consultant', salaire:1250000, soldeConges:0, statut:'Actif', dateEmb:'2025-10-01' },
-];
+const DEFAULT_AGENTS = [];
 
-const DEFAULT_DEMANDES = [
-  { id:1, mat:'PSLSH-A013', nom:'YOUSSOUF Aïcha',  type:'Congé annuel',     du:'2026-05-12', au:'2026-05-23', jours:10, motif:'Congé familial', statut:'En attente' },
-  { id:2, mat:'PSLSH-A006', nom:'ABAKAR Hawa',     type:'Congé maternité',  du:'2026-06-01', au:'2026-08-31', jours:90, motif:'Congé légal',    statut:'En attente' },
-  { id:3, mat:'PSLSH-A015', nom:'ADOUM Hamid',     type:'Mission terrain',  du:'2026-05-08', au:'2026-05-12', jours:5,  motif:'Atelier régional Abéché', statut:'En attente' },
-  { id:4, mat:'PSLSH-A011', nom:'TCHAGAYE Moussa', type:'Congé exceptionnel', du:'2026-04-29', au:'2026-04-30', jours:2, motif:'Évènement familial', statut:'En attente' },
-];
+const DEFAULT_DEMANDES = [];
 
-const DEFAULT_HISTORIQUE = [
-  { id:101, nom:'NDIGAMADJI Mahamat', type:'Congé annuel',  du:'2026-02-10', au:'2026-02-21', jours:10, statut:'Approuvé', valideur:'Conseil de coordination' },
-  { id:102, nom:'OUSMANE Fatimé',     type:'Congé maladie', du:'2026-03-15', au:'2026-03-19', jours:5,  statut:'Approuvé', valideur:'Coordonnateur' },
-  { id:103, nom:'NGARMBASSA Esther',  type:'Congé annuel',  du:'2026-04-15', au:'2026-04-30', jours:14, statut:'En cours', valideur:'Coordonnateur' },
-  { id:104, nom:'MAHAMAT Issa',       type:'Mission terrain', du:'2026-04-22', au:'2026-04-26', jours:5, statut:'En cours', valideur:'Coordonnateur' },
-  { id:105, nom:'HAROUN Saleh',       type:'Mission terrain', du:'2026-04-25', au:'2026-04-30', jours:6, statut:'En cours', valideur:'Coordonnateur' },
-];
+const DEFAULT_HISTORIQUE = [];
 
-const DEFAULT_FORMATIONS = [
-  { id:1, intitule:'Mise à jour SYSCOHADA révisé 2024',     domaine:'Comptabilité', type:'fin', du:'2026-05-19', au:'2026-05-23', duree:5, lieu:'CRESPO N\'Djamena',           benef:6, cout:1850000, statut:'Programmée' },
-  { id:2, intitule:'Pilotage budgétaire & PTBA',            domaine:'Finance',      type:'fin', du:'2026-06-09', au:'2026-06-13', duree:5, lieu:'IFRPM Yaoundé',                benef:4, cout:3200000, statut:'Programmée' },
-  { id:3, intitule:'Diagnostic VIH par PCR & charge virale',domaine:'Technique',    type:'tech',du:'2026-04-14', au:'2026-04-25', duree:10,lieu:'INSP N\'Djamena',              benef:8, cout:2400000, statut:'En cours' },
-  { id:4, intitule:'Gestion qualité ISO 15189 (laboratoire)',domaine:'Technique',   type:'tech',du:'2026-07-07', au:'2026-07-11', duree:5, lieu:'OMS N\'Djamena',               benef:5, cout:1650000, statut:'Programmée' },
-  { id:5, intitule:'Procédures passation marchés publics',  domaine:'Administratif',type:'adm', du:'2026-09-15', au:'2026-09-19', duree:5, lieu:'ENAM N\'Djamena',              benef:3, cout:1100000, statut:'Programmée' },
-  { id:6, intitule:'Communication digitale & plaidoyer',    domaine:'Clinique',     type:'cli', du:'2026-08-04', au:'2026-08-08', duree:5, lieu:'Centre Sahel Yaoundé',         benef:4, cout:1850000, statut:'Programmée' },
-  { id:7, intitule:'Suivi-évaluation indicateurs PEPFAR',   domaine:'Suivi',        type:'tech',du:'2026-03-10', au:'2026-03-14', duree:5, lieu:'Visioconférence',              benef:6, cout:850000,  statut:'Terminée' },
-];
+const DEFAULT_FORMATIONS = [];
 
 let _agents = [];
 let _demandes = [];
@@ -813,23 +769,22 @@ function loadRh() {
     const raw = localStorage.getItem(RH_KEY);
     if (raw) {
       const data = JSON.parse(raw);
-      _agents     = data.agents     || DEFAULT_AGENTS;
-      _demandes   = data.demandes   || DEFAULT_DEMANDES;
-      _historique = data.historique || DEFAULT_HISTORIQUE;
-      _formations = data.formations || DEFAULT_FORMATIONS;
+      _agents     = Array.isArray(data.agents) ? data.agents : [];
+      _demandes   = Array.isArray(data.demandes) ? data.demandes : [];
+      _historique = Array.isArray(data.historique) ? data.historique : [];
+      _formations = Array.isArray(data.formations) ? data.formations : [];
     } else {
-      _agents = DEFAULT_AGENTS;
-      _demandes = DEFAULT_DEMANDES;
-      _historique = DEFAULT_HISTORIQUE;
-      _formations = DEFAULT_FORMATIONS;
-      saveRh();
+      _agents = [];
+      _demandes = [];
+      _historique = [];
+      _formations = [];
     }
   } catch (e) {
     console.warn('Erreur chargement RH', e);
-    _agents = DEFAULT_AGENTS;
-    _demandes = DEFAULT_DEMANDES;
-    _historique = DEFAULT_HISTORIQUE;
-    _formations = DEFAULT_FORMATIONS;
+    _agents = [];
+    _demandes = [];
+    _historique = [];
+    _formations = [];
   }
 }
 

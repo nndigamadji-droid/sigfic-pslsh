@@ -63,12 +63,12 @@ async function seedTestDatabase() {
   }
 
   const [adminUser] = await User.findOrCreate({
-    where: { email: 'admin@pslsh.org' },
+    where: { email: 'admin.test@sigfic.invalid' },
     defaults: {
       nom: 'Administrateur',
       prenom: 'Systeme',
-      email: 'admin@pslsh.org',
-      password_hash: await bcrypt.hash('Admin@2026', 10),
+      email: 'admin.test@sigfic.invalid',
+      password_hash: await bcrypt.hash('TestAdmin!2026', 10),
       is_active: true,
     },
   });

@@ -940,30 +940,22 @@ async function loadKPIs(){
 }
 
 function useFallbackKPIs(){
-  /* Données illustratives pour démo */
-  const demo = {
-    facturesM: 184500000, facturesN: 7,
-    liquidM:   112000000, liquidN:   4,
-    ordresM:    76000000, ordresN:   3,
-    payesM:     63500000, payesN:   12,
-    taux: 57,
-  };
-  setText('kpiFactures',         formatXOF(demo.facturesM));
-  setText('kpiFacturesCount',    `${demo.facturesN} facture(s)`);
-  setText('kpiLiquidations',     formatXOF(demo.liquidM));
-  setText('kpiLiquidationsCount',`${demo.liquidN} dossier(s)`);
-  setText('kpiOrdres',           formatXOF(demo.ordresM));
-  setText('kpiOrdresCount',      `${demo.ordresN} ordre(s) émis`);
-  setText('kpiPaies',            formatXOF(demo.payesM));
-  setText('kpiPaiesCount',       `${demo.payesN} transaction(s)`);
-  setText('ppReception','18'); setText('ppFacture','14');
-  setText('ppLiquidation','4'); setText('ppOrdonnancement','3'); setText('ppPaiement','12');
-  setText('tauxPaiement',`${demo.taux}%`);
-  document.getElementById('tauxFill').style.width = `${demo.taux}%`;
-  setText('tauxLegendText', `${formatXOF(demo.payesM)} payé sur ${formatXOF(demo.liquidM)} liquidé`);
-  setText('chipTotal','26'); setText('chipAttente','7'); setText('chipPayes','12'); setText('chipRejetes','1');
-  setText('soldeComptable', formatXOF(63500000));
-  setText('soldeBancaire',  formatXOF(63500000));
+  setText('kpiFactures',         formatXOF(0));
+  setText('kpiFacturesCount',    '0 facture');
+  setText('kpiLiquidations',     formatXOF(0));
+  setText('kpiLiquidationsCount','0 dossier');
+  setText('kpiOrdres',           formatXOF(0));
+  setText('kpiOrdresCount',      '0 ordre émis');
+  setText('kpiPaies',            formatXOF(0));
+  setText('kpiPaiesCount',       '0 transaction');
+  setText('ppReception','0'); setText('ppFacture','0');
+  setText('ppLiquidation','0'); setText('ppOrdonnancement','0'); setText('ppPaiement','0');
+  setText('tauxPaiement','0%');
+  document.getElementById('tauxFill').style.width = '0%';
+  setText('tauxLegendText', `${formatXOF(0)} payé sur ${formatXOF(0)} liquidé`);
+  setText('chipTotal','0'); setText('chipAttente','0'); setText('chipPayes','0'); setText('chipRejetes','0');
+  setText('soldeComptable', formatXOF(0));
+  setText('soldeBancaire',  formatXOF(0));
   setText('ecartRappr', formatXOF(0));
   setText('ecartStatut', '✓ Rapprochement équilibré');
 }
@@ -978,9 +970,9 @@ async function loadFactures(){
     renderFactures(allFactures);
     setText('countFactures', `${allFactures.length} facture(s) affichée(s)`);
   } catch(e){
-    allFactures = getFallbackFactures();
+    allFactures = [];
     renderFactures(allFactures);
-    setText('countFactures', `${allFactures.length} facture(s) (données de démonstration)`);
+    setText('countFactures', `${allFactures.length} facture(s) affichée(s)`);
   }
 }
 
@@ -1027,9 +1019,9 @@ async function loadOrdres(){
     renderOrdres(allOrdres);
     setText('countOrdres', `${allOrdres.length} ordre(s) affiché(s)`);
   } catch(e){
-    allOrdres = getFallbackOrdres();
+    allOrdres = [];
     renderOrdres(allOrdres);
-    setText('countOrdres', `${allOrdres.length} ordre(s) (démonstration)`);
+    setText('countOrdres', `${allOrdres.length} ordre(s) affiché(s)`);
   }
 }
 
@@ -1038,7 +1030,7 @@ const _isCoord = (function(){
   try {
     const u = JSON.parse(localStorage.getItem('pslsh_user')||'{}');
     const r = (u.role||u.profil||'').toLowerCase();
-    return r.includes('coord')||r==='coordinateur'||r==='gestionnaire'||r==='comptable'||r==='administrateur'||true;
+    return r.includes('coord')||r==='coordinateur'||r==='gestionnaire'||r==='comptable'||r==='administrateur';
   } catch(e){ return false; }
 })();
 
@@ -1146,9 +1138,9 @@ async function loadPaiements(){
     renderPaiements(allPaiements);
     setText('countPaiements', `${allPaiements.length} paiement(s) affiché(s)`);
   } catch(e){
-    allPaiements = getFallbackPaiements();
+    allPaiements = [];
     renderPaiements(allPaiements);
-    setText('countPaiements', `${allPaiements.length} paiement(s) (démonstration)`);
+    setText('countPaiements', `${allPaiements.length} paiement(s) affiché(s)`);
   }
 }
 
@@ -1308,43 +1300,21 @@ async function saveOrdre(){
   }
 }
 
-/* ── Fallback demo data ── */
+/* ── Fallback sans donnees de demonstration ── */
 function getFallbackFactures(){
-  return [
-    { id:1, dossier_code:'DOS-2025-001', beneficiaire:'SOGEPHAR GUINÉE', objet:'Fourniture de médicaments ARV — lot 1/2', num_facture:'FAC-SG-2025-047', source_financement:'Fonds Mondial', montant_facture:78500000, montant_liquide:78500000, date_facture:'2025-10-12', statut:'ordonnance' },
-    { id:2, dossier_code:'DOS-2025-003', beneficiaire:'IMPRIMERIE NATIONALE', objet:'Impression supports de communication IEC/CCC', num_facture:'FAC-IN-2025-012', source_financement:'État Guinéen', montant_facture:14200000, montant_liquide:14200000, date_facture:'2025-10-18', statut:'liquide' },
-    { id:3, dossier_code:'DOS-2025-005', beneficiaire:'TRANS-OUEST SARL', objet:'Transport et logistique tournée régionale', num_facture:'FAC-TO-2025-033', source_financement:'PEPFAR', montant_facture:9800000, montant_liquide:9800000, date_facture:'2025-11-02', statut:'paye' },
-    { id:4, dossier_code:'DOS-2025-007', beneficiaire:'HOTEL CAMAYENNE', objet:'Hébergement atelier formation agents de santé', num_facture:'FAC-HC-2025-089', source_financement:'Fonds Mondial', montant_facture:22600000, montant_liquide:22600000, date_facture:'2025-11-08', statut:'liquide' },
-    { id:5, dossier_code:'DOS-2025-009', beneficiaire:'INFORMATIQUE PRO', objet:'Acquisition équipements informatiques bureau régional', num_facture:'FAC-IP-2025-004', source_financement:'État Guinéen', montant_facture:18900000, montant_liquide:17500000, date_facture:'2025-11-15', statut:'rejete' },
-    { id:6, dossier_code:'DOS-2025-011', beneficiaire:'CLINIQUE DONKA LAB', objet:'Analyses biologiques dépistage VIH campagne nationale', num_facture:'FAC-CD-2025-156', source_financement:'Fonds Mondial', montant_facture:41000000, montant_liquide:41000000, date_facture:'2025-11-20', statut:'ordonnance' },
-  ];
+  return [];
 }
 
 function getFallbackOrdres(){
-  return [
-    { id:1, numero:'OP-2025-0047', dossier_code:'DOS-2025-001', beneficiaire:'SOGEPHAR GUINÉE', objet:'Médicaments ARV lot 1/2', mode_paiement:'virement', montant:78500000, compte_bancaire:'GN46 1234 5678 9012', date_emission:'2025-10-20', statut:'paye' },
-    { id:2, numero:'OP-2025-0052', dossier_code:'DOS-2025-007', beneficiaire:'HOTEL CAMAYENNE', objet:'Hébergement atelier formation', mode_paiement:'cheque', montant:22600000, compte_bancaire:'Chèque N°0045821', date_emission:'2025-11-10', statut:'ordonnance' },
-    { id:3, numero:'OP-2025-0055', dossier_code:'DOS-2025-011', beneficiaire:'CLINIQUE DONKA LAB', objet:'Analyses biologiques VIH', mode_paiement:'virement', montant:41000000, compte_bancaire:'GN46 9876 5432 1098', date_emission:'2025-11-22', statut:'ordonnance' },
-  ];
+  return [];
 }
 
 function getFallbackPaiements(){
-  return [
-    { id:1, numero_ordre:'OP-2025-0047', beneficiaire:'SOGEPHAR GUINÉE', objet:'Médicaments ARV lot 1/2', mode_paiement:'virement', ref_transaction:'VIR-BCG-20251023-7842', montant:78500000, source_financement:'Fonds Mondial', date_paiement:'2025-10-23' },
-    { id:2, numero_ordre:'OP-2025-0039', beneficiaire:'TRANS-OUEST SARL', objet:'Transport logistique régionale', mode_paiement:'virement', ref_transaction:'VIR-BCG-20251105-6631', montant:9800000, source_financement:'PEPFAR', date_paiement:'2025-11-05' },
-    { id:3, numero_ordre:'OP-2025-0041', beneficiaire:'BUREAU ÉTUDE SANTÉ', objet:'Prestation conseil évaluation programme', mode_paiement:'cheque', ref_transaction:'CHQ-0041278', montant:15200000, source_financement:'Fonds Mondial', date_paiement:'2025-11-07' },
-    { id:4, numero_ordre:'OP-2025-0044', beneficiaire:'RADIO ESPACE FM', objet:'Spots radio campagne sensibilisation IST', mode_paiement:'mobile', ref_transaction:'MM-OGF-20251112-9934', montant:3200000, source_financement:'État Guinéen', date_paiement:'2025-11-12' },
-  ];
+  return [];
 }
 
 function getFallbackRapprochement(){
-  return [
-    { id:1, date_operation:'2025-10-23', ref_comptable:'BQ-2025-0231', libelle:'Virement SOGEPHAR — ARV lot 1', debit:78500000, credit:null, rapproche:true, ref_banque:'VIR-BCG-20251023-7842', observation:'' },
-    { id:2, date_operation:'2025-11-05', ref_comptable:'BQ-2025-0244', libelle:'Virement TRANS-OUEST — Transport', debit:9800000, credit:null, rapproche:true, ref_banque:'VIR-BCG-20251105-6631', observation:'' },
-    { id:3, date_operation:'2025-11-07', ref_comptable:'BQ-2025-0248', libelle:'Chèque Bureau Étude Santé', debit:15200000, credit:null, rapproche:true, ref_banque:'CHQ-0041278', observation:'' },
-    { id:4, date_operation:'2025-11-10', ref_comptable:'BQ-2025-0251', libelle:'Chèque Hôtel Camayenne — atelier', debit:22600000, credit:null, rapproche:false, ref_banque:null, observation:'Chèque non encore encaissé par le bénéficiaire' },
-    { id:5, date_operation:'2025-11-22', ref_comptable:'BQ-2025-0267', libelle:'Virement Clinique Donka Lab', debit:41000000, credit:null, rapproche:false, ref_banque:null, observation:'En attente de confirmation bancaire' },
-  ];
+  return [];
 }
 
 /* ── Load all ── */

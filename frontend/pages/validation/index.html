@@ -278,22 +278,7 @@ const ROLE_TO_ETAPE = {
 
 const SERVICES = ['SAF','SGAS','SPCH','SPCG','SESRO','APMS','SEB','SPSAC','SC','SLNR'];
 
-const DEFAULT_DOSSIERS = [
-  { id:'EB-2026-004', type:'EB', objet:'Cartouches GeneXpert HBV Viral Load',           service:'APMS',  montant:38000000, soumis:'02/02/2026', porteur:'Chef APMS',  etape:'saf' },
-  { id:'EB-2026-005', type:'EB', objet:'Formation 80 paramédicaux délégation tâches',   service:'SPSAC', montant:35000000, soumis:'05/02/2026', porteur:'Chef SPSAC', etape:'saf' },
-  { id:'EB-2026-007', type:'EB', objet:'Tests combinés VIH/Syphilis Dual RDT',          service:'APMS',  montant:33000000, soumis:'15/02/2026', porteur:'Chef APMS',  etape:'compta' },
-  { id:'EB-2026-008', type:'EB', objet:'Construction entrepôt stockage intrants APMS',  service:'APMS',  montant:35000000, soumis:'20/02/2026', porteur:'Chef APMS',  etape:'saf' },
-  { id:'BC-2026-003', type:'BC', objet:'Gardiennage et nettoyage — contrat annuel',     service:'SAF',   montant: 6900000, soumis:'01/02/2026', porteur:'Resp. SAF',  etape:'compta' },
-  { id:'BC-2026-004', type:'BC', objet:'Achat carburant véhicules — Trim. 1 2026',      service:'SAF',   montant: 6250000, soumis:'05/02/2026', porteur:'Resp. SAF',  etape:'coordo' },
-  { id:'BC-2026-005', type:'BC', objet:'Cartouches COBAS VIH — charge virale Trim. 1',  service:'APMS',  montant:64800000, soumis:'10/02/2026', porteur:'Chef APMS',  etape:'compta' },
-  { id:'BC-2026-007', type:'BC', objet:'Kits ELISA Hépatite B et Hépatite C',           service:'APMS',  montant:22100000, soumis:'20/02/2026', porteur:'Chef APMS',  etape:'saf' },
-  { id:'OP-2026-003', type:'OP', objet:'Gardiennage Janv–Mars 2026 — réf. BC-2026-003', service:'SAF',   montant: 1725000, soumis:'05/03/2026', porteur:'Agent Compta',etape:'coordo' },
-  { id:'OP-2026-004', type:'OP', objet:'Carburant Trim.1 2026 — réf. BC-2026-004',      service:'SAF',   montant: 6250000, soumis:'10/03/2026', porteur:'Agent Compta',etape:'coordo' },
-  { id:'OP-2026-005', type:'OP', objet:'Cartouches COBAS VIH — réf. BC-2026-005',       service:'APMS',  montant:64800000, soumis:'12/03/2026', porteur:'Agent Compta',etape:'compta' },
-  { id:'OP-2026-006', type:'OP', objet:'Kits ELISA Hépatites — réf. BC-2026-007',       service:'APMS',  montant:22100000, soumis:'25/03/2026', porteur:'Agent Compta',etape:'saf' },
-  { id:'OV-2026-002', type:'OV', objet:'Virement SECURIMAX SARL — réf. OP-2026-003',    service:'SAF',   montant: 1725000, soumis:'06/03/2026', porteur:'Agent Compta',etape:'coordo' },
-  { id:'OV-2026-004', type:'OV', objet:'Virement ROCHE DIAGNOSTICS — réf. OP-2026-005', service:'APMS',  montant:64800000, soumis:'13/03/2026', porteur:'Agent Compta',etape:'compta' },
-];
+const DEFAULT_DOSSIERS = [];
 
 let _dossiers = [];
 let _showMineOnly = false;
@@ -305,13 +290,12 @@ function load() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const data = JSON.parse(raw);
-      _dossiers = Array.isArray(data) ? data : DEFAULT_DOSSIERS;
+      _dossiers = Array.isArray(data) ? data : [];
     } else {
-      _dossiers = DEFAULT_DOSSIERS.map((d) => ({ ...d, histo: [{ action:'Soumission', par:d.porteur, date:d.soumis }] }));
-      save();
+      _dossiers = [];
     }
   } catch (_) {
-    _dossiers = DEFAULT_DOSSIERS;
+    _dossiers = [];
   }
 }
 

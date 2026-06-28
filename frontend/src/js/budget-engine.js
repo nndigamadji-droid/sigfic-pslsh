@@ -60,8 +60,8 @@
   function getCurrentUser() {
     try {
       const u = JSON.parse(localStorage.getItem('pslsh_user') || 'null');
-      return (u && (u.email || u.nom)) || 'admin@pslsh.org';
-    } catch (_) { return 'admin@pslsh.org'; }
+      return (u && (u.email || u.nom)) || 'systeme';
+    } catch (_) { return 'systeme'; }
   }
 
   // ---------- CLÉ BUDGÉTAIRE ----------

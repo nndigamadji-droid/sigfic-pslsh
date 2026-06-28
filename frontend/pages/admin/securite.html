@@ -251,60 +251,9 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>stock@pslsh.org</td>
-                  <td>2026-04-04 14:20</td>
-                  <td><code>192.168.1.77</code></td>
-                  <td><strong class="text-danger">5/5</strong></td>
-                  <td><span class="badge bg-danger">Compte verrouillé</span></td>
-                </tr>
-                <tr>
-                  <td>stock@pslsh.org</td>
-                  <td>2026-04-04 14:18</td>
-                  <td><code>192.168.1.77</code></td>
-                  <td>4/5</td>
-                  <td><span class="badge bg-warning text-dark">Tentative</span></td>
-                </tr>
-                <tr>
-                  <td>stock@pslsh.org</td>
-                  <td>2026-04-04 14:15</td>
-                  <td><code>192.168.1.77</code></td>
-                  <td>3/5</td>
-                  <td><span class="badge bg-warning text-dark">Tentative</span></td>
-                </tr>
-                <tr>
-                  <td>kouma@pslsh.org</td>
-                  <td>2026-04-04 11:03</td>
-                  <td><code>10.0.0.45</code></td>
-                  <td>2/5</td>
-                  <td><span class="badge bg-warning text-dark">Tentative</span></td>
-                </tr>
-                <tr>
-                  <td>kouma@pslsh.org</td>
-                  <td>2026-04-04 11:01</td>
-                  <td><code>10.0.0.45</code></td>
-                  <td>1/5</td>
-                  <td><span class="badge bg-warning text-dark">Tentative</span></td>
-                </tr>
-                <tr>
-                  <td>jdupont@pslsh.org</td>
-                  <td>2026-04-04 09:45</td>
-                  <td><code>192.168.1.45</code></td>
-                  <td>3/5</td>
-                  <td><span class="badge bg-warning text-dark">Tentative</span></td>
-                </tr>
-                <tr>
-                  <td>inconnu@ext.com</td>
-                  <td>2026-04-04 07:12</td>
-                  <td><code>41.202.219.8</code></td>
-                  <td>1/5</td>
-                  <td><span class="badge bg-secondary">Tentative</span></td>
-                </tr>
-                <tr>
-                  <td>admin@pslsh.org</td>
-                  <td>2026-04-03 23:55</td>
-                  <td><code>41.202.219.8</code></td>
-                  <td>5/5</td>
-                  <td><span class="badge bg-danger">Compte verrouillé</span></td>
+                  <td colspan="5" class="text-center text-muted py-4">
+                    <i class="fas fa-shield-alt me-2"></i>Aucune tentative récente à afficher.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -403,7 +352,7 @@
   // Initialisation de l'utilisateur depuis le localStorage
   (function initUser() {
     try {
-      const raw = localStorage.getItem('sigfic_user') || localStorage.getItem('user');
+      const raw = localStorage.getItem('pslsh_user');
       if (raw) {
         const u = JSON.parse(raw);
         const fullName = ((u.prenom || '') + ' ' + (u.nom || '')).trim() || u.name || '—';

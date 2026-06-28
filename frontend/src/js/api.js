@@ -33,16 +33,60 @@ function removeToken() {
 
 function getUser() {
   try {
-    return JSON.parse(localStorage.getItem('pslsh_user') || 'null');
+    return normalizeStoredUser(JSON.parse(localStorage.getItem('pslsh_user') || 'null'));
   } catch {
     return null;
   }
 }
 function setUser(u) {
-  localStorage.setItem('pslsh_user', JSON.stringify(u));
+  localStorage.setItem('pslsh_user', JSON.stringify(normalizeStoredUser(u)));
+  localStorage.removeItem('sigfic_user');
+  localStorage.removeItem('user');
 }
 function removeUser() {
   localStorage.removeItem('pslsh_user');
+  localStorage.removeItem('sigfic_user');
+  localStorage.removeItem('user');
+}
+
+const BACKEND_TO_UI_ROLE = {
+  admin: 'administrateur',
+  administrateur: 'administrateur',
+  coordinateur: 'coordination',
+  coordination: 'coordination',
+  gestionnaire: 'chef_service',
+  chef_service: 'chef_service',
+  comptable: 'comptable_principal',
+  comptable_principal: 'comptable_principal',
+  auditeur: 'controleur',
+  controleur: 'controleur',
+  archiviste: 'agent',
+  lecture: 'agent',
+  agent: 'agent',
+};
+
+function normalizeUiRole(code) {
+  if (!code) return '';
+  const key = String(code).trim().toLowerCase();
+  return BACKEND_TO_UI_ROLE[key] || key;
+}
+
+function normalizeStoredUser(user) {
+  if (!user || typeof user !== 'object') return user;
+  const roleCodes = Array.isArray(user.roles)
+    ? user.roles
+        .map((role) => (typeof role === 'string' ? role : role && role.code))
+        .filter(Boolean)
+    : [];
+  const uiRole = normalizeUiRole(user.role || user.profil || roleCodes[0]);
+  return {
+    ...user,
+    roles: roleCodes,
+    role: uiRole,
+    profil: user.profil || uiRole,
+    service: user.service || user.service_code || user.service_id || null,
+    service_id: user.service_id || user.service_code || user.service || null,
+  };
 }
 
 // ── Redirect URL persistence (survives navigation to login) ───────────────────

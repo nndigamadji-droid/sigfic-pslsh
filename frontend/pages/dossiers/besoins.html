@@ -387,26 +387,7 @@ const UNITES = ['pièce','boîte','carton','ramette','lot','unité','paquet','sa
   'heure','jour','mois','personne','session','prestation','contrat','forfait'];
 const SOURCES = ['PSLSH-032','PSLSH-033','PSLSH-034','PSLSH-035'];
 
-const DEFAULT_EB_ALL = [
-  { id:'EB-2026-0007', motif:'Renouvellement stock dépistage Q2',          service:'APMS',  porteur:'Chef APMS',  type:'ACH-P', statut:'compta',    soumis:'15/02/2026',
-    lignes:[{ libelle:'Tests combinés VIH/Syphilis Dual RDT', quantite:'2000', unite:'boîte' }] },
-  { id:'EB-2026-0008', motif:'Saturation entrepôt actuel',                  service:'APMS',  porteur:'Chef APMS',  type:'ACH-P', statut:'saf',       soumis:'20/02/2026',
-    lignes:[{ libelle:'Construction entrepôt 80m²', quantite:'1', unite:'forfait' },
-            { libelle:'Aménagement rayonnage métallique', quantite:'40', unite:'unité' }] },
-  { id:'EB-2026-0011', motif:'Supervision trimestrielle programmée',        service:'SPCH',  porteur:'Chef SPCH',  type:'PER-A', statut:'soumis',    soumis:'05/03/2026',
-    lignes:[{ libelle:'Indemnités mission 5 superviseurs', quantite:'20', unite:'jour' },
-            { libelle:'Carburant véhicule de mission', quantite:'180', unite:'litre' }] },
-  { id:'EB-2026-0012', motif:'Partenariat ratification 2026',                service:'COORD', porteur:'Coordo',     type:'PER-A', statut:'brouillon', soumis:'08/03/2026',
-    lignes:[{ libelle:'Don ordinateurs portables', quantite:'5', unite:'unité' }] },
-  { id:'EB-2026-0013', motif:'Cadrage exercice 2027',                         service:'COORD', porteur:'Coordo',     type:'FOR-M', statut:'coordo',    soumis:'12/03/2026',
-    lignes:[{ libelle:'Location salle séminaire', quantite:'3', unite:'jour' },
-            { libelle:'Restauration participants', quantite:'240', unite:'personne' },
-            { libelle:'Per diem coordonnateurs régionaux', quantite:'36', unite:'jour' }] },
-  { id:'EB-2026-0019', motif:'Stock épuisé Q2',                              service:'SAF',   porteur:'Resp. SAF',  type:'ACH-S', statut:'brouillon', soumis:'04/04/2026',
-    lignes:[{ libelle:'Ramettes papier A4', quantite:'40', unite:'carton' },
-            { libelle:'Cartouches d\'encre HP', quantite:'25', unite:'boîte' },
-            { libelle:'Stylos et marqueurs assortis', quantite:'10', unite:'lot' }] },
-];
+const DEFAULT_EB_ALL = [];
 
 let _ebAll = [];
 let _currentTab = '';
@@ -414,10 +395,9 @@ let _currentTab = '';
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_EB_ALL);
-    const data = raw ? JSON.parse(raw) : DEFAULT_EB_ALL;
-    _ebAll = Array.isArray(data) && data.length ? data : DEFAULT_EB_ALL;
-  } catch (_) { _ebAll = DEFAULT_EB_ALL; }
-  if (!localStorage.getItem(STORAGE_EB_ALL)) save();
+    const data = raw ? JSON.parse(raw) : [];
+    _ebAll = Array.isArray(data) ? data : [];
+  } catch (_) { _ebAll = []; }
 }
 
 function save() { localStorage.setItem(STORAGE_EB_ALL, JSON.stringify(_ebAll)); }

@@ -1,14 +1,14 @@
 /**
  * Helpers partagés pour les tests d'intégration.
- * Hypothèse : le seed (admin@pslsh.org / Admin@2026) a été lancé au moins une fois.
+ * Hypothese : la base de test est initialisee par tests/setup.js.
  */
 const request = require('supertest');
 const app = require('../app/app');
 const jwt = require('jsonwebtoken');
 const authConfig = require('../config/auth');
 
-const ADMIN_EMAIL = 'admin@pslsh.org';
-const ADMIN_PASSWORD = 'Admin@2026';
+const ADMIN_EMAIL = 'admin.test@sigfic.invalid';
+const ADMIN_PASSWORD = 'TestAdmin!2026';
 
 let _cachedToken = null;
 

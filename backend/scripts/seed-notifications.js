@@ -1,10 +1,20 @@
-/* Seed un jeu de notifications réalistes pour l'admin (user_id=1) */
+/* Seed de notifications de demonstration, desactive par defaut. */
 const { sequelize, User, Notification } = require('../models');
 
+const allowDemoSeed = process.env.ALLOW_DEMO_SEED === 'true';
+const seedAdminEmail = process.env.SEED_ADMIN_EMAIL || '';
+
 async function seed() {
-  console.log('\n═══ Seed notifications démo ═══\n');
-  const admin = await User.findOne({ where: { email: 'admin@pslsh.org' } });
-  if (!admin) { console.log('  ⚠ admin@pslsh.org introuvable, seed annulé'); process.exit(1); }
+  if (!allowDemoSeed) {
+    throw new Error('ALLOW_DEMO_SEED=true est requis pour injecter des notifications de demonstration.');
+  }
+  if (!seedAdminEmail) {
+    throw new Error('SEED_ADMIN_EMAIL est requis pour cibler un administrateur.');
+  }
+
+  console.log('\n═══ Seed notifications de demonstration ═══\n');
+  const admin = await User.findOne({ where: { email: seedAdminEmail } });
+  if (!admin) { console.log(`  ⚠ ${seedAdminEmail} introuvable, seed annulé`); process.exit(1); }
 
   const now = new Date();
   const j = (n) => new Date(now.getTime() + n * 24 * 3600 * 1000);

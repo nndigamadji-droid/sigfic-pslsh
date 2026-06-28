@@ -556,16 +556,16 @@
     document.getElementById('userAvatar').textContent = initials;
   }
 
-  // KPIs — valeurs de démonstration
+  // KPIs initiales avant chargement API
   function populateKPIs() {
     const kpis = {
-      'kpi-users-actifs':  44,
-      'kpi-users-enabled': 38,
-      'kpi-users-disabled': 6,
-      'kpi-pao-actions':   87,
-      'kpi-dossiers':     134,
-      'kpi-connexions':    23,
-      'kpi-alertes':        3,
+      'kpi-users-actifs':  0,
+      'kpi-users-enabled': 0,
+      'kpi-users-disabled': 0,
+      'kpi-pao-actions':   0,
+      'kpi-dossiers':      0,
+      'kpi-connexions':    0,
+      'kpi-alertes':       0,
     };
     Object.entries(kpis).forEach(([id, val]) => {
       const el = document.getElementById(id);

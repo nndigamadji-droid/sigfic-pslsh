@@ -528,7 +528,7 @@
   // Initialisation de l'utilisateur depuis le localStorage
   (function initUser() {
     try {
-      const raw = localStorage.getItem('sigfic_user') || localStorage.getItem('user');
+      const raw = localStorage.getItem('pslsh_user');
       if (raw) {
         const u = JSON.parse(raw);
         const fullName = ((u.prenom || '') + ' ' + (u.nom || '')).trim() || u.name || '—';

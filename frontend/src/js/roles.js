@@ -877,11 +877,11 @@
     if (has('comptable_principal'))                            return 'comptable_principal'; // ⭐ avant 'coordination'
     if (has('coordination', 'coordinateur') || some(/coordin/)) return 'coordination';
     if (has('comite_pilotage') || some(/comite|pilotage|direction/)) return 'comite_pilotage';
-    if (has('controleur', 'auditeur', 'archiviste', 'inspecteur'))   return 'controleur';
+    if (has('controleur', 'auditeur', 'inspecteur'))   return 'controleur';
     if (has('chef_service') || some(/chef|responsable|directeur/))   return 'chef_service';
-    // Rétrocompatibilité legacy : SAF (gestionnaire) et ancien rôle "comptable"
-    // alignés sur coordination uniquement si aucun rôle plus spécifique n'a matché.
-    if (has('gestionnaire', 'comptable'))                       return 'coordination';
+    if (has('gestionnaire'))                                      return 'chef_service';
+    if (has('comptable'))                                         return 'comptable_principal';
+    if (has('lecture', 'archiviste'))                             return 'agent';
     return 'agent'; // défaut
   }
 
