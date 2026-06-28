@@ -12,11 +12,8 @@
     X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-# Apres deploiement du backend, activer un proxy API Netlify en remplacant
-# l'URL ci-dessous par l'URL publique du backend Node/Express.
-#
-# [[redirects]]
-#   from = "/api/*"
-#   to = "https://votre-backend.example.com/api/:splat"
-#   status = 200
-#   force = true
+[[redirects]]
+  from = "/api/*"
+  to = "https://sigfic-pslsh-backend.onrender.com/api/:splat"
+  status = 200
+  force = true
