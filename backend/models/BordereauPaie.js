@@ -3,7 +3,7 @@ const sequelize = require('../config/database');
 
 const BordereauPaie = sequelize.define('BordereauPaie', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  reference: { type: DataTypes.STRING(40), unique: true, comment: 'BP-AAAA-MM-NNN' },
+  reference: { type: DataTypes.STRING(40), comment: 'BP-AAAA-MM-NNN' },
   // Période
   mois: { type: DataTypes.STRING(7), allowNull: false, comment: 'YYYY-MM' },
   exercice: { type: DataTypes.INTEGER },
@@ -31,7 +31,7 @@ const BordereauPaie = sequelize.define('BordereauPaie', {
   },
 }, {
   tableName: 'bordereaux_paie',
-  indexes: [{ fields: ['mois'] }, { fields: ['statut'] }],
+  indexes: [{ unique: true, fields: ['reference'] }, { fields: ['mois'] }, { fields: ['statut'] }],
 });
 
 module.exports = BordereauPaie;

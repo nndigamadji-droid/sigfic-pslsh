@@ -10,7 +10,6 @@ const BudgetComptaMapping = sequelize.define('BudgetComptaMapping', {
   code_ligne_budget: {
     type: DataTypes.STRING(50),
     allowNull: false,
-    unique: true,
     comment: 'Clé budgétaire segmentée Tchad (ex. 02-07-01-6064)',
   },
   compte_syscohada: {

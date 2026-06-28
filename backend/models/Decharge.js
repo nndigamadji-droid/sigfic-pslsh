@@ -3,7 +3,7 @@ const sequelize = require('../config/database');
 
 const Decharge = sequelize.define('Decharge', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  reference: { type: DataTypes.STRING(40), unique: true, comment: 'DECH-AAAA-NNNN' },
+  reference: { type: DataTypes.STRING(40), comment: 'DECH-AAAA-NNNN' },
   // Type de décharge
   type_decharge: {
     type: DataTypes.ENUM('quittance_paiement', 'reception_materiel', 'remise_fonds', 'restitution', 'autre'),
@@ -36,7 +36,12 @@ const Decharge = sequelize.define('Decharge', {
   },
 }, {
   tableName: 'decharges',
-  indexes: [{ fields: ['type_decharge'] }, { fields: ['statut'] }, { fields: ['dossier_ref'] }],
+  indexes: [
+    { unique: true, fields: ['reference'] },
+    { fields: ['type_decharge'] },
+    { fields: ['statut'] },
+    { fields: ['dossier_ref'] },
+  ],
 });
 
 module.exports = Decharge;

@@ -3,7 +3,7 @@ const sequelize = require('../config/database');
 
 const OrdreVirement = sequelize.define('OrdreVirement', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  reference: { type: DataTypes.STRING(40), unique: true, comment: 'OV-AAAA-NNNN' },
+  reference: { type: DataTypes.STRING(40), comment: 'OV-AAAA-NNNN' },
   // Lien vers le dossier d'opération
   dossier_ref: { type: DataTypes.STRING(40), comment: 'DOS-AAAA-NNNN' },
   facture_ref: { type: DataTypes.STRING(40) },
@@ -38,7 +38,12 @@ const OrdreVirement = sequelize.define('OrdreVirement', {
   motif_rejet: { type: DataTypes.TEXT },
 }, {
   tableName: 'ordres_virement',
-  indexes: [{ fields: ['statut'] }, { fields: ['dossier_ref'] }, { fields: ['signed_by'] }],
+  indexes: [
+    { unique: true, fields: ['reference'] },
+    { fields: ['statut'] },
+    { fields: ['dossier_ref'] },
+    { fields: ['signed_by'] },
+  ],
 });
 
 module.exports = OrdreVirement;
