@@ -30,6 +30,11 @@
     Cache-Control = "public, max-age=86400"
 
 [[headers]]
+  for = "/security.txt"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
   for = "/pages/auth/*"
   [headers.values]
     Cache-Control = "no-store, no-cache, must-revalidate"
@@ -50,6 +55,11 @@
   for = "/src/*"
   [headers.values]
     Cache-Control = "no-cache, must-revalidate"
+
+[[redirects]]
+  from = "/.well-known/security.txt"
+  to = "/security.txt"
+  status = 200
 
 [[redirects]]
   from = "/api/*"

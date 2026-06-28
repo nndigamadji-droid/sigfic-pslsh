@@ -1,1 +1,2 @@
+/.well-known/security.txt  /security.txt  200
 /api/*  https://sigfic-pslsh-backend.onrender.com/api/:splat  200!
