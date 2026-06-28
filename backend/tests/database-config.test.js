@@ -60,4 +60,17 @@ describe('Configuration base de donnees', () => {
     expect(sequelize.config.database).toBe('pslsh');
     expect(sequelize.options.dialectOptions.ssl.require).toBe(true);
   });
+
+  it('desactive SSL quand DATABASE_SSL=false pour une connexion Postgres interne', () => {
+    const sequelize = loadDatabaseConfig({
+      DATABASE_URL: 'postgres://user:pass@dpg-render-internal/pslsh',
+      NODE_ENV: 'production',
+      RENDER: 'true',
+      DATABASE_SSL: 'false',
+    });
+    instances.push(sequelize);
+
+    expect(sequelize.getDialect()).toBe('postgres');
+    expect(sequelize.options.dialectOptions).not.toHaveProperty('ssl');
+  });
 });
