@@ -731,7 +731,7 @@ async function engagerDossier() {
     || '6064';
   try {
     const token = localStorage.getItem('pslsh_token');
-    const res = await fetch('http://localhost:3000/api/v1/comptabilite/ecritures/from-engagement', {
+    const res = await fetch(`${window.BASE_URL}/comptabilite/ecritures/from-engagement`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
       body: JSON.stringify({
@@ -771,7 +771,7 @@ async function refreshEcritures() {
   if (!target) return;
   try {
     const token = localStorage.getItem('pslsh_token');
-    const res = await fetch(`http://localhost:3000/api/v1/comptabilite/ecritures/by-dossier/${encodeURIComponent(_dossier.id)}`, {
+    const res = await fetch(`${window.BASE_URL}/comptabilite/ecritures/by-dossier/${encodeURIComponent(_dossier.id)}`, {
       headers: { Authorization: 'Bearer ' + token },
     });
     const body = await res.json();

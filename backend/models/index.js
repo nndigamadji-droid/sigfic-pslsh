@@ -233,6 +233,7 @@ Dossier.hasMany(Controle, { foreignKey: 'dossier_id', as: 'controles' });
 Anomalie.belongsTo(Controle, { foreignKey: 'controle_id', as: 'controle' });
 Anomalie.belongsTo(Dossier, { foreignKey: 'dossier_id', as: 'dossier' });
 Controle.hasMany(Anomalie, { foreignKey: 'controle_id', as: 'anomalies' });
+Dossier.hasMany(Anomalie, { foreignKey: 'dossier_id', as: 'anomalies' });
 
 Recommandation.belongsTo(Audit, { foreignKey: 'audit_id', as: 'audit' });
 Recommandation.belongsTo(Anomalie, { foreignKey: 'anomalie_id', as: 'anomalie' });

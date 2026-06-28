@@ -74,17 +74,18 @@ async function verifierFacture(req, res, next) {
   try {
     const f = await Facture.findByPk(req.params.id);
     if (!f) return res.status(404).json({ success: false, message: 'Facture introuvable' });
-    if (f.statut !== 'en_attente') {
+    if (!['recu', 'en_attente'].includes(f.statut)) {
       return res
         .status(400)
         .json({
           success: false,
-          message: `Seule une facture "en_attente" peut être vérifiée (statut actuel : "${f.statut}")`,
+          message: `Seule une facture "reçue" peut être vérifiée (statut actuel : "${f.statut}")`,
         });
     }
+    const oldStatut = f.statut;
     await f.update({ statut: 'verifie', verifie_par: req.user.id });
     await auditService.log(req.user.id, 'paiement:verifier_facture', 'facture', f.id, {
-      old: { statut: 'en_attente' },
+      old: { statut: oldStatut },
       new: { statut: 'verifie' },
     });
     res.json({ success: true, data: f });

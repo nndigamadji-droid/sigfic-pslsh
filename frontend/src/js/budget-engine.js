@@ -252,7 +252,7 @@
     if (_mappingCache) return _mappingCache;
     try {
       const token = localStorage.getItem('pslsh_token');
-      const res = await fetch('http://localhost:3000/api/v1/mapping', {
+      const res = await fetch(`${window.BASE_URL}/mapping`, {
         headers: { Authorization: 'Bearer ' + token },
       });
       const body = await res.json();
@@ -283,7 +283,7 @@
     }));
     try {
       const token = localStorage.getItem('pslsh_token');
-      const res = await fetch('http://localhost:3000/api/v1/mapping/bulk', {
+      const res = await fetch(`${window.BASE_URL}/mapping/bulk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
         body: JSON.stringify({ items }),

@@ -1167,7 +1167,7 @@
     async function refreshBadges() {
       try {
         const token = localStorage.getItem('pslsh_token');
-        const r = await fetch('http://localhost:3000/api/v1/notifications/count',
+        const r = await fetch(`${window.BASE_URL}/notifications/count`,
           { headers: { Authorization: 'Bearer ' + token }});
         const b = await r.json();
         if (!b.success) return;

@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: sigfic-pslsh-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm run seed && npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RENDER
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: BCRYPT_ROUNDS
+        value: "12"
+      - key: FRONTEND_URL
+        value: https://sigfic-pslsh.netlify.app
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sigfic-pslsh-db
+          property: connectionString
+
+databases:
+  - name: sigfic-pslsh-db
+    databaseName: sigfic_pslsh
+    user: sigfic_pslsh
+    plan: free

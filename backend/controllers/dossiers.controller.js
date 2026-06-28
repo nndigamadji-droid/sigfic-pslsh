@@ -108,7 +108,7 @@ async function show(req, res, next) {
         { model: LigneBudgetaire, as: 'ligne_budgetaire' },
         { model: SourceFinancement, as: 'source_financement' },
         { model: User, as: 'createur', attributes: ['id', 'nom', 'prenom'] },
-        { model: ExpressionBesoin, as: 'besoins' },
+        { model: ExpressionBesoin, as: 'expression_besoin' },
         {
           model: Attribution,
           as: 'attribution',

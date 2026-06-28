@@ -113,7 +113,7 @@
 <script src="/src/js/api.js"></script>
 <script src="/src/js/roles.js"></script>
 <script>
-const API = 'http://localhost:3000/api/v1';
+const API = window.BASE_URL;
 const tok = () => localStorage.getItem('pslsh_token');
 async function post(url, body) {{
   const r = await fetch(API+url, {{method:'POST', headers:{{'Content-Type':'application/json',Authorization:'Bearer '+tok()}}, body: JSON.stringify(body)}});

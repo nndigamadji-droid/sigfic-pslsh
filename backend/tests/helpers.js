@@ -4,6 +4,8 @@
  */
 const request = require('supertest');
 const app = require('../app/app');
+const jwt = require('jsonwebtoken');
+const authConfig = require('../config/auth');
 
 const ADMIN_EMAIL = 'admin@pslsh.org';
 const ADMIN_PASSWORD = 'Admin@2026';
@@ -26,4 +28,25 @@ function authHeader(token) {
   return { Authorization: `Bearer ${token}` };
 }
 
-module.exports = { app, request, loginAsAdmin, authHeader, ADMIN_EMAIL, ADMIN_PASSWORD };
+function tokenFor(payload) {
+  return jwt.sign(
+    {
+      id: payload.id || 9999,
+      email: payload.email || 'test-permission@pslsh.org',
+      roles: payload.roles || [],
+      permissions: payload.permissions || [],
+    },
+    authConfig.jwtSecret,
+    { expiresIn: '1h' }
+  );
+}
+
+module.exports = {
+  app,
+  request,
+  loginAsAdmin,
+  authHeader,
+  tokenFor,
+  ADMIN_EMAIL,
+  ADMIN_PASSWORD,
+};

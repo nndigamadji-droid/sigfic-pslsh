@@ -4,7 +4,7 @@ const ctrl = require('../controllers/paiement.controller');
 const perm = require('../middleware/permission.middleware');
 
 router.get('/factures', perm('paiement', 'read'), ctrl.listFactures);
-router.post('/factures', perm('paiement', 'read'), ctrl.createFacture);
+router.post('/factures', perm('paiement', 'liquider'), ctrl.createFacture);
 router.get('/factures/:id', perm('paiement', 'read'), ctrl.showFacture);
 router.post('/factures/:id/verifier', perm('paiement', 'liquider'), ctrl.verifierFacture);
 

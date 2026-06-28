@@ -4,11 +4,21 @@
 //
 // CONFIGURATION CENTRALE — un seul endroit à modifier selon l'environnement :
 //   Développement : http://localhost:3000
-//   Production    : https://api.sigfic-pslsh.td
+//   Production    : meme domaine (/api) ou window.PSLSH_API_URL si defini
 //
-const BACKEND_URL = 'http://localhost:3000';
+const CONFIGURED_BACKEND_URL =
+  (window.PSLSH_API_URL || '').trim() ||
+  document.querySelector('meta[name="pslsh-api-url"]')?.content?.trim() ||
+  '';
+const IS_LOCAL_FRONTEND = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const BACKEND_URL = (
+  CONFIGURED_BACKEND_URL || (IS_LOCAL_FRONTEND ? 'http://localhost:3000' : window.location.origin)
+).replace(/\/$/, '');
 const BASE_URL = `${BACKEND_URL}/api/v1`;
 const API_TIMEOUT = 15000; // 15 secondes
+
+window.BACKEND_URL = BACKEND_URL;
+window.BASE_URL = BASE_URL;
 
 // ── Token & session ───────────────────────────────────────────────────────────
 function getToken() {
