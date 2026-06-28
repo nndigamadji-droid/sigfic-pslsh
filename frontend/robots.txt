@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /api/
+Disallow: /pages/auth/
+Disallow: /pages/admin/
+Allow: /assets/
+Allow: /index.html

@@ -6,6 +6,7 @@ const {
   ADMIN_EMAIL,
   ADMIN_PASSWORD,
 } = require('./helpers');
+const { AuditLog, User, UserRole } = require('../models');
 
 describe('Auth', () => {
   it("GET / retourne l'identité de l'API", async () => {
@@ -60,5 +61,43 @@ describe('Auth', () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data.email).toBe(ADMIN_EMAIL);
+  });
+
+  it('un compte cree depuis le formulaire admin avec role agent peut se connecter avec son mot de passe provisoire', async () => {
+    const token = await loginAsAdmin();
+    const suffix = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+    const email = `agent.${suffix}@pslsh.test`;
+    const password = `Agent@2026!${suffix}`;
+
+    const createRes = await request(app)
+      .post('/api/v1/users')
+      .set(authHeader(token))
+      .send({
+        nom: 'Test',
+        prenom: 'Agent',
+        email,
+        password,
+        role_code: 'agent',
+        service_code: 'saf',
+        fonction: 'Compte test',
+      });
+
+    expect(createRes.status).toBe(201);
+    expect(createRes.body.success).toBe(true);
+    expect(createRes.body.data.roles.map((r) => r.code)).toContain('lecture');
+
+    const loginRes = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email, password });
+
+    expect(loginRes.status).toBe(200);
+    expect(loginRes.body.success).toBe(true);
+    expect(loginRes.body.data.token).toBeDefined();
+    expect(loginRes.body.data.user.roles).toContain('lecture');
+
+    await UserRole.destroy({ where: { user_id: createRes.body.data.id } });
+    await AuditLog.destroy({ where: { user_id: createRes.body.data.id } });
+    await AuditLog.destroy({ where: { resource: 'user', resource_id: createRes.body.data.id } });
+    await User.destroy({ where: { email }, force: true });
   });
 });

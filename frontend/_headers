@@ -8,6 +8,20 @@
 /index.html
   Cache-Control: no-store, no-cache, must-revalidate
 
+/.well-known/*
+  Cache-Control: public, max-age=86400
+
+/robots.txt
+  Cache-Control: public, max-age=86400
+
+/pages/auth/*
+  Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/pages/admin/*
+  Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow, noarchive
+
 /pages/*
   Cache-Control: no-store, no-cache, must-revalidate
 

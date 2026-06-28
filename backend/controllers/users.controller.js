@@ -2,6 +2,42 @@ const { User, Role, UserRole, Departement, Agent } = require('../models');
 const authService = require('../services/auth.service');
 const auditService = require('../services/audit.service');
 
+const ROLE_CODE_ALIASES = {
+  administrateur: 'admin',
+  admin: 'admin',
+  coordination: 'coordinateur',
+  coordinateur: 'coordinateur',
+  chef_service: 'gestionnaire',
+  gestionnaire: 'gestionnaire',
+  comptable_principal: 'comptable',
+  comptable: 'comptable',
+  controleur: 'auditeur',
+  auditeur: 'auditeur',
+  archiviste: 'archiviste',
+  agent: 'lecture',
+  lecture: 'lecture',
+  comite_pilotage: 'lecture',
+};
+
+function normalizeRoleCode(roleCode) {
+  if (!roleCode) return null;
+  const key = String(roleCode).trim().toLowerCase();
+  return ROLE_CODE_ALIASES[key] || key;
+}
+
+async function resolveRole({ role_code, role_id }) {
+  if (role_code) {
+    const normalizedRoleCode = normalizeRoleCode(role_code);
+    const role = await Role.findOne({ where: { code: normalizedRoleCode } });
+    return { role, normalizedRoleCode };
+  }
+  if (role_id) {
+    const role = await Role.findByPk(role_id);
+    return { role, normalizedRoleCode: role ? role.code : null };
+  }
+  return { role: null, normalizedRoleCode: null };
+}
+
 /* ── Liste tous les utilisateurs ──────────────────────────────────────────── */
 async function list(req, res, next) {
   try {
@@ -34,10 +70,19 @@ async function create(req, res, next) {
       fonction,
       role_code,
       role_id,
+      is_active,
     } = req.body;
 
     if (!password)
       return res.status(400).json({ success: false, message: 'Le mot de passe est obligatoire.' });
+
+    const { role, normalizedRoleCode } = await resolveRole({ role_code, role_id });
+    if (!role) {
+      return res.status(400).json({
+        success: false,
+        message: 'Veuillez selectionner un role valide.',
+      });
+    }
 
     const hash = await authService.hashPassword(password);
     const user = await User.create({
@@ -50,26 +95,18 @@ async function create(req, res, next) {
       service_code: service_code || null,
       unite_code: unite_code || null,
       fonction: fonction || null,
-      is_active: true,
+      is_active: is_active !== undefined ? Boolean(is_active) : true,
       created_by: req.user.id,
     });
 
     /* Attribution du rôle (par code ou par id) */
-    let role = null;
-    if (role_code) {
-      role = await Role.findOne({ where: { code: role_code } });
-    } else if (role_id) {
-      role = await Role.findByPk(role_id);
-    }
-    if (role) {
-      await UserRole.findOrCreate({
-        where: { user_id: user.id, role_id: role.id },
-        defaults: { assigned_by: req.user.id, assigned_at: new Date() },
-      });
-    }
+    await UserRole.findOrCreate({
+      where: { user_id: user.id, role_id: role.id },
+      defaults: { assigned_by: req.user.id, assigned_at: new Date() },
+    });
 
     await auditService.log(req.user.id, 'users:create', 'user', user.id, {
-      new: { nom, prenom, email, role_code },
+      new: { nom, prenom, email, role_code: normalizedRoleCode },
     });
 
     /* Retourner l'utilisateur avec son rôle */
@@ -140,8 +177,16 @@ async function update(req, res, next) {
 
     /* Mise à jour du rôle si fourni */
     let role = null;
-    if (role_code) role = await Role.findOne({ where: { code: role_code } });
-    else if (role_id) role = await Role.findByPk(role_id);
+    if (role_code || role_id) {
+      const resolved = await resolveRole({ role_code, role_id });
+      role = resolved.role;
+      if (!role) {
+        return res.status(400).json({
+          success: false,
+          message: 'Veuillez selectionner un role valide.',
+        });
+      }
+    }
     if (role) {
       /* Remplacer tous les rôles existants par le nouveau */
       await UserRole.destroy({ where: { user_id: user.id } });
@@ -188,9 +233,7 @@ async function assignRole(req, res, next) {
     const user = await User.findByPk(req.params.id, { include: [{ model: Role, as: 'roles' }] });
     if (!user) return res.status(404).json({ success: false, message: 'Utilisateur introuvable' });
 
-    let role = null;
-    if (role_id) role = await Role.findByPk(role_id);
-    else if (role_code) role = await Role.findOne({ where: { code: role_code } });
+    const { role } = await resolveRole({ role_code, role_id });
     if (!role) return res.status(404).json({ success: false, message: 'Rôle introuvable' });
 
     await user.addRole(role, { through: { assigned_by: req.user.id, assigned_at: new Date() } });
