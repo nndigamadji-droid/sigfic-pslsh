@@ -187,7 +187,7 @@
       grid-area: main;
       background: #f4f7fb;
       display: grid;
-      grid-template-rows: 1fr auto auto;
+      grid-template-rows: 1fr auto;
       min-height: 0; min-width: 0;
       overflow: hidden;
       position: relative;
@@ -428,50 +428,6 @@
     .nav-card-btn i { font-size: .62rem; transition: transform .18s; }
     .nav-card:hover .nav-card-btn i { transform: translateX(3px); }
 
-    /* ── PARTNERS ──────────────────────────────────────────────────────────── */
-    .partners {
-      background: #f0f4f9;
-      border-top: 1px solid #e2e8f0;
-      padding: 5px 28px 4px;
-      display: flex; flex-direction: column; align-items: center; gap: 3px;
-    }
-    .partners-title {
-      font-size: .5rem; font-weight: 800; color: #94a3b8;
-      text-transform: uppercase; letter-spacing: .12em;
-    }
-    .partners-row {
-      display: flex; align-items: center; justify-content: center;
-    }
-    .partner-item {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 2px 14px; border-right: 1px solid #d1d9e2;
-      gap: 1px; min-width: 78px;
-    }
-    .partner-item:first-child { border-left: 1px solid #d1d9e2; }
-    .partner-item img {
-      height: 22px; width: auto; max-width: 64px;
-      object-fit: contain; filter: grayscale(15%); transition: filter .2s;
-    }
-    .partner-item:hover img { filter: grayscale(0%); }
-    .partner-item span {
-      font-size: .5rem; font-weight: 600; color: #64748b;
-      text-align: center; line-height: 1.15;
-    }
-
-    /* ── FOOTER ────────────────────────────────────────────────────────────── */
-    .footer {
-      background: var(--navy-900);
-      color: #cbd5e1;
-      padding: 6px 28px;
-      font-size: .62rem;
-      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    }
-    .footer img {
-      height: 18px; opacity: .9;
-    }
-    .footer .sep { color: #475569; }
-    .footer .copyright { margin-left: auto; color: var(--text-mute); }
-
     /* ── Responsive ────────────────────────────────────────────────────────── */
     @media (max-width: 1280px) {
       .nav-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -563,27 +519,6 @@
       <div class="nav-bar-grid" id="navBarGrid"></div>
     </div>
 
-    <div class="partners">
-      <div class="partners-title">Partenaires techniques et financiers du PSLSH/IST</div>
-      <div class="partners-row">
-        <div class="partner-item"><img src="/assets/partners/msp-tchad.png" alt="" class="strip-white"><span>Ministère de la Santé<br>République du Tchad</span></div>
-        <div class="partner-item"><img src="/assets/partners/fonds-mondial.png" alt=""><span>Fonds Mondial</span></div>
-        <div class="partner-item"><img src="/assets/partners/onusida.png" alt=""><span>ONUSIDA</span></div>
-        <div class="partner-item"><img src="/assets/partners/oms.png" alt=""><span>OMS / WHO</span></div>
-        <div class="partner-item"><img src="/assets/partners/unicef.png" alt=""><span>UNICEF</span></div>
-        <div class="partner-item"><img src="/assets/partners/banque-mondiale.png" alt=""><span>Banque Mondiale</span></div>
-      </div>
-    </div>
-
-    <footer class="footer">
-      <img src="/assets/partners/msp-tchad.png" alt="" class="strip-white">
-      <span>Programme Sectoriel de Lutte contre le Sida, les Hépatites Virales et les IST (PSLSH/IST)</span>
-      <span class="sep">|</span>
-      <span>République du Tchad — Ministère de la Santé Publique et de la Prévention</span>
-      <span class="sep">|</span>
-      <span>SIGFIC-PSLSH v2.0</span>
-      <span class="copyright">© 2026 — Tous droits réservés</span>
-    </footer>
   </main>
 
 </div>
