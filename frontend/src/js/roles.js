@@ -1197,6 +1197,67 @@
     },
   ];
 
+  function initResponsiveShell() {
+    const pathname = window.location.pathname;
+    if (pathname.indexOf('/auth') !== -1) return;
+
+    const sidebar = document.querySelector('.sidebar, #sidebar');
+    const topbar = document.querySelector('.topbar, #topbar');
+    if (!sidebar || !topbar) return;
+
+    if (!sidebar.id) sidebar.id = 'sigfic-sidebar';
+    if (document.querySelector('.sigfic-mobile-menu-btn')) return;
+
+    const topbarLeft = document.querySelector('.topbar-left') || topbar;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'topbar-btn sigfic-mobile-menu-btn';
+    button.setAttribute('aria-label', 'Ouvrir le menu');
+    button.setAttribute('aria-controls', sidebar.id);
+    button.setAttribute('aria-expanded', 'false');
+    button.innerHTML = '<i class="fas fa-bars"></i>';
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'sigfic-sidebar-backdrop';
+    backdrop.setAttribute('aria-hidden', 'true');
+
+    topbarLeft.insertBefore(button, topbarLeft.firstChild);
+    document.body.appendChild(backdrop);
+
+    function isMobileShell() {
+      return window.matchMedia('(max-width: 991.98px)').matches;
+    }
+
+    function setSidebarOpen(open) {
+      if (open && !isMobileShell()) open = false;
+      document.body.classList.toggle('sigfic-sidebar-open', open);
+      button.setAttribute('aria-expanded', open ? 'true' : 'false');
+      button.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
+    }
+
+    button.addEventListener('click', function () {
+      if (!isMobileShell()) return;
+      setSidebarOpen(!document.body.classList.contains('sigfic-sidebar-open'));
+    });
+
+    backdrop.addEventListener('click', function () {
+      setSidebarOpen(false);
+    });
+
+    sidebar.addEventListener('click', function (event) {
+      const link = event.target.closest('a');
+      if (link && isMobileShell()) setSidebarOpen(false);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') setSidebarOpen(false);
+    });
+
+    window.addEventListener('resize', function () {
+      if (!isMobileShell()) setSidebarOpen(false);
+    });
+  }
+
   function _injectPortalButton() {
     const pathname = window.location.pathname;
     if (pathname.indexOf('/accueil') !== -1 || pathname.indexOf('/auth') !== -1) return;
@@ -1273,6 +1334,7 @@
   function init() {
     renderSidebarNav('sidebarNav');
     renderServiceBadge();
+    initResponsiveShell();
     _injectPortalButton();
     _upgradeLogoutButton();
     // Auto-appliquer le dashboard si on est sur la page dashboard
@@ -1299,6 +1361,7 @@
     renderServiceBadge,
     guardPage,
     applyDashboardRole,
+    initResponsiveShell,
     init,
   };
 
