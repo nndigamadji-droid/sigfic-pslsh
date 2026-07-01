@@ -16,6 +16,14 @@ describe('Auth', () => {
     expect(res.body.status).toBe('running');
   });
 
+  it('GET /health retourne un statut leger pour Render', async () => {
+    const res = await request(app).get('/health');
+
+    expect(res.status).toBe(200);
+    expect(res.body.app).toBe('SIGFIC-PSLSH API');
+    expect(res.body.status).toBe('ok');
+  });
+
   it('POST /auth/login refuse sans email/mot de passe (400)', async () => {
     const res = await request(app).post('/api/v1/auth/login').send({});
     expect(res.status).toBe(400);

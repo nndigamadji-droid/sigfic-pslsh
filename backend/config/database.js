@@ -5,6 +5,12 @@ require('dotenv').config();
 const isProduction = process.env.NODE_ENV === 'production';
 const isRender = process.env.RENDER === 'true';
 const databaseUrl = process.env.DATABASE_URL;
+if ((isProduction || isRender) && !databaseUrl) {
+  throw new Error(
+    'DATABASE_URL est obligatoire en production. Configurez une base PostgreSQL persistante.'
+  );
+}
+
 const databaseSsl = process.env.DATABASE_SSL;
 const shouldUseSsl =
   databaseSsl === 'true' || (!databaseSsl && (isProduction || isRender));

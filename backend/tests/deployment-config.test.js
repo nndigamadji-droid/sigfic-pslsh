@@ -21,4 +21,18 @@ describe('Configuration de deploiement production', () => {
     expect(seedScript).not.toContain('Admin@2026');
     expect(seedScript).toContain('SEED_ADMIN_PASSWORD');
   });
+
+  it('utilise une route health dediee pour Render', () => {
+    const renderYaml = fs.readFileSync(path.join(rootDir, 'render.yaml'), 'utf8');
+    const appJs = fs.readFileSync(path.join(rootDir, 'backend', 'app', 'app.js'), 'utf8');
+
+    expect(renderYaml).toContain('healthCheckPath: /health');
+    expect(appJs).toContain("app.get('/health'");
+  });
+
+  it('laisse le temps au backend Render de sortir de veille pendant le login', () => {
+    const apiJs = fs.readFileSync(path.join(rootDir, 'frontend', 'src', 'js', 'api.js'), 'utf8');
+
+    expect(apiJs).toContain('const API_TIMEOUT = 60000');
+  });
 });

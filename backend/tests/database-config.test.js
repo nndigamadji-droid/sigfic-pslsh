@@ -12,16 +12,17 @@ function loadDatabaseConfig(env = {}) {
       process.env[key] = env[key];
     }
   });
-  const sequelize = require('../config/database');
-  Object.keys(env).forEach((key) => {
-    if (originalEnv[key] === undefined) {
-      delete process.env[key];
-    } else {
-      process.env[key] = originalEnv[key];
-    }
-  });
-
-  return sequelize;
+  try {
+    return require('../config/database');
+  } finally {
+    Object.keys(env).forEach((key) => {
+      if (originalEnv[key] === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = originalEnv[key];
+      }
+    });
+  }
 }
 
 describe('Configuration base de donnees', () => {
@@ -46,6 +47,17 @@ describe('Configuration base de donnees', () => {
     expect(sequelize.getDialect()).toBe('sqlite');
     expect(sequelize.options.storage).toContain('database');
     expect(sequelize.options.storage).toContain('pslsh.db');
+  });
+
+  it('refuse de demarrer en production sans DATABASE_URL persistant', () => {
+    expect(() =>
+      loadDatabaseConfig({
+        DATABASE_URL: '',
+        DB_DIALECT: '',
+        NODE_ENV: 'production',
+        RENDER: 'true',
+      })
+    ).toThrow(/DATABASE_URL/);
   });
 
   it('utilise Postgres avec SSL quand DATABASE_URL est present en production', () => {

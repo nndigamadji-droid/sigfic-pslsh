@@ -49,6 +49,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../../storage/uploads')));
 app.use('/exports', express.static(path.join(__dirname, '../../storage/exports')));
 
+// Health check tres leger pour Render/monitoring: ne depend pas d'une requete BDD.
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    app: 'SIGFIC-PSLSH API',
+    status: 'ok',
+    uptime: Math.round(process.uptime()),
+  });
+});
+
 // ─── API Routes ───────────────────────────────────────────────────────────────
 app.use('/api/v1', require('../routes/index'));
 

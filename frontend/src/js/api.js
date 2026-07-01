@@ -15,7 +15,7 @@ const BACKEND_URL = (
   CONFIGURED_BACKEND_URL || (IS_LOCAL_FRONTEND ? 'http://localhost:3000' : window.location.origin)
 ).replace(/\/$/, '');
 const BASE_URL = `${BACKEND_URL}/api/v1`;
-const API_TIMEOUT = 15000; // 15 secondes
+const API_TIMEOUT = 60000; // Render gratuit peut sortir de veille lentement.
 
 window.BACKEND_URL = BACKEND_URL;
 window.BASE_URL = BASE_URL;
