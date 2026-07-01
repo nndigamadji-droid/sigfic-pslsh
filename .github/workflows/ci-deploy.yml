@@ -94,23 +94,30 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          RENDER_SERVICE_NAME: sigfic-pslsh-backend
         run: |
           set -euo pipefail
           : "${RENDER_API_KEY:?RENDER_API_KEY is required}"
-          : "${RENDER_SERVICE_ID:?RENDER_SERVICE_ID is required}"
+
+          services_json="$(curl -fsS \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
+            "https://api.render.com/v1/services?limit=100")"
+          resolved_service_id="$(node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const data=JSON.parse(s); const rows=Array.isArray(data)?data:(data.services||data.results||[]); const target=process.env.RENDER_SERVICE_NAME; const hit=rows.map((row)=>row.service||row).find((svc)=>svc&&svc.name===target); process.stdout.write(hit&&hit.id?hit.id:'');});" <<< "${services_json}")"
+          service_id="${resolved_service_id:-${RENDER_SERVICE_ID:-}}"
+          : "${service_id:?Render service introuvable. Verifiez RENDER_SERVICE_NAME ou RENDER_SERVICE_ID}"
 
           response="$(curl -fsS \
             -X POST \
             -H "Authorization: Bearer ${RENDER_API_KEY}" \
             -H "Content-Type: application/json" \
             -d '{"clearCache":"do_not_clear"}' \
-            "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys")"
+            "https://api.render.com/v1/services/${service_id}/deploys")"
           deploy_id="$(node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const j=JSON.parse(s); console.log(j.id || (j.deploy && j.deploy.id));});" <<< "${response}")"
 
           for attempt in $(seq 1 120); do
             status_json="$(curl -fsS \
               -H "Authorization: Bearer ${RENDER_API_KEY}" \
-              "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys/${deploy_id}")"
+              "https://api.render.com/v1/services/${service_id}/deploys/${deploy_id}")"
             state="$(node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const j=JSON.parse(s); console.log(j.status || (j.deploy && j.deploy.status) || 'unknown');});" <<< "${status_json}")"
             echo "Render deploy state: ${state}"
             if [ "${state}" = "live" ]; then

@@ -30,6 +30,14 @@ describe('Configuration de deploiement production', () => {
     expect(appJs).toContain("app.get('/health'");
   });
 
+  it('retrouve le service Render par nom avant de declencher le deploy', () => {
+    const workflow = fs.readFileSync(path.join(rootDir, '.github', 'workflows', 'ci-deploy.yml'), 'utf8');
+
+    expect(workflow).toContain('RENDER_SERVICE_NAME: sigfic-pslsh-backend');
+    expect(workflow).toContain('https://api.render.com/v1/services?limit=100');
+    expect(workflow).toContain('service_id="${resolved_service_id:-${RENDER_SERVICE_ID:-}}"');
+  });
+
   it('laisse le temps au backend Render de sortir de veille pendant le login', () => {
     const apiJs = fs.readFileSync(path.join(rootDir, 'frontend', 'src', 'js', 'api.js'), 'utf8');
 
