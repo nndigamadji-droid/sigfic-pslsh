@@ -5,6 +5,63 @@
 (function (window) {
   'use strict';
 
+  function _isAuthPath() {
+    const path = window.location.pathname || '';
+    return path.indexOf('/auth') !== -1 || path.indexOf('/pages/auth/') !== -1;
+  }
+
+  function _clearLocalSession() {
+    localStorage.removeItem('pslsh_token');
+    localStorage.removeItem('pslsh_user');
+    localStorage.removeItem('sigfic_user');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('pslsh_redirect_after_login');
+  }
+
+  function _redirectToLogin(remember) {
+    if (remember !== false && !_isAuthPath()) {
+      sessionStorage.setItem('pslsh_redirect_after_login', window.location.href);
+    }
+    window.location.replace('/pages/auth/login.html');
+  }
+
+  function _enforceSessionOnRestore() {
+    if (_isAuthPath()) return;
+    if (!localStorage.getItem('pslsh_token')) {
+      _clearLocalSession();
+      window.location.replace('/pages/auth/login.html');
+    }
+  }
+
+  function _secureLogout() {
+    if (window.SIGFIC_AUTH && typeof window.SIGFIC_AUTH.logout === 'function') {
+      window.SIGFIC_AUTH.logout();
+      return;
+    }
+    _clearLocalSession();
+    window.location.replace('/pages/auth/login.html');
+  }
+
+  if (typeof window.requireAuth !== 'function') {
+    window.requireAuth = function () {
+      if (!localStorage.getItem('pslsh_token')) {
+        _redirectToLogin(true);
+        return false;
+      }
+      return true;
+    };
+  }
+
+  if (typeof window.logout !== 'function') {
+    window.logout = _secureLogout;
+  }
+
+  window.addEventListener('pageshow', _enforceSessionOnRestore);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') _enforceSessionOnRestore();
+  });
+  _enforceSessionOnRestore();
+
   /* ── 0. Loader de page — règle de chargement uniforme (min. 3 secondes) ─── */
 
   // Durée minimale garantie d'affichage du loader
@@ -1072,11 +1129,11 @@
   function guardPage(allowedRoles) {
     const role = getRole();
     if (!role) {
-      window.location.href = '/pages/auth/login.html';
+      _redirectToLogin(true);
       return false;
     }
     if (allowedRoles && !allowedRoles.includes(role)) {
-      window.location.href = '/pages/dashboard/index.html';
+      window.location.replace('/pages/dashboard/index.html');
       return false;
     }
     return true;
@@ -1258,6 +1315,58 @@
     });
   }
 
+  function initMobileBottomNav() {
+    const pathname = window.location.pathname;
+    if (pathname.indexOf('/auth') !== -1) return;
+    if (document.querySelector('.sigfic-mobile-bottom-nav')) return;
+
+    const role = getRole();
+    const activeSection = _detectActiveNavigator(pathname);
+    const allowed = _NAV_ITEMS.filter(function (n) {
+      return n.roles.indexOf(role) !== -1;
+    });
+
+    let ordered = allowed.slice();
+    if (activeSection) {
+      const current = allowed.find(function (n) {
+        return n.section === activeSection;
+      });
+      if (current) {
+        ordered = [current].concat(
+          allowed.filter(function (n) {
+            return n.href !== current.href;
+          })
+        );
+      }
+    }
+
+    const items = [
+      { section: 'ACCUEIL', label: 'Accueil', icon: 'fa-home', href: '/pages/accueil/index.html' },
+    ].concat(ordered.slice(0, 4));
+
+    const nav = document.createElement('nav');
+    nav.className = 'sigfic-mobile-bottom-nav';
+    nav.setAttribute('aria-label', 'Navigation mobile');
+    nav.style.setProperty('--sigfic-mobile-nav-count', String(items.length));
+    nav.innerHTML = items
+      .map(function (item) {
+        const cleanHref = item.href.split('?')[0].split('#')[0];
+        const active =
+          (item.section === 'ACCUEIL' && pathname.indexOf('/accueil') !== -1) ||
+          (activeSection && item.section === activeSection) ||
+          (pathname.indexOf(cleanHref.replace(/\/[^/]*$/, '/')) === 0 && item.section !== 'ACCUEIL');
+        return (
+          `<a href="${item.href}" class="${active ? 'active' : ''}" aria-label="${item.label}">` +
+          `<i class="fas ${item.icon}"></i>` +
+          `<span>${item.label}</span>` +
+          `</a>`
+        );
+      })
+      .join('');
+
+    document.body.appendChild(nav);
+  }
+
   function _injectPortalButton() {
     const pathname = window.location.pathname;
     if (pathname.indexOf('/accueil') !== -1 || pathname.indexOf('/auth') !== -1) return;
@@ -1319,14 +1428,14 @@
     const path = window.location.pathname;
     if (path.indexOf('/accueil') !== -1 || path.indexOf('/auth') !== -1) return;
     /* Cibler le bouton logout existant par son onclick */
-    const existing = document.querySelector('[onclick="logout()"], [onclick*="logout()"]');
+    const existing = document.querySelector('#btnLogout, [onclick="logout()"], [onclick*="logout()"]');
     if (!existing) return;
     existing.id = 'btn-logout-main';
     existing.className = 'btn-logout-main';
     existing.innerHTML = '<i class="fas fa-sign-out-alt"></i><span>D\u00e9connexion</span>';
     /* Rebind au cas où l'élément perd son onclick après remplacement innerHTML */
     existing.onclick = function () {
-      logout();
+      _secureLogout();
     };
   }
 
@@ -1335,6 +1444,7 @@
     renderSidebarNav('sidebarNav');
     renderServiceBadge();
     initResponsiveShell();
+    initMobileBottomNav();
     _injectPortalButton();
     _upgradeLogoutButton();
     // Auto-appliquer le dashboard si on est sur la page dashboard
@@ -1362,6 +1472,7 @@
     guardPage,
     applyDashboardRole,
     initResponsiveShell,
+    initMobileBottomNav,
     init,
   };
 

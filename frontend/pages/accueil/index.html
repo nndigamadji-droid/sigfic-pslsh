@@ -1093,9 +1093,16 @@
     });
 
     document.getElementById('btnLogout').addEventListener('click', () => {
+      if (window.SIGFIC_AUTH && typeof window.SIGFIC_AUTH.logout === 'function') {
+        window.SIGFIC_AUTH.logout();
+        return;
+      }
       localStorage.removeItem('pslsh_token');
       localStorage.removeItem('pslsh_user');
-      window.location.href = '/pages/auth/login.html';
+      localStorage.removeItem('sigfic_user');
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('pslsh_redirect_after_login');
+      window.location.replace('/pages/auth/login.html');
     });
 
     // ── Badges live (poll API toutes les 60s) ─────────────────────────────

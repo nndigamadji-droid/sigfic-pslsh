@@ -27,4 +27,16 @@ describe('Responsive frontend shell', () => {
     expect(rolesJs).toContain('sigfic-sidebar-backdrop');
     expect(rolesJs).toContain('sigfic-sidebar-open');
   });
+
+  it('adds a mobile-first bottom navigator for phone workflows', () => {
+    const css = readProjectFile('frontend/src/css/main.css');
+    const rolesJs = readProjectFile('frontend/src/js/roles.js');
+
+    expect(rolesJs).toContain('initMobileBottomNav');
+    expect(rolesJs).toContain('sigfic-mobile-bottom-nav');
+    expect(css).toContain('.sigfic-mobile-bottom-nav');
+    expect(css).toMatch(/@media \(max-width: 640px\)[\s\S]*\.sigfic-mobile-bottom-nav\s*{[\s\S]*display:\s*grid/);
+    expect(css).toContain('env(safe-area-inset-bottom)');
+    expect(css).toContain('touch-action: manipulation');
+  });
 });

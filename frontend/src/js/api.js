@@ -102,6 +102,35 @@ function clearRedirectUrl() {
   sessionStorage.removeItem('pslsh_redirect_after_login');
 }
 
+function isAuthPage() {
+  const path = window.location.pathname || '';
+  return path.includes('/pages/auth/') || path.includes('/auth/login');
+}
+
+function clearSession() {
+  removeToken();
+  removeUser();
+  clearRedirectUrl();
+}
+
+function redirectToLogin(options = {}) {
+  if (options.remember !== false) saveRedirectUrl(window.location.href);
+  window.location.replace('/pages/auth/login.html');
+}
+
+function enforceSessionOnRestore() {
+  if (isAuthPage()) return;
+  if (!getToken()) {
+    clearSession();
+    window.location.replace('/pages/auth/login.html');
+  }
+}
+
+window.addEventListener('pageshow', enforceSessionOnRestore);
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'visible') enforceSessionOnRestore();
+});
+
 // ── Server-side session verification ─────────────────────────────────────────
 async function verifySession() {
   if (!getToken()) return false;
@@ -112,8 +141,7 @@ async function verifySession() {
       signal: AbortSignal.timeout(5000),
     }).then((r) => {
       if (r.status === 401) {
-        removeToken();
-        removeUser();
+        clearSession();
         return false;
       }
       return r.ok;
@@ -145,10 +173,8 @@ async function request(method, path, body, isForm) {
     const isLoginRequest = path === '/auth/login';
 
     if (res.status === 401 && !isLoginRequest) {
-      removeToken();
-      removeUser();
-      saveRedirectUrl(window.location.href);
-      window.location.href = '/pages/auth/login.html';
+      clearSession();
+      redirectToLogin({ remember: true });
       return;
     }
 
@@ -430,16 +456,27 @@ function toast(msg, type = 'success') {
 
 function requireAuth() {
   if (!getToken()) {
-    saveRedirectUrl(window.location.href);
-    window.location.href = '/pages/auth/login.html';
+    redirectToLogin({ remember: true });
     return false;
   }
   return true;
 }
 
 function logout() {
-  removeToken();
-  removeUser();
-  clearRedirectUrl();
-  window.location.href = '/pages/auth/login.html';
+  clearSession();
+  window.location.replace('/pages/auth/login.html');
 }
+
+window.SIGFIC_AUTH = {
+  getToken,
+  setToken,
+  removeToken,
+  getUser,
+  setUser,
+  removeUser,
+  clearSession,
+  redirectToLogin,
+  enforceSessionOnRestore,
+  requireAuth,
+  logout,
+};
