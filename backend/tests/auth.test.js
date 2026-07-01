@@ -110,4 +110,47 @@ describe('Auth', () => {
     await AuditLog.destroy({ where: { resource: 'user', resource_id: createRes.body.data.id } });
     await User.destroy({ where: { email }, force: true });
   });
+
+  it('un compte cree avec email mixte accepte une connexion email minuscule avec espaces', async () => {
+    const token = await loginAsAdmin();
+    const suffix = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+    const email = `Agent.Mixed.${suffix}@Sigfic.Invalid`;
+    const normalizedEmail = email.toLowerCase();
+    const password = `Agent@2026!${suffix}`;
+    let createdId = null;
+
+    try {
+      const createRes = await request(app)
+        .post('/api/v1/users')
+        .set(authHeader(token))
+        .send({
+          nom: 'Mixed',
+          prenom: 'Agent',
+          email,
+          password,
+          role_code: 'agent',
+          service_code: 'saf',
+          fonction: 'Compte test email',
+        });
+
+      expect(createRes.status).toBe(201);
+      createdId = createRes.body.data.id;
+      expect(createRes.body.data.email).toBe(normalizedEmail);
+
+      const loginRes = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: `  ${normalizedEmail}  `, password });
+
+      expect(loginRes.status).toBe(200);
+      expect(loginRes.body.success).toBe(true);
+      expect(loginRes.body.data.user.email).toBe(normalizedEmail);
+    } finally {
+      if (createdId) {
+        await UserRole.destroy({ where: { user_id: createdId } });
+        await AuditLog.destroy({ where: { user_id: createdId } });
+        await AuditLog.destroy({ where: { resource: 'user', resource_id: createdId } });
+        await User.destroy({ where: { id: createdId }, force: true });
+      }
+    }
+  });
 });

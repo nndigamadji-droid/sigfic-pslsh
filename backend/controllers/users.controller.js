@@ -1,6 +1,7 @@
 const { User, Role, UserRole, Departement, Agent } = require('../models');
 const authService = require('../services/auth.service');
 const auditService = require('../services/audit.service');
+const { normalizeEmail } = require('../utils/identity');
 
 const ROLE_CODE_ALIASES = {
   administrateur: 'admin',
@@ -73,6 +74,11 @@ async function create(req, res, next) {
       is_active,
     } = req.body;
 
+    const normalizedEmail = normalizeEmail(email);
+
+    if (!normalizedEmail)
+      return res.status(400).json({ success: false, message: "L'email est obligatoire." });
+
     if (!password)
       return res.status(400).json({ success: false, message: 'Le mot de passe est obligatoire.' });
 
@@ -88,7 +94,7 @@ async function create(req, res, next) {
     const user = await User.create({
       nom,
       prenom,
-      email,
+      email: normalizedEmail,
       password_hash: hash,
       telephone,
       departement_id,
@@ -106,7 +112,7 @@ async function create(req, res, next) {
     });
 
     await auditService.log(req.user.id, 'users:create', 'user', user.id, {
-      new: { nom, prenom, email, role_code: normalizedRoleCode },
+      new: { nom, prenom, email: normalizedEmail, role_code: normalizedRoleCode },
     });
 
     /* Retourner l'utilisateur avec son rôle */
@@ -163,10 +169,15 @@ async function update(req, res, next) {
       role_id,
     } = req.body;
 
+    const normalizedEmail = email !== undefined ? normalizeEmail(email) : user.email;
+    if (email !== undefined && !normalizedEmail) {
+      return res.status(400).json({ success: false, message: "L'email est obligatoire." });
+    }
+
     await user.update({
       nom: nom ?? user.nom,
       prenom: prenom ?? user.prenom,
-      email: email ?? user.email,
+      email: normalizedEmail,
       telephone: telephone ?? user.telephone,
       departement_id: departement_id ?? user.departement_id,
       service_code: service_code !== undefined ? service_code : user.service_code,
@@ -200,7 +211,7 @@ async function update(req, res, next) {
 
     await auditService.log(req.user.id, 'users:update', 'user', user.id, {
       old,
-      new: { nom, prenom, email },
+      new: { nom, prenom, email: normalizedEmail },
     });
 
     const updated = await User.findByPk(user.id, {

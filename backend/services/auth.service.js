@@ -1,11 +1,17 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { Op, col, fn, where: sqlWhere } = require('sequelize');
 const { User, Role, Permission } = require('../models');
 const authConfig = require('../config/auth');
+const { normalizeEmail } = require('../utils/identity');
 
 async function login(email, password) {
+  const normalizedEmail = normalizeEmail(email);
   const user = await User.findOne({
-    where: { email, is_active: true },
+    where: {
+      is_active: true,
+      [Op.and]: [sqlWhere(fn('lower', col('email')), normalizedEmail)],
+    },
     include: [
       {
         model: Role,

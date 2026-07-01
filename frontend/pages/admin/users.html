@@ -753,7 +753,7 @@ function editUser(userId) {
 async function saveUser() {
   const nom      = document.getElementById('fNom').value.trim();
   const prenom   = document.getElementById('fPrenom').value.trim();
-  const email    = document.getElementById('fEmail').value.trim();
+  const email    = document.getElementById('fEmail').value.trim().toLowerCase();
   const role_code= document.getElementById('fRole').value;
   const service  = document.getElementById('fService').value;
   const editId   = document.getElementById('editUserId').value;

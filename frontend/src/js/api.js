@@ -141,8 +141,10 @@ async function request(method, path, body, isForm) {
 
     const res = await fetch(BASE_URL + path, opts);
     clearTimeout(timer);
+    const data = await res.json().catch(() => ({}));
+    const isLoginRequest = path === '/auth/login';
 
-    if (res.status === 401) {
+    if (res.status === 401 && !isLoginRequest) {
       removeToken();
       removeUser();
       saveRedirectUrl(window.location.href);
@@ -150,7 +152,6 @@ async function request(method, path, body, isForm) {
       return;
     }
 
-    const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.message || `Erreur serveur ${res.status}`);
     return data;
   } catch (err) {
@@ -174,7 +175,8 @@ const api = {
 
   // Auth
   auth: {
-    login: (email, password) => api.post('/auth/login', { email, password }),
+    login: (email, password) =>
+      api.post('/auth/login', { email: String(email || '').trim().toLowerCase(), password }),
     me: () => api.get('/auth/me'),
     changePassword: (data) => api.put('/auth/change-password', data),
   },
