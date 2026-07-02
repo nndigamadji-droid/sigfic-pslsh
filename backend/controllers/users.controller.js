@@ -26,14 +26,56 @@ function normalizeRoleCode(roleCode) {
   return ROLE_CODE_ALIASES[key] || key;
 }
 
-async function resolveRole({ role_code, role_id }) {
+function conflict(message) {
+  const err = new Error(message);
+  err.status = 409;
+  return err;
+}
+
+function buildDeletedEmail(user) {
+  const safeLocal = String(user.email || 'user')
+    .split('@')[0]
+    .replace(/[^a-z0-9._-]/gi, '')
+    .slice(0, 48) || 'user';
+  return `deleted-${user.id}-${Date.now()}-${safeLocal}@deleted.local`;
+}
+
+async function archiveDeletedUserIdentity(user, transaction) {
+  const archivedEmail = buildDeletedEmail(user);
+  await UserRole.destroy({ where: { user_id: user.id }, transaction });
+  await user.update(
+    {
+      email: archivedEmail,
+      is_active: false,
+    },
+    { transaction, paranoid: false }
+  );
+  return archivedEmail;
+}
+
+async function releaseDeletedEmail(normalizedEmail, transaction) {
+  const existing = await User.findOne({
+    where: { email: normalizedEmail },
+    paranoid: false,
+    transaction,
+  });
+
+  if (!existing) return null;
+  if (!existing.deletedAt) {
+    throw conflict('Un compte actif utilise deja cet email.');
+  }
+
+  return archiveDeletedUserIdentity(existing, transaction);
+}
+
+async function resolveRole({ role_code, role_id, transaction }) {
   if (role_code) {
     const normalizedRoleCode = normalizeRoleCode(role_code);
-    const role = await Role.findOne({ where: { code: normalizedRoleCode } });
+    const role = await Role.findOne({ where: { code: normalizedRoleCode }, transaction });
     return { role, normalizedRoleCode };
   }
   if (role_id) {
-    const role = await Role.findByPk(role_id);
+    const role = await Role.findByPk(role_id, { transaction });
     return { role, normalizedRoleCode: role ? role.code : null };
   }
   return { role: null, normalizedRoleCode: null };
@@ -81,6 +123,8 @@ async function create(req, res, next) {
 
     if (!password)
       return res.status(400).json({ success: false, message: 'Le mot de passe est obligatoire.' });
+
+    await releaseDeletedEmail(normalizedEmail);
 
     const { role, normalizedRoleCode } = await resolveRole({ role_code, role_id });
     if (!role) {
@@ -229,6 +273,7 @@ async function destroy(req, res, next) {
   try {
     const user = await User.findByPk(req.params.id);
     if (!user) return res.status(404).json({ success: false, message: 'Utilisateur introuvable' });
+    await archiveDeletedUserIdentity(user);
     await user.destroy();
     await auditService.log(req.user.id, 'users:delete', 'user', user.id, {});
     res.json({ success: true, message: 'Utilisateur supprimé' });

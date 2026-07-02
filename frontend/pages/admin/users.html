@@ -264,8 +264,6 @@
           <span style="font-size:.78rem" id="tableFooterInfo">Affichage de 0 compte sur 0 au total</span>
           <div class="d-flex gap-2">
             <button class="btn btn-sm btn-outline-secondary" onclick="exportCSV()"><i class="fas fa-file-csv me-1"></i>Exporter</button>
-            <button class="btn btn-sm" style="background:#15803d;color:#fff;border:none" onclick="sauvegarder()" title="Sauvegarder comme référence"><i class="fas fa-save me-1"></i>Sauvegarder</button>
-            <button class="btn btn-sm" style="border:1px solid #fca5a5;color:#b91c1c;background:#fff" onclick="reinitialiserDonnees()" title="Réinitialiser"><i class="fas fa-undo me-1"></i>Réinitialiser</button>
           </div>
         </div>
       </div>
@@ -868,10 +866,6 @@ function exportCSV() {
   URL.revokeObjectURL(url);
   showToast('Export CSV généré.', 'success');
 }
-
-/* Stub pour compatibilité HTML */
-function sauvegarder() { showToast('Les données sont directement enregistrées en base de données.', 'success'); }
-function reinitialiserDonnees() { if(confirm('Recharger les utilisateurs depuis le serveur ?')) loadUsers(); }
 
 /* ════════════════════════════════════════════════════════════════════════════
    Services & Unités

@@ -43,4 +43,24 @@ describe('Frontend auth UX', () => {
     expect(usersHtml).not.toContain('<option value="chef_service">Chef de service</option>');
     expect(usersHtml).not.toContain('<option value="agent">Agent</option>');
   });
+
+  it('ne presente pas de sauvegarde locale pour la gestion des utilisateurs', () => {
+    const usersHtml = readProjectFile('frontend/pages/admin/users.html');
+
+    expect(usersHtml).not.toContain('onclick="sauvegarder()"');
+    expect(usersHtml).not.toContain('onclick="reinitialiserDonnees()"');
+    expect(usersHtml).toContain('api.users.create');
+    expect(usersHtml).toContain('api.users.delete');
+  });
+
+  it('pointe directement vers le backend Render en production', () => {
+    const apiJs = readProjectFile('frontend/src/js/api.js');
+    const auditHtml = readProjectFile('frontend/pages/admin/audit-log.html');
+    const reportingHtml = readProjectFile('frontend/pages/reporting/index.html');
+
+    expect(apiJs).toContain("'https://sigfic-pslsh-backend.onrender.com'");
+    expect(apiJs).not.toContain("IS_LOCAL_FRONTEND ? 'http://localhost:3000' : window.location.origin");
+    expect(auditHtml).toContain("window.open(`${BASE_URL}/admin/audit-logs/export?${params}`");
+    expect(reportingHtml).toContain("const url = `${BASE_URL}/reporting/${type}/export?${params}`");
+  });
 });

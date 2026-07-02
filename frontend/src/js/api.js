@@ -4,15 +4,16 @@
 //
 // CONFIGURATION CENTRALE — un seul endroit à modifier selon l'environnement :
 //   Développement : http://localhost:3000
-//   Production    : meme domaine (/api) ou window.PSLSH_API_URL si defini
+//   Production    : backend Render direct ou window.PSLSH_API_URL si defini
 //
 const CONFIGURED_BACKEND_URL =
   (window.PSLSH_API_URL || '').trim() ||
   document.querySelector('meta[name="pslsh-api-url"]')?.content?.trim() ||
   '';
 const IS_LOCAL_FRONTEND = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const PRODUCTION_BACKEND_URL = 'https://sigfic-pslsh-backend.onrender.com';
 const BACKEND_URL = (
-  CONFIGURED_BACKEND_URL || (IS_LOCAL_FRONTEND ? 'http://localhost:3000' : window.location.origin)
+  CONFIGURED_BACKEND_URL || (IS_LOCAL_FRONTEND ? 'http://localhost:3000' : PRODUCTION_BACKEND_URL)
 ).replace(/\/$/, '');
 const BASE_URL = `${BACKEND_URL}/api/v1`;
 const API_TIMEOUT = 60000; // Render gratuit peut sortir de veille lentement.

@@ -385,7 +385,7 @@ async function exportRapport(type, format) {
   if (exId) params.append('exercice_id', exId);
   toast(`Export ${format.toUpperCase()} du rapport "${type}" en cours...`, 'info');
   try {
-    const url = '/api/v1/reporting/' + type + '/export?' + params;
+    const url = `${BASE_URL}/reporting/${type}/export?${params}`;
     window.open(url, '_blank');
   } catch(e) { toast('Export non disponible, serveur non démarré', 'warning'); }
 }

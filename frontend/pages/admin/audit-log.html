@@ -376,7 +376,7 @@ function exportAudit() {
   if (dateA) params.append('date_a', dateA);
   params.append('format', 'excel');
   toast('Export du journal d\'audit en cours...', 'info');
-  window.open('/api/v1/admin/audit-logs/export?' + params, '_blank');
+  window.open(`${BASE_URL}/admin/audit-logs/export?${params}`, '_blank');
 }
 
 init();
