@@ -5,7 +5,7 @@ describe('Securite - rate-limit login', () => {
   it('apres plusieurs echecs de login depuis la meme IP, retourne au moins un 429', async () => {
     const fakeEmail = `bruteforce_${Date.now()}@example.com`;
     const requests = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 13; i++) {
       requests.push(
         request(app).post('/api/v1/auth/login').send({ email: fakeEmail, password: 'wrong' })
       );

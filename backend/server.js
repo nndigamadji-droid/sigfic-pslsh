@@ -4,9 +4,27 @@ const { sequelize } = require('./models');
 
 const PORT = process.env.PORT || 3000;
 
+// Connexion à la base avec quelques tentatives : évite qu'un simple à-coup
+// réseau au démarrage (bascule/redémarrage de la base managée) ne tue le
+// service et ne rende toute connexion impossible.
+async function connectWithRetry(retries = 5, delayMs = 3000) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await sequelize.authenticate();
+      return;
+    } catch (err) {
+      console.error(
+        `Tentative de connexion BDD ${attempt}/${retries} échouée : ${err.message}`
+      );
+      if (attempt === retries) throw err;
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+}
+
 async function start() {
   try {
-    await sequelize.authenticate();
+    await connectWithRetry();
     console.log('✓ Base de données connectée');
 
     // Sync all models (create tables if not exist)

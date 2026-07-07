@@ -4,14 +4,16 @@ const router = express.Router();
 const ctrl = require('../controllers/auth.controller');
 const auth = require('../middleware/auth.middleware');
 
-// Anti brute-force : 5 tentatives par IP toutes les 15 min sur /login
-// skipSuccessfulRequests : un login valide ne décompte pas du quota
+// Anti brute-force : 10 tentatives ÉCHOUÉES par IP toutes les 10 min sur /login.
+// skipSuccessfulRequests : un login valide ne décompte pas du quota — un
+// utilisateur qui se trompe puis se corrige n'est jamais bloqué. Fenêtre courte
+// (10 min) pour un déblocage rapide des utilisateurs légitimes.
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
+  windowMs: 10 * 60 * 1000,
+  max: 10,
   message: {
     success: false,
-    message: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.',
+    message: 'Trop de tentatives de connexion. Réessayez dans quelques minutes.',
   },
   standardHeaders: true,
   legacyHeaders: false,
