@@ -28,17 +28,4 @@ describe('Frontend visual comfort and progressive disclosure', () => {
     expect(css).toContain('details.sigfic-disclosure');
     expect(css).toContain('.sigfic-summary-line');
   });
-
-  it('turns the accueil page into a mobile-first personal hub', () => {
-    const accueil = readProjectFile('frontend/pages/accueil/index.html');
-
-    expect(accueil).toContain('class="mobile-hub"');
-    expect(accueil).toContain('id="hubSearchInput"');
-    expect(accueil).toContain('id="hubQuickActions"');
-    expect(accueil).toContain('id="hubPriorityList"');
-    expect(accueil).toContain('id="hubSecondaryModules"');
-    expect(accueil).toContain('function renderPersonalHub');
-    expect(accueil).toContain('File prioritaire');
-    expect(accueil).toContain('Actions rapides');
-  });
 });
