@@ -22,6 +22,31 @@ describe('Configuration de deploiement production', () => {
     expect(seedScript).toContain('SEED_ADMIN_PASSWORD');
   });
 
+  it('ne garde pas de comptes de demonstration executables dans les scripts operationnels', () => {
+    const scriptNames = [
+      'seed-comptable-principal.js',
+      'seed-chef-saf.js',
+      'reset-comptable-password.js',
+    ];
+    const forbidden = [
+      'comptable@pslsh.org',
+      'saf@pslsh.org',
+      'Compta@2026',
+      'SAF@2026',
+      'Saf@2026',
+    ];
+
+    for (const scriptName of scriptNames) {
+      const script = fs.readFileSync(
+        path.join(rootDir, 'backend', 'scripts', scriptName),
+        'utf8'
+      );
+      for (const value of forbidden) {
+        expect(script).not.toContain(value);
+      }
+    }
+  });
+
   it('utilise une route health dediee pour Render', () => {
     const renderYaml = fs.readFileSync(path.join(rootDir, 'render.yaml'), 'utf8');
     const appJs = fs.readFileSync(path.join(rootDir, 'backend', 'app', 'app.js'), 'utf8');

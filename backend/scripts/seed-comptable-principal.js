@@ -1,6 +1,11 @@
-/* Seed : rôle comptable_principal + 20 permissions d'émission + utilisateur démo */
+/* Seed : role comptable_principal + permissions d'emission. */
 const bcrypt = require('bcryptjs');
 const { sequelize, Role, Permission, RolePermission, User, UserRole } = require('../models');
+
+const allowUserProvisioning = process.env.ALLOW_USER_PROVISIONING === 'true';
+const provisionEmail = String(process.env.PROVISION_COMPTABLE_EMAIL || '').trim().toLowerCase();
+const provisionPassword = process.env.PROVISION_COMPTABLE_PASSWORD || '';
+const provisionResetPassword = process.env.PROVISION_RESET_PASSWORD === 'true';
 
 const PERMS_EMISSION = [
   // Pièces opérationnelles
@@ -47,7 +52,7 @@ const ROLE_PERMS = {
 };
 
 async function seed() {
-  console.log('\n═══ Seed Comptable Principal — rôle + permissions + user ═══\n');
+  console.log('\n=== Seed Comptable Principal - role + permissions ===\n');
 
   // 1) Permissions
   const permIdByKey = {};
@@ -91,23 +96,37 @@ async function seed() {
   }
   console.log(`   ${mappingAdded} liaison(s) rôle↔permission ajoutée(s)`);
 
-  // 4) Utilisateur démo — utilise les vrais noms de colonnes du modèle User
-  const pwdHash = await bcrypt.hash('Compta@2026', 12);
+  if (!allowUserProvisioning) {
+    console.log('   Provision utilisateur ignoree. Definissez ALLOW_USER_PROVISIONING=true pour creer un compte.');
+    await sequelize.close();
+    process.exit(0);
+  }
+
+  if (!provisionEmail || !provisionPassword) {
+    throw new Error(
+      'PROVISION_COMPTABLE_EMAIL et PROVISION_COMPTABLE_PASSWORD sont requis avec ALLOW_USER_PROVISIONING=true.'
+    );
+  }
+
+  // 4) Utilisateur optionnel fourni par variables d'environnement.
+  const pwdHash = await bcrypt.hash(provisionPassword, 12);
   const [user, userCreated] = await User.findOrCreate({
-    where: { email: 'comptable@pslsh.org' },
+    where: { email: provisionEmail },
     defaults: {
-      email: 'comptable@pslsh.org', password_hash: pwdHash,
-      nom: 'NDJEKOUNTA', prenom: 'Marie',
-      telephone: '+235 66 11 22 33',
-      service_code: 'SAF', is_active: true,
+      email: provisionEmail,
+      password_hash: pwdHash,
+      nom: process.env.PROVISION_COMPTABLE_NOM || 'Comptable',
+      prenom: process.env.PROVISION_COMPTABLE_PRENOM || 'Principal',
+      telephone: process.env.PROVISION_COMPTABLE_TELEPHONE || null,
+      service_code: process.env.PROVISION_COMPTABLE_SERVICE || 'SAF',
+      is_active: true,
     },
   });
-  if (!userCreated) {
-    // Force la mise à jour du mot de passe si l'utilisateur existait déjà
+  if (!userCreated && provisionResetPassword) {
     user.password_hash = pwdHash;
     await user.save();
   }
-  console.log(`   Utilisateur comptable@pslsh.org : ${userCreated ? 'créé' : 'mot de passe réinitialisé'} (id=${user.id})`);
+  console.log(`   Utilisateur provisionne : ${userCreated ? 'cree' : 'deja present'} (id=${user.id})`);
 
   await UserRole.findOrCreate({
     where: { user_id: user.id, role_id: role.id },
@@ -115,7 +134,7 @@ async function seed() {
   });
   console.log(`   Rôle assigné à ${user.email}`);
 
-  console.log('\n   ✓ Connexion : comptable@pslsh.org / Compta@2026\n');
+  console.log('\n   Provision terminee. Aucun identifiant sensible n est affiche.\n');
   await sequelize.close();
   process.exit(0);
 }
