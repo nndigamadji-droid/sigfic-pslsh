@@ -33,6 +33,6 @@ services:
 
 databases:
   - name: sigfic-pslsh-db
-    databaseName: sigfic_pslsh
-    user: sigfic_pslsh
+    databaseName: sigfic_pslsh_db
+    user: sigfic_pslsh_db_user
     plan: basic-1gb
