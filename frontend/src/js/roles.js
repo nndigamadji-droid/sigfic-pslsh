@@ -1254,6 +1254,96 @@
     },
   ];
 
+  const _CREATE_ACTIONS = [
+    {
+      label: 'Expression de besoin',
+      description: 'Saisir une nouvelle EB pour validation',
+      href: '/pages/dossiers/besoins.html?saisi=1',
+      icon: 'fa-file-signature',
+      roles: ['administrateur', 'coordination', 'chef_service', 'agent', 'comptable_principal'],
+    },
+    {
+      label: "Dossier d'operation",
+      description: 'Ouvrir un dossier de depense',
+      href: '/pages/dossiers/create.html',
+      icon: 'fa-folder-plus',
+      roles: ['administrateur', 'coordination', 'chef_service'],
+    },
+    {
+      label: 'Paiement',
+      description: 'Preparer une liquidation ou un paiement',
+      href: '/pages/paiement/index.html',
+      icon: 'fa-money-check-alt',
+      roles: ['administrateur', 'coordination', 'chef_service', 'comptable_principal'],
+    },
+    {
+      label: 'Document',
+      description: 'Classer une piece justificative',
+      href: '/pages/documents/index.html',
+      icon: 'fa-file-upload',
+      roles: [
+        'administrateur',
+        'coordination',
+        'chef_service',
+        'agent',
+        'controleur',
+        'comptable_principal',
+      ],
+    },
+    {
+      label: 'Controle',
+      description: 'Enregistrer un controle ou une anomalie',
+      href: '/pages/controle/index.html',
+      icon: 'fa-shield-alt',
+      roles: ['administrateur', 'coordination', 'controleur'],
+    },
+    {
+      label: 'Rapport',
+      description: 'Generer ou consulter un etat',
+      href: '/pages/reporting/index.html',
+      icon: 'fa-chart-pie',
+      roles: [
+        'administrateur',
+        'coordination',
+        'chef_service',
+        'comite_pilotage',
+        'controleur',
+        'comptable_principal',
+      ],
+    },
+  ];
+
+  function _getAllowedCreateActions(role) {
+    return _CREATE_ACTIONS.filter(function (action) {
+      return action.roles.indexOf(role) !== -1;
+    });
+  }
+
+  function _closeShellPanels() {
+    document.querySelectorAll('.sigfic-shell-panel.is-open').forEach(function (panel) {
+      panel.classList.remove('is-open');
+      panel.setAttribute('aria-hidden', 'true');
+    });
+    document.body.classList.remove('sigfic-shell-panel-open');
+  }
+
+  function _openShellPanel(panelId) {
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    _closeShellPanels();
+    panel.classList.add('is-open');
+    panel.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('sigfic-shell-panel-open');
+
+    const focusable = panel.querySelector('a, button');
+    if (!focusable) return;
+    try {
+      focusable.focus({ preventScroll: true });
+    } catch (e) {
+      focusable.focus();
+    }
+  }
+
   function initResponsiveShell() {
     const pathname = window.location.pathname;
     if (pathname.indexOf('/auth') !== -1) return;
@@ -1319,45 +1409,77 @@
     const pathname = window.location.pathname;
     if (pathname.indexOf('/auth') !== -1) return;
     if (document.querySelector('.sigfic-mobile-bottom-nav')) return;
-
-    const role = getRole();
     const activeSection = _detectActiveNavigator(pathname);
-    const allowed = _NAV_ITEMS.filter(function (n) {
-      return n.roles.indexOf(role) !== -1;
-    });
-
-    let ordered = allowed.slice();
-    if (activeSection) {
-      const current = allowed.find(function (n) {
-        return n.section === activeSection;
-      });
-      if (current) {
-        ordered = [current].concat(
-          allowed.filter(function (n) {
-            return n.href !== current.href;
-          })
-        );
-      }
-    }
 
     const items = [
-      { section: 'ACCUEIL', label: 'Accueil', icon: 'fa-home', href: '/pages/accueil/index.html' },
-    ].concat(ordered.slice(0, 4));
+      {
+        section: 'ACCUEIL',
+        label: 'Accueil',
+        icon: 'fa-home',
+        href: '/pages/accueil/index.html',
+        active: pathname.indexOf('/accueil') !== -1,
+      },
+      {
+        section: 'OP\u00c9RATIONS',
+        label: 'Dossiers',
+        icon: 'fa-folder-open',
+        href: '/pages/dossiers/index.html',
+        active: pathname.indexOf('/dossiers') !== -1,
+      },
+      {
+        action: 'create',
+        label: 'Creer',
+        icon: 'fa-plus',
+        active: false,
+      },
+      {
+        section: 'NOTIFICATIONS',
+        label: 'Notifications',
+        icon: 'fa-bell',
+        href: '/pages/notifications/index.html',
+        active: pathname.indexOf('/notifications') !== -1,
+      },
+      {
+        action: 'more',
+        label: 'Plus',
+        icon: 'fa-ellipsis-h',
+        active:
+          !!activeSection &&
+          pathname.indexOf('/accueil') === -1 &&
+          pathname.indexOf('/dossiers') === -1 &&
+          pathname.indexOf('/notifications') === -1,
+      },
+    ];
 
     const nav = document.createElement('nav');
-    nav.className = 'sigfic-mobile-bottom-nav';
+    nav.className = 'sigfic-mobile-bottom-nav sigfic-mobile-bottom-nav-a1';
     nav.setAttribute('aria-label', 'Navigation mobile');
     nav.style.setProperty('--sigfic-mobile-nav-count', String(items.length));
     nav.innerHTML = items
       .map(function (item) {
-        const cleanHref = item.href.split('?')[0].split('#')[0];
-        const active =
-          (item.section === 'ACCUEIL' && pathname.indexOf('/accueil') !== -1) ||
-          (activeSection && item.section === activeSection) ||
-          (pathname.indexOf(cleanHref.replace(/\/[^/]*$/, '/')) === 0 && item.section !== 'ACCUEIL');
+        const itemClass =
+          'sigfic-mobile-nav-item' + (item.action === 'create' ? ' sigfic-mobile-nav-create' : '');
+        const activeClass = item.active ? ' active' : '';
+        if (item.action === 'create') {
+          return (
+            `<button type="button" class="${itemClass}${activeClass}" data-sigfic-open-create aria-label="${item.label}">` +
+            `<span class="sigfic-mobile-nav-icon"><i class="fas ${item.icon}"></i></span>` +
+            `<span>${item.label}</span>` +
+            `</button>`
+          );
+        }
+        if (item.action === 'more') {
+          return (
+            `<button type="button" class="${itemClass}${activeClass}" data-sigfic-open-more aria-label="${item.label}">` +
+            `<span class="sigfic-mobile-nav-icon"><i class="fas ${item.icon}"></i></span>` +
+            `<span>${item.label}</span>` +
+            `</button>`
+          );
+        }
+
         return (
-          `<a href="${item.href}" class="${active ? 'active' : ''}" aria-label="${item.label}">` +
-          `<i class="fas ${item.icon}"></i>` +
+          `<a href="${item.href}" class="${itemClass}${activeClass}" aria-label="${item.label}">` +
+          `<span class="sigfic-mobile-nav-icon"><i class="fas ${item.icon}"></i></span>` +
           `<span>${item.label}</span>` +
           `</a>`
         );
@@ -1365,6 +1487,126 @@
       .join('');
 
     document.body.appendChild(nav);
+  }
+
+  function initCreateActionPanel() {
+    const pathname = window.location.pathname;
+    if (pathname.indexOf('/auth') !== -1) return;
+    if (document.getElementById('sigfic-create-panel')) return;
+
+    const actions = _getAllowedCreateActions(getRole());
+    const panel = document.createElement('section');
+    panel.id = 'sigfic-create-panel';
+    panel.className = 'sigfic-shell-panel sigfic-create-panel';
+    panel.setAttribute('aria-hidden', 'true');
+    panel.setAttribute('aria-label', 'Creer une action');
+    panel.innerHTML =
+      '<div class="sigfic-shell-panel-handle"></div>' +
+      '<div class="sigfic-shell-panel-head">' +
+      '<div><strong>Creer</strong><span>Actions rapides selon votre role</span></div>' +
+      '<button type="button" class="sigfic-shell-panel-close" data-sigfic-close-panel aria-label="Fermer"><i class="fas fa-times"></i></button>' +
+      '</div>' +
+      '<div class="sigfic-create-grid">' +
+      actions
+        .map(function (action) {
+          return (
+            `<a href="${action.href}" class="sigfic-create-action">` +
+            `<span><i class="fas ${action.icon}"></i></span>` +
+            `<strong>${action.label}</strong>` +
+            `<small>${action.description}</small>` +
+            `</a>`
+          );
+        })
+        .join('') +
+      '</div>';
+
+    document.body.appendChild(panel);
+  }
+
+  function initMobileMorePanel() {
+    const pathname = window.location.pathname;
+    if (pathname.indexOf('/auth') !== -1) return;
+    if (document.getElementById('sigfic-more-panel')) return;
+
+    const role = getRole();
+    const allowed = _NAV_ITEMS.filter(function (n) {
+      return n.roles.indexOf(role) !== -1;
+    });
+
+    const panel = document.createElement('section');
+    panel.id = 'sigfic-more-panel';
+    panel.className = 'sigfic-shell-panel sigfic-more-panel';
+    panel.setAttribute('aria-hidden', 'true');
+    panel.setAttribute('aria-label', 'Plus de modules');
+    panel.innerHTML =
+      '<div class="sigfic-shell-panel-handle"></div>' +
+      '<div class="sigfic-shell-panel-head">' +
+      '<div><strong>Plus</strong><span>Modules et session</span></div>' +
+      '<button type="button" class="sigfic-shell-panel-close" data-sigfic-close-panel aria-label="Fermer"><i class="fas fa-times"></i></button>' +
+      '</div>' +
+      '<div class="sigfic-more-list">' +
+      allowed
+        .map(function (item) {
+          return (
+            `<a href="${item.href}" class="sigfic-more-item">` +
+            `<i class="fas ${item.icon}"></i>` +
+            `<span>${item.label}</span>` +
+            `</a>`
+          );
+        })
+        .join('') +
+      '<button type="button" class="sigfic-more-item sigfic-more-logout" data-sigfic-logout>' +
+      '<i class="fas fa-sign-out-alt"></i><span>Deconnexion</span></button>' +
+      '</div>';
+
+    document.body.appendChild(panel);
+  }
+
+  function initShellPanelEvents() {
+    if (document.body.dataset.sigficPanelEvents === 'bound') return;
+    document.body.dataset.sigficPanelEvents = 'bound';
+
+    document.addEventListener('click', function (event) {
+      const createBtn = event.target.closest('[data-sigfic-open-create]');
+      if (createBtn) {
+        event.preventDefault();
+        _openShellPanel('sigfic-create-panel');
+        return;
+      }
+
+      const moreBtn = event.target.closest('[data-sigfic-open-more]');
+      if (moreBtn) {
+        event.preventDefault();
+        _openShellPanel('sigfic-more-panel');
+        return;
+      }
+
+      if (event.target.closest('[data-sigfic-close-panel]')) {
+        event.preventDefault();
+        _closeShellPanels();
+        return;
+      }
+
+      if (event.target.closest('[data-sigfic-logout]')) {
+        event.preventDefault();
+        _secureLogout();
+        return;
+      }
+
+      if (
+        document.body.classList.contains('sigfic-shell-panel-open') &&
+        !event.target.closest('.sigfic-shell-panel') &&
+        !event.target.closest('.sigfic-mobile-bottom-nav') &&
+        !event.target.closest('[data-sigfic-open-create]') &&
+        !event.target.closest('[data-sigfic-open-more]')
+      ) {
+        _closeShellPanels();
+      }
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') _closeShellPanels();
+    });
   }
 
   function _injectPortalButton() {
@@ -1408,6 +1650,15 @@
       `<div class="portal-drop" id="portalDrop">${itemsHtml}</div>`;
 
     right.insertBefore(wrap, right.firstChild);
+    if (!document.getElementById('btn-shell-create')) {
+      const createButton = document.createElement('button');
+      createButton.id = 'btn-shell-create';
+      createButton.type = 'button';
+      createButton.className = 'portal-btn shell-create-btn';
+      createButton.setAttribute('data-sigfic-open-create', '');
+      createButton.innerHTML = '<i class="fas fa-plus"></i><span>Creer</span>';
+      right.insertBefore(createButton, wrap);
+    }
 
     /* Toggle du menu */
     const btn = wrap.querySelector('#btn-portal-accueil');
@@ -1445,6 +1696,9 @@
     renderServiceBadge();
     initResponsiveShell();
     initMobileBottomNav();
+    initCreateActionPanel();
+    initMobileMorePanel();
+    initShellPanelEvents();
     _injectPortalButton();
     _upgradeLogoutButton();
     // Auto-appliquer le dashboard si on est sur la page dashboard
@@ -1473,6 +1727,8 @@
     applyDashboardRole,
     initResponsiveShell,
     initMobileBottomNav,
+    initCreateActionPanel,
+    initMobileMorePanel,
     init,
   };
 
