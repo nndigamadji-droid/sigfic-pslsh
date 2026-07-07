@@ -14,6 +14,7 @@ graphify-out/cache
 .idea
 .claude
 .superpowers/
+.worktrees/
 coverage
 dist
 build
