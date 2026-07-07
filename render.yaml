@@ -3,7 +3,7 @@ services:
     name: sigfic-pslsh-backend
     runtime: node
     rootDir: backend
-    plan: free
+    plan: standard
     buildCommand: npm install
     startCommand: npm run migrate && npm start
     healthCheckPath: /health
@@ -35,4 +35,4 @@ databases:
   - name: sigfic-pslsh-db
     databaseName: sigfic_pslsh
     user: sigfic_pslsh
-    plan: free
+    plan: basic-1gb
