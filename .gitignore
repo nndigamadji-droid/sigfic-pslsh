@@ -13,6 +13,7 @@ graphify-out/cache
 .vscode
 .idea
 .claude
+.superpowers/
 coverage
 dist
 build
